@@ -356,6 +356,66 @@
         border-radius: 6px;
     }
 
+    /* Updater Cell & Avatar Elements */
+    .lh-updater-cell {
+        display: flex;
+        align-items: center;
+        gap: 0.65rem;
+    }
+    .lh-updater-avatar-wrap {
+        width: 28px;
+        height: 28px;
+        position: relative;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .lh-updater-badge {
+        width: 28px !important;
+        height: 28px !important;
+        min-width: 28px !important;
+        border-radius: 50% !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 0.75rem !important;
+        font-weight: 800 !important;
+        line-height: 1 !important;
+        background: #dcfce7 !important;
+        background-color: #dcfce7 !important;
+        color: #15803d !important;
+        -webkit-text-fill-color: #15803d !important;
+        border: 1px solid rgba(21, 128, 61, 0.25) !important;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        text-transform: uppercase;
+        flex-shrink: 0;
+    }
+    .lh-updater-img {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 1px solid var(--lh-slate-200);
+        flex-shrink: 0;
+    }
+    .lh-updater-name {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: var(--lh-slate-900);
+        line-height: 1.25;
+    }
+    .lh-updater-version {
+        font-size: 0.75rem;
+        color: var(--lh-slate-500);
+        font-weight: 600;
+    }
+    .lh-date-primary {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--lh-slate-700);
+    }
+
     /* Badges */
     .lh-type-badge {
         display: inline-flex;
@@ -710,6 +770,60 @@
         color: #9AA3C7 !important;
     }
 
+    /* Updater Cell & Badges in Dark Mode */
+    html[data-pms-theme="dark"] .lh-updater-badge,
+    html[data-bs-theme="dark"] .lh-updater-badge,
+    html[data-theme="dark"] .lh-updater-badge,
+    html.dark .lh-updater-badge,
+    body[data-pms-theme="dark"] .lh-updater-badge,
+    [data-pms-theme="dark"] .lh-updater-badge,
+    html[data-pms-theme="dark"] .lh-table .avatar-initial,
+    html[data-bs-theme="dark"] .lh-table .avatar-initial,
+    html[data-theme="dark"] .lh-table .avatar-initial,
+    html[data-pms-theme="dark"] .lh-table .avatar-initial.bg-label-success,
+    html[data-bs-theme="dark"] .lh-table .avatar-initial.bg-label-success,
+    html[data-theme="dark"] .lh-table .avatar-initial.bg-label-success,
+    html.dark .lh-table .avatar-initial.bg-label-success,
+    body[data-pms-theme="dark"] .lh-table .avatar-initial.bg-label-success,
+    [data-pms-theme="dark"] .lh-table .avatar-initial.bg-label-success {
+        background: rgba(16, 185, 129, 0.22) !important;
+        background-color: rgba(16, 185, 129, 0.22) !important;
+        color: #34D399 !important;
+        -webkit-text-fill-color: #34D399 !important;
+        border: 1px solid rgba(52, 211, 153, 0.45) !important;
+        box-shadow: 0 0 10px rgba(16, 185, 129, 0.25) !important;
+        font-weight: 800 !important;
+    }
+    html[data-pms-theme="dark"] .lh-updater-img,
+    html[data-bs-theme="dark"] .lh-updater-img,
+    html[data-theme="dark"] .lh-updater-img,
+    html.dark .lh-updater-img,
+    body[data-pms-theme="dark"] .lh-updater-img {
+        border-color: rgba(52, 211, 153, 0.45) !important;
+        box-shadow: 0 0 8px rgba(16, 185, 129, 0.25) !important;
+    }
+    html[data-pms-theme="dark"] .lh-updater-name,
+    html[data-bs-theme="dark"] .lh-updater-name,
+    html[data-theme="dark"] .lh-updater-name,
+    html.dark .lh-updater-name,
+    body[data-pms-theme="dark"] .lh-updater-name {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .lh-updater-version,
+    html[data-bs-theme="dark"] .lh-updater-version,
+    html[data-theme="dark"] .lh-updater-version,
+    html.dark .lh-updater-version,
+    body[data-pms-theme="dark"] .lh-updater-version {
+        color: #9AA3C7 !important;
+    }
+    html[data-pms-theme="dark"] .lh-date-primary,
+    html[data-bs-theme="dark"] .lh-date-primary,
+    html[data-theme="dark"] .lh-date-primary,
+    html.dark .lh-date-primary,
+    body[data-pms-theme="dark"] .lh-date-primary {
+        color: #CBD5E1 !important;
+    }
+
     /* Type Badges in Dark Mode */
     html[data-pms-theme="dark"] .lh-type-badge.company,
     html[data-bs-theme="dark"] .lh-type-badge.company {
@@ -849,6 +963,17 @@
     html[data-bs-theme="dark"] .lh-form-nav .nav-link.active {
         color: #60A5FA !important;
         border-bottom-color: #60A5FA !important;
+    }
+    /* Letter Head header on phones: stack icon/title, wrap the badge and text inside the card. */
+    @media (max-width: 768px) {
+        .lh-header-banner { padding: 1.25rem !important; gap: 1rem; }
+        .lh-banner-left { flex-direction: column; align-items: flex-start; gap: 0.9rem; width: 100%; min-width: 0; }
+        .lh-banner-left > div { min-width: 0; width: 100%; }
+        .lh-banner-title { flex-wrap: wrap; font-size: 1.35rem; gap: 0.5rem; }
+        .lh-live-pill { white-space: nowrap; }
+        .lh-banner-subtitle { overflow-wrap: anywhere; }
+        .lh-header-banner > div:last-child { width: 100%; }
+        .lh-header-banner .btn-lh-emerald { width: 100%; justify-content: center; }
     }
 </style>
 
@@ -1049,20 +1174,30 @@
                                 @endif
                             </td>
                             <td>
-                                <div class="d-flex align-items-center gap-2">
-                                    <div class="avatar avatar-xs">
-                                        <span class="avatar-initial rounded-circle bg-label-success fw-bold" style="font-size: 0.7rem;">
-                                            {{ strtoupper(substr($item->updater?->name ?: ($item->creator?->name ?: 'Admin'), 0, 1)) }}
-                                        </span>
+                                @php
+                                    $updaterUser = $item->updater ?: $item->creator;
+                                    $updaterName = $updaterUser?->name ?: 'Admin';
+                                    $updaterInitial = strtoupper(substr($updaterName, 0, 1));
+                                    $updaterPhoto = $updaterUser?->profile_image;
+                                @endphp
+                                <div class="lh-updater-cell">
+                                    <div class="lh-updater-avatar-wrap">
+                                        @if($updaterPhoto && file_exists(public_path($updaterPhoto)))
+                                            <img src="{{ asset($updaterPhoto) }}" alt="{{ $updaterName }}" class="lh-updater-img" title="{{ $updaterName }}">
+                                        @else
+                                            <span class="lh-updater-badge avatar-initial rounded-circle bg-label-success" title="{{ $updaterName }}">
+                                                {{ $updaterInitial }}
+                                            </span>
+                                        @endif
                                     </div>
                                     <div>
-                                        <div class="fw-bold text-dark" style="font-size: 0.85rem;">{{ $item->updater?->name ?: ($item->creator?->name ?: 'Admin') }}</div>
-                                        <small class="text-muted" style="font-size: 0.75rem;">v{{ $item->version ?: 1 }}</small>
+                                        <div class="lh-updater-name text-truncate" style="max-width: 140px;">{{ $updaterName }}</div>
+                                        <div class="lh-updater-version">v{{ $item->version ?: 1 }}</div>
                                     </div>
                                 </div>
                             </td>
                             <td>
-                <div style="font-size: 0.85rem; font-weight: 600; color: #334155;">{{ $item->updated_at->format('M d, Y') }}</div>
+                                <div class="lh-date-primary">{{ $item->updated_at->format('M d, Y') }}</div>
                                 <small class="text-muted" style="font-size: 0.75rem;">{{ $item->updated_at->format('h:i A') }}</small>
                             </td>
                             <td class="text-end">
@@ -1170,6 +1305,74 @@
                 <div>
                     {{ $letterheads->links('pagination::bootstrap-5') }}
                 </div>
+            </div>
+        @endif
+    </div>
+
+    <!-- SENT LETTERS (Write & Send Letter history) -->
+    <div class="lh-table-card mt-4" id="sentLettersCard">
+        <div class="p-3 border-bottom d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div>
+                <h5 class="fw-bold mb-0">Sent Letters</h5>
+                <small class="text-muted">Letters written from Write &amp; Send Letter, newest first.</small>
+            </div>
+            <a href="{{ route('letterhead.create') }}" class="btn btn-sm btn-primary"><i class="bx bx-send me-1"></i> Write &amp; Send Letter</a>
+        </div>
+        <div class="table-responsive">
+            <table class="lh-table">
+                <thead>
+                    <tr>
+                        <th>Letter</th>
+                        <th>Recipient</th>
+                        <th>Letter Head</th>
+                        <th>Status</th>
+                        <th>Sent By</th>
+                        <th>Date</th>
+                        <th class="text-end">PDF</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($sentLetters ?? [] as $sentLetter)
+                        <tr data-live-key="sent-letter-{{ $sentLetter->id }}">
+                            <td>
+                                <div class="fw-bold">{{ $sentLetter->subject }}</div>
+                                @if($sentLetter->ref_no)<small class="text-muted">{{ $sentLetter->ref_no }}</small>@endif
+                            </td>
+                            <td>
+                                <div class="fw-semibold">{{ $sentLetter->recipient_name ?: '—' }}</div>
+                                <small class="text-muted">{{ $sentLetter->recipient_email ?: 'No email' }}</small>
+                            </td>
+                            <td>{{ $sentLetter->letterhead?->name ?? '—' }}</td>
+                            <td>
+                                <span class="badge {{ $sentLetter->delivery_status === 'sent' ? 'bg-label-success' : ($sentLetter->delivery_status === 'failed' ? 'bg-label-danger' : 'bg-label-secondary') }}"
+                                      @if($sentLetter->delivery_status === 'failed' && $sentLetter->delivery_error) title="{{ $sentLetter->delivery_error }}" @endif>
+                                    {{ $sentLetter->delivery_label }}
+                                </span>
+                            </td>
+                            <td>{{ $sentLetter->sender?->name ?? '—' }}</td>
+                            <td>
+                                <div>{{ $sentLetter->created_at?->format('M d, Y') }}</div>
+                                <small class="text-muted">{{ $sentLetter->created_at?->format('h:i A') }}</small>
+                            </td>
+                            <td class="text-end">
+                                @if($sentLetter->pdf_path)
+                                    <a href="{{ route('letterhead.sent-letters.pdf', $sentLetter->id) }}" class="btn btn-sm btn-outline-primary"><i class="bx bx-download me-1"></i> PDF</a>
+                                @else
+                                    <small class="text-muted">—</small>
+                                @endif
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-4">No letters sent yet. Use Write &amp; Send Letter to create one.</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+        @if(($sentLetters ?? null) && $sentLetters->hasPages())
+            <div class="p-3 border-top d-flex justify-content-end">
+                {{ $sentLetters->links('pagination::bootstrap-5') }}
             </div>
         @endif
     </div>
@@ -1352,8 +1555,11 @@
                                         </div>
                                         <div class="col-md-4">
                                             <label class="form-label fw-bold text-dark">Primary Phone</label>
-                                            <input type="text" name="phone" id="f_phone" class="form-control rounded-3" 
+                                            <div class="pms-phone-group">
+@include('partials.phone-country-select', ['phoneField' => 'phone', 'phoneValue' => ''])
+<input type="text" name="phone" id="f_phone" class="form-control rounded-3"
                                                    placeholder="e.g. +1 (800) 458-9200" oninput="syncLivePreview()">
+</div>
                                         </div>
                                         <div class="col-md-4">
                                             <label class="form-label fw-bold text-dark">Official Email</label>
@@ -2042,6 +2248,7 @@
 
     // Real-Time Live Preview Sync Engine
     function syncLivePreview() {
+        window.PmsPhoneFields?.scan();
         const orgName = document.getElementById('f_company_name').value || document.getElementById('f_name').value || 'Company Name';
         const tagline = document.getElementById('f_tagline').value || 'Corporate Document Subtitle';
         const address = [
@@ -2051,7 +2258,7 @@
         ].filter(Boolean).join(', ') || 'Silicon Tower 4, Level 8, CA 94107';
 
         const contact = [
-            document.getElementById('f_phone').value ? 'Phone: ' + document.getElementById('f_phone').value : '',
+            document.getElementById('f_phone').value ? 'Phone: ' + (window.PmsPhoneFields?.formatted(document.getElementById('f_phone')) || document.getElementById('f_phone').value) : '',
             document.getElementById('f_email').value ? document.getElementById('f_email').value : ''
         ].filter(Boolean).join(' | ') || 'Phone: +1 800-458-9200 | contact@bitroxia.com';
 

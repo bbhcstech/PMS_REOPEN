@@ -17,9 +17,11 @@
 
         {{-- Account Details --}}
         <div class="card mb-4">
-            <div class="card-header bg-primary text-white">Account Details</div>
-            &nbsp;
-            <div class="card-body row g-3">
+            <div class="card-header py-3 px-4 border-bottom">
+                <h5 class="mb-0 fw-bold text-dark">Account Details</h5>
+            </div>
+            <div class="card-body p-4">
+                <div class="row g-3">
 
                 <div class="col-md-3">
                     <label>Salutation</label>
@@ -38,7 +40,10 @@
 
                 <div class="col-md-3">
                     <label>Email <sup class="text-danger">*</sup></label>
-                    <input name="email" required type="email" class="form-control" value="{{ $client->email }}">
+                    <input name="email" required type="email" class="form-control @error('email') is-invalid @enderror" value="{{ old('email', $client->email) }}">
+                    @error('email')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
                 </div>
 
                 <div class="col-md-4">
@@ -131,11 +136,7 @@
                 <div class="col-md-4 mb-3">
                     <label class="form-label fw-semibold">Change Language</label>
                     <select name="language" id="language" class="form-select form-select-sm select2">
-                        <option value="en" data-flag="https://flagcdn.com/w20/gb.png" {{ $client->language == 'en' ? 'selected' : '' }}>English</option>
-                        <option value="bn" data-flag="https://flagcdn.com/w20/bd.png" {{ $client->language == 'bn' ? 'selected' : '' }}>Bengali</option>
-                        <option value="hi" data-flag="https://flagcdn.com/w20/in.png" {{ $client->language == 'hi' ? 'selected' : '' }}>Hindi</option>
-                        <option value="fr" data-flag="https://flagcdn.com/w20/fr.png" {{ $client->language == 'fr' ? 'selected' : '' }}>French</option>
-                        <option value="de" data-flag="https://flagcdn.com/w20/de.png" {{ $client->language == 'de' ? 'selected' : '' }}>German</option>
+                        @include('admin.clients.partials.language-options', ['selectedLanguage' => old('language', $client->language)])
                     </select>
                 </div>
 
@@ -172,14 +173,17 @@
                     <input type="radio" name="email_notifications" value="0" {{ !$client->email_notifications ? 'checked' : '' }}> No
                 </div>
 
+                </div>
             </div>
         </div>
 
         {{-- Company Details --}}
         <div class="card mb-4">
-            <div class="card-header bg-secondary text-white">Company Details</div>
-            &nbsp;
-            <div class="card-body row g-3">
+            <div class="card-header py-3 px-4 border-bottom">
+                <h5 class="mb-0 fw-bold text-dark">Company Details</h5>
+            </div>
+            <div class="card-body p-4">
+                <div class="row g-3">
                 <div class="col-md-6">
                     <label>Company Name</label>
                     <input name="company_name" id="company_name" type="text" class="form-control" value="{{ old('company_name', $client->company_name) }}">
@@ -336,6 +340,7 @@
                             <option value="{{ $user->id }}" {{ old('added_by', $client->added_by) == $user->id ? 'selected' : '' }}>{{ $user->name }}</option>
                         @endforeach
                     </select>
+                </div>
                 </div>
             </div>
         </div>
@@ -679,7 +684,7 @@ $(document).ready(function () {
             url: lookupUrl,
             type: 'GET',
             data: { pincode: pincode, country: country },
-            timeout: 3500,
+            timeout: 15000, // the server may try a second location provider
             success: function(res) {
                 if (res && res.success) {
                     applyPincodeLocationData(res, country);

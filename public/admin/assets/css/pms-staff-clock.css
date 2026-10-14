@@ -1,0 +1,250 @@
+.staff-clock-panel{--employee-success:#12a66a;--employee-danger:#ef4444;background:var(--bx-surface,#fff);border:1px solid var(--bx-border-soft,#cbd5e1);border-radius:18px;padding:24px;margin-bottom:24px;color:var(--bx-text-body,#1e293b)}
+.staff-clock-times,.staff-clock-actions{display:flex;flex-wrap:wrap;gap:16px;margin:18px 0}.staff-clock-times strong{display:block}.staff-clock-note{font-size:.85rem;color:var(--bx-text-muted,#64748b)}
+.staff-clock-panel .clock-status-line{color:inherit}.staff-clock-panel .clock-status-line.is-error{color:#dc2626}
+html[data-pms-theme="dark"] .staff-clock-panel .clock-status-line.is-error{color:#fca5a5}
+html[data-pms-theme="dark"] .clock-camera-body{background:#0f1530;color:#e2e8f0}
+html[data-pms-theme="dark"] .staff-clock-panel,html[data-pms-theme="dark"] .clock-camera-panel{background:#141b3d;color:#e2e8f0;border-color:#334155}
+    .employee-action-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border: 0;
+        border-radius: 12px;
+        padding: 11px 16px;
+        color: #fff;
+        font-weight: 800;
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.18);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .employee-action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 16px 30px rgba(0, 0, 0, 0.22);
+    }
+
+    .employee-action-btn.is-in {
+        background: var(--employee-success);
+    }
+
+    .employee-action-btn.is-out {
+        background: var(--employee-danger);
+    }
+
+    .employee-complete {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border-radius: 12px;
+        padding: 11px 16px;
+        color: #fff !important;
+        -webkit-text-fill-color: #fff !important;
+        background: rgba(18, 166, 106, 0.92);
+        border: 1px solid rgba(255, 255, 255, 0.42);
+        box-shadow: 0 14px 30px rgba(18, 166, 106, 0.28);
+        font-weight: 800;
+    }
+
+    .clock-requirements {
+        margin-top: 12px;
+        max-width: 360px;
+        padding: 0;
+        background: transparent;
+        border: 0;
+        color: #fff;
+        font-size: 0.92rem;
+        font-weight: 800;
+    }
+
+    .clock-status-line {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 6px;
+        color: #fff;
+    }
+
+    .clock-status-line.is-error {
+        color: #ff3b3b !important;
+        -webkit-text-fill-color: #ff3b3b !important;
+    }
+
+    .clock-status-line:last-child {
+        margin-bottom: 0;
+    }
+
+    .clock-attendance-card {
+        margin-top: 14px;
+        width: min(360px, 100%);
+        padding: 12px;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.18);
+        border: 1px solid rgba(255, 255, 255, 0.32);
+        color: #fff;
+    }
+
+    .clock-attendance-card img {
+        width: 100%;
+        max-height: 220px;
+        object-fit: cover;
+        border-radius: 12px;
+        border: 2px solid rgba(255, 255, 255, 0.45);
+    }
+
+    .clock-live-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        margin-top: 12px;
+    }
+
+    .clock-live-box {
+        padding: 10px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.16);
+        color: #fff;
+    }
+
+    .clock-live-box strong {
+        display: block;
+        font-size: 1.05rem;
+    }
+
+    .clock-location-note {
+        margin-top: 12px;
+        padding: 11px 12px;
+        border-radius: 12px;
+        font-weight: 800;
+        line-height: 1.35;
+    }
+
+    .clock-location-note {
+        background: rgba(255, 255, 255, 0.16);
+        border: 1px solid rgba(255, 255, 255, 0.28);
+        color: #fff;
+    }
+
+    .clock-location-note span {
+        display: block;
+        margin-bottom: 3px;
+        font-size: 0.76rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        opacity: 0.82;
+    }
+
+    .clock-policy-warning-text {
+        margin: 10px 0 0;
+        color: #ff2d2d !important;
+        -webkit-text-fill-color: #ff2d2d !important;
+        font-weight: 900;
+        line-height: 1.35;
+        text-shadow: none;
+    }
+
+    .clock-camera-modal {
+        position: fixed;
+        inset: 0;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 18px;
+        background: rgba(8, 15, 30, 0.72);
+        z-index: 9999;
+    }
+
+    .clock-camera-modal.is-open {
+        display: flex;
+    }
+
+    .clock-camera-panel {
+        width: min(620px, 100%);
+        background: #fff;
+        border-radius: 18px;
+        box-shadow: 0 28px 80px rgba(0, 0, 0, 0.35);
+        overflow: hidden;
+    }
+
+    .clock-camera-header,
+    .clock-camera-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--employee-border);
+    }
+
+    .clock-camera-footer {
+        border-top: 1px solid var(--employee-border);
+        border-bottom: 0;
+        flex-wrap: wrap;
+    }
+
+    .clock-camera-body {
+        padding: 16px;
+        background: #f3f6fb;
+    }
+
+    .clock-camera-preview {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 4 / 3;
+        background: #111827;
+        border-radius: 14px;
+        overflow: hidden;
+    }
+
+    .clock-camera-preview video,
+    .clock-camera-preview img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .clock-camera-preview canvas,
+    #clockCameraCanvas {
+        display: none !important;
+        visibility: hidden !important;
+        position: absolute !important;
+        width: 0 !important;
+        height: 0 !important;
+        pointer-events: none !important;
+        opacity: 0 !important;
+    }
+
+    .clock-camera-preview img {
+        display: none;
+    }
+
+    .clock-camera-preview.has-photo video {
+        display: none !important;
+    }
+
+    .clock-camera-preview.has-photo img {
+        display: block !important;
+    }
+
+    .clock-modal-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        border: 0;
+        border-radius: 10px;
+        padding: 9px 13px;
+        font-weight: 800;
+        color: #fff;
+        background: #0b66c3;
+    }
+
+    .clock-modal-btn.secondary {
+        background: #475467;
+    }
+
+    .clock-modal-btn.success {
+        background: #12a66a;
+    }
+
+    .clock-modal-btn.danger {
+        background: #e5484d;
+    }
+

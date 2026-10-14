@@ -2263,6 +2263,46 @@ html[data-pms-theme="dark"] .badge.bg-label-danger {
   border: 1px solid rgba(239, 68, 68, 0.3) !important;
 }
 
+/* Avatar Initial Badges in Dark Mode */
+html[data-pms-theme="dark"] .avatar-initial.bg-label-primary,
+html[data-bs-theme="dark"] .avatar-initial.bg-label-primary,
+html[data-theme="dark"] .avatar-initial.bg-label-primary {
+  background: rgba(47, 107, 255, 0.22) !important;
+  color: #60A5FA !important;
+  -webkit-text-fill-color: #60A5FA !important;
+  border: 1px solid rgba(79, 131, 255, 0.45) !important;
+}
+
+html[data-pms-theme="dark"] .avatar-initial.bg-label-success,
+html[data-bs-theme="dark"] .avatar-initial.bg-label-success,
+html[data-theme="dark"] .avatar-initial.bg-label-success {
+  background: rgba(16, 185, 129, 0.22) !important;
+  background-color: rgba(16, 185, 129, 0.22) !important;
+  color: #34D399 !important;
+  -webkit-text-fill-color: #34D399 !important;
+  border: 1px solid rgba(52, 211, 153, 0.45) !important;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.25) !important;
+}
+
+html[data-pms-theme="dark"] .avatar-initial.bg-label-warning,
+html[data-bs-theme="dark"] .avatar-initial.bg-label-warning,
+html[data-theme="dark"] .avatar-initial.bg-label-warning {
+  background: rgba(245, 158, 11, 0.22) !important;
+  color: #FCD34D !important;
+  -webkit-text-fill-color: #FCD34D !important;
+  border: 1px solid rgba(245, 158, 11, 0.45) !important;
+}
+
+html[data-pms-theme="dark"] .avatar-initial.bg-label-danger,
+html[data-bs-theme="dark"] .avatar-initial.bg-label-danger,
+html[data-theme="dark"] .avatar-initial.bg-label-danger {
+  background: rgba(239, 68, 68, 0.22) !important;
+  color: #FCA5A5 !important;
+  -webkit-text-fill-color: #FCA5A5 !important;
+  border: 1px solid rgba(239, 68, 68, 0.45) !important;
+}
+
+
 /* Buttons Light & Secondary */
 html[data-pms-theme="dark"] .btn-light {
   background: #141B3D !important;
@@ -5657,13 +5697,13 @@ html.dark .reports-to,
 html[data-pms-theme="dark"] td .reports-to,
 html[data-bs-theme="dark"] td .reports-to,
 html[data-theme="dark"] td .reports-to,
-html[data-pms-theme="dark"] .employee-dashboard .reports-to *,
-html[data-bs-theme="dark"] .employee-dashboard .reports-to *,
-html[data-theme="dark"] .employee-dashboard .reports-to *,
-html.dark .employee-dashboard .reports-to *,
-body[data-pms-theme="dark"] .employee-dashboard .reports-to *,
-body[data-bs-theme="dark"] .employee-dashboard .reports-to *,
-body.dark .employee-dashboard .reports-to * {
+html[data-pms-theme="dark"] .employee-dashboard .reports-to *:not(i),
+html[data-bs-theme="dark"] .employee-dashboard .reports-to *:not(i),
+html[data-theme="dark"] .employee-dashboard .reports-to *:not(i),
+html.dark .employee-dashboard .reports-to *:not(i),
+body[data-pms-theme="dark"] .employee-dashboard .reports-to *:not(i),
+body[data-bs-theme="dark"] .employee-dashboard .reports-to *:not(i),
+body.dark .employee-dashboard .reports-to *:not(i) {
   color: #94A3B8 !important;
   -webkit-text-fill-color: #94A3B8 !important;
   font-weight: 500 !important;
@@ -5680,9 +5720,16 @@ body.dark .employee-dashboard .reports-to i,
 html[data-pms-theme="dark"] .reports-to i,
 html[data-bs-theme="dark"] .reports-to i,
 html[data-theme="dark"] .reports-to i,
-html.dark .reports-to i {
+html.dark .reports-to i,
+html[data-pms-theme="dark"] td .reports-to i,
+html[data-bs-theme="dark"] td .reports-to i,
+html[data-theme="dark"] td .reports-to i {
   color: #22D3EE !important;
   -webkit-text-fill-color: #22D3EE !important;
+  font-family: "Font Awesome 6 Free", "Font Awesome 5 Free" !important;
+  font-weight: 900 !important;
+  font-style: normal !important;
+  display: inline-block !important;
 }
 
 /* Status Column Badges */
@@ -6678,23 +6725,33 @@ body[data-pms-theme="dark"] .employee-rule,
 body.dark .employee-rule,
 html.dark .employee-rule,
 .dark .employee-rule,
-.dark-mode .employee-rule {
+.dark-mode .employee-rule,
+html[data-pms-theme="dark"] .employee-dashboard .employee-rule,
+html[data-theme="dark"] .employee-dashboard .employee-rule,
+html[data-bs-theme="dark"] .employee-dashboard .employee-rule,
+body.dark-mode .employee-dashboard .employee-rule,
+[data-pms-theme="dark"] .employee-dashboard .employee-rule {
   background: #141B3D !important;
   border: 1px solid rgba(238, 241, 251, 0.16) !important;
   color: #EEF1FB !important;
 }
 
-html[data-pms-theme="dark"] .employee-rule *,
-html[data-theme="dark"] .employee-rule *,
-html[data-bs-theme="dark"] .employee-rule *,
-body[data-pms-theme="dark"] .employee-rule *,
-[data-pms-theme="dark"] .employee-rule *,
-[data-theme="dark"] .employee-rule *,
-[data-bs-theme="dark"] .employee-rule *,
-body.dark .employee-rule *,
-html.dark .employee-rule *,
-.dark .employee-rule *,
-.dark-mode .employee-rule *,
+html[data-pms-theme="dark"] .employee-rule .employee-rule-text,
+html[data-theme="dark"] .employee-rule .employee-rule-text,
+html[data-bs-theme="dark"] .employee-rule .employee-rule-text,
+body[data-pms-theme="dark"] .employee-rule .employee-rule-text,
+[data-pms-theme="dark"] .employee-rule .employee-rule-text,
+[data-theme="dark"] .employee-rule .employee-rule-text,
+[data-bs-theme="dark"] .employee-rule .employee-rule-text,
+body.dark .employee-rule .employee-rule-text,
+html.dark .employee-rule .employee-rule-text,
+.dark .employee-rule .employee-rule-text,
+.dark-mode .employee-rule .employee-rule-text,
+html[data-pms-theme="dark"] .employee-dashboard .employee-rule-text,
+html[data-theme="dark"] .employee-dashboard .employee-rule-text,
+html[data-bs-theme="dark"] .employee-dashboard .employee-rule-text,
+body.dark-mode .employee-dashboard .employee-rule-text,
+[data-pms-theme="dark"] .employee-dashboard .employee-rule-text,
 html[data-pms-theme="dark"] .employee-rule-text,
 html[data-theme="dark"] .employee-rule-text,
 html[data-bs-theme="dark"] .employee-rule-text,
@@ -6706,8 +6763,25 @@ html.dark .employee-rule-text,
 .dark-mode .employee-rule-text {
   color: #CBD5E1 !important;
   -webkit-text-fill-color: #CBD5E1 !important;
+  font-weight: 400 !important;
 }
 
+html[data-pms-theme="dark"] .employee-rule .employee-rule-bold,
+html[data-theme="dark"] .employee-rule .employee-rule-bold,
+html[data-bs-theme="dark"] .employee-rule .employee-rule-bold,
+body[data-pms-theme="dark"] .employee-rule .employee-rule-bold,
+[data-pms-theme="dark"] .employee-rule .employee-rule-bold,
+[data-theme="dark"] .employee-rule .employee-rule-bold,
+[data-bs-theme="dark"] .employee-rule .employee-rule-bold,
+body.dark .employee-rule .employee-rule-bold,
+html.dark .employee-rule .employee-rule-bold,
+.dark .employee-rule .employee-rule-bold,
+.dark-mode .employee-rule .employee-rule-bold,
+html[data-pms-theme="dark"] .employee-dashboard .employee-rule-bold,
+html[data-theme="dark"] .employee-dashboard .employee-rule-bold,
+html[data-bs-theme="dark"] .employee-dashboard .employee-rule-bold,
+body.dark-mode .employee-dashboard .employee-rule-bold,
+[data-pms-theme="dark"] .employee-dashboard .employee-rule-bold,
 html[data-pms-theme="dark"] .employee-rule-bold,
 html[data-theme="dark"] .employee-rule-bold,
 html[data-bs-theme="dark"] .employee-rule-bold,
@@ -6722,6 +6796,55 @@ html.dark .employee-rule-bold,
   color: #FFFFFF !important;
   -webkit-text-fill-color: #FFFFFF !important;
   font-weight: 700 !important;
+}
+
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode, [data-pms-theme="dark"]) .employee-rule i.text-warning {
+  color: #f59e0b !important;
+  -webkit-text-fill-color: #f59e0b !important;
+}
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode, [data-pms-theme="dark"]) .employee-rule i.text-primary {
+  color: #2f6bff !important;
+  -webkit-text-fill-color: #2f6bff !important;
+}
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode, [data-pms-theme="dark"]) .employee-rule i.text-danger {
+  color: #ef4444 !important;
+  -webkit-text-fill-color: #ef4444 !important;
+}
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode, [data-pms-theme="dark"]) .employee-rule i.text-info {
+  color: #22d3ee !important;
+  -webkit-text-fill-color: #22d3ee !important;
+}
+
+/* ==========================================================================
+   MY PROJECTS CLIENT / CATEGORY DARK MODE CONTRAST FIX
+   ========================================================================== */
+html[data-pms-theme="dark"] .employee-dashboard .employee-table .employee-project-client,
+html[data-theme="dark"] .employee-dashboard .employee-table .employee-project-client,
+html[data-bs-theme="dark"] .employee-dashboard .employee-table .employee-project-client,
+body[data-pms-theme="dark"] .employee-dashboard .employee-table .employee-project-client,
+[data-pms-theme="dark"] .employee-dashboard .employee-table .employee-project-client,
+[data-theme="dark"] .employee-dashboard .employee-table .employee-project-client,
+[data-bs-theme="dark"] .employee-dashboard .employee-table .employee-project-client,
+body.dark-mode .employee-dashboard .employee-table .employee-project-client,
+html.dark .employee-dashboard .employee-table .employee-project-client,
+.dark .employee-dashboard .employee-table .employee-project-client,
+.dark-mode .employee-dashboard .employee-table .employee-project-client,
+html[data-pms-theme="dark"] .employee-table .employee-project-client,
+html[data-theme="dark"] .employee-table .employee-project-client,
+html[data-bs-theme="dark"] .employee-table .employee-project-client,
+body[data-pms-theme="dark"] .employee-table .employee-project-client,
+[data-pms-theme="dark"] .employee-table .employee-project-client,
+body.dark-mode .employee-table .employee-project-client,
+html.dark .employee-table .employee-project-client,
+.dark .employee-table .employee-project-client,
+.dark-mode .employee-table .employee-project-client,
+html[data-pms-theme="dark"] .employee-dashboard .employee-table td span.employee-project-client,
+html[data-theme="dark"] .employee-dashboard .employee-table td span.employee-project-client,
+html[data-bs-theme="dark"] .employee-dashboard .employee-table td span.employee-project-client,
+body.dark-mode .employee-dashboard .employee-table td span.employee-project-client,
+[data-pms-theme="dark"] .employee-dashboard .employee-table td span.employee-project-client {
+  color: #EEF1FB !important;
+  -webkit-text-fill-color: #EEF1FB !important;
 }
 
 /* ==========================================================================
@@ -7176,3 +7299,588 @@ html[data-theme="dark"] .pms-expiring-banner .pms-banner-btn-secondary,
   color: #e2e8f0 !important;
   background: rgba(255, 255, 255, 0.08) !important;
 }
+
+/* Admin layouts load Boxicons fonts alongside Iconify's .bx masks.
+   Render font glyphs once, without the mask's solid square background. */
+html body i.bx,
+.stat-icon i.bx {
+  font-family: boxicons !important;
+  font-weight: normal !important;
+  font-style: normal !important;
+  background: transparent !important;
+  -webkit-mask-image: none !important;
+  mask-image: none !important;
+  vertical-align: middle;
+}
+
+/* =========================================================================
+   SweetAlert2 in dark mode (e.g. "Added to employee form" after saving a
+   department / sub department / designation from the Add Employee "+" popups).
+   SweetAlert ships a white popup and draws its animated success check with
+   white pieces; on the dark theme that showed a white box, unreadable text
+   and white blobs over the icon. Match the dark surface instead.
+   ========================================================================= */
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) .swal2-container.swal2-backdrop-show {
+  background: rgba(3, 6, 18, 0.72) !important;
+}
+
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) .swal2-popup {
+  background: #0F1530 !important;
+  color: #EEF1FB !important;
+  border: 1px solid rgba(238, 241, 251, 0.12) !important;
+  box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.6) !important;
+}
+
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) .swal2-popup .swal2-title {
+  color: #EEF1FB !important;
+  -webkit-text-fill-color: #EEF1FB !important;
+}
+
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) .swal2-popup :is(.swal2-html-container, .swal2-footer, .swal2-validation-message) {
+  color: #9AA3C7 !important;
+  -webkit-text-fill-color: #9AA3C7 !important;
+  background: transparent !important;
+}
+
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) .swal2-popup .swal2-footer {
+  border-top-color: rgba(238, 241, 251, 0.09) !important;
+}
+
+/* Success icon: the circular "wipe" pieces and the fix bar must take the popup colour. */
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) .swal2-icon.swal2-success [class^="swal2-success-circular-line"],
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) .swal2-icon.swal2-success .swal2-success-fix {
+  background-color: #0F1530 !important;
+}
+
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) .swal2-icon {
+  background: transparent !important;
+}
+
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) .swal2-popup :is(.swal2-input, .swal2-textarea, .swal2-select, .swal2-file) {
+  background: #141B3D !important;
+  color: #EEF1FB !important;
+  border-color: rgba(238, 241, 251, 0.16) !important;
+}
+
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) .swal2-popup .swal2-close {
+  color: #9AA3C7 !important;
+}
+
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) .swal2-popup .swal2-styled.swal2-cancel {
+  background: #1A2247 !important;
+  color: #EEF1FB !important;
+}
+
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) .swal2-popup .swal2-timer-progress-bar {
+  background: rgba(47, 107, 255, 0.55) !important;
+}
+
+/* ==========================================================================
+   BITROXIA ADMIN & ROLE WORKSPACE MASTER MOBILE RESPONSIVE ENGINE
+   Covers Admin, HR, Manager, Employee, and Client Views Across All Screen Sizes
+   Breakpoints: 1199.98px / 991.98px / 767.98px / 575.98px / 375px
+   ========================================================================== */
+
+/* 1. Global Viewport & Container Safety */
+html, body {
+  max-width: 100vw;
+  overflow-x: clip !important;
+}
+
+/* 2. Breakpoint: <= 1199.98px (Tablet Landscape & Below - Sidebar Becomes Sliding Drawer) */
+@media (max-width: 1199.98px) {
+  /* Sidebar Drawer */
+  #layout-menu,
+  .layout-menu.bg-menu-theme {
+    position: fixed !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    width: min(300px, 86vw) !important;
+    max-width: 86vw !important;
+    transform: translateX(-105%) !important;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    z-index: 10999 !important;
+    box-shadow: 18px 0 46px rgba(15, 23, 42, 0.28) !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  html.layout-menu-expanded #layout-menu,
+  body.layout-menu-expanded #layout-menu,
+  .layout-menu-expanded #layout-menu,
+  html.layout-menu-expanded .layout-menu.bg-menu-theme,
+  body.layout-menu-expanded .layout-menu.bg-menu-theme,
+  .layout-menu-expanded .layout-menu.bg-menu-theme {
+    transform: translateX(0) !important;
+  }
+
+  /* Close toggle in sidebar */
+  #layout-menu .layout-menu-toggle {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: var(--bx-surface-soft, #f8fafc);
+    border: 1px solid var(--bx-border-subtle, #e2e8f0);
+    color: var(--bx-text-heading, #0f172a) !important;
+    cursor: pointer;
+  }
+
+  /* Backdrop Overlay */
+  .layout-overlay {
+    display: none;
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 10990 !important;
+    background: rgba(15, 23, 42, 0.6) !important;
+    backdrop-filter: blur(4px) !important;
+    -webkit-backdrop-filter: blur(4px) !important;
+    cursor: pointer;
+    transition: opacity 0.25s ease;
+  }
+
+  html.layout-menu-expanded .layout-overlay,
+  body.layout-menu-expanded .layout-overlay,
+  .layout-menu-expanded .layout-overlay {
+    display: block !important;
+  }
+
+  /* Body Scroll Lock */
+  html.layout-menu-expanded,
+  body.layout-menu-expanded {
+    overflow: hidden !important;
+    touch-action: none;
+  }
+
+  /* Layout Page Full Width */
+  .layout-page {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    margin-left: 0 !important;
+  }
+
+  /* Top Navbar */
+  #layout-navbar,
+  .layout-navbar {
+    left: 0.75rem !important;
+    right: 0.75rem !important;
+    width: calc(100% - 1.5rem) !important;
+    max-width: calc(100% - 1.5rem) !important;
+    top: 0.75rem !important;
+    padding: 0.5rem 0.85rem !important;
+  }
+
+  /* Hamburger Toggle in Navbar */
+  #layout-navbar .layout-menu-toggle {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  #layout-navbar .layout-menu-toggle a {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: var(--bx-surface-soft, #f8fafc);
+    border: 1px solid var(--bx-border-subtle, #e2e8f0);
+    color: var(--bx-text-heading, #0f172a) !important;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  #layout-navbar .layout-menu-toggle a:hover {
+    background: var(--bx-blue-soft, rgba(47, 107, 255, 0.08));
+    color: var(--bx-blue-primary, #2F6BFF) !important;
+    border-color: rgba(47, 107, 255, 0.3);
+  }
+}
+
+/* 3. Breakpoint: <= 991.98px (Tablet Portrait & Large Mobile) */
+@media (max-width: 991.98px) {
+  /* Search input hides text, shows icon */
+  #layout-navbar .navbar-search-wrapper input[type="text"] {
+    display: none !important;
+  }
+
+  /* Grid Layouts Stack */
+  .grid-4, .kpi-grid, .stats-grid, .metrics-grid,
+  .role-stat-grid, .role-pie-grid, .role-feature-grid,
+  .industry-overview-grid, .industry-chart-grid,
+  .saas-revenue-strip, .saas-module-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  /* User Name Hides, Avatar Remains */
+  .dropdown-user .d-md-block,
+  .dropdown-user h6,
+  .dropdown-user small {
+    display: none !important;
+  }
+  .dropdown-user .avatar {
+    margin-right: 0 !important;
+  }
+}
+
+/* 4. Breakpoint: <= 767.98px (Standard Smartphone View) */
+@media (max-width: 767.98px) {
+  /* Navbar Tightening */
+  #layout-navbar,
+  .layout-navbar {
+    left: 0.5rem !important;
+    right: 0.5rem !important;
+    width: calc(100% - 1rem) !important;
+    max-width: calc(100% - 1rem) !important;
+    top: 0.5rem !important;
+    padding: 0.4rem 0.65rem !important;
+    min-height: 56px !important;
+  }
+
+  .layout-page {
+    padding-top: calc(56px + 1.25rem) !important;
+  }
+
+  .content-wrapper,
+  main > .container-xxl,
+  main > .container-fluid,
+  main > .container {
+    padding-inline: 0.75rem !important;
+    padding-top: 0.75rem !important;
+    padding-bottom: 2rem !important;
+  }
+
+  /* Action Icon Alignment */
+  .header-icon-box {
+    min-width: 34px !important;
+    height: 34px !important;
+    border-radius: 8px !important;
+  }
+
+  .header-icon-box i {
+    font-size: 1.05rem !important;
+  }
+
+  .theme-toggle-btn {
+    width: 34px !important;
+    height: 34px !important;
+    border-radius: 8px !important;
+  }
+
+  /* Action Item Spacing */
+  #layout-navbar .nav-item.me-3,
+  #layout-navbar .nav-item.me-sm-3 {
+    margin-right: 0.35rem !important;
+  }
+
+  #layout-navbar .navbar-nav-right {
+    gap: 4px !important;
+  }
+
+  /* Dropdown Menus Contained in Viewport */
+  .dropdown-menu {
+    max-width: calc(100vw - 16px) !important;
+  }
+
+  .notification-dropdown,
+  ul[aria-labelledby="assignedWorkDropdown"],
+  .dropdown-menu-end {
+    right: 0 !important;
+    left: auto !important;
+  }
+
+  /* Grids Collapse to 1 Column */
+  .grid-4, .kpi-grid, .stats-grid, .metrics-grid,
+  .role-stat-grid, .role-pie-grid, .role-feature-grid,
+  .industry-overview-grid, .industry-chart-grid,
+  .industry-feature-grid, .saas-revenue-strip, .saas-module-grid,
+  .saas-prediction-grid, .employee-quick-actions, .employee-status-grid,
+  .content-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  /* Universal Responsive Tables */
+  .table-responsive,
+  .dataTables_wrapper,
+  .card-table-wrap,
+  .table-wrapper {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    border-radius: 12px;
+  }
+
+  table.table:not(.no-responsive) {
+    min-width: 600px;
+  }
+
+  /* DataTables Mobile Layout */
+  .dataTables_wrapper .row {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0.75rem !important;
+  }
+
+  .dataTables_wrapper .dataTables_length,
+  .dataTables_wrapper .dataTables_filter,
+  .dataTables_wrapper .dataTables_info,
+  .dataTables_wrapper .dataTables_paginate {
+    text-align: center !important;
+    width: 100% !important;
+  }
+
+  .dataTables_wrapper .dataTables_filter input {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+  }
+
+  .dataTables_wrapper .dataTables_paginate ul.pagination {
+    justify-content: center !important;
+    flex-wrap: wrap !important;
+    gap: 4px !important;
+  }
+
+  /* Card Headers & Toolbars */
+  .card-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 0.75rem !important;
+    padding: 1rem !important;
+  }
+
+  .card-header .d-flex:not(.avatar):not(.align-items-center.gap-2) {
+    flex-wrap: wrap !important;
+    width: 100% !important;
+    gap: 0.5rem !important;
+  }
+
+  .card-header .btn,
+  .card-header .btn-sm {
+    white-space: normal !important;
+  }
+
+  .card-body {
+    padding: 1rem !important;
+  }
+
+  /* Responsive Modals */
+  .modal-dialog {
+    margin: 0.5rem !important;
+    max-width: calc(100vw - 1rem) !important;
+  }
+
+  .modal-content {
+    border-radius: 14px !important;
+  }
+
+  .modal-header, .modal-footer {
+    padding: 0.75rem 1rem !important;
+  }
+
+  .modal-body {
+    padding: 1rem !important;
+    max-height: calc(85vh - 120px);
+    overflow-y: auto;
+  }
+
+  .modal-footer {
+    flex-direction: column-reverse;
+    gap: 0.5rem;
+  }
+
+  .modal-footer > * {
+    width: 100% !important;
+    margin: 0 !important;
+  }
+
+  /* Form Elements Responsive */
+  .form-control, .form-select, .form-check {
+    font-size: 16px !important; /* Prevents auto-zoom on iOS Safari */
+  }
+
+  /* Page Heading / Back Navigation */
+  .page-back-wrapper,
+  .page-heading {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 0.5rem !important;
+  }
+
+  /* Button Wrappers */
+  .d-flex.gap-2,
+  .d-flex.gap-3,
+  .btn-group {
+    flex-wrap: wrap !important;
+  }
+}
+
+/* 5. Breakpoint: <= 480px (Compact Mobile Devices) */
+@media (max-width: 480px) {
+  /* Mobile Brand Logo Size */
+  .mobile-navbar-logo img {
+    height: 28px !important;
+    width: auto !important;
+  }
+
+  /* Hide Sticky Note icon from navbar to prevent overflow on narrow screens */
+  .sticky-note-trigger {
+    display: none !important;
+  }
+
+  #layout-navbar .layout-menu-toggle {
+    margin-right: 0.25rem !important;
+  }
+
+  #layout-navbar .layout-menu-toggle a {
+    width: 36px !important;
+    height: 36px !important;
+  }
+
+  .header-icon-box {
+    min-width: 32px !important;
+    height: 32px !important;
+  }
+
+  .theme-toggle-btn {
+    width: 32px !important;
+    height: 32px !important;
+  }
+
+  /* User Avatar */
+  .avatar {
+    width: 32px !important;
+    height: 32px !important;
+  }
+
+  .avatar img {
+    width: 32px !important;
+    height: 32px !important;
+  }
+
+  /* Filter Actions & Button Rows */
+  .filter-actions,
+  .table-actions {
+    flex-direction: column !important;
+    width: 100% !important;
+  }
+
+  .filter-actions .btn,
+  .table-actions .btn {
+    width: 100% !important;
+  }
+
+  /* Cards Padding */
+  .card {
+    border-radius: 12px !important;
+  }
+}
+
+/* Settings are also visible to read-only company roles. Keep their notices
+   and controls readable without changing disabled/readonly behavior. */
+html body .pms-settings-page .pms-readonly-notice {
+  background: #e8f0ff !important;
+  color: #1e3a8a !important;
+  border-left: 4px solid #3b82f6 !important;
+}
+
+html body .pms-settings-page .pms-readonly-notice :is(strong, span, i) {
+  color: #1e3a8a !important;
+  -webkit-text-fill-color: currentColor !important;
+}
+
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) .pms-settings-page .pms-readonly-notice {
+  background: #172b50 !important;
+  color: #bfdbfe !important;
+}
+
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) .pms-settings-page .pms-readonly-notice :is(strong, span, i) {
+  color: #bfdbfe !important;
+  -webkit-text-fill-color: currentColor !important;
+}
+
+/* Text-like fields only: checkboxes/radios keep their own styling (custom pills hide them with opacity: 0). */
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) .pms-settings-page :is(input:disabled, input[readonly]):not([type="checkbox"]):not([type="radio"]),
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) .pms-settings-page :is(select:disabled, textarea:disabled, textarea[readonly]) {
+  background-color: #141b3d !important;
+  color: #eef1fb !important;
+  -webkit-text-fill-color: currentColor !important;
+  opacity: 1;
+}
+
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) .pms-settings-page .validation-feedback-pill {
+  color: #fca5a5 !important;
+  -webkit-text-fill-color: currentColor !important;
+}
+
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) .pms-settings-page :is(#currentLogoBadge, #fileSelectedBadge, #phoneDigitCounter.badge, .pms-readonly-status) {
+  background: #172b50 !important;
+  color: #bfdbfe !important;
+  -webkit-text-fill-color: currentColor !important;
+}
+
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) .pms-settings-page .phone-combo-group .select2-selection__rendered {
+  color: #eef1fb !important;
+  -webkit-text-fill-color: currentColor !important;
+}
+
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) .pms-settings-page #phoneDigitCounter.badge:has(.text-success) {
+  background: #12382e !important;
+  color: #a7f3d0 !important;
+}
+
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) .pms-settings-page #phoneDigitCounter.badge:has(.text-danger) {
+  background: #421f2b !important;
+  color: #fecaca !important;
+}
+
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) .pms-settings-page :is(#currentLogoBadge, #fileSelectedBadge, #phoneDigitCounter.badge, .pms-readonly-status, .validation-feedback-pill) :is(span, i) {
+  color: inherit !important;
+  -webkit-text-fill-color: currentColor !important;
+}
+
+/* Select2 menus are attached to body, outside the settings page. */
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) .select2-dropdown .select2-results__option {
+  -webkit-text-fill-color: currentColor !important;
+}
+
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) .select2-dropdown .select2-results__option--highlighted[aria-selected] {
+  background-color: #254b91 !important;
+  color: #ffffff !important;
+}
+
+/* 6. Breakpoint: <= 360px (Extra Compact Screens / Foldables) */
+@media (max-width: 360px) {
+  #layout-navbar,
+  .layout-navbar {
+    padding: 0.35rem 0.45rem !important;
+    left: 0.25rem !important;
+    right: 0.25rem !important;
+    width: calc(100% - 0.5rem) !important;
+    max-width: calc(100% - 0.5rem) !important;
+  }
+
+  #layout-navbar .nav-item.me-3 {
+    margin-right: 0.2rem !important;
+  }
+
+  .content-wrapper,
+  main > .container-xxl,
+  main > .container-fluid {
+    padding-inline: 0.45rem !important;
+  }
+}
+

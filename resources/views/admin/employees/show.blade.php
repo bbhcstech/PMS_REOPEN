@@ -667,23 +667,31 @@
 
         @media (max-width: 768px) {
             .show-container {
-                padding: 1rem;
+                padding: 0.75rem;
             }
             .card-body-premium {
-                padding: 1.5rem;
+                padding: 1.25rem;
             }
             .card-header-premium {
-                padding: 1rem 1.5rem;
+                padding: 0.85rem 1.25rem;
+                flex-wrap: wrap;
+                gap: 0.5rem;
             }
             .info-item {
-                padding: 1rem;
+                padding: 0.85rem;
             }
             .avatar-large {
-                width: 100px;
-                height: 100px;
+                width: 80px;
+                height: 80px;
             }
             .avatar-large i {
-                font-size: 2.5rem;
+                font-size: 2rem;
+            }
+            .btn-header-enterprise {
+                padding: 0.6rem 1.1rem;
+                font-size: 0.78rem;
+                margin-bottom: 1rem;
+                display: inline-flex;
             }
         }
 

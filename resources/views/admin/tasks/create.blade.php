@@ -1,6 +1,16 @@
 @extends('admin.layout.app')
 
 @section('content')
+@if(request()->boolean('embedded'))
+<style>
+#header, #sidebar, #footer, #layout-navbar, #layout-menu, .pms-page-back-navigation, [data-page-back-navigation], #pms-ai-assistant-launcher { display: none !important; }
+html.layout-navbar-fixed .layout-wrapper .layout-page { padding-top: 0 !important; }
+.layout-page, .content-wrapper { margin-left: 0 !important; padding-top: 0 !important; }
+#main.main { margin: 0 !important; padding: 12px !important; }
+#main > .container { max-width: none; padding: 0; }
+#main > .container > .nav-tabs { display: none; }
+</style>
+@endif
 <main id="main" class="main">
     <div class="container">
         @if(isset($project))
@@ -41,6 +51,9 @@
 
             <form method="POST" action="{{ route('tasks.store') }}" class="card-body"  enctype="multipart/form-data">
                 @csrf
+                @if(request()->boolean('embedded'))
+                    <input type="hidden" name="embedded_task_form" value="1">
+                @endif
 
                 <h5 class="text-primary mb-3">Task Info</h5>
                 <div class="row mb-3">
@@ -360,7 +373,11 @@
                 <button type="submit" name="action" value="save" class="btn btn-primary">Save</button>
                 <button type="submit" name="action" value="save_add_more" class="btn btn-secondary">Save & Add More</button>
                 
-                <a href="{{ route('tasks.index') }}" class="btn btn-secondary">Cancel</a>
+                @if(request()->boolean('embedded'))
+                    <button type="button" class="btn btn-secondary" onclick="window.parent.postMessage('task-form-cancel', window.location.origin)">Cancel</button>
+                @else
+                    <a href="{{ route('tasks.index') }}" class="btn btn-secondary">Cancel</a>
+                @endif
             </div>
 
             </form>
@@ -371,8 +388,6 @@
 
       <div class="modal fade" id="taskLabelsModal" tabindex="-1" aria-labelledby="taskLabelsModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-xl">
-    <form action="{{ route('labels.store') }}" method="POST">
-      @csrf
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">Task Labels</h5>
@@ -382,6 +397,8 @@
         <div class="modal-body">
 
           {{-- Form Section --}}
+          <form id="taskLabelCreateForm" action="{{ route('labels.store') }}" method="POST">
+          @csrf
           <div class="row g-3 mb-4">
             <div class="col-md-4">
               <label class="form-label">Label Name *</label>
@@ -413,9 +430,10 @@
             </div>
           </div>
 
+          </form>
           {{-- Table Section --}}
           <div class="table-responsive">
-            <table class="table table-bordered table-striped">
+            <table data-pms-export="off" class="table table-bordered table-striped">
               <thead class="table-light">
                 <tr>
                   <th>#</th>
@@ -453,10 +471,9 @@
         </div>
 
         <div class="modal-footer">
-          <button type="submit" class="btn btn-primary">Add Label</button>
+          <button type="submit" form="taskLabelCreateForm" class="btn btn-primary">Add Label</button>
         </div>
       </div>
-    </form>
   </div>
 </div>
 
@@ -476,7 +493,7 @@
 
           {{-- Table --}}
           <div class="table-responsive mb-4">
-            <table class="table table-bordered table-striped align-middle">
+            <table data-pms-export="off" class="table table-bordered table-striped align-middle">
               <thead class="table-light">
                 <tr>
                   <th>#</th>
@@ -929,7 +946,7 @@
         
                         <div class="modal-body">
                             <!-- Group List Table -->
-                            <table class="table table-bordered mb-4">
+                            <table data-pms-export="off" class="table table-bordered mb-4">
                                 <thead class="table-light">
                                     <tr>
                                         <th>#</th>
@@ -983,7 +1000,7 @@
 
                 <div class="modal-body">
                     <!-- Group List Table -->
-                    <table class="table table-bordered mb-4">
+                    <table data-pms-export="off" class="table table-bordered mb-4">
                         <thead class="table-light">
                             <tr>
                                 <th>#</th>
@@ -1107,6 +1124,7 @@
 @endpush
 
 @push('scripts')
+<script src="{{ asset('admin/assets/js/pms-task-labels.js') }}?v={{ filemtime(public_path('admin/assets/js/pms-task-labels.js')) }}"></script>
 
 <script>
     $(function () {

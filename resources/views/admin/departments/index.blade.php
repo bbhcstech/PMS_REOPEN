@@ -3,6 +3,7 @@
 @section('title', 'Sub Departments')
 
 @section('content')
+@include('admin.settings.partials.workforce-navigation')
 
 <div class="sub-department-page">
     <!-- Breadcrumb -->
@@ -22,13 +23,13 @@
             </div>
         </div>
         <div class="btn-group">
-            <a href="{{ route('departments.archive') }}" class="btn btn-light">
+            <a href="{{ \App\Support\WorkforceSettings::route('departments.archive') }}" class="btn btn-light">
                 <i class="fas fa-box-archive"></i> Archived
                 @if(($archivedCount ?? 0) > 0)
                     <span class="archive-count-badge">{{ $archivedCount }}</span>
                 @endif
             </a>
-            <a href="{{ route('departments.create') }}" class="btn btn-primary">
+            <a href="{{ \App\Support\WorkforceSettings::route('departments.create') }}" class="btn btn-primary">
                 <i class="fas fa-plus-circle"></i> Add Sub Department
             </a>
         </div>
@@ -162,7 +163,7 @@
                                 <input class="form-check-input" type="checkbox" id="table-select-all">
                             </div>
                         </th>
-                        <th><i class="fas fa-hashtag"></i> #</th>
+                        <th>#</th>
                         <th><i class="fas fa-code"></i> Sub Department Code</th>
                         <th><i class="fas fa-building"></i> Sub Department</th>
                         <th><i class="fas fa-arrow-right"></i> Parent Department</th>
@@ -228,18 +229,18 @@
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end">
                                     <li>
-                                        <a class="dropdown-item" href="{{ route('departments.show', $dept) }}">
+                                        <a class="dropdown-item" href="{{ \App\Support\WorkforceSettings::route('departments.show', $dept) }}">
                                             <i class="fas fa-eye"></i> View Sub Department
                                         </a>
                                     </li>
                                     <li>
-                                        <a class="dropdown-item" href="{{ route('departments.edit', $dept) }}">
+                                        <a class="dropdown-item" href="{{ \App\Support\WorkforceSettings::route('departments.edit', $dept) }}">
                                             <i class="fas fa-pen"></i> Edit Sub Department
                                         </a>
                                     </li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li>
-                                        <form method="POST" action="{{ route('departments.destroy', $dept) }}" style="display:inline-block; width:100%;">
+                                        <form method="POST" action="{{ \App\Support\WorkforceSettings::route('departments.destroy', $dept) }}" style="display:inline-block; width:100%;">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="dropdown-item text-warning" onclick="return confirm('Archive this sub department? It can be restored later.')">
@@ -258,7 +259,7 @@
                                 <i class="fas fa-sitemap fa-4x"></i>
                                 <h5>No Sub Departments Found</h5>
                                 <p>Get started by creating your first sub department</p>
-                                <a href="{{ route('departments.create') }}" class="btn btn-primary">
+                                <a href="{{ \App\Support\WorkforceSettings::route('departments.create') }}" class="btn btn-primary">
                                     <i class="fas fa-plus-circle"></i> Create Sub Department
                                 </a>
                             </div>
@@ -397,6 +398,13 @@
         font-size: 32px;
         box-shadow: 0 12px 24px -8px rgba(47, 107, 255, 0.3);
         transition: all 0.3s ease;
+    }
+
+    /* Keep the header glyph visible on its blue tile in light theme. */
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .sub-department-page .header-card .header-icon > i,
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .sub-department-page .header-card .header-icon > i::before {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
     }
 
     .header-card:hover .header-icon {
@@ -1328,6 +1336,40 @@
         padding: 0 6px;
     }
 
+    /* Keep list checkboxes from shrinking under shared form styles. */
+    .sub-department-page input.form-check-input[type="checkbox"] {
+        appearance: auto !important;
+        -webkit-appearance: checkbox !important;
+        accent-color: #2563eb;
+        width: 18px !important;
+        height: 18px !important;
+        min-width: 18px !important;
+        min-height: 18px !important;
+        flex: 0 0 18px !important;
+        float: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background-image: none !important;
+        vertical-align: middle !important;
+        cursor: pointer;
+    }
+    .sub-department-page .department-list-table .form-check {
+        justify-content: center;
+        min-height: 18px;
+        padding-left: 0 !important;
+        margin-bottom: 0 !important;
+    }
+    .sub-department-page .department-list-table .department-info > div:last-child {
+        min-width: 0;
+    }
+    .sub-department-page .department-list-table :is(.department-name, .parent-name) {
+        overflow-wrap: anywhere;
+    }
+    .sub-department-page input.form-check-input[type="checkbox"]:focus-visible {
+        outline: 2px solid #2563eb !important;
+        outline-offset: 3px;
+    }
+
     /* Form Check */
     .form-check {
         display: flex;
@@ -2146,6 +2188,16 @@
         -webkit-text-fill-color: #fbbf24 !important;
     }
 
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark) .sub-department-page .stat-card .stat-icon i,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark) .sub-department-page .stat-card .stat-icon i::before {
+        background: transparent !important;
+        color: inherit !important;
+        -webkit-text-fill-color: currentColor !important;
+        box-shadow: none !important;
+        filter: none !important;
+        opacity: 1 !important;
+    }
+
     html[data-pms-theme="dark"] .sub-department-page .department-code,
     html[data-theme="dark"] .sub-department-page .department-code,
     html[data-bs-theme="dark"] .sub-department-page .department-code {
@@ -2395,7 +2447,7 @@ $(document).ready(function() {
         deleteBtn.prop('disabled', true);
 
         $.ajax({
-            url: "{{ route('departments.bulk-delete') }}",
+            url: "{{ \App\Support\WorkforceSettings::route('departments.bulk-delete') }}",
             method: 'POST',
             contentType: 'application/json; charset=utf-8',
             dataType: 'json',

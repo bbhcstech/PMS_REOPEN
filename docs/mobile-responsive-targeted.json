@@ -1,0 +1,56 @@
+{
+  "templates": 356,
+  "pages": 1,
+  "cases": 6,
+  "failedCases": 0,
+  "results": [
+    {
+      "file": "resources/views/admin/tasks/index.blade.php",
+      "shell": "admin",
+      "width": 320,
+      "theme": "light",
+      "viewport": 320,
+      "failures": []
+    },
+    {
+      "file": "resources/views/admin/tasks/index.blade.php",
+      "shell": "admin",
+      "width": 320,
+      "theme": "dark",
+      "viewport": 320,
+      "failures": []
+    },
+    {
+      "file": "resources/views/admin/tasks/index.blade.php",
+      "shell": "admin",
+      "width": 375,
+      "theme": "light",
+      "viewport": 375,
+      "failures": []
+    },
+    {
+      "file": "resources/views/admin/tasks/index.blade.php",
+      "shell": "admin",
+      "width": 375,
+      "theme": "dark",
+      "viewport": 375,
+      "failures": []
+    },
+    {
+      "file": "resources/views/admin/tasks/index.blade.php",
+      "shell": "admin",
+      "width": 430,
+      "theme": "light",
+      "viewport": 430,
+      "failures": []
+    },
+    {
+      "file": "resources/views/admin/tasks/index.blade.php",
+      "shell": "admin",
+      "width": 430,
+      "theme": "dark",
+      "viewport": 430,
+      "failures": []
+    }
+  ]
+}

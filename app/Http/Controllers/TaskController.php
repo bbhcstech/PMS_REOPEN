@@ -29,6 +29,7 @@ class TaskController extends Controller
 
 public function index(Request $request, ?Project $project = null) 
 {
+    \App\Services\TaskPrioritySchema::ensure();
     $query = Task::with(['project', 'assignees', 'subTasks.assignee', 'timers', 'latestUpdate.user'])
         ->whereNull('parent_id');
     $user = auth()->user();
@@ -163,7 +164,7 @@ public function create(Request $request)
     $departments = Department::with('parent')->latest()->get();
     $designations = Designation::all();
     $users = User::where('role', 'employee')->orderBy('name')->get();
-    $countries = Country::all();
+    $countries = Country::forForms();
     $employee = null;
     $prtdepartments = ParentDepartment::latest()->get();
 
@@ -215,6 +216,10 @@ public function create(Request $request)
  public function store(Request $request)
 {
    abort_unless($this->canCreateWorkItems(), 403);
+   $this->validateTaskDates($request);
+   \App\Services\TaskFormSchema::ensure();
+   \App\Services\TaskPrioritySchema::ensure();
+   \App\Services\TaskLabelsSchema::ensure();
 
     if ($request->has('assigned_to') && !is_array($request->assigned_to)) {
         $request->merge(['assigned_to' => array_filter(explode(',', (string) $request->assigned_to))]);
@@ -231,7 +236,7 @@ public function create(Request $request)
         'title'             => 'required|string|max:255',
         'project_id'        => 'required|exists:projects,id',
         'start_date'        => 'nullable|date',
-        'due_date'          => $request->has('without_due_date') ? 'nullable' : 'nullable|date|after_or_equal:start_date',
+        'due_date'          => $request->boolean('without_due_date') ? 'nullable' : 'nullable|date',
         'assigned_to'       => 'required|array|min:1',
         'assigned_to.*'     => 'required|integer|exists:users,id',
         'description'       => 'nullable|string',
@@ -288,7 +293,7 @@ public function create(Request $request)
         'title'             => $request->title,
         'project_id'        => $request->project_id,
         'start_date'        => $request->start_date,
-        'due_date'          => $request->has('without_due_date') ? null : $request->due_date,
+        'due_date'          => $request->boolean('without_due_date') ? null : $request->due_date,
         'assigned_to'       => $request->filled('assigned_to') ? (int) collect($request->assigned_to)->first() : null,
         'created_by'        => auth()->id(),
         'description'       => $request->description,
@@ -357,6 +362,11 @@ public function create(Request $request)
         return redirect()->back()->with('success', 'Task created. Add another.');
     }
 
+    if ($request->boolean('embedded_task_form')) {
+        $request->session()->flash('success', 'Task created successfully.');
+        return response()->view('admin.tasks.partials.created');
+    }
+
     // Redirect to project board if coming from board
     if ($request->has('redirect_to_board') && $request->input('redirect_to_board') == 'yes') {
         return redirect()->route('projects.tasks.board', $request->project_id)
@@ -391,7 +401,7 @@ public function create(Request $request)
         $designations = Designation::all();
          $departments = Department::with('parent')->latest()->get();
         $users = User::where('role', 'employee')->orderBy('name')->get();
-       $countries = Country::all();
+       $countries = Country::forForms();
        $employee = null;
        $prtdepartments = ParentDepartment::latest()->get();
 
@@ -412,14 +422,19 @@ public function create(Request $request)
 public function update(Request $request, Task $task)
 {
     abort_unless($this->canCreateWorkItems(), 403);
+    $this->validateTaskDates($request);
+    \App\Services\TaskFormSchema::ensure();
+    \App\Services\TaskPrioritySchema::ensure();
+    \App\Services\TaskLabelsSchema::ensure();
+    // Only employees change status here (see $newStatus below); for others it is ignored, so not validated.
+    $statusEditable = strtolower((string) auth()->user()?->role) === 'employee';
 
     $request->validate([
         'task_short_code'  => 'required|string|max:255',
         'title'             => 'required|string|max:255',
         'project_id'        => 'required|exists:projects,id',
         'start_date'        => 'nullable|date',
-        // 'due_date'          => $request->has('without_due_date') ? 'nullable' : 'nullable|date',
-        'due_date' => $request->has('without_due_date') ? 'nullable' : 'nullable|date|after_or_equal:start_date',
+        'due_date' => $request->boolean('without_due_date') ? 'nullable' : 'nullable|date',
         'assigned_to'       => 'required|array|min:1',
         'assigned_to.*'     => 'required|integer|exists:users,id',
         'description'       => 'nullable|string',
@@ -442,7 +457,7 @@ public function update(Request $request, Task $task)
         'remarks'           => 'nullable|string|max:2000',
         'category_id'       => 'nullable|integer',
         'parent_id'         => 'nullable|integer',
-        'status'            => 'nullable|in:Waiting for Approval,To Do,Doing,Incomplete,Completed',
+        'status'            => $statusEditable ? 'nullable|in:Waiting for Approval,To Do,Doing,Incomplete,Completed' : 'nullable',
         'image_url' => [
             'nullable',
             'file',
@@ -484,7 +499,7 @@ public function update(Request $request, Task $task)
         'title'             => $request->title,
         'project_id'        => $request->project_id,
         'start_date'        => $request->start_date,
-        'due_date'          => $request->has('without_due_date') ? null : $request->due_date,
+        'due_date'          => $request->boolean('without_due_date') ? null : $request->due_date,
         'assigned_to'       => $request->filled('assigned_to') ? (int) collect($request->assigned_to)->first() : null,
         'description'       => $request->description,
         'remarks'           => $request->remarks,
@@ -1022,6 +1037,22 @@ public function bulkDelete(Request $request)
     }
 
     return back()->with('success', 'Selected tasks deleted successfully.');
+}
+
+private function validateTaskDates(Request $request): void
+{
+    if ($request->boolean('without_due_date')) {
+        $request->merge(['due_date' => null]);
+    }
+
+    $request->validate([
+        'start_date' => 'nullable|date',
+        'due_date' => $request->filled('start_date')
+            ? 'nullable|date|after_or_equal:start_date'
+            : 'nullable|date',
+    ], [
+        'due_date.after_or_equal' => 'The due date must be equal to or later than the start date.',
+    ]);
 }
 
 private function canCreateWorkItems(): bool

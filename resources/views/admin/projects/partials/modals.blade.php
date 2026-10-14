@@ -149,16 +149,21 @@
                         <div class="col-md-4 mb-3">
                             <label class="form-label">Mobile <span class="text-danger">*</span></label>
                             <div class="input-group">
-                                <select name="mobile_country_code" class="form-select" style="max-width: 110px;" required>
+                                <select name="mobile_country_code" class="form-select employee-modal-dial-code" style="max-width: 110px;" required>
                                     @php $modalCountries = isset($countries) && count($countries) ? $countries : \App\Models\Country::getAllWithPhoneCodes(); @endphp
                                     @foreach($modalCountries as $c)
-                                        <option value="{{ $c->phone_code }}" {{ (old('mobile_country_code', '+91') == $c->phone_code) ? 'selected' : '' }}>
+                                        @php
+                                            $dialIso = strtolower($c->iso_code ?: (\App\Support\CountryPhone::map()[$c->name]['iso'] ?? ''));
+                                            $dialRules = \App\Support\CountryPhone::getDigitRules($c->phone_code);
+                                        @endphp
+                                        <option value="{{ $c->phone_code }}" data-min-digits="{{ $dialRules['min_digits'] }}" data-max-digits="{{ $dialRules['max_digits'] }}" data-country-name="{{ $c->name }}" data-flag="{{ preg_match('/^[a-z]{2}$/', $dialIso) ? 'https://flagcdn.com/w20/' . $dialIso . '.png' : '' }}" {{ (old('mobile_country_code', '+91') == $c->phone_code) ? 'selected' : '' }}>
                                             {{ $c->iso_code ? $c->iso_code . ' ' : '' }}({{ $c->phone_code }})
                                         </option>
                                     @endforeach
                                 </select>
-                                <input type="text" name="mobile" class="form-control" placeholder="Mobile number" required>
+                                <input type="tel" name="mobile" class="form-control" placeholder="Mobile number" inputmode="numeric" pattern="[1-9][0-9]*" aria-describedby="employee-modal-mobile-error" required>
                             </div>
+                            <div id="employee-modal-mobile-error" class="invalid-feedback" role="alert"></div>
                         </div>
                         <div class="col-md-4 mb-3">
                             <label class="form-label">Date of Birth <span class="text-danger">*</span></label>
@@ -207,3 +212,73 @@
         </div>
     </div>
 </div>
+
+@push('js')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const picker = document.querySelector('#employeeModal .employee-modal-dial-code');
+    if (!picker) return;
+    const mobile = picker.closest('form').querySelector('[name="mobile"]');
+    const error = document.getElementById('employee-modal-mobile-error');
+    function validateMobile(showError = true) {
+        const option = picker.selectedOptions[0];
+        const min = Number(option?.dataset.minDigits) || 10;
+        const max = Number(option?.dataset.maxDigits) || 10;
+        mobile.minLength = min;
+        mobile.maxLength = max;
+        const value = mobile.value;
+        let message = '';
+        if (!value) message = 'Enter a mobile number.';
+        else if (!/^[1-9][0-9]*$/.test(value)) message = 'Use digits only, without spaces or a leading zero. Select the country code separately.';
+        else if (value.length < min || value.length > max) message = min === max
+            ? `Enter exactly ${min} digits for ${option.dataset.countryName}.`
+            : `Enter between ${min} and ${max} digits for ${option.dataset.countryName}.`;
+        mobile.setCustomValidity(message);
+        mobile.classList.toggle('is-invalid', showError && Boolean(message));
+        mobile.setAttribute('aria-invalid', String(showError && Boolean(message)));
+        error.textContent = showError ? message : '';
+        error.classList.toggle('d-block', showError && Boolean(message));
+        return !message;
+    }
+    mobile.addEventListener('input', () => validateMobile());
+    mobile.addEventListener('blur', () => validateMobile());
+    mobile.addEventListener('invalid', () => validateMobile());
+    picker.addEventListener('change', () => validateMobile(Boolean(mobile.value)));
+    picker.closest('form').addEventListener('submit', event => {
+        if (!validateMobile()) {
+            event.preventDefault();
+            mobile.reportValidity();
+        }
+    });
+    validateMobile(false);
+    if (!window.jQuery?.fn.select2) return;
+    jQuery(picker).on('change', () => validateMobile(Boolean(mobile.value)));
+    function dialCodeLabel(option) {
+        if (!option.element) return option.text;
+        const row = document.createElement('span');
+        row.style.cssText = 'display:inline-flex;align-items:center;gap:6px';
+        const flag = option.element.dataset.flag;
+        if (flag) {
+            const image = document.createElement('img');
+            image.src = flag;
+            image.alt = option.element.dataset.countryName + ' flag';
+            image.width = 20;
+            image.height = 15;
+            image.style.objectFit = 'contain';
+            image.addEventListener('error', () => image.remove(), { once: true });
+            row.append(image);
+        }
+        const label = document.createElement('span');
+        label.textContent = option.text.trim();
+        row.append(label);
+        return jQuery(row);
+    }
+    jQuery(picker).select2({
+        dropdownParent: jQuery('#employeeModal'),
+        width: '140px',
+        templateResult: dialCodeLabel,
+        templateSelection: dialCodeLabel
+    });
+});
+</script>
+@endpush

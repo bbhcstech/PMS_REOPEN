@@ -9,7 +9,7 @@
             <h1><i class="fas fa-box-archive me-2"></i>Archived Leaves</h1>
             <p>Restore archived leave requests whenever they need to return to the active leave section.</p>
         </div>
-        <a href="{{ route('leaves.index') }}" class="btn btn-light"><i class="fas fa-arrow-left"></i> Back to Leaves</a>
+        <a href="{{ route(request('staff_category') === 'authority' ? 'admin.authority-leaves' : 'leaves.index') }}" class="btn btn-light"><i class="fas fa-arrow-left"></i> Back to Leaves</a>
     </section>
 
     @if(session('success'))
@@ -29,10 +29,11 @@
             <span class="total-badge">Total: {{ method_exists($leaves, 'total') ? $leaves->total() : $leaves->count() }}</span>
         </div>
 
-        <form method="GET" action="{{ route('leaves.archive') }}" class="archive-search">
+        <form method="GET" action="{{ route('leaves.archive', ['staff_category' => request('staff_category')]) }}" class="archive-search">
+            <input type="hidden" name="staff_category" value="{{ request('staff_category', 'employee') }}">
             <input type="text" name="search" class="form-control" value="{{ request('search') }}" placeholder="Search by employee, type, status, or reason">
             <button class="btn btn-primary"><i class="fas fa-search"></i> Search</button>
-            <a href="{{ route('leaves.archive') }}" class="btn btn-secondary"><i class="fas fa-rotate-left"></i> Reset</a>
+            <a href="{{ route('leaves.archive', ['staff_category' => request('staff_category')]) }}" class="btn btn-secondary"><i class="fas fa-rotate-left"></i> Reset</a>
         </form>
 
         <div class="table-responsive">

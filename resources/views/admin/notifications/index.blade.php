@@ -10,6 +10,38 @@
 @endphp
 
 <style>
+  #company-notification-center .notification-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+  }
+  #company-notification-center .notification-kpi-grid > div {
+    width: auto;
+    min-width: 0;
+  }
+  #company-notification-center .kpi-stat-card { height: 100%; }
+  #company-notification-center .notification-filter-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+    gap: 12px;
+    align-items: center;
+  }
+  #company-notification-center .notification-filter-grid > div {
+    width: auto;
+    min-width: 0;
+  }
+  #company-notification-center .notif-filter-btn {
+    min-width: 96px;
+    min-height: 38px;
+    white-space: nowrap;
+    word-break: normal;
+  }
+  @media (max-width: 767px) {
+    #company-notification-center .notification-kpi-grid,
+    #company-notification-center .notification-filter-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
   .notif-card-item {
     border-radius: 16px;
     background: #ffffff;
@@ -100,6 +132,18 @@
   .kpi-icon-total {
     background: #eff6ff;
     color: #2563eb;
+  }
+  .kpi-stat-card .kpi-icon-total > i.bx {
+    font-family: boxicons !important;
+    font-weight: normal !important;
+    background: transparent !important;
+    color: #2563eb !important;
+    -webkit-text-fill-color: #2563eb !important;
+    filter: none;
+  }
+  html[data-pms-theme="dark"] .kpi-stat-card .kpi-icon-total > i.bx {
+    color: #60A5FA !important;
+    -webkit-text-fill-color: #60A5FA !important;
   }
   .kpi-icon-unread {
     background: #fffbeb;
@@ -192,6 +236,19 @@
   }
 
   /* Notification Items */
+  .notif-card-item .notif-severity-icon > i.bx {
+    font-family: boxicons !important;
+    background: transparent !important;
+    -webkit-mask-image: none !important;
+    mask-image: none !important;
+  }
+
+  :is([data-pms-theme="dark"], [data-theme="dark"], [data-bs-theme="dark"], .dark-mode, .dark) .notif-card-item .notif-severity-icon > i.bx,
+  :is([data-pms-theme="dark"], [data-theme="dark"], [data-bs-theme="dark"], .dark-mode, .dark) .notif-card-item .notif-severity-icon > i.bx::before {
+    color: var(--notif-icon-color) !important;
+    -webkit-text-fill-color: var(--notif-icon-color) !important;
+  }
+
   html[data-pms-theme="dark"] .notif-card-item {
     background: #0F1530 !important;
     border: 1px solid rgba(238, 241, 251, 0.09) !important;
@@ -374,7 +431,7 @@
   }
 </style>
 
-<div class="container-fluid px-4 py-4" style="max-width: 1140px;">
+<div id="company-notification-center" class="container-fluid px-4 py-4" style="max-width: 1140px;">
 
   <!-- Hero Header Banner -->
   <div class="card border-0 shadow-sm mb-4" style="background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #1e293b 100%); border-radius: 20px; color: #fff; box-shadow: 0 10px 30px rgba(15, 23, 42, 0.15);">
@@ -415,25 +472,25 @@
   </div>
 
   @if(session('success'))
-    <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm mb-4" style="border-radius: 12px; background: #f0fdf4; color: #166534; border-left: 4px solid #16a34a !important;">
+    <div id="notification-success-message" data-live-preserve class="alert alert-success alert-dismissible fade show border-0 shadow-sm mb-4" style="border-radius: 12px; background: #f0fdf4; color: #166534; border-left: 4px solid #16a34a !important;">
       <i class="bx bx-check-circle me-1.5 align-middle fs-5"></i> {{ session('success') }}
       <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
   @endif
 
   @if(session('info'))
-    <div class="alert alert-info alert-dismissible fade show border-0 shadow-sm mb-4" style="border-radius: 12px; background: #eff6ff; color: #1e40af; border-left: 4px solid #3b82f6 !important;">
+    <div id="notification-info-message" data-live-preserve class="alert alert-info alert-dismissible fade show border-0 shadow-sm mb-4" style="border-radius: 12px; background: #eff6ff; color: #1e40af; border-left: 4px solid #3b82f6 !important;">
       <i class="bx bx-info-circle me-1.5 align-middle fs-5"></i> {{ session('info') }}
       <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
   @endif
 
   <!-- Executive KPI Grid -->
-  <div class="row g-3 mb-4">
+  <div id="notification-summary" class="notification-kpi-grid mb-4">
     <div class="col-md-4">
       <div class="kpi-stat-card p-3 d-flex align-items-center gap-3">
         <div class="kpi-icon-box kpi-icon-total p-3 rounded-4 fs-3">
-          <i class="bx bx-bell-ring"></i>
+          <i class="bx bx-bell" aria-hidden="true"></i>
         </div>
         <div>
           <div class="fs-4 fw-bolder kpi-number" style="letter-spacing: -0.5px;">{{ number_format($kpis['total'] ?? 0) }}</div>
@@ -468,9 +525,9 @@
   </div>
 
   <!-- Filter Toolbar -->
-  <div class="card notif-filter-card border-0 shadow-sm mb-4">
+  <div id="notification-filters" class="card notif-filter-card border-0 shadow-sm mb-4">
     <div class="card-body p-3">
-      <form method="GET" action="{{ Route::has('notifications.all') ? route('notifications.all') : route('admin.company-notifications.index') }}" class="row g-2 align-items-center">
+      <form method="GET" action="{{ Route::has('notifications.all') ? route('notifications.all') : route('admin.company-notifications.index') }}" class="notification-filter-grid">
         <div class="col-md-5">
           <select name="severity" class="form-select notif-select border-0" onchange="this.form.submit()">
             <option value="">All Severities</option>
@@ -645,7 +702,7 @@
         <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
           <div class="d-flex align-items-center gap-2 flex-wrap">
             <!-- Icon Circle -->
-            <div style="width: 32px; height: 32px; border-radius: 50%; background: {{ $iconBg }}; color: {{ $iconColor }}; display: flex; align-items: center; justify-content: center; font-size: 16px;" class="flex-shrink-0">
+            <div style="--notif-icon-color: {{ $iconColor }}; width: 32px; height: 32px; border-radius: 50%; background: {{ $iconBg }}; color: {{ $iconColor }}; display: flex; align-items: center; justify-content: center; font-size: 16px;" class="flex-shrink-0 notif-severity-icon">
               <i class="bx {{ $iconClass }}"></i>
             </div>
 
@@ -689,13 +746,6 @@
                   <i class="bx bx-check me-1"></i> Read
                 </button>
               </form>
-            @endif
-
-            <!-- Resolve / Open Resource Button -->
-            @if($actionTargetUrl && $actionTargetUrl !== '#')
-              <a href="{{ $actionTargetUrl }}" class="btn btn-sm btn-outline-success btn-pill-action notif-btn-resolve">
-                <i class="bx bx-check-circle me-1"></i> Resolve
-              </a>
             @endif
           </div>
         </div>

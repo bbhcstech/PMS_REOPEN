@@ -16,8 +16,7 @@ class CompanyContext
             return $this->company;
         }
 
-        $isSuperAdmin = Auth::guard('super_admin')->check() ||
-            (Auth::check() && in_array(strtolower((string)(Auth::user()->role ?? '')), ['superadmin', 'super-admin', 'super_admin'], true));
+        $isSuperAdmin = TenantScope::isPlatformAdmin();
 
         // 1. If Super Admin is actively impersonating a company via session
         if ($isSuperAdmin) {
@@ -49,7 +48,9 @@ class CompanyContext
         $user = Auth::guard('web')->user() ?? Auth::user();
 
         if ($user instanceof User) {
+            $ownId = \App\Services\TenantScope::companyId();
             if ($user->relationLoaded('company') && $user->company) {
+                abort_unless((int) $user->company->id === (int) $ownId, 403);
                 return $this->company = $user->company;
             }
 

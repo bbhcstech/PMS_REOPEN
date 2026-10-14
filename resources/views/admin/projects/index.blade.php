@@ -32,7 +32,7 @@
     ];
 @endphp
 
-<main class="projects-page">
+<main id="projects-list-page" class="projects-page">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <!-- Breadcrumb -->
@@ -54,17 +54,17 @@
         </div>
         <div class="header-actions">
             <button type="button" class="btn-icon" data-project-search-focus title="Search">
-                <i class="fas fa-search"></i>
+                <svg class="project-toolbar-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg>
             </button>
             <a href="{{ route('projects.index') }}" class="btn-icon active" title="List View" aria-label="List View">
-                <i class="fas fa-list-ul"></i>
+                <svg class="project-toolbar-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5h12M9 12h12M9 19h12M3 5h1M3 12h1M3 19h1"/></svg>
             </a>
             <a href="{{ route('projects.calendar') }}" class="btn-icon" title="Calendar">
-                <i class="fas fa-calendar-alt"></i>
+                <svg class="project-toolbar-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18M7 14h2M15 14h2M7 17h2"/></svg>
             </a>
             @if($isAdmin)
                 <a href="{{ route('projects.archive') }}" class="btn-icon" title="Archive">
-                    <i class="fas fa-archive"></i>
+                    <svg class="project-toolbar-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="5" rx="1"/><path d="M5 8v12h14V8M9 12h6"/></svg>
                 </a>
             @endif
         </div>
@@ -177,6 +177,11 @@
             <button type="button" id="exportProjectsCsv" class="btn btn-outline">
                 <i class="fas fa-file-export"></i> Export
             </button>
+            @if($isAdmin)
+                <button type="button" id="bulkArchiveProjects" class="btn btn-outline" disabled>
+                    <i class="fas fa-archive"></i> Archive
+                </button>
+            @endif
         </div>
 
         <div class="toolbar-right">
@@ -195,8 +200,8 @@
     </div>
 
     <!-- Table -->
-    <div class="table-card">
-        <div class="table-header">
+    <div id="projects-list-card" class="table-card">
+        <div id="projects-list-header" class="table-header">
             <div class="table-title">
                 <div class="table-title-icon">
                     <i class="fas fa-list"></i>
@@ -208,8 +213,9 @@
             </div>
         </div>
 
-        <div class="table-wrapper">
-            <table id="projectTable" class="project-table">
+        <div id="projects-table-tools" data-live-preserve></div>
+        <div id="projects-table-wrapper" class="table-wrapper">
+            <table id="projectTable" class="project-table" data-pms-toolbar-host="projects-table-tools">
                 <thead>
                     <tr>
                         @if($isAdmin)
@@ -344,8 +350,8 @@
                                 </div>
                             </td>
                             <td class="action-cell">
-                                <div class="dropdown project-action-dropdown">
-                                    <button class="action-btn" type="button" data-bs-toggle="dropdown" data-bs-boundary="viewport" data-bs-display="dynamic" aria-expanded="false">
+                                <div class="dropdown project-action-dropdown" data-live-preserve>
+                                    <button class="action-btn" type="button" data-project-action-toggle aria-label="Project actions" aria-haspopup="menu" aria-expanded="false">
                                         <i class="fas fa-ellipsis-v"></i>
                                     </button>
                                     <ul class="dropdown-menu dropdown-menu-end">
@@ -403,7 +409,7 @@
         </div>
 
         <!-- Table Footer -->
-        <div class="table-footer">
+        <div id="projects-list-footer" class="table-footer">
             <div class="footer-info">
                 <i class="fas fa-info-circle"></i>
                 Showing {{ $projects->count() }} project(s)
@@ -754,29 +760,29 @@
     @endif
 
     <!-- Status Bar -->
-    <div class="status-bar">
-        <div class="status-item">
+    <div id="projects-summary" class="status-bar">
+        <div class="status-item" data-live-key="total">
             <i class="fas fa-project-diagram text-primary"></i>
             <span>{{ $projects->count() }}</span> Total Projects
         </div>
-        <div class="status-item">
+        <div class="status-item" data-live-key="completed">
             <i class="fas fa-check-circle text-success"></i>
             <span>{{ $projects->where('status', 'completed')->count() }}</span> Completed
         </div>
-        <div class="status-item">
+        <div class="status-item" data-live-key="in-progress">
             <i class="fas fa-spinner text-primary"></i>
             <span>{{ $projects->where('status', 'in progress')->count() }}</span> In Progress
         </div>
-        <div class="status-item">
+        <div class="status-item" data-live-key="pending">
             <i class="fas fa-clock text-warning"></i>
             <span>{{ $projects->whereIn('status', ['pending', 'not started'])->count() }}</span> Pending
         </div>
-        <div class="status-item">
+        <div class="status-item" data-live-key="delayed">
             <i class="fas fa-triangle-exclamation text-danger"></i>
             <span>{{ $projects->filter(fn($p) => $p->status === 'delayed' || ($p->deadline && \Carbon\Carbon::parse($p->deadline)->isPast() && $p->status !== 'completed'))->count() }}</span> Delayed
         </div>
         @if($isAdmin)
-            <div class="status-item">
+            <div class="status-item" data-live-key="assigned">
                 <i class="fas fa-user-check text-primary"></i>
                 <span>{{ $projects->flatMap(fn($project) => $project->users->pluck('id'))->unique()->count() }}</span> Employees Assigned
             </div>
@@ -785,6 +791,23 @@
 </main>
 
 <style>
+    #projects-summary {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    #projects-summary > .status-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        white-space: nowrap;
+    }
+
+    #projects-table-tools:empty { display: none; }
+
     /* ===== PREMIUM PROJECTS PAGE - ENLARGED TEXT ===== */
     .projects-page {
         padding: 30px 0;
@@ -2036,11 +2059,13 @@
         z-index: 99999 !important;
     }
 
-    .projects-page .project-action-dropdown .dropdown-menu.show {
+    .projects-page .project-action-dropdown .dropdown-menu.show,
+    body > .project-floating-action-menu.show {
         display: block !important;
     }
 
-    .projects-page .project-action-dropdown .dropdown-item {
+    .projects-page .project-action-dropdown .dropdown-item,
+    body > .project-floating-action-menu .dropdown-item {
         align-items: center;
         border-radius: 10px;
         display: flex;
@@ -2049,10 +2074,17 @@
         white-space: normal;
     }
 
-    .projects-page .project-action-dropdown .dropdown-item i {
+    .projects-page .project-action-dropdown .dropdown-item i,
+    body > .project-floating-action-menu .dropdown-item i {
         flex: 0 0 18px;
         margin: 0 !important;
         text-align: center;
+    }
+
+    body > .project-floating-action-menu .dropdown-header {
+        color: var(--bx-text-heading, #0f172a) !important;
+        white-space: normal;
+        overflow-wrap: anywhere;
     }
 
     /* ===== PROJECTS INDEX & MODALS DARK MODE ===== */
@@ -2363,6 +2395,31 @@
     :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .empty-state p {
         color: #9AA3C7 !important;
     }
+    html body .projects-page .header-actions .btn-icon .project-toolbar-icon {
+        width: 22px !important;
+        height: 22px !important;
+        fill: none !important;
+        stroke: currentColor !important;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        background: transparent !important;
+        filter: none !important;
+    }
+
+    :is([data-pms-theme="dark"], [data-bs-theme="dark"], [data-theme="dark"], .dark, .dark-mode) .projects-page .header-actions .btn-icon .project-toolbar-icon {
+        color: #93c5fd !important;
+    }
+
+    /* Keep glyphs transparent and follow the button's state color. */
+    html body .projects-page :is(.header-actions .btn-icon, .view-toggle .view-btn) > i,
+    html body .projects-page :is(.header-actions .btn-icon, .view-toggle .view-btn) > i::before {
+        background: transparent !important;
+        background-image: none !important;
+        color: inherit !important;
+        -webkit-text-fill-color: currentColor !important;
+        box-shadow: none !important;
+    }
 </style>
 
 <script>
@@ -2373,6 +2430,28 @@ document.addEventListener('DOMContentLoaded', function () {
     const bulkStatus = document.getElementById('bulkProjectStatus');
     const bulkApply = document.getElementById('applyBulkProjectStatus');
     const bulkDelete = document.getElementById('bulkDeleteProjects');
+    const bulkArchive = document.getElementById('bulkArchiveProjects');
+
+    if (bulkArchive) {
+        bulkArchive.addEventListener('click', async function () {
+            const ids = selectedIds();
+            if (!ids.length || !confirm('Archive selected projects?')) return;
+            bulkArchive.disabled = true;
+            try {
+                const response = await fetch("{{ route('projects.bulk-archive') }}", {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': csrf },
+                    body: JSON.stringify({ ids })
+                });
+                const result = await response.json();
+                if (!response.ok || !result.success) throw new Error(result.message || 'Unable to archive selected projects.');
+                window.location.reload();
+            } catch (error) {
+                alert(error.message || 'Unable to archive selected projects.');
+                refreshBulkControls();
+            }
+        });
+    }
 
     function selectedIds() {
         return checkboxes().filter(box => box.checked).map(box => box.value);
@@ -2383,6 +2462,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (bulkStatus) bulkStatus.disabled = selected.length === 0;
         if (bulkApply) bulkApply.disabled = selected.length === 0;
         if (bulkDelete) bulkDelete.disabled = selected.length === 0;
+        if (bulkArchive) bulkArchive.disabled = selected.length === 0;
 
         if (!selectAll) return;
         const all = checkboxes();
@@ -2575,80 +2655,6 @@ document.addEventListener('DOMContentLoaded', function () {
         alert('Pinned projects view is ready for a pin data field. No pinned project flag exists yet.');
     });
 
-    document.querySelectorAll('.project-action-dropdown').forEach(dropdown => {
-        const button = dropdown.querySelector('[data-bs-toggle="dropdown"]');
-        const menu = dropdown.querySelector('.dropdown-menu');
-
-        if (!button || !menu) return;
-
-        let originalParent = null;
-        let originalNextSibling = null;
-
-        function positionFloatingMenu() {
-            const rect = button.getBoundingClientRect();
-            const menuWidth = 240;
-            const menuHeight = Math.min(menu.offsetHeight || 320, window.innerHeight * 0.6);
-            const viewportGap = 12;
-
-            let left = rect.right - menuWidth;
-            if (left < viewportGap) left = viewportGap;
-            if (left + menuWidth > window.innerWidth - viewportGap) {
-                left = window.innerWidth - menuWidth - viewportGap;
-            }
-
-            const spaceBelow = window.innerHeight - rect.bottom;
-            const spaceAbove = rect.top;
-            let top;
-
-            if (spaceBelow < menuHeight && spaceAbove > spaceBelow) {
-                top = Math.max(viewportGap, rect.top - menuHeight - 6);
-            } else {
-                top = Math.min(window.innerHeight - menuHeight - viewportGap, rect.bottom + 6);
-            }
-
-            menu.style.position = 'fixed';
-            menu.style.top = top + 'px';
-            menu.style.left = left + 'px';
-            menu.style.right = 'auto';
-            menu.style.bottom = 'auto';
-            menu.style.transform = 'none';
-            menu.style.zIndex = '99999';
-        }
-
-        dropdown.addEventListener('show.bs.dropdown', function () {
-            originalParent = menu.parentNode;
-            originalNextSibling = menu.nextSibling;
-            document.body.appendChild(menu);
-            menu.classList.add('project-floating-action-menu');
-            positionFloatingMenu();
-        });
-
-        dropdown.addEventListener('shown.bs.dropdown', function () {
-            positionFloatingMenu();
-        });
-
-        dropdown.addEventListener('hide.bs.dropdown', function () {
-            menu.classList.remove('project-floating-action-menu');
-            menu.removeAttribute('style');
-
-            if (originalParent) {
-                originalParent.insertBefore(menu, originalNextSibling);
-            }
-        });
-
-        window.addEventListener('resize', function () {
-            if (menu.classList.contains('project-floating-action-menu')) {
-                positionFloatingMenu();
-            }
-        });
-
-        window.addEventListener('scroll', function () {
-            if (menu.classList.contains('project-floating-action-menu')) {
-                positionFloatingMenu();
-            }
-        }, true);
-    });
-
     document.querySelectorAll('[data-template-project]').forEach(button => {
         button.addEventListener('click', function () {
             const projectId = this.dataset.templateProject;
@@ -2745,6 +2751,95 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     refreshBulkControls();
+});
+</script>
+<script>
+// Keep project row menus outside every table overflow and stacking context.
+document.addEventListener('DOMContentLoaded', function () {
+    let active = null;
+    function closeMenu(restoreFocus = false) {
+        if (!active) return;
+        const { button, menu, marker } = active;
+        active = null;
+        menu.classList.remove('show', 'project-floating-action-menu');
+        menu.removeAttribute('style');
+        marker.replaceWith(menu);
+        button.setAttribute('aria-expanded', 'false');
+        if (restoreFocus) button.focus();
+    }
+    function positionMenu() {
+        if (!active) return;
+        const { button, menu } = active;
+        const rect = button.getBoundingClientRect();
+        const gap = 12;
+        const width = Math.min(260, window.innerWidth - gap * 2);
+        const below = Math.max(0, window.innerHeight - rect.bottom - gap - 6);
+        const above = Math.max(0, rect.top - gap - 6);
+        const upwards = above > below;
+        const height = Math.max(1, Math.min(440, upwards ? above : below));
+        menu.style.setProperty('min-width', '0', 'important');
+        menu.style.setProperty('width', width + 'px', 'important');
+        menu.style.setProperty('max-height', height + 'px', 'important');
+        menu.style.setProperty('transform', 'none', 'important');
+        menu.style.setProperty('right', 'auto', 'important');
+        menu.style.setProperty('bottom', 'auto', 'important');
+        menu.style.setProperty('left', Math.max(gap, Math.min(rect.right - width, window.innerWidth - width - gap)) + 'px', 'important');
+        const top = upwards ? rect.top - menu.offsetHeight - 6 : rect.bottom + 6;
+        menu.style.setProperty('top', Math.max(gap, Math.min(top, window.innerHeight - menu.offsetHeight - gap)) + 'px', 'important');
+    }
+    function openMenu(button) {
+        if (active && active.button === button) { closeMenu(); return; }
+        const menu = button.parentElement.querySelector('.dropdown-menu');
+        if (!menu) return;
+            closeMenu();
+            const marker = document.createComment('project action menu');
+            menu.replaceWith(marker);
+            document.body.appendChild(menu);
+            active = { button, menu, marker };
+            menu.classList.add('project-floating-action-menu', 'show');
+            button.setAttribute('aria-expanded', 'true');
+            positionMenu();
+    }
+    // Delegate to include rows inserted by the live record refresh.
+    document.addEventListener('click', function (event) {
+        const button = event.target.closest('[data-project-action-toggle]');
+        if (button) {
+            event.preventDefault();
+            openMenu(button);
+        }
+    });
+    document.addEventListener('keydown', function (event) {
+        const button = event.target.closest('[data-project-action-toggle]');
+        if (button && event.key === 'ArrowDown') {
+            event.preventDefault();
+            if (!active || active.button !== button) openMenu(button);
+            active?.menu.querySelector('.dropdown-item')?.focus();
+        }
+    });
+    document.addEventListener('click', function (event) {
+        if (!active || active.button.contains(event.target)) return;
+        if (!active.menu.contains(event.target)) { closeMenu(); return; }
+        if (event.target.closest('.dropdown-item')) {
+            // Allow delegated modal, copy-link and form handlers to finish first.
+            setTimeout(() => closeMenu(), 0);
+        }
+    });
+    document.addEventListener('keydown', function (event) {
+        if (!active) return;
+        if (event.key === 'Escape') { event.preventDefault(); closeMenu(true); return; }
+        if (!active.menu.contains(event.target) || !['ArrowDown', 'ArrowUp'].includes(event.key)) return;
+        event.preventDefault();
+        const items = Array.from(active.menu.querySelectorAll('.dropdown-item:not(:disabled)'));
+        const index = items.indexOf(document.activeElement);
+        items[(index + (event.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length]?.focus();
+    });
+    document.addEventListener('focusin', function (event) {
+        if (active && !active.menu.contains(event.target) && !active.button.contains(event.target)) closeMenu();
+    });
+    window.addEventListener('resize', positionMenu);
+    window.addEventListener('scroll', function (event) {
+        if (active && !active.menu.contains(event.target)) positionMenu();
+    }, true);
 });
 </script>
 @endsection

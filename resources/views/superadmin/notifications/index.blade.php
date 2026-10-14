@@ -481,7 +481,7 @@
         <i class="bx bx-refresh"></i> Refresh
       </button>
       <button class="btn-glass-primary" id="openPrefsBtn">
-        <i class="bx bx-sliders"></i> Preferences
+        <i class="bx bx-slider-alt"></i> Preferences
       </button>
     </div>
   </div>
@@ -612,7 +612,7 @@
             <span class="sev-badge sb-{{ $alert['severity'] }}">● {{ strtoupper($alert['severity']) }}</span>
             <span class="cat-pill">{{ strtoupper($alert['category']) }}</span>
             @if(!empty($alert['action_required']))
-              <span class="action-req-chip"><i class="bx bx-hand"></i> Action Required</span>
+              <span class="action-req-chip"><i class="bx bxs-hand"></i> Action Required</span>
             @endif
             <span class="notif-time">
               <i class="bx bx-time-five" style="font-size:12px;"></i> {{ $alert['created_at'] }}
@@ -816,7 +816,7 @@
   <div class="modal-box">
     <div class="modal-head">
       <h3 style="font-size:16px;font-weight:800;color:var(--sl-900);margin:0;">
-        <i class="bx bx-sliders" style="color:var(--em);"></i> Notification Preferences
+        <i class="bx bx-slider-alt" style="color:var(--em);"></i> Notification Preferences
       </h3>
       <button class="btn-sm-secondary" id="closePrefsBtn" style="padding:6px 10px;"><i class="bx bx-x"></i></button>
     </div>

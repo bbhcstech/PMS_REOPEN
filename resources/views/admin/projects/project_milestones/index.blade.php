@@ -1197,6 +1197,46 @@
     html.dark .project-milestones-page .title-text {
         color: #F8FAFC !important;
     }
+
+    /* Dark mode: milestone flag tile, cost and budget badges had no dark styles, so they kept light
+       backgrounds while the theme forced their icons/text white. Tinted dark surfaces + bright icons. */
+    :is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], html.dark) .project-milestones-page .milestone-table .milestone-icon {
+        background: rgba(79, 131, 255, 0.18) !important;
+        border: 1px solid rgba(96, 165, 250, 0.35);
+    }
+    :is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], html.dark) .project-milestones-page .milestone-table .milestone-icon i {
+        color: #93c5fd !important;
+        -webkit-text-fill-color: #93c5fd !important;
+        filter: none !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], html.dark) .project-milestones-page .milestone-table .cost-badge {
+        background: rgba(245, 158, 11, 0.14) !important;
+        border: 1px solid rgba(251, 191, 36, 0.35);
+        color: #fde68a !important;
+        -webkit-text-fill-color: #fde68a !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], html.dark) .project-milestones-page .milestone-table .cost-badge i {
+        color: #fbbf24 !important;
+        -webkit-text-fill-color: #fbbf24 !important;
+        filter: none !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], html.dark) .project-milestones-page .milestone-table .budget-badge.yes {
+        background: rgba(16, 185, 129, 0.16) !important;
+        border: 1px solid rgba(52, 211, 153, 0.4);
+        color: #6ee7b7 !important;
+        -webkit-text-fill-color: #6ee7b7 !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], html.dark) .project-milestones-page .milestone-table .budget-badge.no {
+        background: rgba(148, 163, 184, 0.16) !important;
+        border: 1px solid rgba(148, 163, 184, 0.4);
+        color: #cbd5e1 !important;
+        -webkit-text-fill-color: #cbd5e1 !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], html.dark) .project-milestones-page .milestone-table .budget-badge i {
+        color: inherit !important;
+        -webkit-text-fill-color: currentColor !important;
+        filter: none !important;
+    }
 </style>
 @endpush
 

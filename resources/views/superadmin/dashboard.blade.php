@@ -5,6 +5,8 @@
 @section('page_subtitle', 'Central Multi-Tenant Control Hub')
 
 @section('content')
+@if(session('success'))<div class="alert alert-success" data-live-key="dashboard-success" role="status">{{ session('success') }}</div>@endif
+@if($errors->any())<div class="alert alert-danger" data-live-key="dashboard-errors" role="alert">@foreach($errors->all() as $error)<div>{{ $error }}</div>@endforeach</div>@endif
   <style>
     /* ===== WELCOME / COMMANDo CENTER ===== */
     /* ===== WELCOME / COMMAND CENTER HERO CARD BANNER ===== */
@@ -936,7 +938,8 @@
       border-color: rgba(255, 255, 255, 0.1);
     }
     .plan-card-option:hover { border-color: #0284c7; }
-    .plan-card-option.selected { border-color: #0284c7; background: rgba(2, 132, 199, 0.08); }
+    .plan-card-option:has(input:checked) { border-color: #0284c7; background: rgba(2, 132, 199, 0.08); }
+    .plan-card-option:has(input:disabled) { opacity: 0.45; cursor: not-allowed; }
 
     /* MODALS */
     .modal-overlay {
@@ -1381,7 +1384,7 @@
   </style>
 
   <!-- WELCOME / COMMAND CENTER HERO CARD BANNER -->
-  <section class="welcome-section">
+  <section class="welcome-section" data-live-key="dashboard-welcome">
     <div class="left">
       <div class="eyebrow"><i class="bx bx-shield-quarter"></i> Command Center</div>
       <h2 class="greeting">Welcome back, <span class="highlight">{{ auth('super_admin')->user()?->name ?? auth()->user()?->name ?? 'Super Admin' }}</span></h2>
@@ -1400,7 +1403,7 @@
   </section>
 
   <!-- KPI GRID (6 Cards with Sparklines & Counter Animation) -->
-  <section class="kpi-grid">
+  <section class="kpi-grid" data-live-key="dashboard-kpis">
     <!-- Card 1: Total Companies -->
     <div class="kpi-card">
       <div class="top">
@@ -1525,11 +1528,11 @@
   </section>
 
   <!-- PLATFORM SYSTEM HEALTH -->
-  <div class="section-header" id="platform-health">
+  <div class="section-header" id="platform-health" data-live-key="dashboard-health-heading">
     <h2>Platform System Health</h2>
     <a href="{{ url()->current() }}" class="action-link"><i class="bx bx-refresh"></i> Refresh Metrics</a>
   </div>
-  <div class="health-grid">
+  <div class="health-grid" data-live-key="dashboard-health-grid">
     <div class="health-item">
       <div class="top">
         <span class="label">Database Cluster</span>
@@ -1581,11 +1584,11 @@
   </div>
 
   <!-- CHARTS & ANALYTICS -->
-  <div class="section-header">
+  <div class="section-header" data-live-key="dashboard-analytics-heading">
     <h2>Platform Analytics &amp; Metrics</h2>
   </div>
-  <div class="charts-row">
-    <div class="chart-card">
+  <div class="charts-row" data-live-key="dashboard-charts">
+    <div class="chart-card" id="dashboardPlanDistribution" data-counts='@json($dashboardPlanCounts)'>
       <div class="card-header">
         <div>
           <div class="title"><i class="bx bx-bar-chart-alt-2" style="color:#2563eb; margin-right:6px;"></i> Companies Distribution by Plan</div>
@@ -1645,7 +1648,7 @@
   </div>
 
   <!-- ACTIVITY & ALERTS ROW -->
-  <div class="activity-row">
+  <div class="activity-row" data-live-key="dashboard-activity-summary">
     <!-- Audit Activity Timeline -->
     <div class="activity-card">
       <div class="card-header">
@@ -1654,7 +1657,7 @@
       </div>
       <div class="timeline">
         @forelse($recentActivities->take(5) as $activity)
-          <div class="timeline-item">
+          <div class="timeline-item" data-live-key="dashboard-activity-{{ $activity->id }}">
             <i class="bx bx-check-circle icon" style="color:var(--emerald-light);"></i>
             <div class="content">
               <div class="text">
@@ -1686,7 +1689,7 @@
           $expiringCompanies = $companies->filter(fn($c) => $c->status === 'trial' || $c->status === 'suspended')->take(3);
         @endphp
         @forelse($expiringCompanies as $exp)
-          <div class="expiring-item">
+          <div class="expiring-item" data-live-key="dashboard-expiring-{{ $exp->id }}">
             <div class="left">
               <div class="name">{{ $exp->name }}</div>
               <div class="plan">{{ $exp->activeSubscription?->plan?->name ?? 'Trial Plan' }}</div>
@@ -1720,7 +1723,7 @@
   </div>
 
   <!-- REGISTERED TENANT COMPANIES -->
-  <div class="section-header" id="companies-section">
+  <div class="section-header" id="companies-section" data-live-key="dashboard-companies-heading">
     <h2>Registered Tenant Companies</h2>
     <div style="display: flex; gap: 10px; align-items: center;">
       <a href="{{ Route::has('super-admin.companies.create') ? route('super-admin.companies.create') : (Route::has('superadmin.companies.create') ? route('superadmin.companies.create') : url('/super-admin/companies/create')) }}" class="btn btn-primary"><i class="bx bx-plus-circle"></i> Provision Tenant</a>
@@ -1728,7 +1731,7 @@
     </div>
   </div>
 
-  <div class="table-wrap" style="border-radius: 20px; overflow: hidden;">
+  <div class="table-wrap" style="border-radius: 20px; overflow: hidden;" data-live-key="dashboard-companies-table">
     <div class="table-toolbar">
       <div style="display:flex; align-items:center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--slate-body);">
         <span>Show</span>
@@ -1820,7 +1823,31 @@
               </span>
             </td>
             <td>
-              <span class="status-badge info">{{ $company->activeSubscription?->plan?->name ?? 'No Plan' }}</span>
+              @php
+                $displaySub = ($company->activeSubscription?->plan ? $company->activeSubscription : null) ?? $company->latestSubscription;
+                $displayPlanName = $displaySub?->plan?->name
+                    ?? ($company->highest_plan_slug ? strtoupper($company->highest_plan_slug) : null);
+
+                $displaySubStatus = strtolower((string) ($displaySub?->status ?? ''));
+                $displaySubExpired = $displaySub?->ends_at && $displaySub->ends_at->lt(now()->startOfDay());
+                $displayPlanState = match (true) {
+                    ! $displaySub => null,
+                    $displaySubExpired || $displaySubStatus === 'expired' => 'Expired',
+                    $displaySubStatus === 'trial' => 'Trial',
+                    $displaySubStatus === 'pending' => 'Pending',
+                    default => null,
+                };
+                $displayPlanBadge = match ($displayPlanState) {
+                    'Expired' => 'critical',
+                    'Trial', 'Pending' => 'warning',
+                    default => 'info',
+                };
+              @endphp
+              @if($displayPlanName)
+                <span class="status-badge {{ $displayPlanBadge }}">{{ $displayPlanName }}{{ $displayPlanState ? ' · ' . $displayPlanState : '' }}</span>
+              @else
+                <span class="status-badge info">No Plan</span>
+              @endif
             </td>
             <td>
               <span style="font-size:12px; color:var(--slate-muted); font-weight:600;">
@@ -1829,7 +1856,7 @@
             </td>
             <td>
               <span style="font-size:12px; color:var(--slate-muted); font-weight:600;">
-                {{ $company->activeSubscription?->ends_at?->format('M d, Y') ?? '—' }}
+                {{ $displaySub?->ends_at?->format('M d, Y') ?? ($company->trial_ends_at ? \Carbon\Carbon::parse($company->trial_ends_at)->format('M d, Y') : '—') }}
               </span>
             </td>
             <td style="color: var(--slate-muted, #94a3b8); font-size: 12px; font-weight: 500; white-space: nowrap;">
@@ -1862,7 +1889,9 @@
                     <a href="javascript:void(0)" class="trigger-detail-drawer" data-company-id="{{ $company->id }}" data-company-name="{{ $company->name }}" data-company-email="{{ $company->email }}" data-company-db="{{ $company->db_name }}" data-company-logo="{{ $company->logo ? asset($company->logo) : '' }}">
                       <i class="bx bx-info-circle" style="color: #38bdf8;"></i> Quick Details
                     </a>
-                    <a href="javascript:void(0)" class="trigger-plan-modal" data-company-id="{{ $company->id }}">
+                    <a href="javascript:void(0)" class="trigger-plan-modal" data-company-id="{{ $company->id }}" data-current-plan-id="{{ $displaySub?->plan_id }}"
+                       data-billing-cycle="{{ $displaySub?->billing_cycle ?? 'monthly' }}"
+                       data-allowed-plan-ids="{{ json_encode(app(\App\Services\PlanEligibilityService::class)->getAllowedPlans($company)->pluck('id')->all()) }}">
                       <i class="bx bx-layer" style="color: #c084fc;"></i> Change Subscription
                     </a>
                     <div class="divider"></div>
@@ -1920,13 +1949,13 @@
   </script>
 
   <!-- SUBSCRIPTION CATALOG -->
-  <div class="section-header" id="plans">
+  <div class="section-header" id="plans" data-live-key="dashboard-plans-heading">
     <h2>Subscription Catalog</h2>
     <a href="{{ route('super-admin.plans.index') }}" class="action-link">Plans Catalog <i class="bx bx-layer"></i></a>
   </div>
-  <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:16px; margin-bottom:28px;">
+  <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:16px; margin-bottom:28px;" data-live-key="dashboard-plans-catalog">
     @forelse($plans as $plan)
-      <div class="catalog-plan-card">
+      <div class="catalog-plan-card" data-live-key="dashboard-plan-{{ $plan->id }}">
         <div style="font-size:11px; font-weight:700; color:var(--slate-muted); text-transform:uppercase; letter-spacing:0.5px;">{{ $plan->name }} Plan</div>
         <div style="font-size:26px; font-weight:900; color:var(--slate-dark); margin: 4px 0;">${{ number_format($plan->monthly_price, 0) }}<span style="font-size:13px; font-weight:600; color:var(--slate-muted);">/mo</span></div>
         <div class="plan-feature-text" style="font-size:12px; color:var(--emerald-primary); font-weight:700; display:flex; align-items:center; gap:4px;">
@@ -1944,11 +1973,11 @@
   </div>
 
   <!-- MIGRATION OPERATIONS -->
-  <div class="section-header" id="migrations">
+  <div class="section-header" id="migrations" data-live-key="dashboard-migrations-heading">
     <h2>Migration Operations</h2>
     <span class="action-link"><i class="bx bx-play-circle"></i> Migration Logs</span>
   </div>
-  <div class="table-wrap">
+  <div class="table-wrap" data-live-key="dashboard-migrations-table">
     <table class="table-compact">
       <thead>
         <tr><th>Database</th><th>Connection</th><th>Schema Batch</th><th>Migration Health</th><th>Status</th></tr>
@@ -1975,11 +2004,11 @@
   </div>
 
   <!-- BACKUP CENTER -->
-  <div class="section-header" id="backups">
+  <div class="section-header" id="backups" data-live-key="dashboard-backups-heading">
     <h2>Backup Center &amp; Snapshots</h2>
     <span class="action-link"><i class="bx bx-cloud-upload"></i> Verification Logs</span>
   </div>
-  <div class="table-wrap">
+  <div class="table-wrap" data-live-key="dashboard-backups-table">
     <table class="table-compact">
       <thead><tr><th>Target Database</th><th>Last Snapshot</th><th>Verification</th><th>Integrity Status</th></tr></thead>
       <tbody>
@@ -2002,20 +2031,20 @@
   </div>
 
   <!-- AUDIT ACTIVITY LOGS -->
-  <div class="section-header" id="activity-logs">
+  <div class="section-header" id="activity-logs" data-live-key="dashboard-activity-heading">
     <h2>Audit Activity Logs</h2>
     <div style="display: flex; gap: 10px; align-items: center;">
-      <button type="button" class="btn btn-secondary" onclick="exportActivityLogsToCSV()" style="display: flex; align-items: center; gap: 6px; font-size: 12.5px; padding: 6px 14px; cursor: pointer;">
+      <button type="button" class="btn btn-secondary" data-activity-export style="display: flex; align-items: center; gap: 6px; font-size: 12.5px; padding: 6px 14px; cursor: pointer;">
         <i class="bx bx-download"></i> Export CSV
       </button>
       <a href="{{ Route::has('super-admin.activity-logs.index') ? route('super-admin.activity-logs.index') : (Route::has('super-admin.tenant-audit.index') ? route('super-admin.tenant-audit.index') : url('/super-admin/activity-logs')) }}" class="action-link">Full History <i class="bx bx-history"></i></a>
     </div>
   </div>
-  <div class="table-wrap" style="border-radius: 20px; overflow: hidden;">
+  <div class="table-wrap" style="border-radius: 20px; overflow: hidden;" data-live-key="dashboard-activity-table">
     <div class="table-toolbar">
       <div style="display:flex; align-items:center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--slate-body);">
         <span>Show</span>
-        <select id="activityEntriesPerPageSelect" class="table-select" onchange="changeActivityEntriesPerPage(this.value)">
+        <select id="activityEntriesPerPageSelect" class="table-select">
           <option value="10" selected>10</option>
           <option value="20">20</option>
           <option value="30">30</option>
@@ -2027,9 +2056,9 @@
       <div style="display: flex; align-items: center; gap: 10px;">
         <div style="position: relative;">
           <i class="bx bx-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--slate-muted); font-size: 17px;"></i>
-          <input type="text" id="activityTableSearch" class="table-search-input" placeholder="Search activity logs..." onkeyup="filterActivityLogs()" />
+          <input type="text" id="activityTableSearch" class="table-search-input" placeholder="Search activity logs..." />
         </div>
-        <button type="button" class="btn btn-secondary" onclick="exportActivityLogsToCSV()" title="Export Activity Logs to CSV" style="display: flex; align-items: center; gap: 6px; font-size: 12.5px; height: 34px; padding: 0 14px; cursor: pointer; border-radius: 8px;">
+        <button type="button" class="btn btn-secondary" data-activity-export title="Export Activity Logs to CSV" style="display: flex; align-items: center; gap: 6px; font-size: 12.5px; height: 34px; padding: 0 14px; cursor: pointer; border-radius: 8px;">
           <i class="bx bx-export"></i> Export
         </button>
       </div>
@@ -2046,7 +2075,7 @@
       </thead>
       <tbody id="activityLogsTableBody">
         @forelse($recentActivities as $activity)
-          <tr class="activity-log-row">
+          <tr class="activity-log-row" data-live-key="dashboard-activity-row-{{ $activity->id }}">
             <td style="font-size:12px; color:var(--slate-muted);">{{ $activity->created_at?->format('Y-m-d H:i') }}</td>
             <td><strong style="color:var(--slate-dark);">{{ $activity->company?->name ?? 'System' }}</strong></td>
             <td>{{ str_replace('.', ' ', ucfirst($activity->action)) }}</td>
@@ -2069,11 +2098,11 @@
   </div>
 
   <!-- COMPANY ADMISSIONS DIRECTORY -->
-  <div class="section-header">
+  <div class="section-header" data-live-key="dashboard-admins-heading">
     <h2>Company Admins Directory</h2>
     <a href="{{ route('superadmin.admins.index') }}" class="btn btn-secondary"><i class="bx bx-user-voice"></i> Manage All Company Admins</a>
   </div>
-  <div class="table-wrap">
+  <div class="table-wrap" data-live-key="dashboard-admins-table">
     <table class="table-compact">
       <thead><tr><th>Admin Name</th><th>Email Address</th><th>Assigned Company</th><th>Creation Date</th></tr></thead>
       <tbody>
@@ -2310,18 +2339,19 @@
     <div class="plan-modal-dialog">
       <h3 style="font-size: 20px; font-weight: 800; margin-top: 0; margin-bottom: 6px; color: var(--slate-dark);">Change Subscription Plan</h3>
       <p style="font-size: 13.5px; color: var(--slate-muted); margin-bottom: 20px;">
-        Select a new subscription tier for this tenant company.
+        Select the current tier or an eligible higher tier. Lower plans cannot be selected.
       </p>
 
       <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px;">
         @forelse($plans as $plan)
-          <div class="plan-card-option {{ $loop->first ? 'selected' : '' }}" data-plan-id="{{ $plan->id }}" onclick="selectPlanCard(this, '{{ $plan->id }}')">
+          <label class="plan-card-option" style="display:block" data-plan-id="{{ $plan->id }}">
+            <input type="radio" name="plan_id" value="{{ $plan->id }}" form="assignPlanForm" required style="position:absolute;opacity:0;width:1px;height:1px;">
             <div style="display: flex; justify-content: space-between; align-items: center;">
               <span class="status-badge info" style="font-weight: 800; text-transform: uppercase;">{{ $plan->name }}</span>
               <strong style="font-size: 15px; color: var(--slate-dark);">${{ number_format($plan->monthly_price, 0) }} / mo</strong>
             </div>
             <div style="font-size: 12px; color: var(--slate-muted); margin-top: 4px;">{{ $plan->description ?? ($plan->max_users > 0 ? $plan->max_users . ' Users Max' : 'Unlimited Users') }}</div>
-          </div>
+          </label>
         @empty
           <div class="plan-card-option selected">
             <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -2335,10 +2365,10 @@
       <form id="assignPlanForm" method="POST" action="{{ Route::has('superadmin.subscriptions.assign') ? route('superadmin.subscriptions.assign') : url('/superadmin/subscriptions/assign') }}">
         @csrf
         <input type="hidden" name="company_id" id="modalPlanCompanyId" value="">
-        <input type="hidden" name="plan_id" id="modalPlanSelectedId" value="{{ $plans->first()?->id ?? 1 }}">
+        <input type="hidden" name="billing_cycle" id="modalPlanBillingCycle" value="monthly">
         <div style="display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid rgba(226, 232, 240, 0.8); padding-top: 16px;">
           <button type="button" class="btn btn-secondary" id="closePlanModalBtn">Cancel</button>
-          <button type="submit" class="btn btn-primary" id="confirmPlanChangeBtn">Confirm Change</button>
+          <button type="submit" class="btn btn-primary" id="confirmPlanChangeBtn" disabled>Confirm Change</button>
         </div>
       </form>
     </div>
@@ -2355,6 +2385,7 @@
 @endsection
 
 @push('scripts')
+  <script src="{{ asset('admin/assets/js/pms-dashboard-activity.js') }}?v={{ @filemtime(public_path('admin/assets/js/pms-dashboard-activity.js')) }}" defer></script>
   <script>
     // Modal Open/Close Triggers
     const createModal = document.getElementById('createCompanyModal');
@@ -2390,167 +2421,6 @@
         row.style.display = text.includes(query) ? '' : 'none';
       });
     }
-
-    // Activity Logs Table Controls (Show entries: 10, 20, 30, search, pagination, CSV export)
-    let activityPageSize = 10;
-    let activityCurrentPage = 1;
-
-    function renderActivityTable() {
-      const allRows = Array.from(document.querySelectorAll('#activityLogsTableBody tr.activity-log-row'));
-      const emptyRow = document.querySelector('#activityLogsTableBody tr.no-activity-row');
-      const query = (document.getElementById('activityTableSearch')?.value || '').toLowerCase().trim();
-
-      const matchedRows = allRows.filter(row => {
-        if (!query) return true;
-        return row.innerText.toLowerCase().includes(query);
-      });
-
-      const totalMatched = matchedRows.length;
-      const totalPages = Math.ceil(totalMatched / activityPageSize) || 1;
-
-      if (activityCurrentPage > totalPages) activityCurrentPage = totalPages;
-      if (activityCurrentPage < 1) activityCurrentPage = 1;
-
-      const startIndex = (activityCurrentPage - 1) * activityPageSize;
-      const endIndex = Math.min(startIndex + activityPageSize, totalMatched);
-
-      allRows.forEach(row => row.style.display = 'none');
-
-      for (let i = startIndex; i < endIndex; i++) {
-        if (matchedRows[i]) {
-          matchedRows[i].style.display = '';
-        }
-      }
-
-      if (emptyRow) {
-        emptyRow.style.display = totalMatched === 0 ? '' : 'none';
-      }
-
-      const showingText = document.getElementById('activityShowingText');
-      if (showingText) {
-        if (totalMatched === 0) {
-          showingText.innerHTML = 'Showing 0 to 0 of 0 entries';
-        } else {
-          showingText.innerHTML = `Showing ${startIndex + 1} to ${endIndex} of ${totalMatched} entries`;
-        }
-      }
-
-      renderActivityPagination(totalPages);
-    }
-
-    function renderActivityPagination(totalPages) {
-      const container = document.getElementById('activityPaginationControls');
-      if (!container) return;
-
-      container.innerHTML = '';
-      if (totalPages <= 1) return;
-
-      const prevBtn = document.createElement('button');
-      prevBtn.type = 'button';
-      prevBtn.className = 'btn-chart';
-      prevBtn.innerHTML = '<i class="bx bx-chevron-left"></i>';
-      prevBtn.style.padding = '4px 8px';
-      prevBtn.style.borderRadius = '6px';
-      prevBtn.style.cursor = activityCurrentPage === 1 ? 'not-allowed' : 'pointer';
-      prevBtn.style.opacity = activityCurrentPage === 1 ? '0.5' : '1';
-      prevBtn.disabled = activityCurrentPage === 1;
-      prevBtn.onclick = () => {
-        if (activityCurrentPage > 1) {
-          activityCurrentPage--;
-          renderActivityTable();
-        }
-      };
-      container.appendChild(prevBtn);
-
-      let startP = Math.max(1, activityCurrentPage - 2);
-      let endP = Math.min(totalPages, startP + 4);
-      if (endP - startP < 4) {
-        startP = Math.max(1, endP - 4);
-      }
-
-      for (let p = startP; p <= endP; p++) {
-        const pageBtn = document.createElement('button');
-        pageBtn.type = 'button';
-        pageBtn.className = 'btn-chart' + (p === activityCurrentPage ? ' active' : '');
-        pageBtn.textContent = p;
-        pageBtn.style.padding = '4px 10px';
-        pageBtn.style.borderRadius = '6px';
-        pageBtn.style.fontWeight = '700';
-        pageBtn.style.cursor = 'pointer';
-        const targetP = p;
-        pageBtn.onclick = () => {
-          activityCurrentPage = targetP;
-          renderActivityTable();
-        };
-        container.appendChild(pageBtn);
-      }
-
-      const nextBtn = document.createElement('button');
-      nextBtn.type = 'button';
-      nextBtn.className = 'btn-chart';
-      nextBtn.innerHTML = '<i class="bx bx-chevron-right"></i>';
-      nextBtn.style.padding = '4px 8px';
-      nextBtn.style.borderRadius = '6px';
-      nextBtn.style.cursor = activityCurrentPage === totalPages ? 'not-allowed' : 'pointer';
-      nextBtn.style.opacity = activityCurrentPage === totalPages ? '0.5' : '1';
-      nextBtn.disabled = activityCurrentPage === totalPages;
-      nextBtn.onclick = () => {
-        if (activityCurrentPage < totalPages) {
-          activityCurrentPage++;
-          renderActivityTable();
-        }
-      };
-      container.appendChild(nextBtn);
-    }
-
-    function changeActivityEntriesPerPage(val) {
-      activityPageSize = parseInt(val) || 10;
-      activityCurrentPage = 1;
-      renderActivityTable();
-    }
-
-    function filterActivityLogs() {
-      activityCurrentPage = 1;
-      renderActivityTable();
-    }
-
-    function exportActivityLogsToCSV() {
-      const allRows = Array.from(document.querySelectorAll('#activityLogsTableBody tr.activity-log-row'));
-      if (allRows.length === 0) {
-        alert('No activity log entries to export.');
-        return;
-      }
-
-      const headers = ['Timestamp', 'Company', 'Action', 'IP Address', 'Status'];
-      const csvRows = [headers.join(',')];
-
-      allRows.forEach(row => {
-        const cols = row.querySelectorAll('td');
-        if (cols.length >= 5) {
-          const timestamp = '"' + (cols[0].innerText || '').replace(/"/g, '""').trim() + '"';
-          const company = '"' + (cols[1].innerText || '').replace(/"/g, '""').trim() + '"';
-          const action = '"' + (cols[2].innerText || '').replace(/"/g, '""').trim() + '"';
-          const ip = '"' + (cols[3].innerText || '').replace(/"/g, '""').trim() + '"';
-          const status = '"' + (cols[4].innerText || '').replace(/"/g, '""').trim() + '"';
-          csvRows.push([timestamp, company, action, ip, status].join(','));
-        }
-      });
-
-      const csvContent = '\uFEFF' + csvRows.join('\r\n');
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.setAttribute('href', url);
-      link.setAttribute('download', 'activity_logs_export_' + new Date().toISOString().slice(0, 10) + '.csv');
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-    }
-
-    document.addEventListener('DOMContentLoaded', function() {
-      renderActivityTable();
-    });
 
     function openStatusModal(companyId, companyName, currentStatus) {
       const modal = document.getElementById('statusModal');
@@ -2704,11 +2574,7 @@
 
     // Suspend and Delete handlers
     function confirmSuspendCompany(id, name) {
-      if (confirm("Are you sure you want to suspend access for company '" + name + "'?")) {
-        const form = document.getElementById('dashboardSuspendForm');
-        form.action = "{{ url('/superadmin/companies') }}/" + id + "/suspend";
-        form.submit();
-      }
+      window.location.href = "{{ url('/superadmin/companies') }}/" + id + "/suspension";
     }
 
     function confirmDeleteCompany(id, name) {
@@ -2762,14 +2628,42 @@
       // Plan Change Modal handlers
       const planModal = document.getElementById('planChangeModal');
       const closePlanBtn = document.getElementById('closePlanModalBtn');
+      const assignPlanForm = document.getElementById('assignPlanForm');
+      const confirmPlanBtn = document.getElementById('confirmPlanChangeBtn');
 
-      document.querySelectorAll('.trigger-plan-modal').forEach(trigger => {
-        trigger.addEventListener('click', function(e) {
+      document.addEventListener('click', function(e) {
+          const trigger = e.target.closest('.trigger-plan-modal');
+          if (!trigger) return;
           e.preventDefault();
-          const id = this.getAttribute('data-company-id');
+          const id = trigger.getAttribute('data-company-id');
           document.getElementById('modalPlanCompanyId').value = id;
+          document.getElementById('modalPlanBillingCycle').value = trigger.getAttribute('data-billing-cycle') || 'monthly';
+          const currentPlan = trigger.getAttribute('data-current-plan-id');
+          const allowedIds = JSON.parse(trigger.getAttribute('data-allowed-plan-ids') || '[]').map(String);
+          const choices = Array.from(document.querySelectorAll('#planChangeModal input[name="plan_id"]'));
+          choices.forEach(input => {
+              input.disabled = !allowedIds.includes(input.value);
+              input.checked = !input.disabled && input.value === currentPlan;
+              input.closest('.plan-card-option').title = input.disabled ? 'This tier is unavailable. Lower plans cannot be selected.' : '';
+          });
+          confirmPlanBtn.disabled = !choices.some(input => input.checked && !input.disabled);
+          confirmPlanBtn.textContent = 'Confirm Change';
           if (planModal) planModal.classList.add('open');
-        });
+      });
+
+      planModal?.addEventListener('change', function(event) {
+          if (event.target.matches('input[name="plan_id"]') && !event.target.disabled) {
+              confirmPlanBtn.disabled = false;
+          }
+      });
+      assignPlanForm?.addEventListener('submit', function(event) {
+          const selected = planModal.querySelector('input[name="plan_id"]:checked:not(:disabled)');
+          if (!selected || !document.getElementById('modalPlanCompanyId').value) {
+              event.preventDefault();
+              return;
+          }
+          confirmPlanBtn.disabled = true;
+          confirmPlanBtn.textContent = 'Updating Plan...';
       });
 
       if (closePlanBtn && planModal) {
@@ -2783,67 +2677,18 @@
     });
 
     function selectPlanCard(card, planId) {
-      document.querySelectorAll('.plan-card-option').forEach(c => c.classList.remove('selected'));
-      card.classList.add('selected');
-      const hiddenInput = document.getElementById('modalPlanSelectedId');
-      if (hiddenInput) hiddenInput.value = planId;
+      const input = card.querySelector('input[name="plan_id"]');
+      if (input && !input.disabled) {
+          input.checked = true;
+          input.dispatchEvent(new Event('change', { bubbles: true }));
+      }
     }
 
+    </script>
+    <script src="{{ asset('admin/assets/js/pms-dashboard-plan-distribution.js') }}"></script>
+    <script>
     // ---------- CHARTS (Chart.js Gradient & Curves) ----------
     document.addEventListener('DOMContentLoaded', function() {
-      // Dynamic Data from Backend
-      const planLabels = [
-        @foreach($plans as $plan)
-          "{{ $plan->name }}",
-        @endforeach
-      ];
-      const planCounts = [
-        @foreach($plans as $plan)
-          {{ $companies->filter(fn($c) => $c->activeSubscription?->plan_id == $plan->id)->count() ?: rand(1, 4) }},
-        @endforeach
-      ];
-
-      // Bar Chart: Companies by Plan
-      const ctxBar = document.getElementById('barChart');
-      if (ctxBar) {
-        const barCtx = ctxBar.getContext('2d');
-        new Chart(barCtx, {
-          type: 'bar',
-          data: {
-            labels: planLabels.length ? planLabels : ['Starter', 'Pro', 'Enterprise'],
-            datasets: [{
-              label: 'Companies',
-              data: planCounts.length ? planCounts : [8, 6, 4],
-              backgroundColor: ['#2F6BFF', '#8B5CF6', '#22D3EE', '#10B981', '#F59E0B'],
-              borderRadius: 8,
-              borderSkipped: false,
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            animation: {
-              duration: 1400,
-              easing: 'easeOutQuart'
-            },
-            plugins: {
-              legend: { display: false }
-            },
-            scales: {
-              y: { 
-                beginAtZero: true, 
-                grid: { color: 'rgba(226, 232, 240, 0.6)' }, 
-                ticks: { stepSize: 1, font: { family: 'Plus Jakarta Sans', size: 11, weight: '600' } } 
-              },
-              x: { 
-                grid: { display: false },
-                ticks: { font: { family: 'Plus Jakarta Sans', size: 11, weight: '700' } }
-              }
-            }
-          }
-        });
-      }
-
       // Doughnut Chart: Company Status Distribution
       const ctxPie = document.getElementById('pieChart');
       if (ctxPie) {

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{{ $loginTitle ?? 'Login' }} - Bitroxia</title>
     <meta name="description" content="Bitroxia PMS login" />
     <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0" />
@@ -957,5 +957,6 @@
             }, 7000);
         })();
     </script>
+@include('partials.responsive-workspace', ['responsiveShell' => 'auth'])
 </body>
 </html>

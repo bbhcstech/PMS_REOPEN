@@ -12,46 +12,12 @@
     $todayStatus = $attendance && $attendance->status ? str_replace('_', ' ', ucfirst($attendance->status)) : 'No Entry';
     $workedDurationLabel = $attendance && $attendance->clock_in && $attendance->clock_out ? $attendance->total_duration : '00:00:00';
 
-    $weekDays = collect(CarbonPeriod::create(now()->startOfWeek(), now()->endOfWeek()));
-    $weeklyLabels = [];
-    $weeklyHours = [];
-    $attendanceSummary = [
-        'Present' => 0,
-        'Absent' => 0,
-        'On Leave' => 0,
-        'Work From Home' => 0,
-        'Half Day' => 0,
-    ];
-
-    foreach ($weekDays as $day) {
-        $entry = $weeklyLogs[$day->toDateString()] ?? null;
-        $weeklyLabels[] = $day->format('D');
-        $hours = 0;
-
-        if ($entry && $entry->clock_in && $entry->clock_out) {
-            $hours = round(((int) ($entry->total_seconds ?? 0)) / 3600, 1);
-        }
-
-        $weeklyHours[] = $hours;
-
-        if (!$entry) {
-            $attendanceSummary['Absent']++;
-            continue;
-        }
-
-        $rawStatus = strtolower((string) ($entry->status ?? 'present'));
-        if (str_contains($rawStatus, 'leave')) {
-            $attendanceSummary['On Leave']++;
-        } elseif (str_contains($rawStatus, 'home') || str_contains($rawStatus, 'wfh')) {
-            $attendanceSummary['Work From Home']++;
-        } elseif (str_contains($rawStatus, 'half')) {
-            $attendanceSummary['Half Day']++;
-        } elseif (str_contains($rawStatus, 'absent') || str_contains($rawStatus, 'day_off')) {
-            $attendanceSummary['Absent']++;
-        } else {
-            $attendanceSummary['Present']++;
-        }
-    }
+    // Built by DashboardController from the My Attendance calendar (same records, leaves, holidays and working days).
+    $weekDays = $weekDays ?? collect();
+    $weekAttendance = $weekAttendance ?? ['labels' => [], 'hours' => [], 'summary' => [], 'totalHours' => 0, 'percent' => 0];
+    $weeklyLabels = $weekAttendance['labels'];
+    $weeklyHours = $weekAttendance['hours'];
+    $attendanceSummary = array_merge(['Present' => 0, 'Absent' => 0, 'On Leave' => 0, 'Work From Home' => 0, 'Half Day' => 0], $weekAttendance['summary']);
 
     $taskChart = [
         max(0, (int) $pendingTasksCount),
@@ -65,9 +31,8 @@
     ];
     $resolvedTickets = $myTickets->filter(fn ($ticket) => strtolower((string) $ticket->status) === 'resolved')->count();
     $ticketChart = [max(0, (int) $openTicketsCount), max(0, (int) $resolvedTickets)];
-    $attendanceChart = array_values($attendanceSummary);
-    $weeklyTotalHours = array_sum($weeklyHours);
-    $attendancePercent = count($weekDays) > 0 ? round(($attendanceSummary['Present'] / count($weekDays)) * 100) : 0;
+    $weeklyTotalHours = $weekAttendance['totalHours'];
+    $attendancePercent = $weekAttendance['percent'];
     $officeLatitude = 22.49682;
     $officeLongitude = 88.39462;
     $officeRadiusMeters = 10;
@@ -229,6 +194,8 @@
     }
 
     .employee-clock {
+        min-width: 0;
+        overflow-wrap: anywhere;
         display: grid;
         gap: 12px;
         justify-items: end;
@@ -901,6 +868,41 @@
         min-height: 220px;
     }
 
+    /* Wrapped donut legends were clipped into a scroll box (stray scrollbar beside the legend). */
+    #employeeAttendanceChart .apexcharts-legend {
+        overflow: visible !important;
+        max-height: none !important;
+        justify-content: center !important;
+    }
+    #employeeAttendanceChart .apexcharts-datalabel,
+    #employeeAttendanceChart .apexcharts-pie-label {
+        fill: #ffffff !important;
+    }
+    #employeeWeeklyHoursChart,
+    #employeeAttendanceChart {
+        min-height: 300px;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) #employeeAttendanceChart .apexcharts-legend-text {
+        color: #cbd5e1 !important;
+        -webkit-text-fill-color: #cbd5e1 !important;
+        opacity: 1 !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) #employeeAttendanceChart .apexcharts-datalabel-value {
+        fill: #eef1fb !important;
+    }
+    .dashboard-status-chart { --chart-center: #fff; --chart-label: #64748b; padding: 12px 0; }
+    .dashboard-status-ring { width: 190px; height: 190px; border-radius: 50%; margin: 0 auto 24px; display: grid; place-items: center; }
+    .dashboard-status-center { width: 132px; height: 132px; border-radius: 50%; background: var(--chart-center); display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .dashboard-status-center strong { font-size: 1.8rem; line-height: 1.2; color: var(--employee-text, #172033); }
+    .dashboard-status-center span { font-size: 0.75rem; color: var(--chart-label); margin-top: 5px; }
+    .dashboard-status-legend { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+    .dashboard-status-legend li { display: grid; grid-template-columns: 10px minmax(0, 1fr) auto 48px; align-items: center; gap: 10px; font-size: 0.82rem; }
+    .dashboard-status-dot { width: 9px; height: 9px; border-radius: 50%; }
+    .dashboard-status-legend small { color: var(--chart-label); text-align: right; }
+    .dashboard-status-empty { min-height: 220px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; text-align: center; }
+    .dashboard-status-empty span { color: var(--chart-label); font-size: 0.82rem; }
+    :is([data-pms-theme="dark"], [data-theme="dark"], [data-bs-theme="dark"], .dark, .dark-mode) .dashboard-status-chart { --chart-center: #10152f; --chart-label: #a5b4ce; --employee-text: #eef1fb; color: #eef1fb; }
+
     .employee-status-grid {
         display: grid;
         grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -1134,6 +1136,50 @@
         color: #9AA3C7 !important;
     }
 
+    /* My Projects table: progress column (status + % above a full-width bar) and readable client text. */
+    .employee-table td.employee-project-progress > .d-flex { gap: 10px; }
+    .employee-table td.employee-project-progress .progress {
+        display: flex !important;
+        width: 100% !important;
+        height: 6px !important;
+        overflow: hidden;
+        border-radius: 999px;
+        background: rgba(148, 163, 184, 0.28) !important;
+    }
+    .employee-table td.employee-project-progress .progress-bar { border-radius: 999px; }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"]) body .employee-table td.employee-project-progress .progress,
+    html body.dark-mode .employee-table td.employee-project-progress .progress { background: rgba(148, 163, 184, 0.22) !important; }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode, [data-pms-theme="dark"]) .employee-table .employee-project-client,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode, [data-pms-theme="dark"]) .employee-dashboard .employee-table .employee-project-client,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode, [data-pms-theme="dark"]) .employee-table td.employee-project-progress small {
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+        opacity: 1 !important;
+    }
+    /* Summary Attendance counts (Present, Absent, ...): dimmed by theme-wide text-fill rules in dark mode. */
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"]) body .employee-status-grid .employee-status-chip > span:last-child,
+    html body.dark-mode .employee-status-grid .employee-status-chip > span:last-child {
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+        opacity: 1 !important;
+        font-weight: 800;
+    }
+
+    /* Designation / Department labels and values: theme-wide text-fill rules dimmed them in dark mode. */
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"]) body .employee-profile-meta .employee-profile-meta-item span,
+    html body.dark-mode .employee-profile-meta .employee-profile-meta-item span {
+        color: #B4BEDF !important;
+        -webkit-text-fill-color: #B4BEDF !important;
+        opacity: 1 !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"]) body .employee-profile-meta .employee-profile-meta-item strong,
+    html body.dark-mode .employee-profile-meta .employee-profile-meta-item strong {
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+        opacity: 1 !important;
+    }
+
     html[data-pms-theme="dark"] .employee-quick-action,
     body[data-pms-theme="dark"] .employee-quick-action,
     [data-pms-theme="dark"] .employee-quick-action {
@@ -1163,22 +1209,18 @@
         color: #ffffff !important;
     }
 
-    html[data-pms-theme="dark"] .employee-rule *,
-    body[data-pms-theme="dark"] .employee-rule *,
-    [data-pms-theme="dark"] .employee-rule *,
-    body.dark .employee-rule *,
-    html.dark .employee-rule *,
-    [data-bs-theme="dark"] .employee-rule *,
-    .dark .employee-rule *,
-    .dark-mode .employee-rule *,
-    html[data-pms-theme="dark"] .employee-rule span,
-    body[data-pms-theme="dark"] .employee-rule span,
-    [data-pms-theme="dark"] .employee-rule span,
-    body.dark .employee-rule span,
-    html.dark .employee-rule span,
-    [data-bs-theme="dark"] .employee-rule span,
-    .dark .employee-rule span,
-    .dark-mode .employee-rule span,
+    html[data-pms-theme="dark"] .employee-rule .employee-rule-text,
+    body[data-pms-theme="dark"] .employee-rule .employee-rule-text,
+    [data-pms-theme="dark"] .employee-rule .employee-rule-text,
+    body.dark .employee-rule .employee-rule-text,
+    html.dark .employee-rule .employee-rule-text,
+    [data-bs-theme="dark"] .employee-rule .employee-rule-text,
+    .dark .employee-rule .employee-rule-text,
+    .dark-mode .employee-rule .employee-rule-text,
+    html[data-pms-theme="dark"] .employee-dashboard .employee-rule-text,
+    body[data-pms-theme="dark"] .employee-dashboard .employee-rule-text,
+    [data-pms-theme="dark"] .employee-dashboard .employee-rule-text,
+    body.dark-mode .employee-dashboard .employee-rule-text,
     html[data-pms-theme="dark"] .employee-rule-text,
     body[data-pms-theme="dark"] .employee-rule-text,
     [data-pms-theme="dark"] .employee-rule-text,
@@ -1186,7 +1228,24 @@
     html.dark .employee-rule-text,
     [data-bs-theme="dark"] .employee-rule-text,
     .dark .employee-rule-text,
-    .dark-mode .employee-rule-text,
+    .dark-mode .employee-rule-text {
+        color: #CBD5E1 !important;
+        -webkit-text-fill-color: #CBD5E1 !important;
+        font-weight: 400 !important;
+    }
+
+    html[data-pms-theme="dark"] .employee-rule .employee-rule-bold,
+    body[data-pms-theme="dark"] .employee-rule .employee-rule-bold,
+    [data-pms-theme="dark"] .employee-rule .employee-rule-bold,
+    body.dark .employee-rule .employee-rule-bold,
+    html.dark .employee-rule .employee-rule-bold,
+    [data-bs-theme="dark"] .employee-rule .employee-rule-bold,
+    .dark .employee-rule .employee-rule-bold,
+    .dark-mode .employee-rule .employee-rule-bold,
+    html[data-pms-theme="dark"] .employee-dashboard .employee-rule-bold,
+    body[data-pms-theme="dark"] .employee-dashboard .employee-rule-bold,
+    [data-pms-theme="dark"] .employee-dashboard .employee-rule-bold,
+    body.dark-mode .employee-dashboard .employee-rule-bold,
     html[data-pms-theme="dark"] .employee-rule strong,
     body[data-pms-theme="dark"] .employee-rule strong,
     [data-pms-theme="dark"] .employee-rule strong,
@@ -1204,7 +1263,25 @@
     .dark .employee-rule-bold,
     .dark-mode .employee-rule-bold {
         color: #ffffff !important;
-        font-weight: 600 !important;
+        -webkit-text-fill-color: #ffffff !important;
+        font-weight: 700 !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode, [data-pms-theme="dark"]) .employee-rule i.text-warning {
+        color: #f59e0b !important;
+        -webkit-text-fill-color: #f59e0b !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode, [data-pms-theme="dark"]) .employee-rule i.text-primary {
+        color: #2f6bff !important;
+        -webkit-text-fill-color: #2f6bff !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode, [data-pms-theme="dark"]) .employee-rule i.text-danger {
+        color: #ef4444 !important;
+        -webkit-text-fill-color: #ef4444 !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode, [data-pms-theme="dark"]) .employee-rule i.text-info {
+        color: #22d3ee !important;
+        -webkit-text-fill-color: #22d3ee !important;
     }
 
     html[data-pms-theme="dark"] .employee-status-chip,
@@ -1272,6 +1349,14 @@
     [data-pms-theme="dark"] .clock-camera-footer {
         border-color: rgba(238, 241, 251, 0.1) !important;
     }
+    :is([data-pms-theme="dark"], [data-theme="dark"], [data-bs-theme="dark"], .dark, .dark-mode) .employee-calendar-list .employee-calendar-row > span:first-child {
+        color: #eef1fb !important;
+        -webkit-text-fill-color: #eef1fb !important;
+    }
+    :is([data-pms-theme="dark"], [data-theme="dark"], [data-bs-theme="dark"], .dark, .dark-mode) .employee-joinings-anniversaries .employee-people-item > span {
+        color: #eef1fb !important;
+        -webkit-text-fill-color: #eef1fb !important;
+    }
 </style>
 
 @if($showEmployeeWelcome ?? false)
@@ -1318,7 +1403,7 @@
                     </div>
                     <div class="welcome-policy-item">
                         <strong><i class="bx bx-camera me-1"></i> Photo Capture</strong>
-                        <span>A live camera photo is required before clock in can be completed.</span>
+                        <span>A live camera photo is required for manual clock-in and clock-out.</span>
                     </div>
                     <div class="welcome-policy-item">
                         <strong><i class="bx bx-time-five me-1"></i> Attendance Timing</strong>
@@ -1331,17 +1416,17 @@
 @endif
 
 <main id="main" class="main">
-    <div class="employee-dashboard">
+    <div class="employee-dashboard" data-live-key="employee-dashboard">
         <div class="container-fluid">
             @if(session('success'))
-                <div class="alert alert-success border-0 shadow-sm">{{ session('success') }}</div>
+                <div class="alert alert-success border-0 shadow-sm" data-live-key="employee-success">{{ session('success') }}</div>
             @endif
 
             @if(session('error'))
-                <div class="alert alert-danger border-0 shadow-sm">{{ session('error') }}</div>
+                <div class="alert alert-danger border-0 shadow-sm" data-live-key="employee-error">{{ session('error') }}</div>
             @endif
 
-            <section class="employee-hero mb-4">
+            <section class="employee-hero mb-4" data-live-key="employee-hero">
                 <div class="row align-items-center">
                     <div class="col-lg-8 text-white" style="color: white !important;">
                         <span class="employee-eyebrow" style="color: white !important;"><i class="bx bx-home-smile" style="color: white !important;"></i> Employee Dashboard</span>
@@ -1352,20 +1437,24 @@
                     </div>
                     <div class="col-lg-4">
                         <div class="employee-clock">
-                            <div class="text-lg-end">
-                                <div class="employee-time" id="employeeLiveTime">{{ now()->format('h:i A') }}</div>
-                                <div id="employeeLiveDate">{{ now()->format('l, d M Y') }}</div>
+                            <div class="text-lg-end" data-live-key="employee-clock-display">
+                                <div class="employee-time" id="employeeLiveTime" data-live-preserve>{{ now($employeeTimezone)->format('h:i A') }}</div>
+                                <div id="employeeLiveDate" data-live-preserve>{{ now($employeeTimezone)->format('l, d M Y') }}</div>
                             </div>
 
                             @if ($attendance && $attendance->clock_in && !$attendance->clock_out)
                                 <form method="POST" action="{{ route('dashboard.clockout') }}" id="employeeClockOutForm">
                                     @csrf
                                     <input type="hidden" name="clock_out_timezone" id="clockOutTimezone">
+                                    <input type="hidden" name="clock_out_selfie" id="clockOutSelfie">
                                     <button class="employee-action-btn is-out" type="submit" id="employeeClockOutButton">
                                         <i class="bx bx-log-out-circle"></i> Clock Out
                                     </button>
                                 </form>
-                            @elseif(!$attendance || !$attendance->clock_in)
+                            @else
+                                @if ($attendance && $attendance->clock_out)
+                                    <span class="employee-complete mb-2"><i class="bx bx-check-circle"></i> Shift Completed</span>
+                                @endif
                                 <form method="POST" action="{{ route('dashboard.clockin') }}" id="employeeClockInForm">
                                     @csrf
                                     <input type="hidden" name="clock_in_latitude" id="clockInLatitude">
@@ -1378,16 +1467,15 @@
                                         <i class="bx bx-log-in-circle"></i> Clock In
                                     </button>
                                 </form>
+                                @include('admin.partials.clock-window-note')
                                 <div class="clock-requirements" id="clockRequirementStatus">
                                     <div class="clock-status-line"><i class="bx bx-map-pin"></i><span>Share current location to save your clock-in place.</span></div>
                                     <div class="clock-status-line"><i class="bx bx-camera"></i><span>Capture photo to complete clock in.</span></div>
                                 </div>
-                            @else
-                                <span class="employee-complete"><i class="bx bx-check-circle"></i> Shift Completed</span>
                             @endif
 
                             @if($attendance && $attendance->clock_in)
-                                <div class="clock-attendance-card">
+                                <div class="clock-attendance-card" data-live-key="employee-clock-attendance">
                                     @if($attendance->clock_in_photo && !$attendance->clock_out)
                                         <img src="{{ asset($attendance->clock_in_photo) }}" alt="Clock in photo">
                                     @endif
@@ -1401,26 +1489,26 @@
                                             );
                                         $clockedInOutsideOffice = strtolower((string) $attendance->work_from_type) === 'field';
                                         $attendanceDateStr = ($attendance->date instanceof \Carbon\Carbon ? $attendance->date->format('Y-m-d') : (string) $attendance->date);
-                                        $defaultTz = (config('app.timezone') && config('app.timezone') !== 'UTC') ? config('app.timezone') : 'Asia/Kolkata';
+                                        $defaultTz = $employeeTimezone ?? ((config('app.timezone') && config('app.timezone') !== 'UTC') ? config('app.timezone') : 'Asia/Kolkata');
                                         $clockInIsoString = $attendance->clock_in ? \Carbon\Carbon::parse($attendanceDateStr . ' ' . $attendance->clock_in, $defaultTz)->toIso8601String() : '';
                                         $clockOutIsoString = $attendance->clock_out ? \Carbon\Carbon::parse($attendanceDateStr . ' ' . $attendance->clock_out, $defaultTz)->toIso8601String() : '';
                                     @endphp
                                     @if($clockInLocationText)
-                                        <div class="clock-location-note">
+                                        <div class="clock-location-note" data-live-key="employee-clock-location">
                                             <span>Clock-in location</span>
                                             {{ $clockInLocationText }}
                                         </div>
                                     @endif
                                     @if($clockedInOutsideOffice)
-                                        <p class="clock-policy-warning-text">
+                                        <p class="clock-policy-warning-text" data-live-key="employee-clock-warning">
                                             <i class="bx bx-error-circle me-1"></i>
                                             You did not clock in from the organization area. This may affect your appraisal later. Please maintain the office policy properly.
                                         </p>
                                     @endif
-                                    <div class="clock-live-grid">
+                                    <div class="clock-live-grid" data-live-key="employee-clock-timers">
                                         <div class="clock-live-box">
-                                            <span id="employeeClockZoneLabel">Current Time</span>
-                                            <strong id="employeeIstClock">{{ now()->format('h:i:s A') }}</strong>
+                                            <span id="employeeClockZoneLabel" data-live-preserve>Current Time</span>
+                                            <strong id="employeeIstClock" data-live-preserve>{{ now($defaultTz)->format('h:i:s A') }}</strong>
                                         </div>
                                         <div class="clock-live-box">
                                             <span>{{ $attendance->clock_out ? 'Worked Time' : 'Working Time' }}</span>
@@ -1444,28 +1532,27 @@
             <div class="clock-camera-modal" id="clockCameraModal" aria-hidden="true">
                 <div class="clock-camera-panel">
                     <div class="clock-camera-header">
-                        <h5 class="mb-0 fw-bold">Capture Clock In Photo</h5>
+                        <h5 class="mb-0 fw-bold">Capture Attendance Photo</h5>
                         <button type="button" class="clock-modal-btn danger" id="clockCameraClose"><i class="bx bx-x"></i> Close</button>
                     </div>
                     <div class="clock-camera-body">
                         <div class="clock-camera-preview" id="clockCameraPreview">
                             <video id="clockCameraVideo" autoplay playsinline muted></video>
                             <canvas id="clockCameraCanvas" style="display: none !important; position: absolute; width: 0; height: 0; pointer-events: none;"></canvas>
-                            <img id="clockCameraPhoto" alt="Captured clock in photo">
+                            <img id="clockCameraPhoto" alt="Captured attendance photo">
                         </div>
-                        <p class="employee-muted mt-3 mb-0">Take a clear face photo. You can flip camera on mobile, retake, then use photo for clock in.</p>
+                        <p class="employee-muted mt-3 mb-0">Take a clear face photo. You can flip camera on mobile, retake, then use your photo to complete attendance.</p>
                     </div>
                     <div class="clock-camera-footer">
                         <button type="button" class="clock-modal-btn secondary" id="clockCameraFlip"><i class="bx bx-refresh"></i> Flip</button>
                         <button type="button" class="clock-modal-btn" id="clockCameraCapture"><i class="bx bx-camera"></i> Capture</button>
                         <button type="button" class="clock-modal-btn secondary" id="clockCameraRetake"><i class="bx bx-undo"></i> Retake</button>
-                        <button type="button" class="clock-modal-btn secondary" id="clockCameraSkip"><i class="bx bx-check-circle"></i> Skip Photo & Clock In</button>
-                        <button type="button" class="clock-modal-btn success" id="clockCameraUse"><i class="bx bx-check"></i> Use Photo & Clock In</button>
+                        <button type="button" class="clock-modal-btn success" id="clockCameraUse"><i class="bx bx-check"></i> Use Photo & Confirm</button>
                     </div>
                 </div>
             </div>
 
-            <div class="row g-4 mb-4">
+            <div class="row g-4 mb-4" data-live-key="employee-metrics">
                 <div class="col-xl-4 col-lg-6">
                     <div class="employee-card employee-animate-1 h-100">
                         <div class="employee-profile">
@@ -1564,7 +1651,7 @@
                 </div>
             </div>
 
-            <div class="employee-panel mb-4">
+            <div class="employee-panel mb-4" data-live-key="employee-quick-actions">
                 <div class="employee-card-header">
                     <div>
                         <h3 class="employee-card-title">Quick Actions</h3>
@@ -1580,7 +1667,7 @@
                 </div>
             </div>
 
-            <div class="row g-4 mb-4">
+            <div class="row g-4 mb-4" data-live-key="employee-attendance-charts">
                 <div class="col-xl-8">
                     <div class="employee-panel h-100">
                         <div class="employee-card-header">
@@ -1590,7 +1677,9 @@
                             </div>
                             <span class="employee-icon info"><i class="bx bx-line-chart"></i></span>
                         </div>
-                        <div id="employeeWeeklyHoursChart" class="employee-chart"></div>
+                        <div id="employeeWeeklyHoursChart" class="employee-chart"
+                            data-chart-labels="{{ json_encode($weeklyLabels) }}"
+                            data-chart-series="{{ json_encode($weeklyHours) }}"></div>
                     </div>
                 </div>
                 <div class="col-xl-4">
@@ -1598,16 +1687,18 @@
                         <div class="employee-card-header">
                             <div>
                                 <h3 class="employee-card-title">Attendance Pie Chart</h3>
-                                <p class="employee-muted mb-0">Present, absent, leave, and work from home.</p>
+                                <p class="employee-muted mb-0">This week's days from My Attendance.</p>
                             </div>
                             <span class="employee-icon success"><i class="bx bx-pie-chart-alt-2"></i></span>
                         </div>
-                        <div id="employeeAttendanceChart" class="employee-chart"></div>
+                        <div id="employeeAttendanceChart" class="employee-chart"
+                            data-chart-labels="{{ json_encode(array_keys($attendanceSummary)) }}"
+                            data-chart-series="{{ json_encode(array_values($attendanceSummary)) }}"></div>
                     </div>
                 </div>
             </div>
 
-            <div class="employee-panel mb-4">
+            <div class="employee-panel mb-4" data-live-key="employee-attendance-summary">
                 <div class="employee-card-header">
                     <div>
                         <h3 class="employee-card-title">Summary Attendance</h3>
@@ -1623,14 +1714,14 @@
                 </div>
             </div>
 
-            <div class="row g-4 mb-4">
+            <div class="row g-4 mb-4" data-live-key="employee-work-charts">
                 <div class="col-xl-4 col-lg-6">
                     <div class="employee-panel h-100">
                         <div class="employee-card-header">
                             <h3 class="employee-card-title">Tasks Pie Chart</h3>
                             <span class="employee-icon primary"><i class="bx bx-task"></i></span>
                         </div>
-                        <div id="employeeTaskChart" class="employee-chart small"></div>
+                        <div id="employeeTaskChart" class="employee-chart small">@include('partials.dashboard-status-chart', ['counts' => $dashboardStatusCharts['tasks'] ?? [], 'subject' => 'tasks'])</div>
                     </div>
                 </div>
                 <div class="col-xl-4 col-lg-6">
@@ -1639,7 +1730,7 @@
                             <h3 class="employee-card-title">Projects Pie Chart</h3>
                             <span class="employee-icon success"><i class="bx bx-briefcase"></i></span>
                         </div>
-                        <div id="employeeProjectChart" class="employee-chart small"></div>
+                        <div id="employeeProjectChart" class="employee-chart small">@include('partials.dashboard-status-chart', ['counts' => $dashboardStatusCharts['projects'] ?? [], 'subject' => 'projects'])</div>
                     </div>
                 </div>
                 <div class="col-xl-4 col-lg-12">
@@ -1648,12 +1739,12 @@
                             <h3 class="employee-card-title">Tickets Pie Chart</h3>
                             <span class="employee-icon warning"><i class="bx bx-support"></i></span>
                         </div>
-                        <div id="employeeTicketChart" class="employee-chart small"></div>
+                        <div id="employeeTicketChart" class="employee-chart small">@include('partials.dashboard-status-chart', ['counts' => $dashboardStatusCharts['tickets'] ?? [], 'subject' => 'tickets'])</div>
                     </div>
                 </div>
             </div>
 
-            <div class="employee-panel mb-4">
+            <div class="employee-panel mb-4" data-live-key="employee-attendance-rules">
                 <div class="employee-card-header">
                     <div>
                         <h3 class="employee-card-title">Attendance Rules & Regulations</h3>
@@ -1682,7 +1773,7 @@
                     </div>
                     <div class="col-lg-3 col-md-6">
                         <div class="employee-rule">
-                            <i class="bx bx-plane-alt text-info fs-3 me-2"></i>
+                            <i class="bx bxs-plane-alt text-info fs-3 me-2"></i>
                             <span class="employee-rule-text">Approved leave is shown automatically from the leave table.</span>
                         </div>
                     </div>
@@ -1690,7 +1781,7 @@
             </div>
 
             <!-- ============ MY PROJECTS SECTION ============ -->
-            <div class="employee-panel mb-4">
+            <div class="employee-panel mb-4" data-live-key="employee-projects">
                 <div class="employee-card-header d-flex justify-content-between align-items-center mb-3">
                     <div>
                         <h3 class="employee-card-title mb-1"><i class="bx bx-folder-open text-primary me-2"></i>My Projects</h3>
@@ -1739,7 +1830,7 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <span class="text-dark">{{ $project->client->company_name ?? ($project->client->name ?? 'Internal Project') }}</span>
+                                        <span class="text-dark employee-project-client">{{ $project->client->company_name ?? ($project->client->name ?? 'Internal Project') }}</span>
                                     </td>
                                     <td>
                                         <small class="d-block text-muted">
@@ -1749,7 +1840,7 @@
                                             <i class="bx bx-flag me-1 text-danger"></i>{{ $project->deadline ? Carbon::parse($project->deadline)->format('d M, Y') : 'No Deadline' }}
                                         </small>
                                     </td>
-                                    <td style="min-width: 170px;">
+                                    <td class="employee-project-progress" style="min-width: 170px;">
                                         <div class="d-flex align-items-center justify-content-between mb-1">
                                             <span class="badge {{ $projStatusClass }} text-capitalize" style="font-size: 0.75rem;">
                                                 {{ $project->status ?? 'Not Started' }}
@@ -1801,7 +1892,7 @@
             </div>
             <!-- ============ END MY PROJECTS SECTION ============ -->
 
-            <div class="row g-4 mb-4">
+            <div class="row g-4 mb-4" data-live-key="employee-work-tables">
                 <div class="col-xl-6">
                     <div class="employee-table-card h-100">
                         <div class="employee-table-head">
@@ -1902,7 +1993,7 @@
                 </div>
             </div>
 
-            <div class="row g-4 mb-4">
+            <div class="row g-4 mb-4" data-live-key="employee-attendance-calendar">
                 <div class="col-xl-5">
                     <div class="employee-panel h-100">
                         <div class="employee-card-header">
@@ -1934,23 +2025,26 @@
                         <div class="employee-card-header">
                             <div>
                                 <h3 class="employee-card-title">My Calendar</h3>
-                                <p class="employee-muted mb-0">{{ now()->startOfWeek()->format('M d') }} - {{ now()->endOfWeek()->format('M d, Y') }}</p>
+                                <p class="employee-muted mb-0">{{ ($weekDays->first()['date'] ?? now()->startOfWeek())->format('M d') }} - {{ ($weekDays->last()['date'] ?? now()->endOfWeek())->format('M d, Y') }}</p>
                             </div>
                             <span class="employee-icon primary"><i class="bx bx-calendar"></i></span>
                         </div>
                         <div class="employee-calendar-list">
+                            @php
+                                $calendarBadges = ['present' => 'bg-success', 'late' => 'bg-warning', 'half_day' => 'bg-primary', 'absent' => 'bg-danger', 'holiday' => 'bg-info', 'leave' => 'bg-warning', 'unpaid_leave' => 'bg-warning', 'day_off' => 'bg-secondary'];
+                            @endphp
                             @foreach($weekDays as $day)
                                 @php
-                                    $entry = $weeklyLogs[$day->toDateString()] ?? null;
+                                    $entry = $day['daily']->last();
+                                    $calendarStatus = $day['status'] === 'not_marked' ? 'No Entry' : ($day['status'] === 'not_joined' ? 'Before joining' : ucfirst(str_replace('_', ' ', $day['status'])));
                                 @endphp
-                                <div class="employee-calendar-row">
-                                    <span class="fw-bold">{{ $day->format('l, F d, Y') }}</span>
+                                <div class="employee-calendar-row" data-live-key="employee-calendar-{{ $day['key'] }}">
+                                    <span class="fw-bold">{{ $day['date']->format('l, F d, Y') }}</span>
                                     <span>
+                                        <span class="badge {{ $calendarBadges[$day['status']] ?? 'bg-secondary' }}">{{ $calendarStatus }}</span>
+                                        @if($day['wfh'])<span class="badge bg-info ms-1">WFH</span>@endif
                                         @if ($entry)
-                                            <span class="badge bg-success">{{ ucfirst(str_replace('_', ' ', $entry->status ?? 'present')) }}</span>
                                             <small class="text-muted ms-2">In: {{ $entry->clock_in ?? 'NA' }} | Out: {{ $entry->clock_out ?? 'NA' }}</small>
-                                        @else
-                                            <span class="badge bg-secondary">No Entry</span>
                                         @endif
                                     </span>
                                 </div>
@@ -1960,7 +2054,7 @@
                 </div>
             </div>
 
-            <div class="row g-4">
+            <div class="row g-4" data-live-key="employee-people">
                 <div class="col-xl-3 col-md-6">
                     <div class="employee-panel h-100">
                         <div class="employee-card-header">
@@ -2015,6 +2109,7 @@
                             <h3 class="employee-card-title">Joinings & Anniversaries</h3>
                             <span class="employee-icon danger"><i class="bx bx-party"></i></span>
                         </div>
+                        <div class="employee-joinings-anniversaries">
                         <p class="fw-bold mb-2">Today's Joinings</p>
                         @forelse($todaysJoinings as $emp)
                             <div class="employee-people-item"><span>{{ $emp->user->name ?? 'N/A' }}</span></div>
@@ -2024,10 +2119,11 @@
 
                         <p class="fw-bold mt-3 mb-2">Work Anniversaries</p>
                         @forelse($workAnniversaries as $emp)
-                            <div class="employee-people-item"><span>{{ $emp->user->name ?? 'N/A' }}</span><strong>{{ Carbon::parse($emp->joining_date)->diffInYears() }} year(s)</strong></div>
+                            <div class="employee-people-item"><span>{{ $emp->user->name ?? 'N/A' }}</span><strong>{{ number_format(Carbon::parse($emp->joining_date)->diffInYears(), 3, '.', '') }} year(s)</strong></div>
                         @empty
                             <p class="employee-empty">No record found.</p>
                         @endforelse
+                        </div>
                     </div>
                 </div>
             </div>
@@ -2557,28 +2653,7 @@ window.saveEmployeeTask = function(submitBtn, taskId) {
             return compactAddress(data.address) || (data.display_name || '').slice(0, 180);
         };
 
-        const skipCamera = document.getElementById('clockCameraSkip');
 
-        const generateFallbackSelfie = () => {
-            const cvs = document.createElement('canvas');
-            cvs.width = 400;
-            cvs.height = 400;
-            const ctx = cvs.getContext('2d');
-            ctx.fillStyle = '#1e293b';
-            ctx.fillRect(0, 0, 400, 400);
-            ctx.fillStyle = '#10b981';
-            ctx.beginPath();
-            ctx.arc(200, 160, 60, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.beginPath();
-            ctx.arc(200, 340, 110, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 20px sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillText('Clock-In Selfie (N/A)', 200, 370);
-            return cvs.toDataURL('image/jpeg', 0.85);
-        };
 
         if (clockInForm) {
             clockInForm.addEventListener('submit', async event => {
@@ -2622,22 +2697,21 @@ window.saveEmployeeTask = function(submitBtn, taskId) {
                     accuracyInput.value = positionAccuracy;
                     addressInput.value = locationLabel;
 
-                    // 2. Try to open camera for selfie, with graceful fallback on permission error
+                    // 2. Open the camera; permission errors must not clock in
                     try {
                         setClockStatus('Opening camera for selfie photo...', 'info');
                         await openCamera();
                     } catch (camErr) {
                         console.warn('Camera permission error or unavailable:', camErr);
-                        setClockStatus('Camera permission unavailable. Completing clock-in with default photo...', 'info');
-                        selfieInput.value = generateFallbackSelfie();
-                        canSubmitClockIn = true;
-                        clockInForm.submit();
+                        setClockStatus('Camera access is required. Allow camera permission and capture your photo to clock in.', 'error');
+                        selfieInput.value = '';
+                        canSubmitClockIn = false;
                     }
                 } catch (error) {
                     console.error('Clock in error:', error);
-                    selfieInput.value = selfieInput.value || generateFallbackSelfie();
-                    canSubmitClockIn = true;
-                    clockInForm.submit();
+                    selfieInput.value = '';
+                    canSubmitClockIn = false;
+                    setClockStatus('Camera access and a captured photo are required to clock in.', 'error');
                 } finally {
                     clockInButton.disabled = false;
                 }
@@ -2704,22 +2778,51 @@ window.saveEmployeeTask = function(submitBtn, taskId) {
             preview?.classList.remove('has-photo');
         });
 
-        skipCamera?.addEventListener('click', () => {
-            if (!selfieInput.value) {
-                selfieInput.value = generateFallbackSelfie();
+
+
+        const clockOutForm = document.getElementById('employeeClockOutForm');
+        let clockAction = 'in';
+        let openingClockOutCamera = false;
+        clockOutForm?.addEventListener('submit', async event => {
+            event.preventDefault();
+            if (openingClockOutCamera) return;
+            openingClockOutCamera = true;
+            clockAction = 'out';
+            const button = clockOutForm.querySelector('button[type="submit"]');
+            if (button) button.disabled = true;
+            try {
+                document.getElementById('clockOutSelfie').value = '';
+                setClockStatus('Capture your photo to complete clock out.', 'info');
+                await openCamera();
+            } catch (error) {
+                closeCameraModal();
+                setClockStatus('Allow camera access and capture a photo to clock out.', 'error');
+                alert('Allow camera access and capture a photo to clock out.');
+            } finally {
+                openingClockOutCamera = false;
+                if (button) button.disabled = false;
             }
-            canSubmitClockIn = true;
-            setClockStatus('Clocking in without photo...', 'success');
-            closeCameraModal();
-            clockInForm.submit();
         });
 
         useCamera?.addEventListener('click', () => {
-            if (!capturedSelfie) {
-                selfieInput.value = generateFallbackSelfie();
-            } else {
-                selfieInput.value = capturedSelfie;
+            if (clockAction === 'out') {
+                if (!capturedSelfie) {
+                    alert('Capture your photo before clocking out.');
+                    return;
+                }
+                document.getElementById('clockOutSelfie').value = capturedSelfie;
+                document.getElementById('clockOutTimezone').value = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Kolkata';
+                closeCameraModal();
+                clockOutForm.querySelector('button[type="submit"]').disabled = true;
+                clockOutForm.submit();
+                return;
             }
+
+            if (!capturedSelfie) {
+                setClockStatus('Capture your attendance photo before continuing.', 'error');
+                return;
+            }
+            selfieInput.value = capturedSelfie;
 
             if (timezoneInput) {
                 timezoneInput.value = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Kolkata';
@@ -2730,15 +2833,7 @@ window.saveEmployeeTask = function(submitBtn, taskId) {
             clockInForm.submit();
         });
 
-        const clockOutForm = document.getElementById('employeeClockOutForm');
-        if (clockOutForm) {
-            clockOutForm.addEventListener('submit', () => {
-                const clockOutTz = document.getElementById('clockOutTimezone');
-                if (clockOutTz) {
-                    clockOutTz.value = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Kolkata';
-                }
-            });
-        }
+
 
         const istClock = document.getElementById('employeeIstClock');
         const workTimer = document.getElementById('employeeWorkTimer');
@@ -2798,6 +2893,14 @@ window.saveEmployeeTask = function(submitBtn, taskId) {
 
         const updateClockWidgets = () => {
             const now = new Date();
+            // A live dashboard refresh may insert new clock nodes after clock-in.
+            // Always update the visible nodes rather than detached originals.
+            const istClock = document.getElementById('employeeIstClock');
+            const workTimer = document.getElementById('employeeWorkTimer');
+            const liveTime = document.getElementById('employeeLiveTime');
+            const liveDate = document.getElementById('employeeLiveDate');
+            const heroTime = document.getElementById('employeeHeroTime');
+            const heroDate = document.getElementById('employeeHeroDate');
 
             if (liveTime) {
                 liveTime.textContent = formatLocalTime(now, false);
@@ -2944,49 +3047,151 @@ window.saveEmployeeTask = function(submitBtn, taskId) {
 
         const renderChart = (selector, options) => {
             const element = document.querySelector(selector);
-            if (!element) {
+            if (!element || element.querySelector('.dashboard-status-chart')) {
                 return;
             }
 
             new ApexCharts(element, options).render();
         };
 
-        renderChart('#employeeWeeklyHoursChart', {
+        // Weekly attendance charts read their data from data-chart-* attributes, which the live
+        // refresher keeps in sync with My Attendance; charts update in place when the data changes.
+        const attendanceCharts = {};
+        const readChartData = element => {
+            try {
+                return {
+                    labels: JSON.parse(element.dataset.chartLabels || '[]'),
+                    series: JSON.parse(element.dataset.chartSeries || '[]').map(Number),
+                };
+            } catch (_) {
+                return { labels: [], series: [] };
+            }
+        };
+        const isDarkTheme = () => {
+            const root = document.documentElement;
+            return [root, document.body].some(node => ['data-pms-theme', 'data-bs-theme', 'data-theme'].some(attr => node.getAttribute(attr) === 'dark'))
+                || document.body.classList.contains('dark-mode') || root.classList.contains('dark');
+        };
+        const attendanceThemeColors = () => isDarkTheme()
+            ? { text: '#a5b4ce', strong: '#eef1fb', grid: 'rgba(238, 241, 251, 0.12)', marker: '#10152f', tooltip: 'dark' }
+            : { text: '#667085', strong: '#172033', grid: 'rgba(23, 32, 51, 0.08)', marker: '#ffffff', tooltip: 'light' };
+        const formatHours = value => {
+            const minutes = Math.round((Number(value) || 0) * 60);
+            const h = Math.floor(minutes / 60), m = minutes % 60;
+            return m ? `${h}h ${m}m` : `${h}h`;
+        };
+        const attendanceSliceColors = ['#12a66a', '#e5484d', '#f59e0b', '#168aad', '#5b5ce2'];
+
+        const weeklyHoursOptions = (data, theme) => ({
             chart: {
                 type: 'area',
                 height: 300,
                 animations: { enabled: true, easing: 'easeinout', speed: 850 },
-                toolbar: { show: false }
+                toolbar: { show: false },
+                zoom: { enabled: false },
+                foreColor: theme.text
             },
-            series: [{
-                name: 'Hours',
-                data: @json($weeklyHours)
-            }],
+            series: [{ name: 'Hours', data: data.series }],
             xaxis: {
-                categories: @json($weeklyLabels),
-                labels: { style: { colors: chartTextColor, fontWeight: 700 } }
+                categories: data.labels,
+                labels: { style: { colors: theme.text, fontWeight: 700 } },
+                axisBorder: { color: theme.grid },
+                axisTicks: { color: theme.grid },
+                tooltip: { enabled: false }
             },
             yaxis: {
                 min: 0,
-                labels: { style: { colors: chartTextColor }, formatter: value => `${value}h` }
+                max: Math.max(2, Math.ceil(Math.max(0, ...data.series))),
+                tickAmount: 4,
+                labels: { style: { colors: theme.text }, formatter: value => formatHours(value) }
             },
             colors: ['#168aad'],
+            dataLabels: { enabled: false },
             fill: {
                 type: 'gradient',
                 gradient: { shadeIntensity: 0.8, opacityFrom: 0.38, opacityTo: 0.04, stops: [0, 90, 100] }
             },
-            stroke: { curve: 'smooth', width: 4 },
-            grid: { borderColor: chartGridColor, strokeDashArray: 4 },
-            markers: { size: 5, colors: ['#fff'], strokeColors: '#168aad', strokeWidth: 3 },
-            tooltip: { y: { formatter: value => `${value} hours` } }
+            stroke: { curve: 'smooth', width: 3 },
+            grid: { borderColor: theme.grid, strokeDashArray: 4, padding: { left: 8, right: 12 } },
+            markers: { size: 5, colors: [theme.marker], strokeColors: '#168aad', strokeWidth: 3, hover: { size: 7 } },
+            tooltip: { theme: theme.tooltip, y: { formatter: value => formatHours(value) } }
         });
 
-        renderChart('#employeeAttendanceChart', {
-            ...commonDonut,
-            series: @json($attendanceChart),
-            labels: @json(array_keys($attendanceSummary)),
-            colors: ['#12a66a', '#e5484d', '#f59e0b', '#168aad', '#5b5ce2']
-        });
+        const attendancePieOptions = (data, theme) => {
+            const total = data.series.reduce((sum, value) => sum + value, 0);
+            return {
+                ...commonDonut,
+                chart: { ...commonDonut.chart, height: 300, foreColor: theme.text },
+                // An all-zero donut renders as a blank ring; an empty series shows the noData message instead.
+                series: total > 0 ? data.series : [],
+                labels: data.labels,
+                colors: attendanceSliceColors,
+                noData: { text: 'No attendance recorded this week yet', style: { color: theme.text, fontSize: '13px' } },
+                legend: {
+                    position: 'bottom',
+                    horizontalAlign: 'center',
+                    fontWeight: 600,
+                    labels: { colors: theme.text },
+                    itemMargin: { horizontal: 8, vertical: 3 },
+                    markers: { offsetX: -3 }
+                },
+                dataLabels: {
+                    enabled: true,
+                    formatter: (value, { seriesIndex, w }) => w.config.series[seriesIndex],
+                    style: { fontSize: '12px', fontWeight: 800 },
+                    dropShadow: { enabled: false }
+                },
+                tooltip: { theme: theme.tooltip, y: { formatter: value => `${value} day${value === 1 ? '' : 's'}` } },
+                plotOptions: {
+                    pie: {
+                        donut: {
+                            size: '64%',
+                            labels: {
+                                show: true,
+                                name: { color: theme.text },
+                                value: { color: theme.strong, fontSize: '22px', fontWeight: 800 },
+                                total: {
+                                    show: true,
+                                    label: 'Days',
+                                    color: theme.text,
+                                    formatter: () => String(total)
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+        };
+
+        const attendanceChartBuilders = {
+            employeeWeeklyHoursChart: weeklyHoursOptions,
+            employeeAttendanceChart: attendancePieOptions,
+        };
+        const renderAttendanceCharts = () => {
+            const theme = attendanceThemeColors();
+            Object.entries(attendanceChartBuilders).forEach(([id, build]) => {
+                const element = document.getElementById(id);
+                if (!element) return;
+                const signature = (element.dataset.chartLabels || '') + '|' + (element.dataset.chartSeries || '') + '|' + theme.tooltip;
+                const existing = attendanceCharts[id];
+                if (existing && existing.element === element && existing.element.querySelector('.apexcharts-canvas')) {
+                    if (existing.signature !== signature) {
+                        existing.chart.updateOptions(build(readChartData(element), theme), true, true);
+                        existing.signature = signature;
+                    }
+                    return;
+                }
+                existing?.chart?.destroy?.();
+                element.innerHTML = '';
+                const chart = new ApexCharts(element, build(readChartData(element), theme));
+                chart.render();
+                attendanceCharts[id] = { chart, element, signature };
+            });
+        };
+        renderAttendanceCharts();
+        document.addEventListener('pms:records-updated', renderAttendanceCharts);
+        new MutationObserver(renderAttendanceCharts).observe(document.documentElement, { attributes: true, attributeFilter: ['data-pms-theme', 'data-bs-theme', 'data-theme', 'class'] });
+        new MutationObserver(renderAttendanceCharts).observe(document.body, { attributes: true, attributeFilter: ['data-pms-theme', 'data-bs-theme', 'data-theme', 'class'] });
 
         renderChart('#employeeTaskChart', {
             ...commonDonut,
@@ -3097,4 +3302,3 @@ window.saveEmployeeTask = function(submitBtn, taskId) {
     });
 </script>
 @endpush
-

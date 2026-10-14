@@ -37,7 +37,7 @@ class CompanySettingsController extends Controller
             $company->company_website = $currentCompany->website;
         }
 
-        $countryMap = \App\Support\CountryPhone::map();
+        $countryMap = \App\Support\CountryPhone::formMap();
 
         // Parse existing phone into country code and number (default India +91)
         $selectedCountryCode = '+91';

@@ -365,6 +365,10 @@
 
 
 
+{{-- These modals contain their own <form>s, so they are rendered OUTSIDE #taskForm via the
+     task-form-modals stack. Nested inside it, the browser merged their fields into the task form and the
+     Add Employee "status" radio (Active) overwrote the task status, failing validation. --}}
+@push('task-form-modals')
 <!-- Employee Modal -->
 <div class="modal fade" id="employeeModal" tabindex="-1" aria-labelledby="employeeModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-scrollable">
@@ -871,3 +875,4 @@
         </form>
     </div>
 </div>
+@endpush

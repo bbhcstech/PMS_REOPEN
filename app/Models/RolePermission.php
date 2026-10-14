@@ -33,6 +33,6 @@ class RolePermission extends TenantModel
 
     public function module(): BelongsTo
     {
-        return $this->belongsTo(Module::class);
+        return $this->belongsTo(WorkspaceModule::class, 'module_id');
     }
 }

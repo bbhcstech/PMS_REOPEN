@@ -14,6 +14,20 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     @endif
+    @if(!empty($staleEmployees))
+        <div class="alert alert-warning" role="status">
+            <strong>This saved run still contains {{ count($staleEmployees) }} employee(s) without an active Employee Salary assignment:</strong>
+            {{ implode(', ', array_slice($staleEmployees, 0, 10)) }}{{ count($staleEmployees) > 10 ? ' …' : '' }}.
+            Click <strong>Recalculate Run</strong> to remove them before approving, so no payslip is issued to them.
+        </div>
+    @endif
+    @if(!empty($calculationFailures))
+        <div class="alert alert-warning" role="status">
+            <strong>{{ count($calculationFailures) }} employee(s) could not be calculated and are not listed:</strong>
+            {{ implode(', ', array_slice($calculationFailures, 0, 10)) }}{{ count($calculationFailures) > 10 ? ' …' : '' }}.
+            Please check their salary assignment, salary structure and attendance records.
+        </div>
+    @endif
     @if(session('error'))
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
             {{ session('error') }}
@@ -171,7 +185,9 @@
                             <th width="40"><input type="checkbox" checked /></th>
                             <th>Employee</th>
                             <th>Designation</th>
-                            <th>Attendance</th>
+                            <th title="From the Attendance section">Attendance</th>
+                            <th title="From the Leave section">Leave</th>
+                            <th title="Timesheets and task timers">Work Logged</th>
                             <th class="text-end">Basic Salary</th>
                             <th class="text-end">Current Basic</th>
                             <th class="text-end">Net Pay</th>
@@ -186,6 +202,7 @@
                         @php
                             $s = is_array($item->snapshot) ? $item->snapshot : (json_decode($item->snapshot ?? '{}', true) ?: []);
                             $initials = strtoupper(substr($s['employee_name'] ?? 'U', 0, 2));
+                            $q = fn ($v) => rtrim(rtrim(number_format((float) $v, 2, '.', ''), '0'), '.');
                         @endphp
                         <tr>
                             <td><input type="checkbox" checked /></td>
@@ -195,17 +212,51 @@
                                     <div>
                                         <div class="name">{{ $s['employee_name'] ?? '-' }}</div>
                                         <div class="meta">{{ $s['employee_id'] ?? '-' }} · {{ $s['department'] ?? '-' }}</div>
+                                        <div class="meta">{{ $s['employment_type'] ?? '—' }} · Joined {{ $s['joining_date'] ?? '—' }}</div>
                                     </div>
                                 </div>
                             </td>
                             <td>{{ $s['designation'] ?? '-' }} <span class="badge bg-label-secondary small">{{ $s['grade'] ?? '-' }}</span></td>
                             <td>
-                                <b>{{ $s['present'] ?? $s['presents'] ?? $workingDays }}/{{ $workingDays }}</b>
+                                <b>{{ $s['present'] ?? $s['presents'] ?? $workingDays }}/{{ $workingDays }}</b> <span class="small text-muted">present</span>
+                                <div class="small">Payable: <b>{{ $q($s['payable_days'] ?? $workingDays) }}</b>d</div>
                                 @if(!empty($s['total_absent']) && (float)$s['total_absent'] > 0)
                                     <div class="small text-danger">Absent: {{ $s['total_absent'] }}d</div>
                                 @endif
+                                @if((float) ($s['half_day'] ?? 0) > 0)
+                                    <div class="small text-warning">Half days: {{ $q($s['half_day']) }}</div>
+                                @endif
+                                @if((float) ($s['wfh'] ?? 0) > 0)
+                                    <div class="small text-muted">WFH: {{ $q($s['wfh']) }}d</div>
+                                @endif
+                                @if((float) ($s['overtime_hours'] ?? 0) > 0)
+                                    <div class="small text-muted">OT: {{ $q($s['overtime_hours']) }} hrs</div>
+                                @endif
                                 @if(!empty($s['working_hours']))
                                     <div class="small text-muted">{{ $s['working_hours'] }} hrs</div>
+                                @endif
+                                @if(($s['attendance_source'] ?? null) === 'assumed')
+                                    <div class="small text-warning" title="No attendance or timesheet entries this month, so full attendance is assumed.">No attendance records</div>
+                                @elseif((float) ($s['unrecorded_days'] ?? 0) > 0)
+                                    <div class="small text-muted" title="Working days with no attendance entry are counted as absent.">{{ $s['unrecorded_days'] }}d not marked</div>
+                                @endif
+                            </td>
+                            <td>
+                                <div class="small">Paid: <b>{{ $q($s['paid_leave'] ?? 0) }}</b>d</div>
+                                <div class="small {{ (float) ($s['unpaid_leave'] ?? 0) > 0 ? 'text-danger fw-bold' : '' }}">Unpaid: {{ $q($s['unpaid_leave'] ?? 0) }}d</div>
+                                @if((float) ($s['pending_leave_days'] ?? 0) > 0)
+                                    <div class="small text-warning" title="Leave requests still waiting for approval">Pending: {{ $q($s['pending_leave_days']) }}d ({{ $s['pending_leave_requests'] ?? 0 }})</div>
+                                @endif
+                                @if(isset($s['current_leave_balance']))
+                                    <div class="small text-muted">Balance: {{ $q($s['current_leave_balance']) }}d</div>
+                                @endif
+                            </td>
+                            <td>
+                                @if(isset($s['work_hours']))
+                                    <b>{{ $q($s['work_hours']) }}</b> <span class="small text-muted">hrs</span>
+                                    <div class="small text-muted">Timesheet {{ $q($s['timesheet_hours'] ?? 0) }} · Timer {{ $q($s['task_timer_hours'] ?? 0) }}</div>
+                                @else
+                                    <span class="small text-muted" title="Recalculate the run to include work logged">—</span>
                                 @endif
                             </td>
                             <td class="num">₹{{ number_format($s['basic'] ?? 0, 2) }}</td>
@@ -223,7 +274,9 @@
                                     <a href="{{ route('payroll.preview', $item->id) }}" class="pr-btn pr-btn-sm" title="Preview Calculation">
                                         📋 Preview
                                     </a>
-                                    @if($st !== 'finalized')
+                                    @if($st !== 'finalized' && (int) $item->user_id === (int) auth()->id() && ! in_array(auth()->user()->normalizedRole(), ['admin', 'superadmin'], true))
+                                        <span class="small text-muted" title="Your own payroll line is managed by the company Admin">🔒 Admin</span>
+                                    @elseif($st !== 'finalized')
                                         <button class="pr-btn pr-btn-sm" data-bs-toggle="modal" data-bs-target="#editLineModal{{ $item->id }}" title="Edit Inputs">
                                             ✏️ Edit
                                         </button>
@@ -306,8 +359,9 @@
                         @endif
                         @empty
                         <tr>
-                            <td colspan="11" class="text-center py-4 text-muted">
+                            <td colspan="13" class="text-center py-4 text-muted">
                                 No eligible employees found for the selected parameters.
+                                <div class="small mt-1">Only employees with an active assignment under <strong>Employee Salary</strong> for this month are processed.</div>
                             </td>
                         </tr>
                         @endforelse

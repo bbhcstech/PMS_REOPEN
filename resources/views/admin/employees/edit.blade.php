@@ -1241,7 +1241,7 @@
                                             @if(!empty($designation->unique_code))
                                                 ({{ $designation->unique_code }})
                                             @endif
-                                            @if(!empty($designation->level))
+                                            @if($designation->level !== null)
                                                 - Level {{ $designation->level }}
                                             @endif
                                         </option>
@@ -1336,13 +1336,18 @@
                             </label>
                             <div class="input-group-premium">
                                 @php
-                                    $rawMobile = old('mobile_with_code') ?? ($ed->mobile ?? ($employee->mobile ?? ''));
+                                    $savedMobile = trim((string) ($employee->mobile ?? ''));
+                                    if ($savedMobile === '') {
+                                        $savedMobile = trim((string) ($ed->mobile ?? ''));
+                                    }
+                                    $rawMobile = old('mobile_with_code') ?? $savedMobile;
                                     $selectedMobileCode = old('mobile_country_code');
                                     $mobileValue = old('mobile');
+                                    $selectedCountry = old('country') ?? ($ed->country ?? ($employee->country ?? ''));
 
-                                    if (empty($selectedMobileCode) || empty($mobileValue)) {
-                                        $countryMap = \App\Support\CountryPhone::map();
-                                        $selectedMobileCode = '+91';
+                                    if ($selectedMobileCode === null || $mobileValue === null) {
+                                        $countryMap = \App\Support\CountryPhone::formMap();
+                                        $selectedMobileCode = \App\Support\CountryPhone::meta($selectedCountry)['dial_code'];
                                         $mobileValue = $rawMobile;
 
                                         if (!empty($rawMobile)) {
@@ -1360,6 +1365,8 @@
                                                 }
                                             }
                                         }
+                                        $selectedMobileCode = old('mobile_country_code', $selectedMobileCode);
+                                        $mobileValue = old('mobile', $mobileValue);
                                     }
                                     $selectedCountry = old('country') ?? ($ed->country ?? ($employee->country ?? ''));
                                 @endphp
@@ -1380,7 +1387,7 @@
                                 <div id="mobile-error" class="invalid-feedback mobile-error d-none"></div>
                             </div>
                             <small id="mobile_help_text" class="text-muted d-block mt-1" style="font-size: 0.7rem;">Select the country code and enter a 10-digit phone number.</small>
-                            <input type="hidden" name="mobile_with_code" id="mobile_with_code" value="{{ old('mobile_with_code') ?? ($ed->mobile ?? $employee->mobile ?? '') }}">
+                            <input type="hidden" name="mobile_with_code" id="mobile_with_code" value="{{ old('mobile_with_code') ?? $savedMobile }}">
                             <input type="hidden" id="employee_id_val" value="{{ $employee->id }}">
                             @error('mobile_country_code')
                                 <div class="invalid-feedback d-block">{{ $message }}</div>
@@ -1472,7 +1479,12 @@
                                 <option value="">Select Role</option>
                                 <option value="employee" {{ $role === 'employee' ? 'selected' : '' }}>Employee</option>
                                 <option value="admin" {{ $role === 'admin' ? 'selected' : '' }}>Admin</option>
+                                <option value="manager" {{ $role === 'manager' ? 'selected' : '' }}>Manager</option>
+                                <option value="hr" {{ $role === 'hr' ? 'selected' : '' }}>HR</option>
                             </select>
+                            @error('user_role')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
                         </div>
 
                         <div class="col-md-6">
@@ -1641,9 +1653,12 @@
                         <div class="col-md-4" id="exit-date-container" style="display: {{ $status === 'Inactive' ? 'block' : 'none' }};">
                             <label class="form-label-premium">
                                 <span><i class="fas fa-calendar-times"></i> Exit Date</span>
-                                <span class="optional-badge">Optional</span>
+                                <span class="mandatory-badge" id="exit-date-badge">Required</span>
                             </label>
-                            <input type="date" name="exit_date" id="exit_date" class="form-control-premium" value="{{ old('exit_date') ?? fmtDate($ed->exit_date ?? '') }}">
+                            <input type="date" name="exit_date" id="exit_date" class="form-control-premium @error('exit_date') is-invalid @enderror" value="{{ old('exit_date') ?? fmtDate($ed->exit_date ?? '') }}">
+                            @error('exit_date')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
                         </div>
                     </div>
 
@@ -1806,7 +1821,7 @@
 
                             <div class="mb-3">
                                 <label class="form-label fw-bold" style="color: var(--primary);">Designation Level <span class="text-danger">*</span></label>
-                                <input type="number" min="0" max="6" name="level" class="form-control-premium" id="designationLevel" placeholder="Enter level (0-6)" required>
+                                <input type="number" min="0" max="{{ \App\Services\DesignationLevels::maximum() }}" name="level" class="form-control-premium" id="designationLevel" placeholder="Enter level (0-{{ \App\Services\DesignationLevels::maximum() }})" required>
                                 <small class="text-muted">Level range: 0-6 (e.g., 0=Intern, 1=Associate, 2=Sr. Associate, etc.)</small>
                             </div>
                         </div>
@@ -1860,7 +1875,11 @@ const $el = id => document.getElementById(id);
 function toggleExitDate() {
     const isInactive = $el('status-inactive') && $el('status-inactive').checked;
     const container = $el('exit-date-container');
+    const exitDateInput = $el('exit_date');
     if (container) container.style.display = isInactive ? 'block' : 'none';
+    if (!isInactive && exitDateInput) {
+        exitDateInput.value = '';
+    }
 }
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -1951,6 +1970,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 const hidden = $el('mobile_with_code');
                 const countryCode = $('#mobile_country_code').val() || '+91';
                 if (hidden) hidden.value = countryCode + mobileEl.value.trim();
+            }
+
+            const exitDateEl = $el('exit_date');
+            if ($el('status-inactive') && $el('status-inactive').checked && exitDateEl && !exitDateEl.value) {
+                e.preventDefault();
+                exitDateEl.focus();
+                alert('Please provide Exit Date when status is Inactive.');
+                return false;
             }
         });
     }
@@ -2132,13 +2159,13 @@ $(document).ready(function() {
         }
 
         if (level === '' || level === null) {
-            $('#designation-error').removeClass('d-none').text('Please enter a level between 0-6.');
+            $('#designation-error').removeClass('d-none').text('Please enter a level between 0-{{ \App\Services\DesignationLevels::maximum() }}.');
             return;
         }
 
         const levelNum = parseInt(level);
-        if (isNaN(levelNum) || levelNum < 0 || levelNum > 6) {
-            $('#designation-error').removeClass('d-none').text('Level must be a whole number between 0-6.');
+        if (isNaN(levelNum) || levelNum < 0 || levelNum > {{ \App\Services\DesignationLevels::maximum() }}) {
+            $('#designation-error').removeClass('d-none').text('Level must be a whole number between 0-{{ \App\Services\DesignationLevels::maximum() }}.');
             return;
         }
 

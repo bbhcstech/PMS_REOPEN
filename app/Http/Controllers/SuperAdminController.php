@@ -79,14 +79,18 @@ class SuperAdminController extends Controller
             $perPage = 10;
         }
 
-        $companies = Company::with(['activeSubscription.plan', 'users' => function ($query) {
+        $companies = Company::with(['activeSubscription.plan', 'latestSubscription.plan', 'users' => function ($query) {
                 $query->where('role', 'admin')->latest()->limit(2);
             }])
             ->latest()
             ->paginate($perPage, ['*'], 'companies_page')
             ->withQueryString();
 
-        $plans = SubscriptionPlan::where('is_active', true)->orderBy('sort_order')->orderBy('name')->get();
+        $dashboardPlanCounts = app(\App\Services\SubscriptionDistribution::class)->currentCounts(
+            Company::with('subscriptions.plan')->get()
+        );
+
+        $plans = SubscriptionPlan::standard()->where('is_active', true)->orderBy('sort_order')->orderBy('name')->get();
         $modules = Module::where('is_active', true)->orderBy('sort_order')->orderBy('name')->get();
         $companyOptions = Company::orderBy('name')->get();
         $recentAdmins = User::where('role', 'admin')->with('company')->latest()->take(6)->get();
@@ -94,6 +98,7 @@ class SuperAdminController extends Controller
         $recentActivities = AuditLog::with(['company', 'user'])->latest()->take(100)->get();
 
         return view('superadmin.dashboard', compact(
+            'dashboardPlanCounts',
             'stats',
             'companies',
             'plans',
@@ -116,7 +121,20 @@ class SuperAdminController extends Controller
 
         $adminSearch = trim((string) $request->input('admin_search', ''));
         $adminStatus = $request->input('admin_status', 'active');
+        if (! in_array($adminStatus, ['active', 'archived', 'pending', 'all'], true)) {
+            $adminStatus = 'active';
+        }
         $selectedCompanyId = $request->input('company_id');
+        $adminRole = (string) $request->input('admin_role', '');
+        if (! in_array($adminRole, ['', 'admin', 'manager', 'hr'], true)) {
+            $adminRole = '';
+        }
+        $adminActivity = (string) $request->input('admin_activity', '');
+        if (! in_array($adminActivity, ['', 'today', 'week', 'inactive'], true)) {
+            $adminActivity = '';
+        }
+        // "All Roles" keeps the page's company-admin list; a specific role lists that role's accounts.
+        $listedRole = $adminRole === '' ? 'admin' : $adminRole;
 
         // Ensure every tenant company in the platform has a primary admin assigned
         $assignedCompanyIds = User::where('role', 'admin')->whereNotNull('company_id')->pluck('company_id')->unique()->toArray();
@@ -140,10 +158,15 @@ class SuperAdminController extends Controller
             }
         }
 
-        $companyAdminsQuery = User::where('role', 'admin')
+        $companyAdminsQuery = User::where('role', $listedRole)
             ->whereNotNull('company_id')
             ->with('company')
             ->when($selectedCompanyId, fn ($query) => $query->where('company_id', $selectedCompanyId))
+            // Activity matches the "Last Active" column, which is based on updated_at.
+            ->when($adminActivity === 'today', fn ($query) => $query->whereDate('updated_at', now()->toDateString()))
+            ->when($adminActivity === 'week', fn ($query) => $query->where('updated_at', '>=', now()->subWeek()))
+            ->when($adminActivity === 'inactive', fn ($query) => $query->where(fn ($q) => $q->whereNull('updated_at')->orWhere('updated_at', '<', now()->subDays(30))))
+            ->when($adminStatus === 'pending', fn ($query) => $query->whereNull('email_verified_at')->whereNull('archived_at'))
             ->when($adminSearch !== '', function ($query) use ($adminSearch) {
                 $query->where(function ($subQuery) use ($adminSearch) {
                     $subQuery->where('name', 'like', "%{$adminSearch}%")
@@ -157,9 +180,9 @@ class SuperAdminController extends Controller
             ->when($adminStatus === 'archived', fn ($query) => $query->whereNotNull('archived_at'))
             ->when($adminStatus === 'active', fn ($query) => $query->whereNull('archived_at'));
 
-        // Filter unique by company_id so each company appears exactly ONCE in the list
+        // Company admins: each company appears exactly ONCE. Other roles list every matching account.
         $companyAdminsRaw = $companyAdminsQuery->latest()->get();
-        $uniqueCompanyAdmins = $companyAdminsRaw->unique('company_id');
+        $uniqueCompanyAdmins = $listedRole === 'admin' ? $companyAdminsRaw->unique('company_id') : $companyAdminsRaw;
 
         $page = Paginator::resolveCurrentPage('page');
         $companyAdmins = new LengthAwarePaginator(
@@ -206,6 +229,8 @@ class SuperAdminController extends Controller
             'adminPerPage',
             'adminSearch',
             'adminStatus',
+            'adminRole',
+            'adminActivity',
             'adminStats'
         ));
     }
@@ -510,9 +535,18 @@ class SuperAdminController extends Controller
 
         $adminSearch = trim((string) $request->input('admin_search', ''));
         $adminStatus = $request->input('admin_status', 'active');
+        $adminRole = in_array($request->input('admin_role'), ['admin', 'manager', 'hr'], true) ? $request->input('admin_role') : 'admin';
+        $adminActivity = (string) $request->input('admin_activity', '');
+        $selectedCompanyId = $request->input('company_id');
 
-        $admins = User::where('role', 'admin')
+        // Same filters as the Company Admins table, so the export matches what is on screen.
+        $admins = User::where('role', $adminRole)
             ->with('company')
+            ->when($selectedCompanyId, fn ($query) => $query->where('company_id', $selectedCompanyId))
+            ->when($adminActivity === 'today', fn ($query) => $query->whereDate('updated_at', now()->toDateString()))
+            ->when($adminActivity === 'week', fn ($query) => $query->where('updated_at', '>=', now()->subWeek()))
+            ->when($adminActivity === 'inactive', fn ($query) => $query->where(fn ($q) => $q->whereNull('updated_at')->orWhere('updated_at', '<', now()->subDays(30))))
+            ->when($adminStatus === 'pending', fn ($query) => $query->whereNull('email_verified_at')->whereNull('archived_at'))
             ->when($adminSearch !== '', function ($query) use ($adminSearch) {
                 $query->where(function ($subQuery) use ($adminSearch) {
                     $subQuery->where('name', 'like', "%{$adminSearch}%")
@@ -560,6 +594,13 @@ class SuperAdminController extends Controller
         ]);
 
         $oldStatus = $company->status;
+        if ($data['status'] === 'suspended') {
+            app(\App\Services\CompanySuspension::class)->suspend($company->id, $request->all());
+            return redirect()->route('superadmin.companies.suspended')->with('success', 'Company suspended with the recorded reason.');
+        }
+        if ($company->manually_suspended) {
+            return back()->with('error', 'Use Reactivate in Suspended Companies to lift this suspension.');
+        }
         $company->update(['status' => $data['status']]);
 
         $this->logAction('company.status_updated', $company, [
@@ -575,8 +616,19 @@ class SuperAdminController extends Controller
         $this->authorizeSuperAdmin();
 
         $name = $company->name;
+        abort_unless(\App\Services\TenantScope::isPlatformAdmin(), 403);
+        try {
+            app(\App\Services\CompanyDestruction::class)->destroy($company);
+        } catch (\Symfony\Component\HttpKernel\Exception\HttpException $e) {
+            return back()->with('error', $e->getMessage());
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Company database cleanup failed.', ['company_id' => $company->id]);
+            $deleted = Company::withTrashed()->find($company->id)?->trashed();
+            return back()->with('error', $deleted
+                ? 'Company access has been revoked, but database cleanup failed. The server administrator must finish cleanup.'
+                : 'Company deletion could not be completed. No other company was changed.');
+        }
         $this->logAction('company.deleted', $company, ['company_name' => $name]);
-        $company->delete();
 
         return back()->with('success', "Company '{$name}' deleted successfully.");
     }
@@ -771,51 +823,7 @@ class SuperAdminController extends Controller
             ['path' => Paginator::resolveCurrentPath(), 'query' => $request->query()]
         );
 
-        $assignmentHistory = collect();
-        if (Schema::hasTable('tasks')) {
-            try {
-                $histQuery = DB::table('tasks')
-                    ->leftJoin('users as dev', 'tasks.assigned_to', '=', 'dev.id');
-                if (Schema::hasTable('companies')) {
-                    $histQuery->leftJoin('companies', 'tasks.company_id', '=', 'companies.id');
-                }
-                $histQuery->leftJoin('users as assigner', 'tasks.created_by', '=', 'assigner.id');
-
-                $assignmentHistory = $histQuery->select(
-                    'tasks.*',
-                    'dev.name as developer_name',
-                    'dev.email as developer_email',
-                    Schema::hasTable('companies') ? 'companies.name as company_name' : DB::raw('NULL as company_name'),
-                    'assigner.name as assigner_name'
-                )
-                ->where(function ($q) {
-                    $q->whereNull('tasks.deleted_at')
-                      ->orWhere('tasks.deleted_at', '=', '0000-00-00 00:00:00');
-                })
-                ->orderByRaw('COALESCE(tasks.updated_at, tasks.created_at) DESC')
-                ->limit(50)
-                ->get();
-
-                // If any developer_name is null, attempt fallback resolution via assigned_task_user
-                if ($assignmentHistory->contains(fn ($h) => empty($h->developer_name))) {
-                    $missingTaskIds = $assignmentHistory->filter(fn ($h) => empty($h->developer_name))->pluck('id')->toArray();
-                    $pivots = DB::table('assigned_task_user')
-                        ->join('users', 'assigned_task_user.user_id', '=', 'users.id')
-                        ->whereIn('assigned_task_user.task_id', $missingTaskIds)
-                        ->select('assigned_task_user.task_id', 'users.name', 'users.email')
-                        ->get()
-                        ->keyBy('task_id');
-
-                    $assignmentHistory->transform(function ($h) use ($pivots) {
-                        if (empty($h->developer_name) && isset($pivots[$h->id])) {
-                            $h->developer_name = $pivots[$h->id]->name;
-                            $h->developer_email = $pivots[$h->id]->email;
-                        }
-                        return $h;
-                    });
-                }
-            } catch (\Throwable $e) {}
-        }
+        $assignmentHistory = app(\App\Services\DeveloperAssignmentHistory::class)->records();
 
         $totalDevsCount = User::whereIn('role', ['developer', 'employee', 'dev'])->orWhere('designation', 'like', '%developer%')->count();
         $activeDevsCount = User::whereIn('role', ['developer', 'employee', 'dev'])->whereNull('archived_at')->where('login_allowed', true)->count();
@@ -926,9 +934,11 @@ class SuperAdminController extends Controller
             'project_id' => ['nullable', 'integer'],
             'priority' => ['required', 'in:low,medium,high,critical'],
             'start_date' => ['nullable', 'date'],
-            'due_date' => ['nullable', 'date'],
+            'due_date' => ['required', 'date', 'after_or_equal:' . ($request->filled('start_date') ? 'start_date' : now()->toDateString())],
             'estimate_hours' => ['nullable', 'numeric', 'min:1', 'max:500'],
             'attachments' => ['nullable', 'string'],
+        ], [
+            'due_date.after_or_equal' => 'Deadline must be on or after the Start Date.',
         ]);
 
         $developerEmail = strtolower(trim($data['developer_email']));
@@ -955,7 +965,7 @@ class SuperAdminController extends Controller
             $compCompanyId = !empty($data['company_id']) ? $data['company_id'] : null;
             $comp = $compCompanyId ? Company::find($compCompanyId) : Company::first();
 
-            $tempPassword = \Illuminate\Support\Str::random(10);
+            $tempPassword = \App\Support\DeveloperPassword::generate();
             $devName = !empty($data['developer_name']) ? $data['developer_name'] : explode('@', $developerEmail)[0];
             $devDesignation = !empty($data['designation']) ? $data['designation'] : 'Developer';
 
@@ -993,6 +1003,7 @@ class SuperAdminController extends Controller
 
             // If company has a tenant database, sync developer record to tenant DB
             if ($comp && !empty($comp->db_name)) {
+                $assignmentOriginalDatabase = config('database.connections.tenant.database');
                 try {
                     config(['database.connections.tenant.database' => $comp->db_name]);
                     DB::purge('tenant');
@@ -1015,6 +1026,10 @@ class SuperAdminController extends Controller
                         ]);
                     }
                 } catch (\Throwable $e) {}
+                finally {
+                    config(['database.connections.tenant.database' => $assignmentOriginalDatabase]);
+                    DB::purge('tenant');
+                }
             }
 
             // Send credential email for NEW developer account safely (non-blocking)
@@ -1082,6 +1097,7 @@ class SuperAdminController extends Controller
             $creatorId = DB::table('users')->value('id');
         }
 
+        \App\Services\DeveloperTaskSchema::ensure();
         $taskId = DB::table('tasks')->insertGetId([
             'company_id' => $companyId,
             'title' => $data['task_title'],
@@ -1112,46 +1128,55 @@ class SuperAdminController extends Controller
             ]);
         } catch (\Throwable $e) {}
 
-        // If company has a tenant database, sync task and assignment to tenant DB
-        if ($companyId) {
+        // Tenant IDs are independent of the platform registry IDs.
+        if ($requestedCompanyId) {
+            $sourceTask = (array) DB::table('tasks')->where('id', $taskId)->first();
+            $sourceProject = $projectId ? DB::table('projects')->where('id', $projectId)->first() : null;
+            $assignmentOriginalDatabase = config('database.connections.tenant.database');
             try {
-                $comp = Company::find($companyId);
-                if ($comp && !empty($comp->db_name)) {
+                $comp = Company::find($requestedCompanyId);
+                if ($comp && !empty($comp->db_name) && $comp->db_name !== $assignmentOriginalDatabase) {
                     config(['database.connections.tenant.database' => $comp->db_name]);
                     DB::purge('tenant');
+                    $tenant = DB::connection('tenant');
                     if (Schema::connection('tenant')->hasTable('tasks')) {
-                        DB::connection('tenant')->table('tasks')->insertOrIgnore([
-                            'id' => $taskId,
-                            'company_id' => $companyId,
-                            'title' => $data['task_title'],
-                            'description' => $data['description'] ?? '',
-                            'additional_instructions' => $data['additional_instructions'] ?? null,
-                            'attachments' => $data['attachments'] ?? null,
-                            'project_id' => $projectId,
-                            'assigned_to' => $developer->id,
-                            'created_by' => $creatorId,
-                            'priority' => strtolower($data['priority']),
-                            'start_date' => !empty($data['start_date']) ? \Carbon\Carbon::parse($data['start_date'])->toDateTimeString() : now()->toDateTimeString(),
-                            'due_date' => !empty($data['due_date']) ? \Carbon\Carbon::parse($data['due_date'])->toDateTimeString() : now()->addDays(5)->toDateTimeString(),
-                            'estimate_hours' => $estimateHours,
-                            'status' => 'assigned',
-                            'deleted_at' => null,
-                            'created_at' => now(),
-                            'updated_at' => now(),
-                        ]);
-                    }
-                    if (Schema::connection('tenant')->hasTable('assigned_task_user')) {
-                        DB::connection('tenant')->table('assigned_task_user')->insertOrIgnore([
-                            'task_id' => $taskId,
-                            'user_id' => $developer->id,
-                            'assigned_by' => $creatorId,
-                            'assigned_at' => now(),
-                            'created_at' => now(),
-                            'updated_at' => now(),
-                        ]);
+                        $tenantDeveloper = $tenant->table('users')->where('email', $developer->email)->first();
+                        if (!$tenantDeveloper) {
+                            $attributes = array_intersect_key($developer->getAttributes(), array_flip(Schema::connection('tenant')->getColumnListing('users')));
+                            unset($attributes['id']);
+                            $attributes['company_id'] = $comp->id;
+                            $tenantDeveloperId = $tenant->table('users')->insertGetId($attributes);
+                        } else {
+                            $tenantDeveloperId = $tenantDeveloper->id;
+                        }
+                        \App\Services\DeveloperTaskSchema::ensure('tenant');
+                        $tenant->transaction(function () use ($tenant, $sourceTask, $sourceProject, $tenantDeveloperId, $comp, $taskId) {
+                            $attributes = $sourceTask;
+                            unset($attributes['id']);
+                            $attributes['platform_task_id'] = $taskId;
+                            $attributes['assigned_to'] = $tenantDeveloperId;
+                            $attributes['company_id'] = $tenant->table('companies')->where('id', $comp->id)->value('id');
+                            $attributes['created_by'] = $tenantDeveloperId;
+                            $attributes['project_id'] = $sourceProject && Schema::connection('tenant')->hasTable('projects')
+                                ? $tenant->table('projects')->where('name', $sourceProject->name)->value('id') : null;
+                            $attributes = array_intersect_key($attributes, array_flip(Schema::connection('tenant')->getColumnListing('tasks')));
+                            $tenantTaskId = $tenant->table('tasks')->insertGetId($attributes);
+                            if (Schema::connection('tenant')->hasTable('assigned_task_user')) {
+                                $tenant->table('assigned_task_user')->insert([
+                                    'task_id' => $tenantTaskId, 'user_id' => $tenantDeveloperId,
+                                    'assigned_by' => $tenantDeveloperId, 'assigned_at' => now(),
+                                    'created_at' => now(), 'updated_at' => now(),
+                                ]);
+                            }
+                        });
                     }
                 }
-            } catch (\Throwable $e) {}
+            } catch (\Throwable $e) {
+                report($e);
+            } finally {
+                config(['database.connections.tenant.database' => $assignmentOriginalDatabase]);
+                DB::purge('tenant');
+            }
         }
 
         // Log task history
@@ -1243,7 +1268,7 @@ class SuperAdminController extends Controller
         $compCompanyId = !empty($data['company_id']) ? $data['company_id'] : null;
         $comp = $compCompanyId ? Company::find($compCompanyId) : Company::first();
 
-        $tempPassword = \Illuminate\Support\Str::random(10);
+        $tempPassword = \App\Support\DeveloperPassword::generate();
 
         $user = User::create([
             'company_id' => $comp?->id,
@@ -1441,7 +1466,13 @@ class SuperAdminController extends Controller
                     config(['database.connections.tenant.database' => $comp->db_name]);
                     DB::purge('tenant');
                     if (Schema::connection('tenant')->hasTable('tasks')) {
-                        DB::connection('tenant')->table('tasks')->where('id', $id)->update($updateData);
+                        $tenantTasks = DB::connection('tenant')->table('tasks');
+                        if (Schema::connection('tenant')->hasColumn('tasks', 'platform_task_id')) {
+                            $tenantTasks->where('platform_task_id', $id);
+                        } else {
+                            $tenantTasks->where('id', $id);
+                        }
+                        $tenantTasks->update($updateData);
                     }
                 }
             } catch (\Throwable $e) {}
@@ -1517,7 +1548,7 @@ class SuperAdminController extends Controller
         $this->authorizeSuperAdmin();
 
         $request->validate([
-            'password' => ['nullable', 'string', 'min:8', 'max:128'],
+            'password' => ['nullable', 'string', 'max:128', \Illuminate\Validation\Rules\Password::min(8)->mixedCase()->numbers()->symbols()],
             'password_confirmation' => ['nullable', 'string', 'same:password'],
         ], [
             'password.min' => 'Password must be at least 8 characters long.',
@@ -1526,7 +1557,7 @@ class SuperAdminController extends Controller
         ]);
 
         $developer = User::findOrFail($id);
-        $newPassword = $request->input('password') ?: \Illuminate\Support\Str::random(10);
+        $newPassword = $request->input('password') ?: \App\Support\DeveloperPassword::generate();
 
         $developer->update([
             'password' => Hash::make($newPassword),
@@ -1791,13 +1822,26 @@ class SuperAdminController extends Controller
                 ->where('id', '!=', $saUser->id)
                 ->exists();
         } else {
-            $emailTaken = \Illuminate\Support\Facades\DB::table($user->getTable())
+            $emailTaken = $user->getConnection()->table($user->getTable())
                 ->where('email', $data['email'])
                 ->where('id', '!=', $user->id)
                 ->exists();
         }
         if ($emailTaken) {
             return back()->withInput()->withErrors(['email' => 'This email is already taken by another administrator.']);
+        }
+
+        $schemaBuilder = $user->getConnection()->getSchemaBuilder();
+        $tableColumns = $schemaBuilder->getColumnListing($user->getTable());
+        if ($user instanceof \App\Models\Central\SuperAdmin) {
+            // Repair missing profile columns on older central databases before saving.
+            $profileColumns = ['mobile', 'gender', 'date_of_birth', 'marital_status', 'country', 'language', 'address', 'about', 'govt_id_card', 'email_notifications', 'google_calendar'];
+            if (array_diff($profileColumns, $tableColumns)) {
+                (require database_path('migrations/central/2026_09_29_000001_add_profile_fields_to_super_admins_table.php'))->up();
+            }
+        } elseif (! in_array('date_of_birth', $tableColumns, true) && in_array('dob', $tableColumns, true) && array_key_exists('date_of_birth', $data)) {
+            $data['dob'] = $data['date_of_birth'];
+            unset($data['date_of_birth']);
         }
 
         if ($request->hasFile('profile_image')) {
@@ -1827,12 +1871,17 @@ class SuperAdminController extends Controller
             unset($data['govt_id_card']);
         }
 
-        $data['email_notifications'] = $request->has('email_notifications');
-        $data['google_calendar'] = $request->has('google_calendar');
+        $data['email_notifications'] = $request->boolean('email_notifications');
+        $data['google_calendar'] = $request->boolean('google_calendar');
 
         // Use the model's own connection (central) to get the column list — NOT the default DB facade
         $schemaBuilder = $user->getConnection()->getSchemaBuilder();
         $tableColumns  = $schemaBuilder->getColumnListing($user->getTable());
+
+        if (! in_array('govt_id_card', $tableColumns, true) && in_array('government_id_card', $tableColumns, true) && array_key_exists('govt_id_card', $data)) {
+            $data['government_id_card'] = $data['govt_id_card'];
+            unset($data['govt_id_card']);
+        }
 
         $updateData = [];
         foreach ($data as $key => $val) {
@@ -1842,7 +1891,9 @@ class SuperAdminController extends Controller
         }
 
         if (!empty($updateData)) {
-            $user->fill($updateData)->save();
+            // Data is already validated and limited to existing profile columns.
+            // Legacy and central account models have different fillable lists.
+            $user->forceFill($updateData)->save();
             // Refresh the session so navbar avatar and name reflect changes immediately
             if ($user instanceof \App\Models\Central\SuperAdmin) {
                 auth('super_admin')->setUser($user->fresh());

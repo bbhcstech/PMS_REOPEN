@@ -12,7 +12,6 @@ use App\Models\Project;
 use App\Services\DocxGeneratorService;
 use App\Services\LetterTemplateService;
 use App\Services\PdfLetterheadService;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -80,12 +79,22 @@ class LetterheadController extends Controller
         ];
 
         // Organization dataset options for form dropdowns
-        $companies = Company::orderBy('name')->get();
+        $companies = \App\Services\TenantScope::isPlatformAdmin()
+            ? Company::orderBy('name')->get()
+            : Company::whereKey(\App\Services\TenantScope::companyId() ?: 0)->get();
         $branches = BusinessAddress::orderBy('branch_name')->get();
         $departments = Department::orderBy('dpt_name')->get();
         $projects = Project::orderBy('name')->get();
 
+        \App\Models\LetterheadSentLetter::ensureTable();
+        $sentLetters = \App\Models\LetterheadSentLetter::with(['letterhead', 'sender'])
+            ->when(! \App\Services\TenantScope::isPlatformAdmin(), fn ($q) => $q->where('company_id', \App\Services\TenantScope::companyId() ?: 0))
+            ->latest('id')
+            ->paginate(10, ['*'], 'letters_page')
+            ->withQueryString();
+
         return view('admin.letterhead.index', compact(
+            'sentLetters',
             'letterheads',
             'stats',
             'companies',
@@ -139,7 +148,9 @@ class LetterheadController extends Controller
         // Organization dataset options
         $letterheads = Letterhead::where('status', 'active')->orderBy('is_default', 'desc')->get();
         $defaultLetterhead = Letterhead::where('is_default', true)->first() ?: $letterheads->first();
-        $companies = Company::orderBy('name')->get();
+        $companies = \App\Services\TenantScope::isPlatformAdmin()
+            ? Company::orderBy('name')->get()
+            : Company::whereKey(\App\Services\TenantScope::companyId() ?: 0)->get();
         $branches = BusinessAddress::orderBy('branch_name')->get();
         $departments = Department::orderBy('dpt_name')->get();
         $projects = Project::orderBy('name')->get();
@@ -195,8 +206,8 @@ class LetterheadController extends Controller
             'cin_number' => 'nullable|string|max:100',
             'other_info' => 'nullable|string|max:500',
             'logo' => 'nullable|file|mimes:jpeg,png,jpg,svg,webp,pdf|max:10240',
-            'header_image' => 'nullable|file|mimes:jpeg,png,jpg,svg,webp,pdf|max:10240',
-            'footer_image' => 'nullable|file|mimes:jpeg,png,jpg,svg,webp,pdf|max:10240',
+            'header_image' => \App\Services\LetterheadImage::uploadRules(\App\Services\LetterheadImage::HEADER),
+            'footer_image' => \App\Services\LetterheadImage::uploadRules(\App\Services\LetterheadImage::FOOTER),
             'background_page_image' => 'nullable|file|mimes:jpeg,png,jpg,svg,webp,pdf|max:15360',
             'layout_mode' => 'nullable|string|in:standard,custom_header_footer,full_a4_page',
             'content_padding_top' => 'nullable|integer|min:0|max:400',
@@ -331,7 +342,9 @@ class LetterheadController extends Controller
             ]);
         }
 
-        $companies = Company::orderBy('name')->get();
+        $companies = \App\Services\TenantScope::isPlatformAdmin()
+            ? Company::orderBy('name')->get()
+            : Company::whereKey(\App\Services\TenantScope::companyId() ?: 0)->get();
         $branches = BusinessAddress::orderBy('branch_name')->get();
         $departments = Department::orderBy('dpt_name')->get();
         $projects = Project::orderBy('name')->get();
@@ -375,8 +388,8 @@ class LetterheadController extends Controller
             'cin_number' => 'nullable|string|max:100',
             'other_info' => 'nullable|string|max:500',
             'logo' => 'nullable|file|mimes:jpeg,png,jpg,svg,webp,pdf|max:10240',
-            'header_image' => 'nullable|file|mimes:jpeg,png,jpg,svg,webp,pdf|max:10240',
-            'footer_image' => 'nullable|file|mimes:jpeg,png,jpg,svg,webp,pdf|max:10240',
+            'header_image' => \App\Services\LetterheadImage::uploadRules(\App\Services\LetterheadImage::HEADER),
+            'footer_image' => \App\Services\LetterheadImage::uploadRules(\App\Services\LetterheadImage::FOOTER),
             'background_page_image' => 'nullable|file|mimes:jpeg,png,jpg,svg,webp,pdf|max:15360',
             'layout_mode' => 'nullable|string|in:standard,custom_header_footer,full_a4_page',
             'content_padding_top' => 'nullable|integer|min:0|max:400',
@@ -650,8 +663,8 @@ class LetterheadController extends Controller
             'subject' => 'required|string|max:300',
             'body' => 'required|string',
             'letterhead_id' => 'nullable|integer',
-            'header_image' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg,webp,pdf|max:10240',
-            'footer_image' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg,webp,pdf|max:10240',
+            'header_image' => \App\Services\LetterheadImage::uploadRules(\App\Services\LetterheadImage::HEADER),
+            'footer_image' => \App\Services\LetterheadImage::uploadRules(\App\Services\LetterheadImage::FOOTER),
             'background_page_image' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg,webp,pdf|max:10240',
         ]);
 
@@ -669,31 +682,39 @@ class LetterheadController extends Controller
         $footerImagePath = $letterhead?->footer_image ?: 'assets/letterhead/presets/bengal_footer.svg';
         $bgPageImagePath = $letterhead?->background_page_image ?: 'assets/letterhead/presets/bengal_it_hub_a4.svg';
 
-        $destinationPath = public_path('uploads/letterhead');
-        if (! file_exists($destinationPath)) {
-            mkdir($destinationPath, 0755, true);
-        }
+        // Images uploaded for this one letter are used from temporary copies and deleted after the PDF is
+        // built (nothing is left behind on the server). Header/footer images are fitted to their fixed size.
+        $temporaryFiles = [];
+        $temporaryCopy = function ($file) use (&$temporaryFiles): ?string {
+            $copy = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'lh_' . bin2hex(random_bytes(8)) . '.' . strtolower($file->getClientOriginalExtension() ?: 'bin');
+            if (! @copy($file->getRealPath(), $copy)) return null;
+            $temporaryFiles[] = $copy;
+            return $copy;
+        };
 
         if ($request->hasFile('header_image')) {
-            $headerFile = $request->file('header_image');
-            $headerName = 'header_' . time() . '_' . Str::random(6) . '.' . $headerFile->getClientOriginalExtension();
-            $headerFile->move($destinationPath, $headerName);
-            $headerImagePath = 'uploads/letterhead/' . $headerName;
+            $fitted = \App\Services\LetterheadImage::fitUpload($request->file('header_image'), \App\Services\LetterheadImage::HEADER);
+            if ($fitted) $temporaryFiles[] = $fitted;
+            $headerImagePath = $fitted ?: $temporaryCopy($request->file('header_image'));
         }
 
         if ($request->hasFile('footer_image')) {
-            $footerFile = $request->file('footer_image');
-            $footerName = 'footer_' . time() . '_' . Str::random(6) . '.' . $footerFile->getClientOriginalExtension();
-            $footerFile->move($destinationPath, $footerName);
-            $footerImagePath = 'uploads/letterhead/' . $footerName;
+            $fitted = \App\Services\LetterheadImage::fitUpload($request->file('footer_image'), \App\Services\LetterheadImage::FOOTER);
+            if ($fitted) $temporaryFiles[] = $fitted;
+            $footerImagePath = $fitted ?: $temporaryCopy($request->file('footer_image'));
         }
 
         if ($request->hasFile('background_page_image')) {
-            $bgFile = $request->file('background_page_image');
-            $bgName = 'bg_page_' . time() . '_' . Str::random(6) . '.' . $bgFile->getClientOriginalExtension();
-            $bgFile->move($destinationPath, $bgName);
-            $bgPageImagePath = 'uploads/letterhead/' . $bgName;
+            $bgPageImagePath = $temporaryCopy($request->file('background_page_image'));
             $layoutMode = 'full_a4_page';
+        }
+
+        // Saved letterhead images are fitted too (cached copy, reused for every letter).
+        if (! $request->hasFile('header_image')) {
+            $headerImagePath = \App\Services\LetterheadImage::fitStored($headerImagePath, \App\Services\LetterheadImage::HEADER);
+        }
+        if (! $request->hasFile('footer_image')) {
+            $footerImagePath = \App\Services\LetterheadImage::fitStored($footerImagePath, \App\Services\LetterheadImage::FOOTER);
         }
 
         if ($layoutMode === 'full_a4_page') {
@@ -720,7 +741,13 @@ class LetterheadController extends Controller
 
         $fileName = 'Letter_' . Str::slug(substr($letter['subject'], 0, 30)) . '_' . date('Ymd') . '.pdf';
 
-        return PdfLetterheadService::generate($letter, $letterhead, $fileName);
+        try {
+            return PdfLetterheadService::generate($letter, $letterhead, $fileName);
+        } finally {
+            foreach ($temporaryFiles as $temporaryFile) {
+                @unlink($temporaryFile);
+            }
+        }
     }
 
     /**
@@ -728,6 +755,10 @@ class LetterheadController extends Controller
      */
     public function exportWord(Request $request): BinaryFileResponse|Response
     {
+        $request->validate([
+            'header_image' => \App\Services\LetterheadImage::uploadRules(\App\Services\LetterheadImage::HEADER),
+            'footer_image' => \App\Services\LetterheadImage::uploadRules(\App\Services\LetterheadImage::FOOTER),
+        ]);
         $request->validate([
             'subject' => 'required|string|max:300',
             'body' => 'required|string',
@@ -757,6 +788,8 @@ class LetterheadController extends Controller
             'body' => $request->input('body'),
             'signatory_name' => $request->input('signatory_name') ?: (auth()->user()?->name ?: 'Arthur Pendelton'),
             'signatory_title' => $request->input('signatory_title') ?: 'Authorized Signatory',
+            'header_image' => $request->file('header_image') ?? $letterhead?->header_image,
+            'footer_image' => $request->file('footer_image') ?? $letterhead?->footer_image,
         ];
 
         $fileName = 'Letter_' . Str::slug(substr($letterData['subject'], 0, 30)) . '_' . date('Ymd') . '.docx';
@@ -826,15 +859,88 @@ class LetterheadController extends Controller
             'subject' => 'required|string|max:300',
             'body' => 'required|string',
             'recipient_email' => 'nullable|email',
+            'recipient_name' => 'nullable|string|max:255',
         ]);
 
-        $recipient = $request->input('recipient_email') ?: 'hr@bengalithub.com';
+        \App\Models\LetterheadSentLetter::ensureTable();
+        $user = auth()->user();
+        $recipientEmail = trim((string) $request->input('recipient_email')) ?: null;
 
-        // Log and redirect
-        Log::info('Official letter submitted: ' . $request->input('subject') . ' to ' . $recipient);
+        // Same PDF as "Export PDF" (letterhead, layout and any uploaded header/footer images).
+        $pdfPath = null;
+        $pdfBytes = null;
+        try {
+            $pdfBytes = $this->exportPdf($request)->getContent();
+            if (is_string($pdfBytes) && str_starts_with($pdfBytes, '%PDF')) {
+                $pdfPath = 'letterhead-letters/' . (int) ($user?->company_id ?? 0) . '/letter_' . now()->format('YmdHis') . '_' . Str::random(8) . '.pdf';
+                \Illuminate\Support\Facades\Storage::disk('local')->put($pdfPath, $pdfBytes);
+            } else {
+                $pdfBytes = null;
+            }
+        } catch (\Throwable $e) {
+            Log::warning('Letter PDF could not be generated: ' . $e->getMessage());
+        }
 
-        return redirect()->route('letterhead.create')
-            ->with('success', 'Letter "' . $request->input('subject') . '" has been prepared and sent to ' . $recipient . ' successfully.');
+        $letterheadId = $request->filled('letterhead_id') ? (int) $request->input('letterhead_id') : null;
+        if (! $letterheadId) {
+            $letterheadId = (Letterhead::where('is_default', true)->first() ?: Letterhead::first())?->id;
+        }
+
+        $letter = \App\Models\LetterheadSentLetter::create([
+            'company_id' => $user?->company_id,
+            'letterhead_id' => $letterheadId,
+            'template_key' => $request->input('template_key'),
+            'ref_no' => $request->input('ref_no'),
+            'letter_date' => $request->input('date') ?: now()->format('F d, Y'),
+            'recipient_name' => $request->input('recipient_name'),
+            'recipient_email' => $recipientEmail,
+            'subject' => $request->input('subject'),
+            'body' => $request->input('body'),
+            'signatory_name' => $request->input('signatory_name') ?: $user?->name,
+            'signatory_title' => $request->input('signatory_title'),
+            'pdf_path' => $pdfPath,
+            'delivery_status' => 'saved',
+            'sent_by' => $user?->id,
+        ]);
+
+        if (! $recipientEmail) {
+            return redirect()->route('letterhead.index')
+                ->with('success', 'Letter "' . $letter->subject . '" was saved under Sent Letters. Add a recipient email to send it by email.');
+        }
+
+        try {
+            \Illuminate\Support\Facades\Mail::raw($letter->body, function ($message) use ($letter, $recipientEmail, $pdfBytes) {
+                $message->to($recipientEmail, $letter->recipient_name ?: null)->subject($letter->subject);
+                if ($pdfBytes) {
+                    $message->attachData($pdfBytes, Str::slug(Str::limit($letter->subject, 40, '')) . '.pdf', ['mime' => 'application/pdf']);
+                }
+            });
+            $letter->update(['delivery_status' => 'sent']);
+
+            return redirect()->route('letterhead.index')
+                ->with('success', 'Letter "' . $letter->subject . '" was sent to ' . $recipientEmail . ' and saved under Sent Letters.');
+        } catch (\Throwable $e) {
+            Log::error('Letter email failed: ' . $e->getMessage(), ['letter_id' => $letter->id]);
+            $letter->update(['delivery_status' => 'failed', 'delivery_error' => Str::limit($e->getMessage(), 1000)]);
+
+            return redirect()->route('letterhead.index')
+                ->with('error', 'Letter "' . $letter->subject . '" was saved under Sent Letters, but the email to ' . $recipientEmail . ' could not be sent. Please check the mail settings.');
+        }
+    }
+
+    /** Download the PDF stored when the letter was sent. */
+    public function downloadSentLetter($id)
+    {
+        \App\Models\LetterheadSentLetter::ensureTable();
+        $letter = \App\Models\LetterheadSentLetter::query()
+            ->when(! \App\Services\TenantScope::isPlatformAdmin(), fn ($q) => $q->where('company_id', \App\Services\TenantScope::companyId() ?: 0))
+            ->findOrFail($id);
+        abort_unless($letter->pdf_path && \Illuminate\Support\Facades\Storage::disk('local')->exists($letter->pdf_path), 404, 'The PDF for this letter is not available.');
+
+        return \Illuminate\Support\Facades\Storage::disk('local')->download(
+            $letter->pdf_path,
+            'Letter_' . Str::slug(Str::limit($letter->subject, 40, '')) . '.pdf'
+        );
     }
 
     /**
@@ -899,6 +1005,8 @@ class LetterheadController extends Controller
 
     public function upload(Request $request, Company $company): RedirectResponse
     {
+        \App\Services\TenantScope::authorizeCompany($company->id);
+
         $request->validate([
             'letterhead_file' => 'required|file|mimes:pdf,doc,docx|max:10240',
         ]);
@@ -936,6 +1044,8 @@ class LetterheadController extends Controller
 
     public function download(Company $company): BinaryFileResponse|RedirectResponse
     {
+        \App\Services\TenantScope::authorizeCompany($company->id);
+
         if (! $company->hasLetterhead() || ! File::exists(public_path($company->letterhead_file))) {
             return redirect()->back()->with('error', 'No letterhead file found for ' . $company->name);
         }
@@ -948,6 +1058,8 @@ class LetterheadController extends Controller
 
     public function destroyLegacy(Company $company): RedirectResponse
     {
+        \App\Services\TenantScope::authorizeCompany($company->id);
+
         if ($company->letterhead_file && File::exists(public_path($company->letterhead_file))) {
             File::delete(public_path($company->letterhead_file));
         }
@@ -988,6 +1100,10 @@ class LetterheadController extends Controller
 
     private function populateContextualNames(array &$data): void
     {
+        if (! empty($data['company_id'])) {
+            \App\Services\TenantScope::authorizeCompany($data['company_id']);
+        }
+
         if (! empty($data['company_id']) && empty($data['company_name'])) {
             $company = Company::find($data['company_id']);
             $data['company_name'] = $company?->name;

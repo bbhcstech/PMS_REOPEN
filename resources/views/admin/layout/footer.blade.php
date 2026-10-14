@@ -96,8 +96,7 @@
         <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
         <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.3.0-beta.1/pdfmake.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.3.0-beta.1/vfs_fonts.js"></script>
+        @include('partials.pdf-export-scripts')
         <!-- Add before </body> -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.14.0-beta3/js/bootstrap-select.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
@@ -141,11 +140,15 @@
         @yield('scripts')
         @yield('js')
         @stack('js')
-        @stack('scripts')  <!-- ✅ Correct way to render pushed scripts -->
+        @include('partials.phone-fields')
+@stack('scripts')  <!-- ✅ Correct way to render pushed scripts -->
+        <script src="{{ asset('admin/assets/js/pms-live-records.js') }}?v={{ @filemtime(public_path('admin/assets/js/pms-live-records.js')) }}" data-session-url="{{ route('company.session-status') }}" data-login-url="{{ route('login') }}" defer></script>
         <script src="{{ asset('admin/assets/js/pms-table-tools.js') }}?v={{ $adminTableToolsVersion }}"></script>
         @php
           $adminThemeVersion = file_exists(public_path('admin/assets/css/pms-bitroxia-theme.css')) ? filemtime(public_path('admin/assets/css/pms-bitroxia-theme.css')) : time();
         @endphp
         <link rel="stylesheet" href="{{ asset('admin/assets/css/pms-bitroxia-theme.css') }}?v={{ $adminThemeVersion }}" />
+        @include('partials.ai-assistant-launcher')
+        @include('partials.responsive-workspace', ['responsiveShell' => 'admin'])
       </body>
     </html>

@@ -1061,7 +1061,7 @@
                     <i class="bx bx-export"></i> Export <i class="bx bx-chevron-down" style="font-size: 12px;"></i>
                 </button>
                 <div id="exportDropdownMenu" style="display: none; position: absolute; right: 0; top: 100%; margin-top: 6px; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-md); box-shadow: var(--shadow-md); z-index: 100; min-width: 160px; overflow: hidden;">
-                    <a href="{{ Route::has('superadmin.admins.export') ? route('superadmin.admins.export', request()->only(['admin_search', 'admin_status'])) : (Route::has('super-admin.admins.export') ? route('super-admin.admins.export', request()->only(['admin_search', 'admin_status'])) : (Route::has('admins.export') ? route('admins.export', request()->only(['admin_search', 'admin_status'])) : url('/company-admins/export'))) }}" style="display: flex; align-items: center; gap: 8px; padding: 10px 14px; font-size: 13px; font-weight: 600; color: var(--text-main); text-decoration: none; transition: background 0.15s;">
+                    <a href="{{ Route::has('superadmin.admins.export') ? route('superadmin.admins.export', request()->only(['admin_search', 'admin_status', 'company_id', 'admin_role', 'admin_activity'])) : (Route::has('super-admin.admins.export') ? route('super-admin.admins.export', request()->only(['admin_search', 'admin_status', 'company_id', 'admin_role', 'admin_activity'])) : (Route::has('admins.export') ? route('admins.export', request()->only(['admin_search', 'admin_status', 'company_id', 'admin_role', 'admin_activity'])) : url('/company-admins/export'))) }}" style="display: flex; align-items: center; gap: 8px; padding: 10px 14px; font-size: 13px; font-weight: 600; color: var(--text-main); text-decoration: none; transition: background 0.15s;">
                         <i class="bx bx-file" style="color: #10b981;"></i> Export CSV
                     </a>
                     <a href="#" onclick="event.preventDefault(); window.print();" style="display: flex; align-items: center; gap: 8px; padding: 10px 14px; font-size: 13px; font-weight: 600; color: var(--text-main); text-decoration: none; border-top: 1px solid var(--border-color); transition: background 0.15s;">
@@ -1190,11 +1190,10 @@
 
                 <!-- ROLE Filter -->
                 <select name="admin_role" class="filter-select" id="roleFilter">
-                    <option value="">ROLE: All Roles</option>
-                    <option value="admin" selected>Company Admin</option>
-                    <option value="manager">Manager</option>
-                    <option value="hr">HR</option>
-                    <option value="custom">Custom Admin</option>
+                    <option value="" @selected(($adminRole ?? '') === '')>ROLE: All Roles</option>
+                    <option value="admin" @selected(($adminRole ?? '') === 'admin')>Company Admin</option>
+                    <option value="manager" @selected(($adminRole ?? '') === 'manager')>Manager</option>
+                    <option value="hr" @selected(($adminRole ?? '') === 'hr')>HR</option>
                 </select>
 
                 <!-- STATUS Filter -->
@@ -1207,10 +1206,10 @@
 
                 <!-- ACTIVITY Filter -->
                 <select name="admin_activity" class="filter-select" id="activityFilter">
-                    <option value="">ACTIVITY: All Time</option>
-                    <option value="today">Active Today</option>
-                    <option value="week">Active This Week</option>
-                    <option value="inactive">Inactive</option>
+                    <option value="" @selected(($adminActivity ?? '') === '')>ACTIVITY: All Time</option>
+                    <option value="today" @selected(($adminActivity ?? '') === 'today')>Active Today</option>
+                    <option value="week" @selected(($adminActivity ?? '') === 'week')>Active This Week</option>
+                    <option value="inactive" @selected(($adminActivity ?? '') === 'inactive')>Inactive (30+ days)</option>
                 </select>
 
                 <!-- Entries -->
@@ -1234,7 +1233,7 @@
     </div>
 
     <!-- 4. ADMINISTRATOR GRID TABLE (ROW AND COLUMN SEPARATED) -->
-    <div class="table-card">
+    <div class="table-card" id="companyAdminResults">
         <div class="table-container">
             <table class="grid-table" id="adminTable">
                 <thead>
@@ -1267,6 +1266,7 @@
                         $statusKey = $isSuspended ? 'suspended' : ($isBlocked ? 'inactive' : 'active');
                     @endphp
                     <tr class="admin-row"
+                        data-live-key="admin-{{ $admin->id }}"
                         data-id="{{ $admin->id }}"
                         data-name="{{ $admin->name }}"
                         data-email="{{ $admin->email }}"
@@ -1703,6 +1703,7 @@
 @endsection
 
 @push('scripts')
+<script src="{{ asset('admin/assets/js/pms-company-admin-search.js') }}?v={{ filemtime(public_path('admin/assets/js/pms-company-admin-search.js')) }}" defer></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // 1. Export Dropdown Menu
@@ -1726,8 +1727,10 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentAdminId = null;
     let currentAdminData = {};
 
-    document.querySelectorAll('.open-drawer-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
+    document.addEventListener('click', function(event) {
+        const btn = event.target.closest('.open-drawer-btn');
+        if (!btn) return;
+        (function() {
             currentAdminId = this.getAttribute('data-id');
             const name = this.getAttribute('data-name');
             const email = this.getAttribute('data-email');
@@ -1791,7 +1794,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('editLoginAllowed').checked = loginAllowed;
 
             drawerOverlay.classList.add('open');
-        });
+        }).call(btn);
     });
 
     closeDrawerBtn?.addEventListener('click', function() { drawerOverlay.classList.remove('open'); });
@@ -1865,6 +1868,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
         document.getElementById('filterForm').submit();
     };
+
+    // Filters apply as soon as they change (previously only "/ pg" submitted the form).
+    // requestSubmit() goes through pms-company-admin-search.js, which refreshes the table without a reload.
+    (function () {
+        const form = document.getElementById('filterForm');
+        if (!form) return;
+        ['companyFilter', 'roleFilter', 'statusFilter', 'activityFilter'].forEach(function (id) {
+            document.getElementById(id)?.addEventListener('change', function () {
+                if (typeof form.requestSubmit === 'function') form.requestSubmit();
+                else form.submit();
+            });
+        });
+    })();
 
     window.clearAllFilters = function() {
         window.location.href = '{{ Route::has("superadmin.admins.index") ? route("superadmin.admins.index") : (Route::has("super-admin.admins.index") ? route("super-admin.admins.index") : (Route::has("admins.index") ? route("admins.index") : url("/company-admins"))) }}';

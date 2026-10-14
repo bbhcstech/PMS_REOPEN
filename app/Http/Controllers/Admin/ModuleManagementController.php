@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Module;
+use App\Models\WorkspaceModule as Module;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -15,9 +15,14 @@ class ModuleManagementController extends Controller
     {
         $this->authorizeAdmin();
 
+        $company = app(\App\Services\CompanyContext::class)->current();
+        abort_unless($company, 503, 'Company module configuration is unavailable.');
+        $modules = app(\App\Services\AdminWorkspaceModules::class)->companyModules($company);
+
         return view('admin.settings.modules.index', [
-            'modules' => Module::with('parent')->orderBy('sort_order')->orderBy('name')->get(),
-            'parentModules' => Module::orderBy('name')->get(),
+            'modules' => $modules,
+            'parentModules' => $modules->sortBy('name')->values(),
+            'parentModuleCount' => $modules->filter(fn ($module) => $modules->contains('sidebar_parent_slug', $module->slug))->count(),
         ]);
     }
 
@@ -60,13 +65,24 @@ class ModuleManagementController extends Controller
 
     private function validated(Request $request, ?int $ignoreId = null): array
     {
+        $request->merge(['slug' => Str::slug((string) ($request->input('slug') ?: $request->input('name')))]);
         return $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'slug' => ['nullable', 'string', 'max:255', 'unique:modules,slug' . ($ignoreId ? ',' . $ignoreId : '')],
+            'slug' => ['required', 'string', 'max:255', 'unique:tenant.modules,slug' . ($ignoreId ? ',' . $ignoreId : '')],
             'icon' => ['nullable', 'string', 'max:255'],
             'route_name' => ['nullable', 'string', 'max:255'],
             'route_prefix' => ['nullable', 'string', 'max:255'],
-            'parent_id' => ['nullable', 'exists:modules,id'],
+            'parent_id' => ['nullable', 'integer', 'exists:tenant.modules,id', function ($attribute, $value, $fail) use ($ignoreId) {
+                $seen = $ignoreId ? [$ignoreId] : [];
+                while ($value) {
+                    if (in_array((int) $value, $seen, true)) {
+                        $fail('A module cannot belong to itself or one of its descendants.');
+                        return;
+                    }
+                    $seen[] = (int) $value;
+                    $value = Module::find($value)?->parent_id;
+                }
+            }],
             'description' => ['nullable', 'string'],
             'sort_order' => ['nullable', 'integer'],
         ]);

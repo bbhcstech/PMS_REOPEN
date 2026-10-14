@@ -65,7 +65,7 @@
     </div>
 
     <!-- MAIN PROFILE GRID -->
-    <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 24px;">
+    <div class="dev-profile-main-grid">
 
         <!-- LEFT COLUMN: READ-ONLY SYSTEM METADATA -->
         <div class="dev-card" style="margin-bottom: 0; padding: 26px;">

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    @include('partials.pwa')
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Account Restricted · {{ $company->name ?? 'Organization' }}</title>
@@ -231,9 +232,18 @@
             flex-wrap: wrap;
             gap: 0.75rem;
         }
+        .locked-plan-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:16px; }
+        .locked-reference-plan { padding:20px; height:100%; opacity:1; border-top:3px solid var(--tier-color); display:flex; flex-direction:column; }
+        .plan-card.locked-reference-plan:hover { transform:none; border-color:var(--border-soft); border-top-color:var(--tier-color); }
+        .locked-plan-heading { display:flex; align-items:center; justify-content:space-between; gap:8px; color:var(--tier-color); }
+        .locked-plan-heading h5 { font-size:1rem; letter-spacing:.03em; }
+        .locked-plan-limits { color:#cbd5e1; line-height:1.8; font-size:.85rem; margin-bottom:18px; }
+        .locked-plan-status { margin-top:auto; padding:10px; border:1px solid #475569; border-radius:10px; color:#cbd5e1; text-align:center; font-size:.85rem; background:#263449; }
+        @media(max-width:900px) { .locked-plan-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+        @media(max-width:480px) { .locked-plan-grid { grid-template-columns:1fr; } }
     </style>
 </head>
-<body>
+<body data-restriction-status="{{ strtolower($company->status ?? 'suspended') }}" data-restriction-url="{{ route('subscription.suspended') }}">
 
 @php
     $isManualSuspension = (bool) ($company->manually_suspended ?? false);
@@ -245,7 +255,7 @@
     // Load notifications inline
     try {
         $companyId = $company->id ?? null;
-        $companyNotifications = $companyId
+        $companyNotifications = ($companyId && in_array(strtolower((string) auth()->user()?->role), ['admin', 'administrator', 'superadmin'], true))
             ? \App\Models\Central\CentralNotification::on('central')
                 ->where('company_id', $companyId)
                 ->where(function ($q) {
@@ -304,6 +314,9 @@
         <p class="mb-3" style="max-width: 620px; margin: 0 auto; color: #94a3b8;">
             @if($isManualSuspension)
                 Your organization <strong>{{ $company->name ?? 'Organization' }}</strong> has been <strong>manually suspended</strong> by the platform Super Admin.
+                @if($company->suspension_reason)
+                <span class="d-block mt-3"><strong>{{ $company->suspension_category }}</strong><br>{{ $company->suspension_reason }}</span>
+                @endif
                 Access can only be restored by the Super Admin. Please contact your platform administrator.
             @else
                 Your organization <strong>{{ $company->name ?? 'Organization' }}</strong> has been temporarily restricted because your subscription or Free Trial period has ended.
@@ -323,7 +336,7 @@
     {{-- ── Tab Navigation ── --}}
     <div class="section-tabs">
         <div class="section-tab active" id="tab-plans" onclick="switchTab('plans')">
-            <i class="bx bx-zap me-1"></i>
+            <i class="bx bxs-zap me-1"></i>
             @if($isManualSuspension) Status &amp; Info @else Plans &amp; Renewal @endif
         </div>
         <div class="section-tab" id="tab-notifications" onclick="switchTab('notifications')">
@@ -358,7 +371,8 @@
             {{-- Show plans for reference only (all disabled) --}}
             @php
                 try {
-                    $allPlans = \App\Models\Central\Plan::on('central')->orderBy('monthly_price')->get();
+                    $allPlans = \App\Models\Central\Plan::on('central')->standard()->get()
+                        ->unique('slug')->sortBy(fn ($plan) => array_search(strtolower($plan->slug), ['free', 'gold', 'platinum', 'diamond']))->values();
                 } catch (\Throwable $e) {
                     $allPlans = collect();
                 }
@@ -368,18 +382,17 @@
                 <h6 class="fw-bold text-sub text-center mt-4 mb-3" style="font-size:0.8rem; letter-spacing: 0.06em; text-transform:uppercase;">
                     Plan Reference (Locked — Contact Admin to Restore Access)
                 </h6>
-                <div class="row g-3 mb-2">
+                <div class="locked-plan-grid mb-2">
                     @foreach($allPlans as $plan)
-                        <div class="col-md-4">
-                            <div class="plan-card disabled-plan">
-                                <h5 class="fw-bold mb-0 text-white">{{ $plan->name }}</h5>
+                        <div>
+                            <div class="plan-card locked-reference-plan" style="--tier-color: {{ ['free' => '#94a3b8', 'gold' => '#fbbf24', 'platinum' => '#38bdf8', 'diamond' => '#a78bfa'][strtolower($plan->slug)] }};">
+                                <div class="locked-plan-heading"><h5 class="fw-bold mb-0">{{ strtoupper($plan->slug) }}</h5><i class="bx bx-lock-alt" aria-label="Access locked"></i></div>
                                 <div class="mt-2 mb-3">
                                     <span class="fs-3 fw-bold text-white">₹{{ number_format($plan->monthly_price, 0) }}</span>
                                     <span style="color:#64748b;">/ month</span>
                                 </div>
-                                <button class="btn btn-upgrade" disabled>
-                                    <i class="bx bx-lock-alt me-1"></i> Locked
-                                </button>
+                                <div class="locked-plan-limits">{{ $plan->max_users > 0 ? number_format($plan->max_users) . ' users' : 'Unlimited users' }}<br>{{ $plan->max_storage_mb > 0 ? number_format($plan->max_storage_mb / 1024, 0) . ' GB storage' : 'Unlimited storage' }}</div>
+                                <div class="locked-plan-status"><i class="bx bx-lock-alt"></i> Access locked</div>
                             </div>
                         </div>
                     @endforeach
@@ -451,7 +464,7 @@
                                     <input type="hidden" name="plan_id" value="{{ $plan->id }}">
                                     <input type="hidden" name="billing_cycle" value="monthly">
                                     <button type="submit" class="btn btn-upgrade">
-                                        <i class="bx bx-zap me-1"></i>
+                                        <i class="bx bxs-zap me-1"></i>
                                         {{ $isCurrent ? 'Renew ' : 'Activate ' }}{{ $plan->name }}
                                     </button>
                                 </form>
@@ -556,5 +569,7 @@ function switchTab(tab) {
     document.getElementById('tab-' + tab).classList.add('active');
 }
 </script>
+<script src="{{ asset('admin/assets/js/pms-restriction-status.js') }}?v={{ @filemtime(public_path('admin/assets/js/pms-restriction-status.js')) }}" defer></script>
+@include('partials.responsive-workspace', ['responsiveShell' => 'auth'])
 </body>
 </html>

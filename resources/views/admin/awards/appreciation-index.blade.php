@@ -23,10 +23,10 @@
     @endif
 
   <div class="d-flex align-items-center mb-3
-    @if(auth()->user()->role === 'admin') justify-content-between @else justify-content-end @endif">
+    @if(auth()->user()?->hasModulePermission('awards', 'create')) justify-content-between @else justify-content-end @endif">
 
-    <!-- Left side: Add Award button (only for admin) -->
-    @if(auth()->user()->role === 'admin')
+    <!-- Creation follows the company's Recognition permissions. -->
+    @if(auth()->user()?->hasModulePermission('awards', 'create'))
         <div>
             <a href="{{ route('awards.appreciation-create') }}" class="btn btn-primary">
                 <i class="bi bi-plus-circle"></i> &nbsp; Add Appreciation Template

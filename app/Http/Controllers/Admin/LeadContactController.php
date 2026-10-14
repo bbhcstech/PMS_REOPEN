@@ -200,7 +200,7 @@ class LeadContactController extends Controller
         $this->authorizeLeadAccess('create');
 
         $users = User::select('id', 'name')->get();
-        $countries = Country::orderBy('name')->get();
+        $countries = Country::forForms();
         return view('admin.leads.contacts.create', compact('users', 'countries'));
     }
 
@@ -216,8 +216,6 @@ class LeadContactController extends Controller
             'contact_name' => 'required|string|max:255',
             'job_title' => 'nullable|string|max:255',
             ...LeadContactValidation::rules(),
-            'alternate_phone' => 'nullable|string|max:30',
-            'whatsapp' => 'nullable|string|max:30',
             'company_name' => 'nullable|string|max:255',
             'website' => 'nullable|url|max:255',
 
@@ -360,7 +358,7 @@ class LeadContactController extends Controller
 
         $lead = LeadContact::findOrFail($id);
         $users = User::select('id', 'name')->get();
-        $countries = Country::orderBy('name')->get();
+        $countries = Country::forForms();
 
         return view('admin.leads.contacts.edit', compact('lead', 'users', 'countries'));
     }
@@ -381,8 +379,6 @@ class LeadContactController extends Controller
             'contact_name' => 'required|string|max:255',
             'job_title' => 'nullable|string|max:255',
             ...LeadContactValidation::rules(),
-            'alternate_phone' => 'nullable|string|max:30',
-            'whatsapp' => 'nullable|string|max:30',
             'company_name' => 'nullable|string|max:255',
             'website' => 'nullable|url|max:255',
 
@@ -681,10 +677,6 @@ class LeadContactController extends Controller
     {
         $this->authorizeLeadAccess('view');
 
-        $template = [
-            ['contact_name', 'email', 'company_name', 'phone', 'lead_source', 'status', 'lead_owner_id']
-        ];
-
-        return Excel::download(new LeadsExport($template), 'leads-template.xlsx');
+        return Excel::download(new \App\Exports\LeadsTemplateExport(), 'leads-template.xlsx');
     }
 }

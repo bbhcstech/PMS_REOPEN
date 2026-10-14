@@ -14,8 +14,14 @@ class CompanyNotificationController extends Controller
 {
     private function getActiveCompanyId(): int
     {
+        // Company platform alerts are restricted to company administrators.
+        if (! in_array(strtolower((string) auth()->user()?->role), ['admin', 'administrator', 'superadmin'], true)) {
+            abort(403, 'Unauthorized: Only company administrators can access company notifications.');
+        }
+
         $contextComp = app(\App\Services\CompanyContext::class)->current();
         if ($contextComp) {
+            \App\Services\TenantScope::authorizeCompany($contextComp->id);
             return (int) $contextComp->id;
         }
 
@@ -85,6 +91,7 @@ class CompanyNotificationController extends Controller
 
         $notification = CentralNotification::on('central')
             ->where('company_id', $companyId)
+            ->whereIn('target_audience', ['company_admin', 'all'])
             ->findOrFail($id);
 
         $notification->update([
@@ -108,6 +115,7 @@ class CompanyNotificationController extends Controller
 
         CentralNotification::on('central')
             ->where('company_id', $companyId)
+            ->whereIn('target_audience', ['company_admin', 'all'])
             ->where('is_read', false)
             ->update([
                 'is_read' => true,
@@ -130,6 +138,7 @@ class CompanyNotificationController extends Controller
 
         $count = CentralNotification::on('central')
             ->where('company_id', $companyId)
+            ->whereIn('target_audience', ['company_admin', 'all'])
             ->where('is_read', false)
             ->count();
 

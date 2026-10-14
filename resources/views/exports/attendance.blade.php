@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+    @include('documents.pdf-styles')
     <meta charset="utf-8">
     <title>Attendance Report</title>
 </head>

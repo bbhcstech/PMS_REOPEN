@@ -782,7 +782,7 @@
 @endpush
 
 @section('content')
-<div class="email-settings-page">
+<div class="pms-settings-page email-settings-page">
     <div class="email-settings-shell">
         <div class="ambient-orb orb-1"></div>
         <div class="ambient-orb orb-2"></div>
@@ -896,7 +896,7 @@
 
                         <div class="p-4 p-md-5">
                             @if($isSettingsReadOnly)
-                                <div class="alert d-flex align-items-center mb-4 rounded-3 border-0 shadow-sm" style="background: linear-gradient(135deg, #eff6ff, #dbeafe); color: #1e40af; border-left: 4px solid #3b82f6 !important; padding: 14px 18px;">
+                                <div class="alert pms-readonly-notice d-flex align-items-center mb-4 rounded-3 border-0 shadow-sm" style="background: linear-gradient(135deg, #eff6ff, #dbeafe); color: #1e40af; border-left: 4px solid #3b82f6 !important; padding: 14px 18px;">
                                     <i class="fas fa-eye me-3 fs-3 text-primary"></i>
                                     <div>
                                         <strong class="d-block text-primary fw-bold" style="font-size: 14px;">View-Only Mode</strong>
@@ -983,7 +983,7 @@
                                             <span class="input-group-text"><i class="fas fa-key"></i></span>
                                             <input type="password" name="mail_password" class="form-control" placeholder="••••••••••••" {{ $isSettingsReadOnly ? 'disabled' : '' }}>
                                         </div>
-                                        <small class="text-muted mt-1 d-block">{{ $isSettingsReadOnly ? 'Encrypted and stored securely.' : 'Leave empty to keep existing password unchanged.' }}</small>
+                                        <small class="text-muted mt-1 d-block">{{ $settings['has_mail_password'] ? 'A password is saved. Leave empty to keep it unchanged.' : 'Add the SMTP password or app password supplied by your email provider.' }}</small>
                                     </div>
 
                                     <!-- From Address -->

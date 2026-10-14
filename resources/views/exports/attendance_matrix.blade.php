@@ -1,23 +1,19 @@
 <!DOCTYPE html>
 <html>
 <head>
+    @include('documents.pdf-styles')
     <meta charset="utf-8"/>
     <title>{{ $title }}</title>
 
     <style>
         /* Use DejaVu Sans for PDF compatibility (unicode) */
-        @font-face {
-            font-family: 'DejaVu Sans';
-            font-style: normal;
-            font-weight: normal;
-            src: local('DejaVu Sans'), local('Arial');
-        }
 
-        html, body {
+
+        body {
             font-family: "DejaVu Sans", Arial, sans-serif;
             color: #2b3d4f;
             margin: 0;
-            padding: 18px 22px;
+            padding: 0;
             font-size: 10px;
             line-height: 1.25;
         }
@@ -48,7 +44,7 @@
 
         /* Legend */
         .legend {
-            display: flex;
+            display: block;
             gap: 12px;
             align-items: center;
             margin-bottom: 12px;
@@ -56,7 +52,7 @@
             color: #435d6b;
         }
         .legend .item {
-            display: flex;
+            display: block;
             gap: 6px;
             align-items: center;
         }
@@ -68,7 +64,7 @@
             display: inline-block;
         }
 
-        /* Table */
+        .legend .item { display: inline-block; margin-right: 10px; } /* Table */
         .attendance-table {
             width: 100%;
             border-collapse: collapse;
@@ -80,7 +76,7 @@
             background: #163240;
             color: #ffffff;
             font-weight: 700;
-            padding: 6px 6px;
+            padding: 5px 1px;
             text-align: center;
             border: 1px solid #cfdde6;
             font-size: 9px;
@@ -97,13 +93,13 @@
             padding: 6px;
             font-weight: 600;
             color: #0f2b3a;
-            white-space: nowrap;
+            white-space: normal;
             overflow: hidden;
             text-overflow: ellipsis;
         }
 
         .attendance-table td {
-            padding: 6px 4px;
+            padding: 5px 1px;
             text-align: center;
             vertical-align: middle;
             word-break: break-word;
@@ -111,14 +107,16 @@
 
         /* Day cells: compact */
         .col-day {
-            width: 22px;
+            width: auto;
             font-weight: 700;
             color: #284a5a;
         }
+        .attendance-table thead th.col-day { font-size: 8px; padding-left: 0; padding-right: 0; white-space: nowrap; }
+        .attendance-table thead th.col-summary { font-size: 7px; }
 
         /* Summary column */
         .col-summary {
-            width: 58px;
+            width: 3.2%;
             font-weight: 700;
             color: #0f2b3a;
             background: #fbfcfd;
@@ -137,10 +135,10 @@
         .status-HD { background: #eef5ff; color: #063a7a; font-weight: 700; }
 
         /* compact employee columns */
-        .col-sno { width: 24px; text-align: center; }
-        .col-name { width: 120px; text-align: left; padding-left: 8px; }
-        .col-design { width: 110px; text-align: left; padding-left: 8px; }
-        .col-dept { width: 100px; text-align: left; padding-left: 8px; }
+        .col-sno { width: 2.5%; text-align: center; }
+        .col-name { width: 11%; text-align: left; padding-left: 3px; }
+        .col-design { width: 10%; text-align: left; padding-left: 3px; }
+        .col-dept { width: 8%; text-align: left; padding-left: 3px; }
 
         /* Summary block */
         .summary-box {
@@ -148,7 +146,7 @@
             padding: 10px;
             background: #f7fbfd;
             border: 1px solid #e6f0f5;
-            display: flex;
+            display: block;
             justify-content: space-between;
             align-items: center;
             font-size: 10px;

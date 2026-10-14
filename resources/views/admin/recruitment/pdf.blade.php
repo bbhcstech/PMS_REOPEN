@@ -1,6 +1,11 @@
+@php
+    $pdfHeaderImage = method_exists($requirement, 'pdfImageDataUri') ? $requirement->pdfImageDataUri('pdf_header_image') : null;
+    $pdfFooterImage = method_exists($requirement, 'pdfImageDataUri') ? $requirement->pdfImageDataUri('pdf_footer_image') : null;
+@endphp
 <!doctype html>
 <html>
 <head>
+    @include('documents.pdf-styles')
     <meta charset="utf-8"/>
     <title>Job Requirement - {{ $requirement->title }}</title>
     <style>
@@ -10,7 +15,7 @@
             box-sizing: border-box;
         }
         body {
-            font-family: 'Helvetica Neue', 'Helvetica', 'DejaVu Sans', Arial, sans-serif;
+            font-family: 'DejaVu Sans', sans-serif;
             font-size: 11px;
             color: #1f2937;
             background: #ffffff;
@@ -135,8 +140,26 @@
             color: #9ca3af;
         }
     </style>
+    @if($pdfHeaderImage || $pdfFooterImage)
+    <style>
+        /* Company header/footer repeat on every page; the page margins reserve their space. */
+        @page { margin: {{ $pdfHeaderImage ? '120px' : '30px' }} 30px {{ $pdfFooterImage ? '100px' : '30px' }} 30px; }
+        body { padding: 0; }
+        .pdf-brand-header, .pdf-brand-footer { position: fixed; left: 0; right: 0; text-align: center; }
+        .pdf-brand-header { top: -105px; height: 95px; }
+        .pdf-brand-footer { bottom: -88px; height: 80px; }
+        .pdf-brand-header img { max-width: 100%; max-height: 95px; }
+        .pdf-brand-footer img { max-width: 100%; max-height: 80px; }
+    </style>
+    @endif
 </head>
 <body>
+    @if($pdfHeaderImage)
+    <div class="pdf-brand-header"><img src="{{ $pdfHeaderImage }}" alt="Company header"></div>
+    @endif
+    @if($pdfFooterImage)
+    <div class="pdf-brand-footer"><img src="{{ $pdfFooterImage }}" alt="Company footer"></div>
+    @endif
 
     <table class="header-table">
         <tr>

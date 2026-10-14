@@ -2,7 +2,7 @@
 
 @php
     $isEdit = isset($leave);
-    $isAdmin = auth()->user()->role === 'admin';
+    $isAdmin = \App\Services\WorkforceAccess::canManageLeaves(auth()->user()) && (!isset($selectedUser) || (int) $selectedUser->id !== (int) auth()->id());
     $oldStartDate = old('start_date', $isEdit ? optional($leave->start_date)->format('Y-m-d') : '');
     $oldEndDate = old('end_date', $isEdit ? optional($leave->end_date)->format('Y-m-d') : '');
 @endphp
@@ -10,7 +10,7 @@
 @section('title', $isEdit ? 'Edit Leave Request' : 'Apply Leave')
 
 @section('content')
-<div class="leave-form-page">
+<div class="leave-form-page" id="leave-form-page" data-live-preserve>
     <div class="leave-breadcrumb"><i class="fas fa-calendar-plus"></i> Dashboard / Leaves / {{ $isEdit ? 'Edit' : 'Apply' }}</div>
 
     <section class="leave-form-hero">
@@ -18,7 +18,7 @@
             <h1>{{ $isEdit ? 'Edit Leave Request' : 'Apply for Leave' }}</h1>
             <p>Submit leave requests with policy-aware validation for SL, CL, Maternity, and unpaid leave.</p>
         </div>
-        <a href="{{ route('leaves.index') }}" class="btn btn-light"><i class="fas fa-arrow-left"></i> Back to Leaves</a>
+        <a href="{{ route(request('staff_category') === 'authority' ? 'admin.authority-leaves' : 'leaves.index') }}" class="btn btn-light"><i class="fas fa-arrow-left"></i> Back to Leaves</a>
     </section>
 
     @if($errors->any())
@@ -54,6 +54,7 @@
     <section class="form-card">
         <form method="POST" action="{{ $isEdit ? route('leaves.update', $leave->id) : route('leaves.store') }}" enctype="multipart/form-data" id="leaveForm">
             @csrf
+            <input type="hidden" name="staff_category" value="{{ request('staff_category', 'employee') }}">
             @if($isEdit)
                 @method('PUT')
             @endif
@@ -162,7 +163,7 @@
             @endif
 
             <div class="form-actions">
-                <a href="{{ route('leaves.index') }}" class="btn btn-secondary"><i class="fas fa-times"></i> Cancel</a>
+                <a href="{{ route(request('staff_category') === 'authority' ? 'admin.authority-leaves' : 'leaves.index') }}" class="btn btn-secondary"><i class="fas fa-times"></i> Cancel</a>
                 <button type="submit" id="leaveSubmitBtn" class="btn btn-primary"><i class="fas fa-paper-plane"></i> {{ $isEdit ? 'Update Leave' : 'Submit Request' }}</button>
             </div>
         </form>
@@ -625,7 +626,6 @@
 </style>
 
 {{-- intl-tel-input CSS --}}
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@23/build/css/intlTelInput.css">
 
 
 @push('js')
@@ -876,18 +876,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const phoneIcon    = document.getElementById('phoneValidIcon');
 
     function initPhoneValidation() {
-        if (!phoneInput || !window.intlTelInput) return;
-
-        const utilsScript = 'https://cdn.jsdelivr.net/npm/intl-tel-input@23/build/js/utils.js';
-
-        const iti = window.intlTelInput(phoneInput, {
-            utilsScript: utilsScript,
-            initialCountry: 'in',           // default to India (+91)
-            separateDialCode: true,
-            strictMode: true,               // restrict input characters and limit digits to country maximum
-            preferredCountries: ['in', 'ae', 'us', 'gb', 'sa', 'pk'],
-            placeholderNumberType: 'MOBILE',
-        });
+        if (!phoneInput || !window.PmsPhoneFields) return;
+        const iti = window.PmsPhoneFields.attach(phoneInput, { initialCountry: 'in' });
 
         function getValidationMessage() {
             const countryData = iti.getSelectedCountryData();
@@ -1000,15 +990,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // Load intl-tel-input dynamically if not already present
-    if (window.intlTelInput) {
-        initPhoneValidation();
-    } else {
-        const itiScript = document.createElement('script');
-        itiScript.src = 'https://cdn.jsdelivr.net/npm/intl-tel-input@23/build/js/intlTelInput.min.js';
-        itiScript.onload = initPhoneValidation;
-        document.head.appendChild(itiScript);
-    }
+    if (window.PmsPhoneFields) initPhoneValidation();
 });
 </script>
 @endpush

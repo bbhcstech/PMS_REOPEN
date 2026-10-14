@@ -818,7 +818,7 @@
     box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
   }
 
-  .subscription-card.selected {
+  .subscription-card:has(> input:checked) {
     border-color: var(--brand-emerald);
     background: var(--tier-card-selected-bg);
     box-shadow: 0 12px 28px var(--brand-glow), 0 0 0 1px var(--brand-emerald);
@@ -897,8 +897,23 @@
     animation: cardPop 0.3s ease;
   }
 
-  .subscription-card.selected .check-mark {
+  .subscription-card:has(> input:checked) .check-mark {
     display: block;
+  }
+
+  .subscription-card > input[type="radio"] {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 2;
+  }
+  .subscription-card:has(> input:focus-visible) {
+    outline: 3px solid var(--brand-emerald);
+    outline-offset: 4px;
   }
 
   /* ACTION FOOTER BAR WITH SHIMMER CTA */
@@ -1301,11 +1316,10 @@
         </div>
       </div>
 
-      <input type="hidden" name="subscription_plan" id="selectedPlanInput" value="free" />
-
       <div class="subscription-tier-grid">
         <!-- FREE PLAN -->
-        <div class="subscription-card selected" data-plan="free">
+        <div class="subscription-card" data-plan="free">
+          <input type="radio" name="subscription_plan" value="free" aria-label="Free plan" required @checked(old('subscription_plan', 'free') === 'free')>
           <i class="bx bx-check-circle check-mark"></i>
           <span class="plan-tag free">FREE</span>
           <div class="plan-price">₹0 <span style="font-size: 11px; color: var(--slate-muted); font-weight: 500;">/mo</span></div>
@@ -1318,6 +1332,7 @@
 
         <!-- GOLD PLAN -->
         <div class="subscription-card" data-plan="gold">
+          <input type="radio" name="subscription_plan" value="gold" aria-label="Gold plan" required @checked(old('subscription_plan', 'free') === 'gold')>
           <i class="bx bx-check-circle check-mark"></i>
           <span class="plan-tag gold">GOLD</span>
           <div class="plan-price">₹4,999 <span style="font-size: 11px; color: var(--slate-muted); font-weight: 500;">/mo</span></div>
@@ -1330,6 +1345,7 @@
 
         <!-- PLATINUM PLAN -->
         <div class="subscription-card" data-plan="platinum">
+          <input type="radio" name="subscription_plan" value="platinum" aria-label="Platinum plan" required @checked(old('subscription_plan', 'free') === 'platinum')>
           <i class="bx bx-check-circle check-mark"></i>
           <span class="plan-tag platinum">PLATINUM</span>
           <div class="plan-price">₹9,999 <span style="font-size: 11px; color: var(--slate-muted); font-weight: 500;">/mo</span></div>
@@ -1342,6 +1358,7 @@
 
         <!-- DIAMOND PLAN -->
         <div class="subscription-card" data-plan="diamond">
+          <input type="radio" name="subscription_plan" value="diamond" aria-label="Diamond plan" required @checked(old('subscription_plan', 'free') === 'diamond')>
           <i class="bx bx-check-circle check-mark"></i>
           <span class="plan-tag diamond">DIAMOND</span>
           <div class="plan-price">₹19,999 <span style="font-size: 11px; color: var(--slate-muted); font-weight: 500;">/mo</span></div>
@@ -1579,18 +1596,6 @@ document.addEventListener('DOMContentLoaded', function() {
   bindUploader('avatar_drop_box', 'admin_profile_input', 'default-upload-state', 'admin_profile_preview_bar', 'admin_profile_img', 'admin_profile_filename', 'btn_remove_avatar');
 
   // 6. Subscription Tier Cards Selection
-  const planCards = document.querySelectorAll('.subscription-card');
-  const selectedPlanInput = document.getElementById('selectedPlanInput');
-
-  planCards.forEach(card => {
-    card.addEventListener('click', function() {
-      planCards.forEach(c => c.classList.remove('selected'));
-      this.classList.add('selected');
-      const plan = this.getAttribute('data-plan');
-      if (selectedPlanInput) selectedPlanInput.value = plan;
-    });
-  });
-
   // 7. Strict Email and Phone Validation
   function getPhoneRule(countryCode) {
     switch (countryCode) {

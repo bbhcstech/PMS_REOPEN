@@ -6,31 +6,28 @@ use App\Models\Country;
 
 class CountryPhone
 {
-    protected static ?array $dbCache = null;
-
     protected static function loadDbCache(): array
     {
-        if (self::$dbCache !== null) {
-            return self::$dbCache;
+        return self::formMap();
+    }
+
+    /** Database-backed options for forms; the built-in map remains a seeding source. */
+    public static function formMap(): array
+    {
+        $connection = \Illuminate\Support\Facades\DB::connection('tenant');
+        $key = 'pms.phone-countries.' . hash('sha256', (string) $connection->getDatabaseName() . '|' . spl_object_id($connection->getPdo()));
+        if (request()->attributes->has($key)) return request()->attributes->get($key);
+        if (!\Illuminate\Support\Facades\Schema::connection('tenant')->hasTable('countries')) {
+            (require database_path('migrations/tenant/2026_10_09_150000_ensure_tenant_country_phone_codes.php'))->up();
         }
-
-        self::$dbCache = [];
-        try {
-            $countries = Country::all();
-            foreach ($countries as $c) {
-                if ($c->phone_code) {
-                    self::$dbCache[$c->name] = [
-                        'dial_code'  => $c->phone_code,
-                        'iso'        => strtolower($c->iso_code ?? 'in'),
-                        'min_digits' => (int) ($c->min_digits ?? 10),
-                        'max_digits' => (int) ($c->max_digits ?? 10),
-                        'flag_url'   => $c->flag_url,
-                    ];
-                }
-            }
-        } catch (\Throwable $e) {}
-
-        return self::$dbCache;
+        $map = Country::getAllWithPhoneCodes()->filter(fn ($country) => filled($country->phone_code))
+            ->mapWithKeys(fn ($country) => [$country->name => [
+                'dial_code' => $country->phone_code, 'iso' => strtolower($country->iso_code ?? ''),
+                'min_digits' => (int) $country->min_digits, 'max_digits' => (int) $country->max_digits,
+                'flag_url' => $country->flag_url,
+            ]])->all();
+        request()->attributes->set($key, $map);
+        return $map;
     }
 
     public static function meta(string $countryName): array
@@ -352,4 +349,3 @@ class CountryPhone
         ];
     }
 }
-

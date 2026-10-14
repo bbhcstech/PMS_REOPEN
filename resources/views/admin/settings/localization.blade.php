@@ -548,6 +548,37 @@
         background: transparent !important;
     }
 
+    /* pms-refresh.css (loaded again in the footer) styles the first .stat-card's icon as a "featured"
+       white-on-white tile, which hid the Default Currency icon in light mode. Higher specificity keeps
+       every localization stat icon on its own themed colours. */
+    .localization-settings-page .loc-stats-grid .loc-stat-card .loc-stat-icon {
+        border: 0 !important;
+        box-shadow: none !important;
+    }
+    .localization-settings-page .loc-stats-grid .loc-stat-card .loc-stat-icon.curr { background: var(--loc-icon-curr-bg) !important; color: var(--loc-icon-curr-color) !important; }
+    .localization-settings-page .loc-stats-grid .loc-stat-card .loc-stat-icon.tz { background: var(--loc-icon-tz-bg) !important; color: var(--loc-icon-tz-color) !important; }
+    .localization-settings-page .loc-stats-grid .loc-stat-card .loc-stat-icon.lang { background: var(--loc-icon-lang-bg) !important; color: var(--loc-icon-lang-color) !important; }
+    .localization-settings-page .loc-stats-grid .loc-stat-card .loc-stat-icon.format { background: var(--loc-icon-format-bg) !important; color: var(--loc-icon-format-color) !important; }
+    .localization-settings-page .loc-stats-grid .loc-stat-card .loc-stat-icon i,
+    .localization-settings-page .loc-stats-grid .loc-stat-card .loc-stat-icon svg {
+        color: inherit !important;
+        -webkit-text-fill-color: currentColor !important;
+        fill: currentColor !important;
+        background: transparent !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    .localization-settings-page .loc-stats-grid .loc-stat-card .loc-stat-icon.curr svg {
+        width: 30px;
+        height: 30px;
+        fill: none !important;
+        stroke: currentColor;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
     /* ==========================================================================
        MAIN FORM CARD & HEADER
        ========================================================================== */
@@ -723,6 +754,17 @@
         cursor: not-allowed !important;
     }
 
+    .localization-settings-page .loc-input-group input[name="currency_symbol"][readonly] {
+        font-family: "Nirmala UI", "Noto Sans Bengali", "Segoe UI", Arial, sans-serif !important;
+        font-size: 1.35rem !important;
+        font-weight: 600 !important;
+        line-height: 1.5 !important;
+        color: var(--loc-input-color) !important;
+        -webkit-text-fill-color: var(--loc-input-color) !important;
+        opacity: 1 !important;
+        cursor: default !important;
+    }
+
     .localization-settings-page .input-group-custom .form-select:disabled,
     .localization-settings-page .loc-input-group .form-select:disabled {
         background-color: var(--loc-input-readonly-bg) !important;
@@ -875,7 +917,7 @@
 @endpush
 
 @section('content')
-<div class="localization-settings-page">
+<div class="pms-settings-page localization-settings-page">
     <div class="localization-settings-shell">
         <div class="ambient-orb orb-1"></div>
         <div class="ambient-orb orb-2"></div>
@@ -929,7 +971,7 @@
             <div class="stats-grid loc-stats-grid">
                 <div class="stat-card loc-stat-card">
                     <div class="stat-icon loc-stat-icon curr">
-                        <i class="fas fa-money-bill-wave"></i>
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"/><circle cx="12" cy="12" r="3"/><path d="M5 9v6M19 9v6"/></svg>
                     </div>
                     <div class="stat-info loc-stat-info">
                         <h6>Default Currency</h6>

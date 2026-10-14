@@ -137,6 +137,18 @@
         $monthName = $selectedMonth ? \Carbon\Carbon::create()->month($selectedMonth)->format('F') : 'All Months';
     @endphp
 
+    <style>
+        /* Match the Total Holidays card to its neighboring dark-theme cards. */
+        :is([data-pms-theme="dark"], [data-bs-theme="dark"], [data-theme="dark"], .dark, .dark-mode) .holiday-list-page .stats-grid > .stat-card:first-child {
+            background: #0f1530 !important;
+            border-color: rgba(79, 131, 255, 0.18) !important;
+        }
+        :is([data-pms-theme="dark"], [data-bs-theme="dark"], [data-theme="dark"], .dark, .dark-mode) .holiday-list-page .stats-grid > .stat-card:first-child :is(.stat-label, .stat-value) {
+            color: #ffffff !important;
+            -webkit-text-fill-color: #ffffff !important;
+        }
+    </style>
+
     <!-- Stats Cards -->
     <div class="stats-grid">
         <div class="stat-card">

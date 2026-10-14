@@ -672,12 +672,58 @@
     [data-pms-theme="dark"] .iti__dial-code {
         color: #9AA3C7 !important;
     }
+
+    /* Primary-branch switch: self-contained sizing and colours so theme form rules cannot collapse it to a line. */
+    html body .default-toggle-box .form-check.form-switch {
+        flex: 0 0 auto;
+        min-height: 0;
+        margin: 0 !important;
+        padding: 0 !important;
+        display: flex;
+        align-items: center;
+    }
+    html body .default-toggle-box .form-switch .form-check-input {
+        float: none !important;
+        flex: 0 0 auto;
+        width: 3rem !important;
+        min-width: 3rem !important;
+        height: 1.6rem !important;
+        margin: 0 !important;
+        border-radius: 999px !important;
+        border: 2px solid #94A3B8 !important;
+        background-color: #E2E8F0 !important;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%2364748B'/%3e%3c/svg%3e") !important;
+        background-repeat: no-repeat !important;
+        background-position: left center !important;
+        background-size: contain !important;
+        opacity: 1 !important;
+        cursor: pointer;
+        appearance: none;
+        -webkit-appearance: none;
+        transition: background-position .15s ease-in-out, background-color .15s ease-in-out, border-color .15s ease-in-out;
+    }
+    html body .default-toggle-box .form-switch .form-check-input:checked {
+        border-color: #2F6BFF !important;
+        background-color: #2F6BFF !important;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23ffffff'/%3e%3c/svg%3e") !important;
+        background-position: right center !important;
+    }
+    html body .default-toggle-box .form-switch .form-check-input:focus-visible {
+        outline: 3px solid rgba(47, 107, 255, 0.45);
+        outline-offset: 2px;
+        box-shadow: none !important;
+    }
+    html body.dark-mode .default-toggle-box .form-switch .form-check-input:not(:checked),
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"]) .default-toggle-box .form-switch .form-check-input:not(:checked) {
+        border-color: #64748B !important;
+        background-color: #1E2747 !important;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23CBD5E1'/%3e%3c/svg%3e") !important;
+    }
 </style>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@23/build/css/intlTelInput.css">
 @endpush
 
 @section('content')
-<div class="create-branch-page">
+<div class="pms-settings-page create-branch-page">
     <div class="create-branch-shell">
         <div class="ambient-orb orb-1"></div>
         <div class="ambient-orb orb-2"></div>
@@ -1021,20 +1067,8 @@
         }
 
         function initPhoneValidation() {
-            if (!window.intlTelInput) return;
-
-            const utilsScript = 'https://cdn.jsdelivr.net/npm/intl-tel-input@23/build/js/utils.js';
-
-            const iti = window.intlTelInput(phoneInput, {
-                utilsScript: utilsScript,
-                initialCountry: 'in', // Default country code is India (+91)
-                separateDialCode: true,
-                strictMode: true,     // Restrict input to digits and limit to country maximum
-                preferredCountries: ['in', 'ae', 'us', 'gb', 'sa', 'sg', 'ca', 'au'],
-                placeholderNumberType: 'MOBILE',
-                autoPlaceholder: 'polite',
-                formatOnDisplay: true,
-            });
+            if (!window.PmsPhoneFields) return;
+            const iti = window.PmsPhoneFields.attach(phoneInput, { initialCountry: 'in' });
 
             // Get country digits expectation
             function getExpectedDigits(countryIso) {
@@ -1213,7 +1247,7 @@
                 countryInput.addEventListener('change', function () {
                     const val = countryInput.value.trim().toLowerCase();
                     if (!val) return;
-                    const allCountries = window.intlTelInputGlobals ? window.intlTelInputGlobals.getCountryData() : [];
+                    const allCountries = window.PmsPhoneFields.countries;
                     const matched = allCountries.find(c => 
                         c.name.toLowerCase() === val || 
                         c.name.toLowerCase().startsWith(val) ||
@@ -1270,15 +1304,7 @@
             }
         }
 
-        // Load intl-tel-input script dynamically
-        if (window.intlTelInput) {
-            initPhoneValidation();
-        } else {
-            const itiScript = document.createElement('script');
-            itiScript.src = 'https://cdn.jsdelivr.net/npm/intl-tel-input@23/build/js/intlTelInput.min.js';
-            itiScript.onload = initPhoneValidation;
-            document.head.appendChild(itiScript);
-        }
+        if (window.PmsPhoneFields) initPhoneValidation();
     });
 </script>
 @endpush

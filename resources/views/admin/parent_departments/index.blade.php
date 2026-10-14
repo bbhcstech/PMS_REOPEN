@@ -3,6 +3,7 @@
 @section('title', 'Parent Departments')
 
 @section('content')
+@include('admin.settings.partials.workforce-navigation')
 <div class="parent-department-page">
     <!-- Breadcrumb -->
     <div class="breadcrumb">
@@ -33,13 +34,13 @@
                     <li><button type="button" class="dropdown-item" onclick="exportTo('print')"><i class="fas fa-print text-info"></i> Print</button></li>
                 </ul>
             </div>
-            <a href="{{ route('parent-departments.archive') }}" class="btn btn-light">
+            <a href="{{ \App\Support\WorkforceSettings::route('parent-departments.archive') }}" class="btn btn-light">
                 <i class="fas fa-box-archive"></i> Archived
                 @if(($archivedCount ?? 0) > 0)
                     <span class="archive-count-badge">{{ $archivedCount }}</span>
                 @endif
             </a>
-            <a href="{{ route('parent-departments.create') }}" class="btn btn-primary">
+            <a href="{{ \App\Support\WorkforceSettings::route('parent-departments.create') }}" class="btn btn-primary">
                 <i class="fas fa-plus-circle"></i> Add New
             </a>
         </div>
@@ -267,12 +268,12 @@
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end">
                                     <li>
-                                        <a class="dropdown-item" href="{{ route('parent-departments.show', $dpt) }}">
+                                        <a class="dropdown-item" href="{{ \App\Support\WorkforceSettings::route('parent-departments.show', $dpt) }}">
                                             <i class="fas fa-eye"></i> View Department
                                         </a>
                                     </li>
                                     <li>
-                                        <a class="dropdown-item" href="{{ route('parent-departments.edit', $dpt) }}">
+                                        <a class="dropdown-item" href="{{ \App\Support\WorkforceSettings::route('parent-departments.edit', $dpt) }}">
                                             <i class="fas fa-pen"></i> Edit Department
                                         </a>
                                     </li>
@@ -287,7 +288,7 @@
                                     </li>
                                 </ul>
                             </div>
-                            <form action="{{ route('parent-departments.destroy', $dpt) }}"
+                            <form action="{{ \App\Support\WorkforceSettings::route('parent-departments.destroy', $dpt) }}"
                                   method="POST"
                                   class="d-none delete-form-{{ $dpt->id }}">
                                 @csrf
@@ -302,7 +303,7 @@
                                 <i class="fas fa-building fa-4x"></i>
                                 <h5>No Parent Departments Found</h5>
                                 <p>Get started by creating your first parent department</p>
-                                <a href="{{ route('parent-departments.create') }}" class="btn btn-primary">
+                                <a href="{{ \App\Support\WorkforceSettings::route('parent-departments.create') }}" class="btn btn-primary">
                                     <i class="fas fa-plus-circle"></i> Create Department
                                 </a>
                             </div>
@@ -441,6 +442,13 @@
         font-size: 32px;
         box-shadow: 0 12px 24px -8px rgba(47, 107, 255, 0.3);
         transition: all 0.3s ease;
+    }
+
+    /* Preserve contrast on the blue header tile in light theme. */
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .parent-department-page .header-card .header-icon > i,
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .parent-department-page .header-card .header-icon > i::before {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
     }
 
     .header-card:hover .header-icon {
@@ -2920,7 +2928,7 @@ $(document).ready(function() {
         deleteBtn.addClass('loading');
 
         $.ajax({
-            url: `{{ route('parent-departments.destroy', ':id') }}`.replace(':id', departmentId),
+            url: `{{ \App\Support\WorkforceSettings::route('parent-departments.destroy', ':id') }}`.replace(':id', departmentId),
             method: 'POST',
             headers: {
                 'X-CSRF-TOKEN': '{{ csrf_token() }}',
@@ -2986,7 +2994,7 @@ $(document).ready(function() {
         deleteBtn.prop('disabled', true);
 
         $.ajax({
-            url: "{{ route('parent-departments.bulk-delete') }}",
+            url: "{{ \App\Support\WorkforceSettings::route('parent-departments.bulk-delete') }}",
             method: 'POST',
             headers: {
                 'X-CSRF-TOKEN': '{{ csrf_token() }}',
@@ -3142,7 +3150,7 @@ $(document).ready(function() {
         if (!$(e.target).closest('input, a, button, .dropdown, .form-check, .action-btn, .dropdown-menu, .btn').length) {
             var departmentId = $(this).data('id');
             if (departmentId) {
-                window.location.href = "{{ route('parent-departments.show', '') }}/" + departmentId;
+                window.location.href = "{{ \App\Support\WorkforceSettings::route('parent-departments.show', '') }}/" + departmentId;
             }
         }
     });

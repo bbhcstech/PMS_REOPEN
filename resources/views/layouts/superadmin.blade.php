@@ -1222,12 +1222,14 @@
        RESPONSIVE & ALL-DEVICE SCREEN COMPATIBILITY
        ============================================================ */
     html, body {
-      overflow-x: hidden !important;
+      overflow-x: clip !important;
       max-width: 100vw !important;
     }
 
     .main {
-      overflow-x: hidden;
+      /* Clip horizontal overflow without making a separate scroll container.
+         The header must stick to the document's scrolling viewport. */
+      overflow-x: clip;
     }
 
     /* Auto-responsive table containers */
@@ -2027,10 +2029,16 @@
       </a>
 
       <!-- TENANT MANAGEMENT -->
+      <a href="{{ route('super-admin.ai.index') }}" class="{{ request()->routeIs('super-admin.ai.*') ? 'active' : '' }}">
+        <i class="bx bx-bot icon"></i> Platform Assistant
+      </a>
       <div class="nav-label">Tenant Management</div>
       <a href="{{ Route::has('superadmin.companies.index') ? route('superadmin.companies.index') : (Route::has('super-admin.companies.index') ? route('super-admin.companies.index') : url('/superadmin/companies')) }}" 
-         class="{{ request()->routeIs('*companies.index') || request()->routeIs('*companies.list') || ((request()->routeIs('*companies.*')) && !request()->routeIs('*companies.metrics')) ? 'active' : '' }}">
+         class="{{ request()->routeIs('*companies.index') || request()->routeIs('*companies.list') || ((request()->routeIs('*companies.*')) && !request()->routeIs('*companies.metrics', '*companies.suspended')) ? 'active' : '' }}">
         <i class="bx bx-building-house icon"></i> Companies
+      </a>
+      <a href="{{ route('superadmin.companies.suspended') }}" class="{{ request()->routeIs('*companies.suspended') ? 'active' : '' }}">
+        <i class="bx bx-pause-circle icon"></i> Suspended Companies
       </a>
       <a href="{{ Route::has('superadmin.companies.metrics') ? route('superadmin.companies.metrics') : (Route::has('super-admin.companies.metrics') ? route('super-admin.companies.metrics') : url('/superadmin/companies/metrics')) }}" 
          class="{{ request()->routeIs('*companies.metrics') ? 'active' : '' }}">
@@ -2321,7 +2329,10 @@
         </div>
       @endif
 
+      @include('partials.page-back-navigation')
+      <div data-live-records data-live-identity="@include('partials.live-records-identity')" style="display:contents">
       @yield('content')
+      </div>
     </div>
   </div>
 
@@ -2348,6 +2359,24 @@
         sidebarOverlay.classList.remove('open');
       });
     }
+
+    // Auto-close sidebar on mobile when navigating
+    document.querySelectorAll('#sidebar .nav-item').forEach(function(link) {
+      link.addEventListener('click', function() {
+        if (window.innerWidth <= 992) {
+          if (sidebar) sidebar.classList.remove('open');
+          if (sidebarOverlay) sidebarOverlay.classList.remove('open');
+        }
+      });
+    });
+
+    // Close on Escape key
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        if (sidebar) sidebar.classList.remove('open');
+        if (sidebarOverlay) sidebarOverlay.classList.remove('open');
+      }
+    });
 
     // Notification Dropdown Toggle
     const notifWrapper = document.getElementById('notifWrapper');
@@ -2526,6 +2555,10 @@
 
   @include('admin.layout.toasts')
 
-  @stack('scripts')
+  @include('partials.phone-fields')
+@stack('scripts')
+  <script src="{{ asset('admin/assets/js/pms-live-records.js') }}?v={{ @filemtime(public_path('admin/assets/js/pms-live-records.js')) }}" data-session-url="{{ route('company.session-status') }}" data-login-url="{{ route('login') }}" defer></script>
+  @include('partials.ai-assistant-launcher')
+  @include('partials.responsive-workspace', ['responsiveShell' => 'platform'])
 </body>
 </html>

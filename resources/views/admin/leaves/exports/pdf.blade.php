@@ -1,6 +1,7 @@
 <!doctype html>
 <html>
 <head>
+    @include('documents.pdf-styles')
     <meta charset="utf-8">
     <title>Leave Report</title>
     <style>

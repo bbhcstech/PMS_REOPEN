@@ -71,6 +71,11 @@
         ],
     ];
 
+    // Admin Workspace uses Platform Support & Complaints instead of tickets
+    if (\App\Support\TicketAccess::hiddenForCurrentUser()) {
+        unset($tabs['tickets']);
+    }
+
     $statusOptions = [
         'pending' => 'Pending',
         'not started' => 'Not Started',
@@ -307,6 +312,12 @@
 
     .pms-nav-tab.active .tab-icon {
         color: #ffffff !important;
+    }
+
+    #pmsProjectNavBar .pms-nav-tab.active[data-tab="overview"] > .tab-icon {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        background: transparent !important;
     }
 
     .tab-badge {

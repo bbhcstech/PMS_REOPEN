@@ -105,6 +105,17 @@
         gap: 1.25rem;
     }
 
+    /* White icons on the blue header tile and blue "Add New Address" buttons. The theme's
+       ".content-wrapper .fas:not(.btn *)" rule only exempts .btn and painted them blue on blue. */
+    .branches-page .header-icon-badge > i.fas,
+    .branches-page .btn-add-address > i.fas {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        background: transparent !important;
+        filter: none !important;
+        opacity: 1 !important;
+    }
+
     .header-icon-badge {
         width: 58px;
         height: 58px;
@@ -169,8 +180,7 @@
     }
 
     .stat-card,
-    .branches-page .stat-card,
-    .branches-page .stat-card:first-of-type {
+    .branches-page .stat-card {
         background: #ffffff !important;
         backdrop-filter: blur(20px);
         border-radius: 24px;
@@ -186,21 +196,17 @@
         color: #0F172A !important;
     }
 
-    .branches-page .stat-card:first-of-type *,
     .branches-page .stat-card * {
         -webkit-text-fill-color: initial;
     }
 
-    .branches-page .stat-card h3,
-    .branches-page .stat-card:first-of-type h3 {
+    .branches-page .stat-card h3 {
         color: #0F172A !important;
         -webkit-text-fill-color: #0F172A !important;
     }
 
     .branches-page .stat-card h6,
-    .branches-page .stat-card span,
-    .branches-page .stat-card:first-of-type span,
-    .branches-page .stat-card:first-of-type h6 {
+    .branches-page .stat-card span {
         color: #64748b !important;
         -webkit-text-fill-color: #64748b !important;
     }
@@ -246,14 +252,12 @@
     }
 
     .stat-icon.total,
-    .branches-page .stat-card .stat-icon.total,
-    .branches-page .stat-card:first-of-type .stat-icon.total {
+    .branches-page .stat-card .stat-icon.total {
         background: linear-gradient(145deg, #EEF2FF, #E0E7FF) !important;
     }
 
     .stat-icon.total i,
-    .branches-page .stat-card .stat-icon.total i,
-    .branches-page .stat-card:first-of-type .stat-icon.total i {
+    .branches-page .stat-card .stat-icon.total i {
         color: #2F6BFF !important;
         -webkit-text-fill-color: #2F6BFF !important;
     }
@@ -291,78 +295,50 @@
         -webkit-text-fill-color: #4f46e5 !important;
     }
 
-    /* Dark Mode Support for Executive Summary Stats Cards */
-    html[data-pms-theme="dark"] .stat-card,
-    html[data-bs-theme="dark"] .stat-card,
-    body[data-pms-theme="dark"] .stat-card,
-    [data-pms-theme="dark"] .stat-card {
+    /* Dark Mode Support for Executive Summary Stats Cards.
+       Scoped to the page so it outranks the page-scoped light rules above (it previously lost to them,
+       leaving the first card white and every icon tile pastel in dark mode). */
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body[data-pms-theme="dark"], body.dark-mode) .branches-page .stat-card {
         background: #0F1530 !important;
         border-color: rgba(238, 241, 251, 0.12) !important;
+        box-shadow: none !important;
+        color: #EEF1FB !important;
     }
 
-    html[data-pms-theme="dark"] .stat-card h3,
-    html[data-bs-theme="dark"] .stat-card h3,
-    body[data-pms-theme="dark"] .stat-card h3,
-    [data-pms-theme="dark"] .stat-card h3 {
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark,
+        body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode)
+        .pms-settings-page.branches-page .stats-grid .stat-card.total-branches-card {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.12) !important;
+        color: #EEF1FB !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark,
+        body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode)
+        .pms-settings-page.branches-page .stats-grid .stat-card.total-branches-card h3 {
         color: #EEF1FB !important;
         -webkit-text-fill-color: #EEF1FB !important;
     }
 
-    html[data-pms-theme="dark"] .stat-card h6,
-    html[data-bs-theme="dark"] .stat-card h6,
-    body[data-pms-theme="dark"] .stat-card h6,
-    [data-pms-theme="dark"] .stat-card h6 {
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body[data-pms-theme="dark"], body.dark-mode) .branches-page .stat-card h3 {
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body[data-pms-theme="dark"], body.dark-mode) .branches-page .stat-card :is(h6, span) {
         color: #94a3b8 !important;
         -webkit-text-fill-color: #94a3b8 !important;
     }
 
-    html[data-pms-theme="dark"] .stat-icon.total,
-    html[data-bs-theme="dark"] .stat-icon.total,
-    [data-pms-theme="dark"] .stat-icon.total {
-        background: rgba(47, 107, 255, 0.2) !important;
-    }
-    html[data-pms-theme="dark"] .stat-icon.total i,
-    html[data-bs-theme="dark"] .stat-icon.total i,
-    [data-pms-theme="dark"] .stat-icon.total i {
-        color: #60A5FA !important;
-        -webkit-text-fill-color: #60A5FA !important;
-    }
-
-    html[data-pms-theme="dark"] .stat-icon.default,
-    html[data-bs-theme="dark"] .stat-icon.default,
-    [data-pms-theme="dark"] .stat-icon.default {
-        background: rgba(14, 165, 233, 0.2) !important;
-    }
-    html[data-pms-theme="dark"] .stat-icon.default i,
-    html[data-bs-theme="dark"] .stat-icon.default i,
-    [data-pms-theme="dark"] .stat-icon.default i {
-        color: #38bdf8 !important;
-        -webkit-text-fill-color: #38bdf8 !important;
-    }
-
-    html[data-pms-theme="dark"] .stat-icon.countries,
-    html[data-bs-theme="dark"] .stat-icon.countries,
-    [data-pms-theme="dark"] .stat-icon.countries {
-        background: rgba(245, 158, 11, 0.2) !important;
-    }
-    html[data-pms-theme="dark"] .stat-icon.countries i,
-    html[data-bs-theme="dark"] .stat-icon.countries i,
-    [data-pms-theme="dark"] .stat-icon.countries i {
-        color: #fbbf24 !important;
-        -webkit-text-fill-color: #fbbf24 !important;
-    }
-
-    html[data-pms-theme="dark"] .stat-icon.tax,
-    html[data-bs-theme="dark"] .stat-icon.tax,
-    [data-pms-theme="dark"] .stat-icon.tax {
-        background: rgba(99, 102, 241, 0.2) !important;
-    }
-    html[data-pms-theme="dark"] .stat-icon.tax i,
-    html[data-bs-theme="dark"] .stat-icon.tax i,
-    [data-pms-theme="dark"] .stat-icon.tax i {
-        color: #818cf8 !important;
-        -webkit-text-fill-color: #818cf8 !important;
-    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body[data-pms-theme="dark"], body.dark-mode) .branches-page .stat-card .stat-icon.total { background: rgba(47, 107, 255, 0.2) !important; }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body[data-pms-theme="dark"], body.dark-mode) .branches-page .stat-card .stat-icon.total i { color: #60A5FA !important; -webkit-text-fill-color: #60A5FA !important; }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body[data-pms-theme="dark"], body.dark-mode) .branches-page .stat-card .stat-icon.default { background: rgba(14, 165, 233, 0.2) !important; }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body[data-pms-theme="dark"], body.dark-mode) .branches-page .stat-card .stat-icon.default i { color: #38bdf8 !important; -webkit-text-fill-color: #38bdf8 !important; }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body[data-pms-theme="dark"], body.dark-mode) .branches-page .stat-card .stat-icon.countries { background: rgba(245, 158, 11, 0.2) !important; }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body[data-pms-theme="dark"], body.dark-mode) .branches-page .stat-card .stat-icon.countries i { color: #fbbf24 !important; -webkit-text-fill-color: #fbbf24 !important; }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body[data-pms-theme="dark"], body.dark-mode) .branches-page .stat-card .stat-icon.tax { background: rgba(99, 102, 241, 0.2) !important; }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body[data-pms-theme="dark"], body.dark-mode) .branches-page .stat-card .stat-icon.tax i { color: #818cf8 !important; -webkit-text-fill-color: #818cf8 !important; }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body[data-pms-theme="dark"], body.dark-mode) .branches-page .stat-card .stat-icon { box-shadow: none !important; border: 1px solid rgba(238, 241, 251, 0.08) !important; }
 
     .stat-info h6 {
         font-size: 0.72rem;
@@ -582,7 +558,7 @@
 @endpush
 
 @section('content')
-<div class="branches-page">
+<div class="pms-settings-page branches-page">
     <div class="branches-shell">
         <div class="ambient-orb orb-1"></div>
         <div class="ambient-orb orb-2"></div>
@@ -610,9 +586,11 @@
                     </div>
                 </div>
 
+                @if(!$isSettingsReadOnly)
                 <a href="{{ route('admin.settings.business-address.create') }}" class="btn-add-address">
                     <i class="fas fa-plus-circle"></i> Add New Address
                 </a>
+                @endif
             </div>
 
             <!-- Alert Notifications -->
@@ -641,7 +619,7 @@
             @endphp
 
             <div class="stats-grid">
-                <div class="stat-card">
+                <div class="stat-card total-branches-card">
                     <div class="stat-icon total">
                         <i class="fas fa-building"></i>
                     </div>
@@ -701,7 +679,7 @@
 
                 <div class="p-4 p-md-5">
                     @if($isSettingsReadOnly)
-                        <div class="alert d-flex align-items-center mb-4 rounded-3 border-0 shadow-sm" style="background: linear-gradient(135deg, #eff6ff, #dbeafe); color: #1e40af; border-left: 4px solid #3b82f6 !important; padding: 14px 18px;">
+                        <div class="alert pms-readonly-notice d-flex align-items-center mb-4 rounded-3 border-0 shadow-sm" style="background: linear-gradient(135deg, #eff6ff, #dbeafe); color: #1e40af; border-left: 4px solid #3b82f6 !important; padding: 14px 18px;">
                             <i class="fas fa-eye me-3 fs-3 text-primary"></i>
                             <div>
                                 <strong class="d-block text-primary fw-bold" style="font-size: 14px;">View-Only Mode</strong>
@@ -806,9 +784,11 @@
                             </div>
                             <h4 class="fw-bold mb-2" style="color: #0F172A;">No Business Addresses Found</h4>
                             <p class="text-muted mb-4 max-w-md mx-auto small">Add your first business address to configure official branch locations, contact info, logo, and tax details.</p>
+                            @if(!$isSettingsReadOnly)
                             <a href="{{ route('admin.settings.business-address.create') }}" class="btn-add-address">
                                 <i class="fas fa-plus-circle"></i> Add First Address
                             </a>
+                            @endif
                         </div>
                     @endif
                 </div>

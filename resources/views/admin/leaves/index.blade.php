@@ -1,13 +1,14 @@
 @extends('admin.layout.app')
 
-@section('title', $isAdmin ? 'Leave Management' : 'My Leaves')
+@section('title', $isAdmin ? (request('staff_category') === 'authority' ? 'Higher-level leaves' : 'Leave Management') : 'My Leaves')
 
 @section('content')
+@php $leaveRoute = request('staff_category') === 'authority' ? 'admin.authority-leaves' : 'leaves.index'; @endphp
 
 <div class="leave-page">
     <!-- Breadcrumb -->
     <div class="leave-breadcrumb">
-        <i class="fas fa-calendar-check"></i> Dashboard / {{ $isAdmin ? 'Leave Management' : 'My Leaves' }}
+        <i class="fas fa-calendar-check"></i> Dashboard / {{ $isAdmin ? (request('staff_category') === 'authority' ? 'Higher-level leaves' : 'Leave Management') : 'My Leaves' }}
     </div>
 
     <!-- Header Card -->
@@ -20,22 +21,30 @@
             </div>
         </div>
         <div class="leave-hero-actions">
-            <a href="{{ route('leaves.create') }}" class="btn btn-primary"><i class="fas fa-plus-circle"></i> Apply Leave</a>
+            @if(\App\Services\WorkforceAccess::isAdmin(auth()->user()) && auth()->user()->canViewModule('higher-level-leaves'))
+                <a href="{{ route(request('staff_category') === 'authority' ? 'leaves.index' : 'admin.authority-leaves') }}" class="btn btn-light">
+                    <i class="fas fa-users"></i> {{ request('staff_category') === 'authority' ? 'Employee Leaves' : 'Higher-level Leaves' }}
+                    @if(request('staff_category') !== 'authority' && $authorityPendingCount)<span class="badge bg-primary">{{ $authorityPendingCount }} pending</span>@endif
+                </a>
+            @endif
+            <a href="{{ route('leaves.create', ['staff_category' => request('staff_category')]) }}" class="btn btn-primary"><i class="fas fa-plus-circle"></i> Apply Leave</a>
             @if(! $isAdmin)
                 <a href="{{ route('leaves.apology-letters.create') }}" class="btn btn-light"><i class="fas fa-envelope-open-text"></i> Write Apology Letter</a>
             @endif
-            <a href="{{ route('leaves.calendar') }}" class="btn btn-light"><i class="fas fa-calendar-alt"></i> Calendar</a>
+            <a href="{{ route('leaves.calendar', ['staff_category' => request('staff_category')]) }}" class="btn btn-light"><i class="fas fa-calendar-alt"></i> Calendar</a>
             @if($isAdmin)
                 <a href="{{ route('leaves.apology-letters.index') }}" class="btn btn-light"><i class="fas fa-envelope-open-text"></i> Apology Letters</a>
+                @if(\App\Services\WorkforceAccess::isAdmin(auth()->user()))
                 <button class="btn btn-light" data-bs-toggle="modal" data-bs-target="#policyModal"><i class="fas fa-sliders-h"></i> Policy</button>
+                @endif
                 <button class="btn btn-light" data-bs-toggle="modal" data-bs-target="#exportModal"><i class="fas fa-download"></i> Export</button>
-                <a href="{{ route('leaves.archive') }}" class="btn btn-light">
+                <a href="{{ route('leaves.archive', ['staff_category' => request('staff_category')]) }}" class="btn btn-light">
                     <i class="fas fa-box-archive"></i> Archived
                     @if(($archivedCount ?? 0) > 0)
                         <span class="archive-count-badge">{{ $archivedCount }}</span>
                     @endif
                 </a>
-                <form method="POST" action="{{ route('leaves.archive-all') }}" class="d-inline" onsubmit="return confirm('Archive all active leave requests? They can be restored later.');">
+                <form method="POST" action="{{ route('leaves.archive-all', ['staff_category' => request('staff_category')]) }}" class="d-inline" onsubmit="return confirm('Archive all active leave requests? They can be restored later.');">
                     @csrf
                     <button class="btn btn-light"><i class="fas fa-boxes-packing"></i> Archive All</button>
                 </form>
@@ -72,6 +81,31 @@
         <div class="notice-icon"><i class="fas fa-info-circle"></i></div>
         <p>{{ $policyNotice }}</p>
     </section>
+
+    <style>
+        /* Keep the header glyph white; summary cards use the light palette. */
+        html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .leave-page .leave-hero .leave-hero-icon > i,
+        html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .leave-page .leave-hero .leave-hero-icon > i::before {
+            color: #ffffff !important;
+            -webkit-text-fill-color: #ffffff !important;
+        }
+
+        html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .leave-page .leave-stats > .stat-card:first-child {
+            background: #ffffff !important;
+            border-color: rgba(47, 107, 255, 0.1) !important;
+        }
+
+        html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .leave-page .leave-stats > .stat-card:first-child :is(span, strong) {
+            color: #0F172A !important;
+            -webkit-text-fill-color: #0F172A !important;
+        }
+
+        html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .leave-page .leave-stats > .stat-card:first-child i,
+        html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .leave-page .leave-stats > .stat-card:first-child i::before {
+            color: #2F6BFF !important;
+            -webkit-text-fill-color: #2F6BFF !important;
+        }
+    </style>
 
     <!-- Stats Cards -->
     <section class="leave-stats">
@@ -115,12 +149,11 @@
                 </div>
                 <div class="balance-meter"><span style="width: {{ $balance->allocated_leaves > 0 ? min(100, ($balance->used_leaves / $balance->allocated_leaves) * 100) : 0 }}%"></span></div>
                 <div class="balance-pills">
-                    <span>SL {{ $balance->sick_allocated - $balance->sick_used }}/{{ $balance->sick_allocated }}</span>
-                    <span>CL {{ $balance->casual_allocated - $balance->casual_used }}/{{ $balance->casual_allocated }}</span>
-                    <span>ML {{ $balance->maternity_allocated - $balance->maternity_used }}/{{ $balance->maternity_allocated }}</span>
+                    <span>Sick used: {{ $balance->sick_used }}</span>
+                    <span>Casual used: {{ $balance->casual_used }}</span>
                     <span>Unpaid {{ $balance->unpaid_used }}</span>
                 </div>
-                @if($isAdmin)
+                @if(\App\Services\WorkforceAccess::isAdmin(auth()->user()))
                     <form method="POST" action="{{ route('leaves.reset-employee-leaves', $balance->user_id) }}" onsubmit="return confirm('Reset leave balance for {{ $balance->user?->name }}?');">
                         @csrf
                         <button class="btn btn-sm btn-outline-secondary"><i class="fas fa-rotate"></i> Reset Balance</button>
@@ -141,7 +174,8 @@
 
     <!-- Filter Panel -->
     <section class="filter-panel">
-        <form method="GET" action="{{ route('leaves.index') }}" class="filter-grid">
+        <form method="GET" action="{{ route($leaveRoute) }}" class="filter-grid">
+<input type="hidden" name="staff_category" value="{{ request('staff_category', 'employee') }}">
             <input type="hidden" name="per_page" value="{{ $perPage ?? request('per_page', 20) }}">
             @if($isAdmin)
                 <div>
@@ -182,7 +216,7 @@
             </div>
             <div class="filter-actions">
                 <button class="btn btn-primary"><i class="fas fa-filter"></i> Filter</button>
-                <a href="{{ route('leaves.index') }}" class="btn btn-secondary"><i class="fas fa-redo"></i> Reset</a>
+                <a href="{{ route($leaveRoute) }}" class="btn btn-secondary"><i class="fas fa-redo"></i> Reset</a>
             </div>
         </form>
     </section>
@@ -196,7 +230,8 @@
             </div>
             @if($isAdmin)
                 <div class="table-tools">
-                    <form method="GET" action="{{ route('leaves.index') }}" class="entry-tools">
+                    <form method="GET" action="{{ route($leaveRoute) }}" class="entry-tools">
+<input type="hidden" name="staff_category" value="{{ request('staff_category', 'employee') }}">
                         @foreach(request()->except(['page', 'per_page']) as $key => $value)
                             @if(is_array($value))
                                 @foreach($value as $item)
@@ -259,6 +294,9 @@
                             @if($isAdmin)<td><input type="checkbox" class="form-check-input leave-checkbox" value="{{ $leave->id }}"></td>@endif
                             <td>
                                 <strong>{{ $leave->user?->name ?? 'N/A' }}</strong>
+                                @if($leave->staff_category === 'authority')
+                                    <small>{{ $leave->staff_role_name }} · {{ $leave->staff_designation }} @if($leave->staff_designation_level !== null) · Level {{ $leave->staff_designation_level }} @endif</small>
+                                @endif
                                 <small>{{ $leave->user?->employeeDetail?->department?->dpt_name ?? $leave->user?->designation ?? 'Employee' }}</small>
                             </td>
                             <td><span class="type-badge">{{ $leave->type_label }}</span></td>
@@ -267,12 +305,13 @@
                                 <small>{{ optional($leave->end_date)->format('d M Y') }}</small>
                             </td>
                             <td>{{ number_format((float) $leave->total_days, 1) }}</td>
-                            <td>
+                            <td class="pay-cell">
+                                <div class="pay-stack">
                                 @if($leave->status === 'rejected')
                                     <span class="pay-badge rejected">N/A</span>
                                     <small class="text-muted">Rejected</small>
                                 @elseif($leave->status === 'pending')
-                                    <span class="pay-badge pending text-muted">Pending</span>
+                                    <span class="pay-badge pending">Pending</span>
                                 @else
                                     @php
                                         $paidDays = (float) ($leave->paid_days ?? 0);
@@ -286,9 +325,10 @@
                                         @endif
                                     </span>
                                     @if($paidDays > 0 || $unpaidDays > 0)
-                                        <small>{{ number_format($paidDays, 1) }} paid / {{ number_format($unpaidDays, 1) }} unpaid</small>
+                                        <small class="pay-split"><span>{{ number_format($paidDays, 1) }} paid</span><span>{{ number_format($unpaidDays, 1) }} unpaid</span></small>
                                     @endif
                                 @endif
+                                </div>
                             </td>
                             <td>
                                 @if($isAdmin)
@@ -400,7 +440,7 @@
                     <div><label>Annual Leaves</label><input type="number" step="0.5" name="annual_leaves" class="form-control" value="{{ $policy->annual_leaves }}" required></div>
                     <div><label>Sick Leave Limit</label><input type="number" step="0.5" name="sick_leave_limit" class="form-control" value="{{ $policy->sick_leave_limit }}" required></div>
                     <div><label>Casual Leave Limit</label><input type="number" step="0.5" name="casual_leave_limit" class="form-control" value="{{ $policy->casual_leave_limit }}" required></div>
-                    <div><label>Maternity Leave Limit</label><input type="number" step="0.5" name="maternity_leave_limit" class="form-control" value="{{ $policy->maternity_leave_limit }}" required></div>
+                    <div><label>Monthly salary deduction per unpaid day (%)</label><input type="number" step="0.01" min="0" max="100" name="unpaid_deduction_percentage" class="form-control" value="{{ \App\Models\AppSetting::valueFor('leave_unpaid_deduction_percentage', '3.33') }}" required><small>Example: 2% × 2 unpaid days = 4% of monthly salary. Maximum total deduction is the salary available.</small></div>
                     <div><label>CL Advance Days</label><input type="number" name="casual_advance_days" class="form-control" value="{{ $policy->casual_advance_days }}" required></div>
                     <div><label>Manual Review Days</label><input type="number" name="casual_manual_review_days" class="form-control" value="{{ $policy->casual_manual_review_days }}" required></div>
                     <div><label>Max Carry Forward</label><input type="number" name="max_carry_forward" class="form-control" value="{{ $policy->max_carry_forward }}"></div>
@@ -413,8 +453,6 @@
                         'hr_approval_required' => 'HR approval mandatory',
                         'allow_sick_apology' => 'Allow Sick Leave apology',
                         'allow_carry_forward' => 'Allow carry forward',
-                        'maternity_is_paid' => 'Maternity leave is paid',
-                        'maternity_requires_document' => 'Maternity document required',
                     ] as $field => $label)
                         <label class="switch-line">
                             <input type="checkbox" name="{{ $field }}" value="1" {{ $policy->{$field} ? 'checked' : '' }}>
@@ -425,6 +463,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addLeaveTypeModal">Add Leave Type</button>
                 <button class="btn btn-primary">Save Policy</button>
             </div>
         </form>
@@ -435,6 +474,7 @@
 <div class="modal fade" id="exportModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-centered">
         <form class="modal-content export-modal" id="leaveExportForm" method="GET" action="{{ route('leaves.export') }}">
+<input type="hidden" name="staff_category" value="{{ request('staff_category', 'employee') }}">
             <div class="modal-header">
                 <div>
                     <h5 class="modal-title"><i class="fas fa-download me-2"></i>Export Leave Report</h5>
@@ -521,6 +561,21 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
             </div>
+        </form>
+    </div>
+</div>
+<div class="modal fade" id="addLeaveTypeModal" tabindex="-1" aria-labelledby="addLeaveTypeTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <form class="modal-content" method="POST" action="{{ route('leaves.store-type') }}">
+            @csrf
+            <div class="modal-header"><h5 id="addLeaveTypeTitle" class="modal-title">Add Company Leave Type</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
+            <div class="modal-body">
+                <p class="text-muted">This type is available only in your company and shares its annual paid leave allowance. Days beyond that allowance are unpaid.</p>
+                <label for="newLeaveTypeName">Name</label><input id="newLeaveTypeName" name="name" class="form-control mb-3" maxlength="100" required placeholder="e.g. Bereavement Leave">
+                <label for="newLeaveTypeCode">Code</label><input id="newLeaveTypeCode" name="code" class="form-control mb-3" maxlength="20" pattern="[A-Z][A-Z0-9_]{1,19}" required placeholder="e.g. BL">
+                <label><input type="checkbox" name="requires_document" value="1"> Supporting document required</label>
+            </div>
+            <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button class="btn btn-primary">Add Leave Type</button></div>
         </form>
     </div>
 </div>
@@ -1281,6 +1336,34 @@
         font-weight: 700;
         font-size: 0.88rem;
         border: 1px solid transparent;
+    }
+
+    /* Badge and day split stack with a gap, so the badge never sits on top of the wrapped text. */
+    .leave-table td.pay-cell {
+        min-width: 170px;
+    }
+    .leave-table td .pay-stack {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    .leave-table td .pay-stack .pay-badge {
+        line-height: 1.2;
+        white-space: nowrap;
+    }
+    .leave-table td .pay-split {
+        display: inline-flex;
+        align-items: center;
+        flex-wrap: nowrap;
+        gap: 6px;
+        white-space: nowrap;
+        line-height: 1.3;
+    }
+    .leave-table td .pay-split span + span::before {
+        content: "·";
+        margin-right: 6px;
+        opacity: 0.7;
     }
 
     .leave-table td .pay-badge.paid {
@@ -2250,9 +2333,17 @@
     }
 
     html[data-pms-theme="dark"] .leave-table td .pay-badge.unpaid {
-        background: #1a1a0d;
-        color: #fbbf24;
+        background: rgba(249, 115, 22, 0.16);
+        color: #fdba74;
+        border-color: rgba(249, 115, 22, 0.35);
     }
+
+    /* Theme-wide dark text-fill rules turned every pay badge white; keep each variant's own colour. */
+    html[data-pms-theme="dark"] .leave-table td .pay-badge.paid { color: #60A5FA !important; -webkit-text-fill-color: #60A5FA !important; }
+    html[data-pms-theme="dark"] .leave-table td .pay-badge.unpaid { color: #fdba74 !important; -webkit-text-fill-color: #fdba74 !important; }
+    html[data-pms-theme="dark"] .leave-table td .pay-badge.rejected { color: #f87171 !important; -webkit-text-fill-color: #f87171 !important; }
+    html[data-pms-theme="dark"] .leave-table td .pay-badge.pending { color: #94a3b8 !important; -webkit-text-fill-color: #94a3b8 !important; }
+    html[data-pms-theme="dark"] .leave-table td .pay-split { color: #a5b4ce; -webkit-text-fill-color: #a5b4ce !important; }
 
     html[data-pms-theme="dark"] .leave-table td .pay-badge.rejected {
         background: rgba(239, 68, 68, 0.16);

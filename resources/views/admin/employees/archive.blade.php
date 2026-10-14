@@ -5,7 +5,7 @@
 @endsection
 
 @section('content')
-<div class="employee-dashboard archived-employee-page !min-h-screen !overflow-x-hidden !px-3 !py-4 sm:!px-5 sm:!py-5 lg:!px-8 lg:!py-7">
+<div id="archivedEmployeesPage" class="employee-dashboard archived-employee-page !min-h-screen !overflow-x-hidden !px-3 !py-4 sm:!px-5 sm:!py-5 lg:!px-8 lg:!py-7">
 
     {{-- Ambient Animated Background --}}
     <div class="ambient-bg-archive">
@@ -155,10 +155,10 @@
                         <th width="50">
                             <input type="checkbox" class="form-check-input" id="archiveSelectAll">
                         </th>
-                        <th>Employee</th>
+                        <th class="col-employee">Employee</th>
                         <th>Employee ID</th>
-                        <th>Designation</th>
-                        <th>Department</th>
+                        <th class="col-designation">Designation</th>
+                        <th class="col-department">Department</th>
                         <th>Status</th>
                         <th>Archived At</th>
                         <th class="text-end">Actions</th>
@@ -179,15 +179,15 @@
                                             <i class="fas fa-user"></i>
                                         </div>
                                     @endif
-                                    <div>
-                                        <strong>{{ $employee->name }}</strong>
-                                        <span>{{ $employee->email ?? '-' }}</span>
+                                    <div class="archive-employee-meta">
+                                        <strong title="{{ $employee->name }}">{{ $employee->name }}</strong>
+                                        <span title="{{ $employee->email ?? '' }}">{{ $employee->email ?? '-' }}</span>
                                     </div>
                                 </div>
                             </td>
                             <td><span class="employee-id-badge">{{ $employee->employeeDetail?->employee_id ?? '-' }}</span></td>
-                            <td>{{ $employee->employeeDetail?->designation?->name ?? '-' }}</td>
-                            <td>{{ $employee->employeeDetail?->department?->dpt_name ?? ($employee->employeeDetail?->parent_dpt?->dpt_name ?? '-') }}</td>
+                            <td class="col-designation">{{ $employee->employeeDetail?->designation?->name ?? '-' }}</td>
+                            <td class="col-department">{{ $employee->employeeDetail?->department?->dpt_name ?? ($employee->employeeDetail?->parent_dpt?->dpt_name ?? '-') }}</td>
                             <td>
                                 <span class="archive-status {{ strtolower($employee->employeeDetail?->status ?? '') === 'active' ? 'status-active' : 'status-inactive' }}">
                                     {{ $employee->employeeDetail?->status ?? 'N/A' }}
@@ -195,8 +195,8 @@
                             </td>
                             <td>
                                 <span class="deleted-badge">
-                                    <i class="far fa-calendar-alt me-1"></i>
-                                    {{ $employee->archived_at?->format('d M Y, h:i A') ?? '-' }}
+                                    <i class="far fa-calendar-alt"></i>
+                                    <span>{{ $employee->archived_at?->format('d M Y, h:i A') ?? '-' }}</span>
                                 </span>
                             </td>
                             <td class="text-end">
@@ -292,7 +292,7 @@
 
     .archived-employee-page {
         position: relative;
-        background: linear-gradient(145deg, #f5faf7 0%, #edf6f1 52%, #f8fbf9 100%) !important;
+        background: linear-gradient(145deg, #f8fafc 0%, #f1f5f9 52%, #f8fafc 100%) !important;
         overflow: hidden;
     }
 
@@ -319,6 +319,7 @@
 
     .orb-1 { width: 50vw; height: 50vw; background: var(--secondary); top: -20%; right: -10%; }
     .orb-2 { width: 40vw; height: 40vw; background: var(--accent); bottom: -10%; left: -10%; animation-delay: -5s; }
+    .archived-employee-page .ambient-bg-archive .orb-2 { background: var(--primary); }
     .orb-3 { width: 35vw; height: 35vw; background: var(--primary); top: 40%; left: 30%; animation-delay: -10s; }
 
     @keyframes floatOrb {
@@ -399,6 +400,12 @@
         font-size: 1.5rem;
         box-shadow: 0 14px 26px rgba(47, 107, 255, 0.22);
         flex-shrink: 0;
+    }
+    /* Keep the header glyph visible over its blue tile in both themes. */
+    .employee-dashboard.archived-employee-page .archive-hero .archive-hero-icon > i,
+    .employee-dashboard.archived-employee-page .archive-hero .archive-hero-icon > i::before {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
     }
     .archive-hero h1 { color: #070B1A; -webkit-text-fill-color: #070B1A; font-weight: 800; letter-spacing: -0.02em; }
     .archive-hero p { color: #475569; -webkit-text-fill-color: #475569; font-weight: 600; }
@@ -991,6 +998,53 @@
         color: #60A5FA !important;
         -webkit-text-fill-color: #60A5FA !important;
     }
+    /* Readable text in both themes. pms-refresh.css (loaded again after this page) forces slate text on
+       nearly every .employee-dashboard span with a very specific !important rule; the page id outranks it. */
+    #archivedEmployeesPage #archive-selected-count { background: #eff4ff !important; color: #1d4ed8 !important; -webkit-text-fill-color: #1d4ed8 !important; border-color: rgba(47, 107, 255, 0.28) !important; }
+    #archivedEmployeesPage .archive-btn:disabled,
+    #archivedEmployeesPage .archive-btn[disabled] { opacity: 1 !important; background: #e2e8f0 !important; color: #475569 !important; -webkit-text-fill-color: #475569 !important; }
+    #archivedEmployeesPage .archive-employee-cell span { color: #475569 !important; -webkit-text-fill-color: #475569 !important; }
+    #archivedEmployeesPage .employee-id-badge { color: #1d4ed8 !important; -webkit-text-fill-color: #1d4ed8 !important; }
+    #archivedEmployeesPage .archive-status.status-active { color: #166534 !important; -webkit-text-fill-color: #166534 !important; }
+    html:not([data-pms-theme="dark"]) #archivedEmployeesPage .breadcrumb-item a,
+    html:not([data-pms-theme="dark"]) #archivedEmployeesPage .archive-btn-light { color: #1d4ed8 !important; -webkit-text-fill-color: #1d4ed8 !important; }
+    #archivedEmployeesPage .archive-status.status-inactive { color: #b91c1c !important; -webkit-text-fill-color: #b91c1c !important; }
+    #archivedEmployeesPage .deleted-badge { color: #334155 !important; -webkit-text-fill-color: #334155 !important; }
+    #archivedEmployeesPage .archive-page-current { color: #070B1A !important; -webkit-text-fill-color: #070B1A !important; }
+
+    /* Archived records layout: pms-refresh.css gives every .table cell overflow-wrap:anywhere, which split
+       words mid-way ("DEPARTMEN T", "Inactiv e", wrapped ID badge). Keep words whole; the wrapper scrolls. */
+    #archivedEmployeesPage .archive-table :is(th, td) { overflow-wrap: normal !important; word-break: normal !important; }
+    #archivedEmployeesPage .archive-table th { white-space: nowrap; letter-spacing: 0.04em; }
+    #archivedEmployeesPage .archive-table td { line-height: 1.35; }
+    #archivedEmployeesPage .archive-table .col-employee { min-width: 240px; }
+    #archivedEmployeesPage .archive-table .col-designation,
+    #archivedEmployeesPage .archive-table .col-department { min-width: 140px; }
+    #archivedEmployeesPage .archive-employee-cell { min-width: 0; }
+    #archivedEmployeesPage .archive-employee-cell .archive-avatar { flex-shrink: 0; }
+    #archivedEmployeesPage .archive-employee-meta { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+    #archivedEmployeesPage .archive-employee-meta strong,
+    #archivedEmployeesPage .archive-employee-meta span { display: block; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    #archivedEmployeesPage .employee-id-badge,
+    #archivedEmployeesPage .archive-status,
+    #archivedEmployeesPage .deleted-badge { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; line-height: 1.3; }
+    #archivedEmployeesPage .employee-id-badge { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: 0.02em; }
+    #archivedEmployeesPage .archive-status { text-transform: capitalize; }
+    #archivedEmployeesPage .deleted-badge i { margin-right: 0 !important; }
+    #archivedEmployeesPage .deleted-badge span { color: inherit !important; -webkit-text-fill-color: inherit !important; }
+    #archivedEmployeesPage .archive-row-actions { align-items: center; flex-wrap: nowrap; }
+    #archivedEmployeesPage .archive-row-actions form { margin: 0; display: inline-flex; }
+
+    :is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) #archivedEmployeesPage .archive-show-entries span,
+    :is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) #archivedEmployeesPage .archive-employee-cell span { color: #CBD5E1 !important; -webkit-text-fill-color: #CBD5E1 !important; }
+    :is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) #archivedEmployeesPage .employee-id-badge { background: rgba(96, 165, 250, 0.16) !important; border-color: rgba(96, 165, 250, 0.35) !important; color: #DBEAFE !important; -webkit-text-fill-color: #DBEAFE !important; }
+    :is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) #archivedEmployeesPage .archive-status.status-active { background: rgba(16, 185, 129, 0.18) !important; border-color: rgba(16, 185, 129, 0.4) !important; color: #6EE7B7 !important; -webkit-text-fill-color: #6EE7B7 !important; }
+    :is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) #archivedEmployeesPage .archive-status.status-inactive { background: rgba(248, 113, 113, 0.16) !important; border-color: rgba(248, 113, 113, 0.4) !important; color: #FECACA !important; -webkit-text-fill-color: #FECACA !important; }
+    :is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) #archivedEmployeesPage .deleted-badge { color: #DFFFEE !important; -webkit-text-fill-color: #DFFFEE !important; }
+    :is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) #archivedEmployeesPage .archive-page-current { background: rgba(255, 255, 255, 0.06) !important; border-radius: 12px; padding: 0.35rem 0.75rem; color: #E2E8F0 !important; -webkit-text-fill-color: #E2E8F0 !important; }
+    :is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) #archivedEmployeesPage #archive-selected-count { background: #14281e !important; border-color: rgba(122, 240, 181, 0.45) !important; color: #FFFFFF !important; -webkit-text-fill-color: #FFFFFF !important; }
+    :is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) #archivedEmployeesPage .archive-btn:disabled,
+    :is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) #archivedEmployeesPage .archive-btn[disabled] { background: rgba(148, 163, 184, 0.18) !important; color: #CBD5E1 !important; -webkit-text-fill-color: #CBD5E1 !important; }
 </style>
 
 @push('js')

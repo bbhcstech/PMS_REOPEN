@@ -82,13 +82,14 @@ class SubscriptionService
         // 3. Check for subscriptions in central DB
         $sub = Subscription::on('central')
             ->where('company_id', $centralComp->id)
-            ->latest('ends_at')
+            ->whereIn('status', ['active', 'trial', 'expired', 'suspended'])
             ->latest('id')
             ->first();
 
         if ($sub && $sub->ends_at) {
             $subEnds = is_string($sub->ends_at) ? Carbon::parse($sub->ends_at) : $sub->ends_at;
-            if ($subEnds->isPast()) {
+            // The end date is the last day of access (inclusive), matching activeSubscription and the expiry shown to users.
+            if ($sub->status === 'expired' || $subEnds->copy()->endOfDay()->isPast()) {
                 return 'expired';
             }
             return 'active';
@@ -117,9 +118,41 @@ class SubscriptionService
     /**
      * Synchronize company status to the database idempotently.
      */
+    /**
+     * Bring back subscriptions that a Super Admin suspension paused, once the company is no longer suspended:
+     * still-running terms become active again, ended ones expired. Blank statuses are included because legacy
+     * enum columns could not store "suspended". Returns the number of subscriptions restored.
+     */
+    public function restorePausedSubscriptions(Company|\App\Models\Company $company): int
+    {
+        $centralComp = $this->resolveCentralCompany($company);
+        if (!empty($centralComp->manually_suspended) || strtolower((string) $centralComp->status) === 'suspended') {
+            return 0;
+        }
+
+        $today = now()->toDateString();
+        $paused = fn () => Subscription::on('central')
+            ->where('company_id', $centralComp->id)
+            ->where(function ($q) {
+                $q->whereIn('status', ['suspended', ''])->orWhereNull('status');
+            });
+
+        $restored = (clone $paused())->where(function ($q) use ($today) {
+            $q->whereNull('ends_at')->orWhereDate('ends_at', '>=', $today);
+        })->update(['status' => 'active']);
+
+        $restored += (clone $paused())->whereDate('ends_at', '<', $today)->update(['status' => 'expired']);
+
+        return $restored;
+    }
+
     public function syncCompanyStatus(Company|\App\Models\Company $company): string
     {
         $centralComp = $this->resolveCentralCompany($company);
+        // Self-heal companies whose subscriptions stayed paused after a reactivation.
+        try {
+            $this->restorePausedSubscriptions($centralComp);
+        } catch (\Throwable $e) {}
         $newStatus = $this->evaluateCompanyStatus($centralComp);
 
         if ($centralComp->status !== $newStatus) {
@@ -128,7 +161,7 @@ class SubscriptionService
                 try {
                     Subscription::on('central')
                         ->where('company_id', $centralComp->id)
-                        ->where('status', 'active')
+                        ->whereIn('status', ['active', 'trial'])
                         ->whereDate('ends_at', '<', now()->toDateString())
                         ->update(['status' => 'expired']);
                 } catch (\Throwable $e) {}
@@ -313,12 +346,25 @@ class SubscriptionService
         Plan|\App\Models\SubscriptionPlan $plan,
         string $billingCycle = 'monthly',
         ?string $performedBy = null,
-        ?string $reason = null
+        ?string $reason = null,
+        ?int $supportRequestId = null
     ): Subscription {
         $centralComp = $this->resolveCentralCompany($company);
 
         // Enforce Plan Lock & Downgrade Validation
-        $this->eligibilityService->validatePlanChange($centralComp, $plan);
+        $supportRequest = null;
+        if ($supportRequestId !== null) {
+            abort_unless(TenantScope::isPlatformAdmin(), 403);
+            $supportRequest = \App\Models\Central\CompanyComplaint::whereKey($supportRequestId)
+                ->where('company_id', $centralComp->id)->where('requested_plan_id', $plan->id)
+                ->where('plan_request_status', 'pending')->firstOrFail();
+            $active = $centralComp->activeSubscription;
+            if (!$active || (int) $active->plan_id !== (int) $supportRequest->requested_from_plan_id) {
+                throw new \InvalidArgumentException('The subscription changed after this request. Ask the company to submit a new request.');
+            }
+        } else {
+            $this->eligibilityService->validatePlanChange($centralComp, $plan);
+        }
 
         $targetLevel = PlanEligibilityService::getPlanLevel($plan);
         $currentLevel = PlanEligibilityService::getCurrentLevel($centralComp);
@@ -328,7 +374,9 @@ class SubscriptionService
         $previousPlan = $previousSub?->plan;
 
         // Determine Lifecycle Action
-        if ($highestLevel === PlanEligibilityService::LEVEL_FREE) {
+        if ($supportRequest) {
+            $action = 'PLAN_DOWNGRADED_BY_APPROVAL';
+        } elseif ($highestLevel === PlanEligibilityService::LEVEL_FREE) {
             $action = 'PLAN_PURCHASED';
         } elseif ($targetLevel > $currentLevel) {
             $action = 'PLAN_UPGRADED';
@@ -344,7 +392,7 @@ class SubscriptionService
 
         return DB::connection('central')->transaction(function () use (
             $centralComp, $company, $plan, $billingCycle, $targetLevel, $newHighestLevel, $newHighestSlug,
-            $startsAt, $endsAt, $action, $previousSub, $previousPlan, $performedBy, $reason
+            $startsAt, $endsAt, $action, $previousSub, $previousPlan, $performedBy, $reason, $supportRequest
         ) {
             // SAFETY GUARD: Renewal must NOT automatically remove a Super Admin manual suspension.
             // Subscription is renewed, but company status remains 'suspended' until Super Admin explicitly lifts it.
@@ -360,7 +408,9 @@ class SubscriptionService
             }
             $centralComp->highest_plan_level = $newHighestLevel;
             $centralComp->highest_plan_slug = $newHighestSlug;
+            if ($supportRequest || $centralComp->approved_plan_floor !== null) $centralComp->approved_plan_floor = $targetLevel;
             $centralComp->save();
+            if ($supportRequest) $supportRequest->update(['plan_request_status' => 'approved', 'plan_reviewed_by' => auth('super_admin')->id() ?? auth()->id(), 'plan_reviewed_at' => now()]);
 
             if ($company !== $centralComp) {
                 try {

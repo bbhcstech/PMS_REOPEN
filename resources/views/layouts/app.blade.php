@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
+    @include('partials.pwa')
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -34,7 +35,10 @@
 
             <!-- Page Content -->
             <main>
+                @include('partials.page-back-navigation')
+                <div data-live-records data-live-identity="@include('partials.live-records-identity')" style="display:contents">
                 {{ $slot }}
+                </div>
             </main>
         </div>
         <script>
@@ -67,5 +71,8 @@
         </script>
         @include('partials.password-changed-modal')
         @include('admin.layout.toasts')
-    </body>
+        @include('partials.phone-fields')
+<script src="{{ asset('admin/assets/js/pms-live-records.js') }}?v={{ @filemtime(public_path('admin/assets/js/pms-live-records.js')) }}" data-session-url="{{ route('company.session-status') }}" data-login-url="{{ route('login') }}" defer></script>
+    @include('partials.responsive-workspace', ['responsiveShell' => 'auth'])
+</body>
 </html>

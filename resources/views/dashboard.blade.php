@@ -531,6 +531,7 @@
         border: 1px solid var(--bx-border);
         border-radius: 12px;
         min-height: 125px;
+        min-width: 0;
         padding: 1rem;
         position: relative;
         transition: all 0.2s ease;
@@ -563,6 +564,9 @@
         letter-spacing: -0.02em;
         line-height: 1.15;
         margin: 0.35rem 0 0.25rem;
+        max-width: 100%;
+        overflow-wrap: anywhere;
+        white-space: normal;
     }
 
     .saas-money-card em {
@@ -901,6 +905,42 @@
         margin: 0;
     }
 
+    /* Keep Work Analytics horizontal in light mode despite shared chart styles. */
+    html:not([data-pms-theme="dark"]) .industry-analytics-card .industry-bars {
+        grid-template-columns: minmax(0, 1fr);
+        min-height: 0;
+        align-items: stretch;
+        gap: 1rem;
+        padding-top: 0;
+    }
+
+    html:not([data-pms-theme="dark"]) .industry-analytics-card .industry-bar {
+        grid-template-columns: minmax(0, 1fr) 100px;
+        justify-items: stretch;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    html:not([data-pms-theme="dark"]) .industry-analytics-card .industry-bar span {
+        width: 100%;
+        height: 12px;
+        min-height: 0;
+        background: #e2e8f0;
+        box-shadow: none;
+    }
+
+    html:not([data-pms-theme="dark"]) .industry-analytics-card .industry-bar span::after {
+        background: #2f6bff;
+    }
+
+    html:not([data-pms-theme="dark"]) .industry-analytics-card .industry-bar.is-muted span::after {
+        background: #10b981;
+    }
+
+    html:not([data-pms-theme="dark"]) .industry-analytics-card .industry-bar label {
+        color: #334155 !important;
+    }
+
     /* ======================================================
        AUTOMATIC MODULES & SHORTCUTS
        ====================================================== */
@@ -958,6 +998,21 @@
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+    }
+
+    html:not([data-pms-theme="dark"]) .saas-module-card .saas-module-icon > i.bx,
+    html:not([data-pms-theme="dark"]) .saas-module-card .saas-module-icon > i.bx::before {
+        font-family: boxicons !important;
+        font-weight: normal !important;
+        font-style: normal !important;
+        font-size: 20px !important;
+        line-height: 1 !important;
+        text-transform: none !important;
+        letter-spacing: normal !important;
+        background: transparent !important;
+        color: #2f6bff !important;
+        -webkit-text-fill-color: #2f6bff !important;
+        filter: none;
     }
 
     .saas-module-card small {
@@ -1383,6 +1438,77 @@
         border-radius: 999px;
     }
 
+    #totalEmployeesCard {
+        background: linear-gradient(145deg, #1e4fcc, #2f6bff) !important;
+        border-color: rgba(255, 255, 255, 0.2) !important;
+    }
+
+    #totalEmployeesCard .stat-title,
+    #totalEmployeesCard .stat-title a,
+    #totalEmployeesCard .stat-value,
+    #totalEmployeesCard .stat-trend,
+    #totalEmployeesCard .stat-trend span,
+    #totalEmployeesCard .stat-trend i,
+    #totalEmployeesCard .stat-dropdown > button,
+    #totalEmployeesCard .stat-dropdown > button i {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
+    #totalEmployeesCard i.bx,
+    #totalEmployeesCard i.bx::before {
+        font-family: boxicons !important;
+        font-weight: normal !important;
+        font-style: normal !important;
+        line-height: 1 !important;
+        background: transparent !important;
+        filter: none;
+    }
+
+    #totalEmployeesCard .stat-icon {
+        background: rgba(255, 255, 255, 0.22) !important;
+        border: 1px solid rgba(255, 255, 255, 0.4) !important;
+    }
+
+    #totalEmployeesCard .stat-icon i::before,
+    #totalEmployeesCard .stat-trend i::before,
+    #totalEmployeesCard .stat-dropdown > button i::before {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        opacity: 1 !important;
+    }
+
+    #totalEmployeesCard .stat-dropdown > button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.12) !important;
+        border: 1px solid rgba(255, 255, 255, 0.3) !important;
+        opacity: 1 !important;
+    }
+
+    #totalEmployeesCard .stat-dropdown > button:hover,
+    #totalEmployeesCard .stat-dropdown > button:focus-visible {
+        background: rgba(255, 255, 255, 0.18) !important;
+    }
+
+    #totalEmployeesCard .stat-progress {
+        background: transparent !important;
+    }
+
+    #totalEmployeesCard .progress-container {
+        background: rgba(255, 255, 255, 0.25) !important;
+    }
+
+    #totalEmployeesCard .progress-bar {
+        background: #ffffff !important;
+        height: 100% !important;
+        opacity: 1 !important;
+    }
+
     /* ======================================================
        CONTENT CARDS & LISTS (TICKETS, TASKS, ACTIVITIES)
        Soft Status Badges & Clean Timeline
@@ -1436,6 +1562,14 @@
     .card-title i {
         color: var(--bx-blue);
         font-size: 1.15rem;
+    }
+
+    /* Header icons sit on coloured tiles in both dashboard themes. */
+    html body #main .dashboard-notification-feed .content-card .card-title > i,
+    html body #main .dashboard-notification-feed .content-card .card-title > i::before {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        opacity: 1 !important;
     }
 
     .card-action {
@@ -1754,6 +1888,9 @@
                     'Designations' => 'designations',
                     default => strtolower($link['label']),
                 };
+                if ($slug === 'tickets' && \App\Support\TicketAccess::hiddenForCurrentUser()) {
+                    return false;
+                }
                 return $currentCompany ? $currentCompany->hasFeature($slug) : true;
             })->values()->all();
 
@@ -1768,6 +1905,9 @@
                 ['label' => 'Reports', 'slug' => 'reports', 'hint' => 'Attendance and operations reporting', 'route' => 'attendance.report', 'value' => 'View', 'percent' => max(35, $dashboardAttendancePercent), 'color' => '#6366F1'],
             ];
             $adminPieCharts = collect($adminPieCharts)->filter(function ($chart) use ($currentCompany) {
+                if ($chart['slug'] === 'tickets' && \App\Support\TicketAccess::hiddenForCurrentUser()) {
+                    return false;
+                }
                 return $currentCompany ? $currentCompany->hasFeature($chart['slug']) : true;
             })->values()->all();
 
@@ -1801,11 +1941,21 @@
             $budgetUtilization = $projectBudgetTotal > 0 ? round(($expenseInvestmentValue / $projectBudgetTotal) * 100) : 0;
             $currency = '₹';
             $formatMoney = fn ($value) => $currency . number_format((float) $value, 0);
+            $formatCompactMoney = function ($value) use ($currency) {
+                $amount = (float) $value;
+                foreach ([1e12 => 'T', 1e9 => 'B', 1e6 => 'M', 1e3 => 'K'] as $scale => $suffix) {
+                    if (round(abs($amount) / $scale, 2) >= 1) {
+                        $short = rtrim(rtrim(number_format($amount / $scale, 2, '.', ','), '0'), '.');
+                        return $currency . $short . $suffix;
+                    }
+                }
+                return $currency . number_format($amount, 0);
+            };
             $financeCards = [
-                ['label' => 'Total Revenue Outlook', 'value' => $formatMoney($grossRevenue), 'meta' => 'Deals, contracts, invoices, payments'],
-                ['label' => 'Investment / Expenses', 'value' => $formatMoney($expenseInvestmentValue), 'meta' => $budgetUtilization . '% of project budget'],
-                ['label' => 'Project Budget', 'value' => $formatMoney($projectBudgetTotal), 'meta' => 'Allocated delivery budget'],
-                ['label' => 'Net Business Outlook', 'value' => $formatMoney($netOutlook), 'meta' => $netOutlook >= 0 ? 'Positive operating signal' : 'Needs revenue recovery'],
+                ['label' => 'Total Revenue Outlook', 'value' => $grossRevenue, 'meta' => 'Deals, contracts, invoices, payments'],
+                ['label' => 'Investment / Expenses', 'value' => $expenseInvestmentValue, 'meta' => $budgetUtilization . '% of project budget'],
+                ['label' => 'Project Budget', 'value' => $projectBudgetTotal, 'meta' => 'Allocated delivery budget'],
+                ['label' => 'Net Business Outlook', 'value' => $netOutlook, 'meta' => $netOutlook >= 0 ? 'Positive operating signal' : 'Needs revenue recovery'],
             ];
             $deliveryRisk = $dashboardTotalProject > 0 ? round(($dashboardUnresolvedTicket + $dashboardPendingTask) / max($dashboardTotalProject, 1)) : 0;
             $peopleRisk = $dashboardTotalEmployees > 0 ? round((($dashboardAbsentCount + $dashboardLateCount) / $dashboardTotalEmployees) * 100) : 0;
@@ -1889,15 +2039,32 @@
             if ($currentCompany && method_exists($currentCompany, 'hasFeature')) {
                 $activeModules = $activeModules->filter(fn ($m) => $currentCompany->hasFeature($m->slug))->values();
             }
+            // Admin Workspace uses Platform Support & Complaints instead of tickets
+            if (\App\Support\TicketAccess::hiddenForCurrentUser()) {
+                $activeModules = $activeModules->reject(fn ($m) => $m->slug === 'tickets' || str_starts_with((string) $m->route_name, 'tickets.'))->values();
+                unset($moduleRouteFallbacks['tickets']);
+            }
             $moduleScale = max(collect($moduleMetricMap)->filter(fn ($value) => is_numeric($value))->max() ?? 1, 1);
-            $autoModuleCards = $activeModules->map(function ($module, $index) use ($moduleRouteFallbacks, $moduleMetricMap, $moduleScale, $safeRouteUrl) {
+            $moduleIconFallbacks = [
+                'employees' => 'bx-user',
+                'tickets' => 'bx-support',
+                'designations' => 'bx-id-card',
+                'departments' => 'bx-buildings',
+                'attendance' => 'bx-user-check',
+                'leaves' => 'bx-calendar-minus',
+                'holidays' => 'bx-calendar',
+                'projects' => 'bx-folder',
+                'tasks' => 'bx-task',
+                'timelogs' => 'bx-time-five',
+            ];
+            $autoModuleCards = $activeModules->map(function ($module, $index) use ($moduleRouteFallbacks, $moduleMetricMap, $moduleScale, $safeRouteUrl, $moduleIconFallbacks) {
                 $route = $module->route_name ?: ($moduleRouteFallbacks[$module->slug] ?? null);
                 $url = $safeRouteUrl($route);
                 $metric = $moduleMetricMap[$module->slug] ?? 1;
                 return [
                     'name' => $module->name,
                     'slug' => $module->slug,
-                    'icon' => $module->icon ?: 'bx-grid-alt',
+                    'icon' => $moduleIconFallbacks[$module->slug] ?? (preg_match('/(?:^|\s)(bxs?-[-a-z0-9]+)(?:\s|$)/i', (string) $module->icon, $iconMatch) ? $iconMatch[1] : 'bx-grid-alt'),
                     'route' => $route,
                     'url' => $url,
                     'value' => $metric,
@@ -1908,14 +2075,14 @@
             if ($autoModuleCards->isEmpty()) {
                 $autoModuleCards = collect($moduleRouteFallbacks)->filter(function ($route, $slug) use ($currentCompany) {
                     return $currentCompany ? $currentCompany->hasFeature($slug) : true;
-                })->map(function ($route, $slug) use ($moduleMetricMap, $moduleScale, $safeRouteUrl) {
+                })->map(function ($route, $slug) use ($moduleMetricMap, $moduleScale, $safeRouteUrl, $moduleIconFallbacks) {
                     $url = $safeRouteUrl($route);
                     $metric = $moduleMetricMap[$slug] ?? 1;
 
                     return [
                         'name' => \Illuminate\Support\Str::headline($slug),
                         'slug' => $slug,
-                        'icon' => 'bx-grid-alt',
+                        'icon' => $moduleIconFallbacks[$slug] ?? 'bx-grid-alt',
                         'route' => $route,
                         'url' => $url,
                         'value' => $metric,
@@ -2031,7 +2198,7 @@
                         @foreach($financeCards as $card)
                             <div class="saas-money-card">
                                 <span>{{ $card['label'] }}</span>
-                                <strong>{{ $card['value'] }}</strong>
+                                <strong title="{{ $formatMoney($card['value']) }}" aria-label="{{ $card['label'] . ': ' . $formatMoney($card['value']) }}">{{ $formatCompactMoney($card['value']) }}</strong>
                                 <em>{{ $card['meta'] }}</em>
                             </div>
                         @endforeach
@@ -2289,13 +2456,13 @@
                 @endphp
 
                 <!-- Total Employees -->
-                <div class="stat-card">
+                <div class="stat-card" id="totalEmployeesCard">
                     <div class="stat-header">
                         <div class="stat-icon">
                             <i class="bx bx-group"></i>
                         </div>
                         <div class="stat-dropdown">
-                            <button class="btn p-0" type="button" data-bs-toggle="dropdown">
+                            <button class="btn p-0" type="button" data-bs-toggle="dropdown" aria-label="Total Employees actions">
                                 <i class="bx bx-dots-vertical-rounded"></i>
                             </button>
                             <div class="dropdown-menu dropdown-menu-end">
@@ -2423,7 +2590,7 @@
         </div>
 
         <!-- Content Section -->
-        <div class="content-section">
+        <div class="content-section dashboard-notification-feed">
             <div class="content-grid">
                 <!-- Open Tickets -->
                 <div class="content-card">

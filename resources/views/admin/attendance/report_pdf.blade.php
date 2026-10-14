@@ -1,6 +1,7 @@
 <!doctype html>
 <html>
 <head>
+    @include('documents.pdf-styles')
     <meta charset="utf-8"/>
     <title>Attendance Report</title>
     <style>
@@ -12,7 +13,7 @@
         }
 
         body {
-            font-family: 'Helvetica Neue', 'DejaVu Sans', Arial, Helvetica, sans-serif;
+            font-family: 'DejaVu Sans', sans-serif;
             font-size: 11px;
             color: #0f172a;
             background: #ffffff;
@@ -37,7 +38,7 @@
             transform: translateX(-50%);
             width: 60px;
             height: 3px;
-            background: linear-gradient(90deg, #0ea5a4, #22c55e);
+            background: #0ea5a4;
         }
 
         .company-name {
@@ -45,9 +46,6 @@
             font-weight: 800;
             color: #0f172a;
             letter-spacing: -0.5px;
-            background: linear-gradient(135deg, #1e3a8a, #0ea5a4, #22c55e);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
             display: inline-block;
         }
 
@@ -63,7 +61,7 @@
             font-size: 10.5px;
             color: #64748b;
             margin-top: 6px;
-            display: flex;
+            display: block;
             justify-content: center;
             align-items: center;
             gap: 12px;
@@ -92,7 +90,7 @@
 
         /* ===== SUMMARY STATS ===== */
         .summary-stats {
-            display: flex;
+            display: block;
             justify-content: center;
             gap: 25px;
             margin-bottom: 18px;
@@ -103,7 +101,7 @@
         }
 
         .stat-item {
-            display: flex;
+            display: block;
             align-items: center;
             gap: 6px;
             font-size: 10.5px;
@@ -149,7 +147,7 @@
             border: 1px solid #d1d5db;
             text-align: left;
             vertical-align: middle;
-            background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+            background: #f1f5f9;
             font-weight: 700;
             font-size: 9.5px;
             text-transform: uppercase;
@@ -277,7 +275,7 @@
             margin-top: 18px;
             padding-top: 14px;
             border-top: 1px solid #e2e8f0;
-            display: flex;
+            display: block;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
@@ -287,7 +285,7 @@
         }
 
         .report-footer .footer-note {
-            display: flex;
+            display: block;
             align-items: center;
             gap: 6px;
         }
@@ -311,7 +309,7 @@
             color: #64748b;
         }
 
-        /* ===== EMPTY STATE ===== */
+        .stat-item { display: inline-block; margin: 3px 8px; } .report-meta span { display: inline-block; margin: 0 3px; } /* ===== EMPTY STATE ===== */
         .empty-state {
             text-align: center;
             padding: 40px 20px;
@@ -583,7 +581,7 @@
                             if ($co->lt($ci)) {
                                 $co->addDay();
                             }
-                            $rowSeconds = $co->diffInSeconds($ci);
+                            $rowSeconds = $ci->diffInSeconds($co);
                         } catch (\Throwable $e) {
                             // Fallback parsing
                             $ciTs = @strtotime("{$dateStr} {$clockInRaw}");
@@ -665,9 +663,6 @@
         <div class="footer-note">
             <i>i</i>
             <span>Duration calculated from Clock In/Out. Overnight sessions handled automatically.</span>
-        </div>
-        <div class="page-number">
-            Page 1 of 1
         </div>
     </div>
 

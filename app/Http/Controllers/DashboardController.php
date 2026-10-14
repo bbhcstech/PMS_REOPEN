@@ -49,17 +49,23 @@ class DashboardController extends Controller
         return $earthRadius * (2 * atan2(sqrt($a), sqrt(1 - $a)));
     }
 
-    private function storeClockInPhoto(string $selfieData, int $userId, string $today): ?string
+    private function storeClockInPhoto(string $selfieData, int $userId, string $today, string $phase = 'in'): ?string
     {
         if (! preg_match('/^data:image\/(png|jpe?g);base64,/', $selfieData)) {
-            return null;
+            abort(422, 'Capture a valid attendance photo before continuing.');
         }
 
         $imageData = preg_replace('/^data:image\/(png|jpe?g);base64,/', '', $selfieData);
         $decoded = base64_decode($imageData, true);
 
         if ($decoded === false) {
-            return null;
+            abort(422, 'Capture a valid attendance photo before continuing.');
+        }
+        abort_if(strlen($decoded) > 5 * 1024 * 1024 || ! @getimagesizefromstring($decoded), 422, 'Invalid attendance photo.');
+        if (\App\Services\WorkforceAccess::isAuthority(auth()->user())) {
+            $path = 'authority-attendance/' . auth()->user()->company_id . '/' . \Illuminate\Support\Str::uuid() . '.jpg';
+            abort_unless(\Illuminate\Support\Facades\Storage::disk('local')->put($path, $decoded), 500, 'Could not save your attendance photo.');
+            return $path;
         }
 
         $directory = public_path('admin/uploads/attendance-selfies');
@@ -67,7 +73,7 @@ class DashboardController extends Controller
             mkdir($directory, 0755, true);
         }
 
-        $fileName = 'clock-in-' . $userId . '-' . $today . '-' . time() . '.jpg';
+        $fileName = 'clock-' . $phase . '-' . $userId . '-' . $today . '-' . \Illuminate\Support\Str::uuid() . '.jpg';
         $absolutePath = $directory . DIRECTORY_SEPARATOR . $fileName;
 
         return file_put_contents($absolutePath, $decoded) !== false
@@ -314,6 +320,17 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
     public function index()
     {
         $user = auth()->user();
+        if ($user?->company_id) {
+            // Clock-in boundary: today's missed clock-ins count as absent on every dashboard.
+            try {
+                \App\Services\AttendanceClockPolicy::markMissedClockIns((int) $user->company_id);
+            } catch (\Throwable $e) {
+                report($e);
+            }
+        }
+        if ($user?->company_staff_role_id) {
+            return view('admin.company-role-dashboard', app(\App\Services\CompanyRoleDashboard::class)->data($user));
+        }
         if ($user && (
             (method_exists($user, 'isDeveloper') && $user->isDeveloper()) ||
             in_array(strtolower((string) ($user->role ?? '')), ['developer', 'dev'], true) ||
@@ -477,24 +494,27 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
         // ✅ Employee logic
         if ($userRole === 'employee') {
             $user = Auth::user()->loadMissing(['employeeDetail.designation', 'employeeDetail.department']);
-            $today = now()->toDateString();
+            $employeeTimezone = $this->resolveEmployeeTimezone(session('attendance_timezone.' . $user->id));
+            $today = Carbon::now($employeeTimezone)->toDateString();
 
             $showEmployeeWelcome = ! $user->employee_welcome_seen_at;
 
-            $attendance = \App\Models\Attendance::where('user_id', $user->id)
-                ->where('date', $today)
-                ->first();
+            $attendance = \App\Services\WorkforceAccess::currentAttendance($user);
             $attendancePolicy = $this->attendancePolicy();
 
 
             // Fetch week data
-            $startOfWeek = Carbon::now()->startOfWeek(); // Monday
-            $endOfWeek = Carbon::now()->endOfWeek();     // Sunday
+            $startOfWeek = Carbon::now($employeeTimezone)->startOfWeek(); // Monday
+            $endOfWeek = Carbon::now($employeeTimezone)->endOfWeek();     // Sunday
 
-            $weeklyLogs = Attendance::where('user_id', $user->id)
-                ->whereBetween('date', [$startOfWeek->toDateString(), $endOfWeek->toDateString()])
-                ->get()
-                ->keyBy('date');
+            // Same source and rules as My Attendance, so dashboard charts never disagree with it.
+            try {
+                \App\Services\AttendanceClockPolicy::markMissedClockIns((int) $user->company_id);
+            } catch (\Throwable $e) {
+                report($e);
+            }
+            $weekDays = app(\App\Services\AttendanceCalendar::class)->daysForUser($user, $startOfWeek, $endOfWeek);
+            $weekAttendance = $this->summarizeEmployeeWeek($weekDays);
 
             $openTasksCount = Task::where('status', '!=', 'completed')->count();
             $projectsCount = Project::count();
@@ -632,14 +652,18 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
         $projects = $myProjects;
         $tasks = $myTasks;
 
+        $dashboardStatusCharts = app(\App\Services\EmployeeDashboardCharts::class)->forUser($user);
         return view('employee-dashboard', compact(
+            'dashboardStatusCharts',
+            'employeeTimezone',
             'user',
             'projects',
             'tasks',
             'myProjects',
             'attendance',
             'attendancePolicy',
-            'weeklyLogs',
+            'weekDays',
+            'weekAttendance',
             'openTasksCount',
             'projectsCount',
             'openTicketsCount',
@@ -736,6 +760,7 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
                     'employee_details.status',
                     'employee_details.gender',
                     'employee_details.user_role',
+                    'users.role',
                     'users.id as user_id',
                     'users.name',
                     'users.email',
@@ -751,6 +776,7 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
                 $q->where('users.name', 'like', "%{$query}%")
                   ->orWhere('users.email', 'like', "%{$query}%")
                   ->orWhere('users.mobile', 'like', "%{$query}%")
+                  ->orWhere('users.role', 'like', "%{$query}%")
                   ->orWhere('designations.name', 'like', "%{$query}%")
                   ->orWhere('employee_details.employee_id', 'like', "%{$query}%")
                   ->orWhere('employee_details.status', 'like', "%{$query}%")
@@ -792,6 +818,43 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
 
 
     /**
+     * Weekly chart data for the employee dashboard from My Attendance calendar days.
+     * Each day lands in exactly one pie slice; holidays, days off and upcoming days are not counted.
+     */
+    private function summarizeEmployeeWeek($weekDays): array
+    {
+        $summary = ['Present' => 0, 'Absent' => 0, 'On Leave' => 0, 'Work From Home' => 0, 'Half Day' => 0];
+        $labels = [];
+        $hours = [];
+        $scheduled = 0;
+        $attended = 0.0;
+        foreach ($weekDays as $day) {
+            $labels[] = $day['date']->format('D');
+            $hours[] = round($day['seconds'] / 3600, 2);
+            $slice = match ($day['status']) {
+                'present', 'late' => $day['wfh'] ? 'Work From Home' : 'Present',
+                'half_day' => 'Half Day',
+                'leave', 'unpaid_leave' => 'On Leave',
+                'absent' => 'Absent',
+                default => null,
+            };
+            if ($slice) $summary[$slice]++;
+            if (! $day['date']->isFuture() && ! in_array($day['status'], ['holiday', 'day_off', 'not_joined'], true)) {
+                $scheduled++;
+                $attended += in_array($day['status'], ['present', 'late'], true) ? 1 : ($day['status'] === 'half_day' ? 0.5 : 0);
+            }
+        }
+
+        return [
+            'labels' => $labels,
+            'hours' => $hours,
+            'summary' => $summary,
+            'totalHours' => round(array_sum($hours), 1),
+            'percent' => $scheduled > 0 ? (int) round(100 * $attended / $scheduled) : 0,
+        ];
+    }
+
+    /**
      * Resolve employee's timezone with respect to location/browser, defaulting to India (Asia/Kolkata).
      */
     protected function resolveEmployeeTimezone(?string $clientTz = null, ?float $lat = null, ?float $lng = null): string
@@ -818,27 +881,38 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
         }
 
         // 3. Fallback to app configuration or default to India (Asia/Kolkata)
-        return config('app.timezone') ?: 'Asia/Kolkata';
+        $configuredTimezone = config('app.timezone');
+        return $configuredTimezone && $configuredTimezone !== 'UTC' ? $configuredTimezone : 'Asia/Kolkata';
     }
 
    public function clockIn(Request $request)
 {
+    $actor = \App\Services\WorkforceAccess::authorizeActor();
+    \App\Services\WorkforceRecordSchema::ensure();
     $validated = $request->validate([
         'clock_in_latitude' => ['nullable', 'numeric', 'between:-90,90'],
         'clock_in_longitude' => ['nullable', 'numeric', 'between:-180,180'],
         'clock_in_accuracy' => ['nullable', 'numeric', 'min:0'],
         'clock_in_address' => ['nullable', 'string', 'max:255'],
-        'clock_in_selfie' => ['nullable', 'string'],
+        'clock_in_selfie' => ['required', 'string', 'max:7000000'],
         'clock_in_timezone' => ['nullable', 'string', 'max:50'],
     ]);
 
     $timezone = $this->resolveEmployeeTimezone(
         $request->input('clock_in_timezone'),
-        (float) $validated['clock_in_latitude'],
-        (float) $validated['clock_in_longitude']
+        isset($validated['clock_in_latitude']) ? (float) $validated['clock_in_latitude'] : null,
+        isset($validated['clock_in_longitude']) ? (float) $validated['clock_in_longitude'] : null
     );
+    $request->session()->put('attendance_timezone.' . auth()->id(), $timezone);
 
     $now = Carbon::now($timezone);
+    app(\App\Services\AttendanceAutoClockOut::class)->closeDue((int) $actor->company_id, (int) $actor->id, $now);
+    if ($now->gte($now->copy()->setTime(23, 58, 0))) {
+        return back()->with('error', 'Clock-in closes at 11:58 PM. Please clock in after midnight for the next day.');
+    }
+    if ($blocked = \App\Services\AttendanceClockPolicy::clockInBlockedReason($actor, $now)) {
+        return back()->with('error', $blocked);
+    }
     $today = $now->toDateString();
     $userId = auth()->id();
 
@@ -857,65 +931,77 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
         $lng
     );
 
-    $existing = Attendance::where('user_id', $userId)
-        ->where('date', $today)
-        ->first();
+    return DB::connection('tenant')->transaction(function () use ($request, $validated, $now, $today, $userId, $lat, $lng, $distance, $timezone) {
+        User::whereKey($userId)->lockForUpdate()->firstOrFail();
+        if (Attendance::where('user_id', $userId)->whereNotNull('clock_in')->whereNull('clock_out')->exists()) {
+            return back()->with('error', 'Please clock out of your active shift first.');
+        }
 
-    if ($existing) {
-        return back()->with('error', 'You have already clocked in today.');
-    }
+        $photoPath = !empty($validated['clock_in_selfie'])
+            ? $this->storeClockInPhoto($validated['clock_in_selfie'], $userId, $today)
+            : null;
+        abort_unless($photoPath, 500, 'Could not save your clock-in photo. Please try again.');
 
-    $photoPath = !empty($validated['clock_in_selfie'])
-        ? $this->storeClockInPhoto($validated['clock_in_selfie'], $userId, $today)
-        : null;
+        $clockInTime = $now->format('H:i:s');
+        $currentLocationLabel = trim((string) ($validated['clock_in_address'] ?? ''));
 
-    $clockInTime = $now->format('H:i:s');
-    $currentLocationLabel = trim((string) ($validated['clock_in_address'] ?? ''));
+        if ($currentLocationLabel === '') {
+            $currentLocationLabel = 'Current location: '
+                . $lat
+                . ', '
+                . $lng
+                . ' (' . round($distance, 1) . 'm from office)';
+        }
 
-    if ($currentLocationLabel === '') {
-        $currentLocationLabel = 'Current location: '
-            . $lat
-            . ', '
-            . $lng
-            . ' (' . round($distance, 1) . 'm from office)';
-    }
+        $currentLocationLabel = mb_substr($currentLocationLabel, 0, 255);
 
-    $currentLocationLabel = mb_substr($currentLocationLabel, 0, 255);
+        $isWfhAssigned = WorkScheduleService::isUserWfhOnDate($userId, $today);
+        $workFromType = $isWfhAssigned ? 'wfh' : ($distance <= self::OFFICE_RADIUS_METERS ? 'office' : 'field');
+        $initialStatus = $isWfhAssigned ? 'wfh' : 'present';
 
-    $isWfhAssigned = WorkScheduleService::isUserWfhOnDate($userId, $today);
-    $workFromType = $isWfhAssigned ? 'wfh' : ($distance <= self::OFFICE_RADIUS_METERS ? 'office' : 'field');
-    $initialStatus = $isWfhAssigned ? 'wfh' : 'present';
+        $attendanceData = [
+            'user_id'            => $userId,
+            'date'               => $today,
+            'clock_in'           => $clockInTime,
+            'clock_in_timezone'  => $timezone,
+            'status'             => $initialStatus,
+            'clock_in_latitude'  => $lat,
+            'clock_in_longitude' => $lng,
+            'clock_in_address'   => $currentLocationLabel,
+            'clock_in_photo'     => $photoPath,
+            'work_from_type'     => $workFromType,
+        ];
 
-    $attendanceData = [
-        'user_id'            => $userId,
-        'date'               => $today,
-        'clock_in'           => $clockInTime,
-        'status'             => $initialStatus,
-        'clock_in_latitude'  => $lat,
-        'clock_in_longitude' => $lng,
-        'clock_in_address'   => $currentLocationLabel,
-        'clock_in_photo'     => $photoPath,
-        'work_from_type'     => $workFromType,
-    ];
+        if (Schema::hasColumn('attendances', 'location')) {
+            $attendanceData['location'] = $currentLocationLabel;
+        }
+        if (Schema::hasColumn('attendances', 'latitude')) {
+            $attendanceData['latitude'] = $lat;
+        }
+        if (Schema::hasColumn('attendances', 'longitude')) {
+            $attendanceData['longitude'] = $lng;
+        }
+        if (Schema::hasColumn('attendances', 'company_id')) {
+            $attendanceData['company_id'] = auth()->user()?->company_id;
+        }
 
-    if (Schema::hasColumn('attendances', 'location')) {
-        $attendanceData['location'] = $currentLocationLabel;
-    }
-    if (Schema::hasColumn('attendances', 'latitude')) {
-        $attendanceData['latitude'] = $lat;
-    }
-    if (Schema::hasColumn('attendances', 'longitude')) {
-        $attendanceData['longitude'] = $lng;
-    }
-    if (Schema::hasColumn('attendances', 'company_id')) {
-        $attendanceData['company_id'] = auth()->user()?->company_id;
-    }
+        // A day the system marked absent (clock-in window had closed) becomes this clock-in, e.g. after the admin widened the window.
+        $markedAbsent = Schema::hasColumn('attendances', 'system_status_reason')
+            ? Attendance::where('user_id', $userId)->whereDate('date', $today)->whereNull('clock_in')
+                ->where('system_status_reason', \App\Services\AttendanceClockPolicy::MISSED_CLOCK_IN)->first()
+            : null;
+        if ($markedAbsent) {
+            $markedAbsent->fill($attendanceData + ['system_status_reason' => null])->save();
+            $attendance = $markedAbsent;
+        } else {
+            $attendance = Attendance::create($attendanceData);
+        }
+        $this->applyOrganizationAttendanceRules($attendance);
 
-    $attendance = Attendance::create($attendanceData);
-    $this->applyOrganizationAttendanceRules($attendance);
-
-    $wfhMsg = $isWfhAssigned ? ' (Assigned Work From Home)' : '';
-    return back()->with('success', 'Clocked in at ' . $now->format('h:i A') . $wfhMsg . '. Current location saved.');
+        $this->notifyAuthorityAttendance($attendance, 'Clocked In');
+        $wfhMsg = $isWfhAssigned ? ' (Assigned Work From Home)' : '';
+        return back()->with('success', 'Clocked in at ' . $now->format('h:i A') . $wfhMsg . '. Current location saved.');
+    }, 5);
 }
 
    public function markEmployeeWelcomeSeen(Request $request)
@@ -936,40 +1022,72 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
 
    public function clockOut(Request $request)
 {
-    $timezone = $this->resolveEmployeeTimezone($request->input('clock_out_timezone') ?? $request->input('timezone'));
+    $actor = \App\Services\WorkforceAccess::authorizeActor();
+    \App\Services\WorkforceRecordSchema::ensure();
+    $timezone = $this->resolveEmployeeTimezone($request->input('clock_out_timezone') ?? $request->input('timezone') ?? session('attendance_timezone.' . auth()->id()));
     $now = Carbon::now($timezone);
     $today = $now->toDateString();
     $userId = auth()->id();
 
-    $attendance = Attendance::where('user_id', $userId)
-        ->where('date', $today)
-        ->first();
+    app(\App\Services\AttendanceAutoClockOut::class)->closeDue((int) $actor->company_id, (int) $actor->id, $now);
 
-    // If not found for today's local date (e.g. crossing midnight), look for latest open clock-in
-    if (!$attendance) {
+    return DB::connection('tenant')->transaction(function () use ($request, $now, $today, $userId) {
+        User::whereKey($userId)->lockForUpdate()->firstOrFail();
         $attendance = Attendance::where('user_id', $userId)
             ->whereNotNull('clock_in')
             ->whereNull('clock_out')
             ->latest('date')
+            ->latest('id')
+            ->lockForUpdate()
             ->first();
-    }
 
-    if (!$attendance) {
-        return back()->with('error', 'You need to clock in first.');
-    }
+        if (!$attendance) {
+            $hasClosedToday = Attendance::where('user_id', $userId)
+                ->where('date', $today)
+                ->whereNotNull('clock_out')
+                ->exists();
 
-    if ($attendance->clock_out) {
-        return back()->with('error', 'You have already clocked out today.');
-    }
+            if ($hasClosedToday) {
+                return back()->with('error', 'You have already clocked out of your shift.');
+            }
 
-    $attendance->update([
-        'clock_out' => $now->format('H:i:s')
-    ]);
-    $this->applyOrganizationAttendanceRules($attendance->fresh());
+            return back()->with('error', 'You need to clock in first.');
+        }
 
-    return back()->with('success', 'Clocked out at ' . $now->format('h:i A'));
+        $sessionNow = Carbon::now($attendance->sessionTimezone());
+        $cutoff = $attendance->auto_clock_out_at;
+        $out = $sessionNow->copy()->min($cutoff);
+        $attendance->clock_out = $out->format('H:i:s');
+        $attendance->auto_clocked_out = $sessionNow->gte($cutoff);
+        if (!$attendance->auto_clocked_out) {
+            $validated = $request->validate(['clock_out_selfie' => ['required', 'string', 'max:7500000']]);
+            $attendance->clock_out_photo = $this->storeClockInPhoto($validated['clock_out_selfie'], $userId, $attendance->date->toDateString(), 'out');
+            abort_unless($attendance->clock_out_photo, 500, 'Could not save your clock-out photo. Please try again.');
+        }
+        if ($attendance->hasTableColumn('total_hours')) $attendance->total_hours = round($attendance->total_seconds / 3600, 2);
+        $attendance->save();
+        $this->applyOrganizationAttendanceRules($attendance->fresh());
+
+        $this->notifyAuthorityAttendance($attendance, 'Clocked Out');
+        return back()->with('success', 'Clocked out at ' . $out->format('h:i A'));
+    }, 5);
 }
 
+
+private function notifyAuthorityAttendance(Attendance $attendance, string $action): void
+{
+    $user = auth()->user();
+    if (! $user || ! \App\Services\WorkforceAccess::isAuthority($user)) return;
+    DB::connection('tenant')->afterCommit(function () use ($attendance, $user, $action) {
+        SystemNotificationService::notifyAdmins(
+            $action,
+            $user->name . ' ' . strtolower($action) . ' for ' . $attendance->date->format('d M Y') . '.',
+            route('admin.authority-attendance', ['view' => 'team', 'user_id' => $user->id]),
+            ['employee_id' => $user->id, 'entity_type' => Attendance::class, 'entity_id' => $attendance->id,
+                'type' => $action === 'Clocked In' ? 'attendance_clock_in' : 'attendance_clock_out', 'icon' => 'fa-user-clock']
+        );
+    });
+}
 
 public function project(Request $request)
 {
@@ -1095,6 +1213,9 @@ public function ticketDashboard(Request $request)
 
 public function hrindex(Request $request)
 {
+    if (auth()->user()?->company_staff_role_id) {
+        return view('admin.company-role-dashboard', app(\App\Services\CompanyRoleDashboard::class)->data(auth()->user()));
+    }
         $today = Carbon::today();
         // Parse date range
        $startDate = $request->filled('start_date') ? Carbon::parse($request->start_date)->startOfDay() : now()->startOfMonth();
@@ -1105,20 +1226,20 @@ public function hrindex(Request $request)
         $activeEmployees = EmployeeDetail::where('status', 'Active')->count();
         $departmentsCount = Department::count();
         $designationsCount = Designation::count();
-        $presentToday = Attendance::where('date', $today)->where('status', 'present')->count();
-        $onLeaveToday = Leave::whereDate('start_date', '<=', $today)
+        $presentToday = Attendance::query()->whereHas('user', fn ($users) => \App\Services\WorkforceAccess::users($users, 'employee'))->where('date', $today)->where('status', 'present')->count();
+        $onLeaveToday = Leave::query()->whereHas('user', fn ($users) => \App\Services\WorkforceAccess::users($users, 'employee'))->whereDate('start_date', '<=', $today)
                             ->whereDate('end_date', '>=', $today)
                             ->where('status', 'approved')
                             ->count();
-        $pendingLeaves = Leave::where('status', 'pending')->count();
+        $pendingLeaves = Leave::query()->whereHas('user', fn ($users) => \App\Services\WorkforceAccess::users($users, 'employee'))->where('status', 'pending')->count();
 
         $newEmployees = EmployeeDetail::whereBetween('joining_date', [$startDate, $endDate])->count();
           $exits = EmployeeDetail::whereBetween('exit_date', [$startDate, $endDate])->count();
-         $approvedLeaves = Leave::where('status', 'Approved')
+         $approvedLeaves = Leave::query()->whereHas('user', fn ($users) => \App\Services\WorkforceAccess::users($users, 'employee'))->where('status', 'Approved')
                         ->whereBetween('start_date', [$startDate, $endDate])
                         ->count();
 
-        $todayPresent = Attendance::whereDate('date', today())->count();
+        $todayPresent = Attendance::query()->whereHas('user', fn ($users) => \App\Services\WorkforceAccess::users($users, 'employee'))->whereDate('date', today())->count();
         $averageAttendance = ($totalEmployees > 0) ? round(($todayPresent / $totalEmployees) * 100, 2) : 0;
 
         $pendingTasks = Task::where('status', 'Pending Task')->count();
@@ -1136,14 +1257,14 @@ public function hrindex(Request $request)
                         ->groupBy('month')
                         ->pluck('attritions', 'month');
 
-         $lateAttendances = Attendance::with('user.employeeDetail.designation')
+         $lateAttendances = Attendance::query()->whereHas('user', fn ($users) => \App\Services\WorkforceAccess::users($users, 'employee'))->with('user.employeeDetail.designation')
             ->where('status', 'Late')
             ->whereBetween('date', [$startDate, $endDate])
             ->orderBy('user_id')
             ->get()
             ->groupBy('user_id');
 
-              $leavesTaken = Leave::with(['user.employeeDetail.designation'])
+              $leavesTaken = Leave::query()->whereHas('user', fn ($users) => \App\Services\WorkforceAccess::users($users, 'employee'))->with(['user.employeeDetail.designation'])
             ->where('status', 'Approved')
             ->whereBetween('start_date', [$startDate, $endDate])
             ->select('user_id', DB::raw('count(*) as total'))
@@ -1210,9 +1331,7 @@ public function hrindex(Request $request)
         $tasks = Task::all();
 
         $todayStr = now()->toDateString();
-        $attendance = Attendance::where('user_id', Auth::id())
-            ->where('date', $todayStr)
-            ->first();
+        $attendance = \App\Services\WorkforceAccess::currentAttendance(Auth::user());
         $attendancePolicy = $this->attendancePolicy();
         $officeLatitude = self::OFFICE_LATITUDE;
         $officeLongitude = self::OFFICE_LONGITUDE;

@@ -103,6 +103,32 @@
         display: flex;
         align-items: center;
         gap: 1.25rem;
+        flex: 1 1 480px;
+        min-width: 0;
+    }
+
+    .performance-settings-page .header-title {
+        min-width: 0;
+        overflow-wrap: anywhere;
+    }
+
+    /* Keep the chart clearly visible against its blue tile in both themes. */
+    .pms-settings-page.performance-settings-page .branches-header .header-left-box .header-icon-badge svg {
+        width: 28px;
+        height: 28px;
+        color: #fff !important;
+        background: transparent !important;
+        fill: none !important;
+        stroke: #fff !important;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    .pms-settings-page.performance-settings-page .branches-header .header-left-box .header-icon-badge svg path {
+        fill: none !important;
+        stroke: #fff !important;
+        opacity: 1 !important;
     }
 
     .header-icon-badge {
@@ -1093,7 +1119,7 @@
 @endpush
 
 @section('content')
-<div class="performance-settings-page">
+<div class="pms-settings-page performance-settings-page">
     <div class="performance-settings-shell">
         <div class="ambient-orb orb-1"></div>
         <div class="ambient-orb orb-2"></div>
@@ -1113,7 +1139,7 @@
             <div class="branches-header">
                 <div class="header-left-box">
                     <div class="header-icon-badge">
-                        <i class="fas fa-chart-line"></i>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" aria-hidden="true"><path d="M3 3v18h18M7 14l5-5 4 3 5-7"/></svg>
                     </div>
                     <div class="header-title">
                         <h1>Performance & Appraisal Settings</h1>
@@ -1198,7 +1224,7 @@
 
                 <div class="p-4 p-md-5">
                     @if($isSettingsReadOnly)
-                        <div class="alert d-flex align-items-center mb-4 rounded-3 border-0 shadow-sm" style="background: linear-gradient(135deg, #eff6ff, #dbeafe); color: #1e40af; border-left: 4px solid #3b82f6 !important; padding: 14px 18px;">
+                        <div class="alert pms-readonly-notice d-flex align-items-center mb-4 rounded-3 border-0 shadow-sm" style="background: linear-gradient(135deg, #eff6ff, #dbeafe); color: #1e40af; border-left: 4px solid #3b82f6 !important; padding: 14px 18px;">
                             <i class="fas fa-eye me-3 fs-3 text-primary"></i>
                             <div>
                                 <strong class="d-block text-primary fw-bold" style="font-size: 14px;">View-Only Mode</strong>

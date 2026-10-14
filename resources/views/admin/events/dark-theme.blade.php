@@ -1,4 +1,10 @@
 <style>
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) .events-section .event-empty-icon > i,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) .events-section .event-empty-icon > i::before {
+        color: #166534 !important;
+        -webkit-text-fill-color: #166534 !important;
+        opacity: 1 !important;
+    }
     /* Keep these overrides within Events, including its detached Bootstrap modals. */
     :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) .events-section {
         --event-surface: var(--surface, #0f1530);
@@ -153,7 +159,7 @@
         --fc-neutral-bg-color: var(--event-surface-soft);
         --fc-neutral-text-color: var(--event-muted);
         --fc-list-event-hover-bg-color: var(--event-surface-soft);
-        --fc-today-bg-color: rgba(47, 107, 255, 0.14);
+        --fc-today-bg-color: rgba(47, 107, 255, 0.16);
         --fc-button-bg-color: #2f6bff;
         --fc-button-border-color: #2f6bff;
         --fc-button-text-color: #fff;
@@ -161,19 +167,93 @@
         --fc-button-hover-border-color: #2455d6;
         --fc-button-active-bg-color: #1e4fcc;
         --fc-button-active-border-color: #1e4fcc;
-    }
-    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) .events-section #eventCalendar :is(.fc-toolbar-title, .fc-col-header-cell-cushion, .fc-daygrid-day-number, .fc-list-day-text, .fc-list-day-side-text) {
+        background: var(--event-surface) !important;
         color: var(--event-text) !important;
+        border-color: var(--event-border) !important;
     }
-    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) .events-section #eventCalendar :is(.fc-button, .fc-button .fc-icon, .fc-daygrid-block-event, .fc-daygrid-block-event .fc-event-main) {
-        color: #fff !important;
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) .events-section #eventCalendar .fc-header-toolbar .fc-button-group {
+        display: inline-flex !important;
+        gap: 8px !important;
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
     }
-    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) .events-section #eventCalendar .fc-button-primary:not(:disabled):is(:active, .fc-button-active) {
-        background: #1e4fcc !important;
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) .events-section #eventCalendar .fc-header-toolbar .fc-button {
+        border-radius: 8px !important;
+        margin: 0 !important;
+        background-color: #2f6bff !important;
+        border-color: #2f6bff !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) .events-section #eventCalendar .fc-header-toolbar .fc-button:hover {
+        background-color: #2455d6 !important;
+        border-color: #2455d6 !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) .events-section #eventCalendar .fc-header-toolbar .fc-button:not(:disabled):is(:active, .fc-button-active) {
+        background-color: #1e4fcc !important;
         border-color: #8aafff !important;
+        box-shadow: 0 0 0 2px rgba(138, 175, 255, 0.4) !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) .events-section #eventCalendar :is(
+        .fc-toolbar-title,
+        .fc-col-header-cell-cushion,
+        .fc-daygrid-day-number,
+        .fc-timegrid-slot-label-cushion,
+        .fc-timegrid-axis-cushion,
+        .fc-list-day-text,
+        .fc-list-day-side-text,
+        .fc-list-event-title,
+        .fc-list-event-time,
+        .fc-list-empty-cushion
+    ) {
+        color: var(--event-text) !important;
+        -webkit-text-fill-color: var(--event-text) !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) .events-section #eventCalendar :is(
+        .fc-button,
+        .fc-button .fc-icon,
+        .fc-daygrid-block-event,
+        .fc-daygrid-block-event .fc-event-main,
+        .fc-timegrid-event,
+        .fc-timegrid-event .fc-event-main
+    ) {
+        color: #fff !important;
+        -webkit-text-fill-color: #fff !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) .events-section #eventCalendar .fc-col-header-cell {
+        background: var(--event-surface-soft) !important;
+        border-color: var(--event-border) !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) .events-section #eventCalendar .fc-daygrid-day-other .fc-daygrid-day-number {
+        color: var(--event-muted) !important;
+        -webkit-text-fill-color: var(--event-muted) !important;
+        opacity: 0.65;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) .events-section #eventCalendar .fc-daygrid-more-link {
+        color: #60a5fa !important;
+        -webkit-text-fill-color: #60a5fa !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) .events-section #eventCalendar :is(
+        .fc-scrollgrid,
+        .fc-scrollgrid td,
+        .fc-scrollgrid th,
+        .fc-theme-standard td,
+        .fc-theme-standard th
+    ) {
+        border-color: var(--event-border) !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) .events-section #eventCalendar .fc-list-day-cushion {
+        background: var(--event-surface-soft) !important;
+        color: var(--event-text) !important;
+        -webkit-text-fill-color: var(--event-text) !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) .events-section #eventCalendar .fc-list-event:hover td {
+        background: var(--event-surface-soft) !important;
     }
     :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) .events-section #eventCalendar .fc-daygrid-dot-event {
         color: var(--event-text) !important;
+        -webkit-text-fill-color: var(--event-text) !important;
     }
     :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) .events-section :is(.event-description-panel, .event-memories-panel, .event-memories-empty, .event-venue-icon) {
         background: var(--event-surface-soft) !important;

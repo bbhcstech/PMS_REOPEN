@@ -2,6 +2,7 @@
 <html lang="en">
 
 <head>
+    @include('partials.pwa')
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
 
@@ -662,7 +663,10 @@
                     <div class="row mb-3">
                       <label for="Phone" class="col-md-4 col-lg-3 col-form-label">Phone</label>
                       <div class="col-md-8 col-lg-9">
-                        <input name="phone" type="text" class="form-control" id="Phone" value="(436) 486-3538 x29071">
+                        <div class="pms-phone-group">
+@include('partials.phone-country-select', ['phoneField' => 'phone', 'phoneValue' => ''])
+<input name="phone" type="text" class="form-control" id="Phone" value="(436) 486-3538 x29071">
+</div>
                       </div>
                     </div>
 
@@ -866,6 +870,8 @@
   });
   </script>
 
+@include('partials.phone-fields', ['forcePhoneFields' => true])
+@include('partials.responsive-workspace', ['responsiveShell' => 'auth'])
 </body>
 
 </html>

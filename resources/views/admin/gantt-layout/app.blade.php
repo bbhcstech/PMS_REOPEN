@@ -1,6 +1,7 @@
 @include('admin.layout.header')
 
 <main>
+    @include('partials.page-back-navigation')
     @yield('content')
 </main>
 

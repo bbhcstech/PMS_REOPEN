@@ -39,6 +39,63 @@
 </div>
 
 <style>
+    #passwordChangedNoticeModal {
+        --pwd-surface: #ffffff;
+        --pwd-heading: #0f172a;
+        --pwd-text: #475569;
+        --pwd-timer-surface: #f8fafc;
+        --pwd-border: #e2e8f0;
+        --pwd-alert: #b91c1c;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], html.dark, body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-theme="dark"], body[data-bs-theme="dark"]) #passwordChangedNoticeModal {
+        --pwd-surface: #141b30;
+        --pwd-heading: #f1f5f9;
+        --pwd-text: #cbd5e1;
+        --pwd-timer-surface: #0f172a;
+        --pwd-border: #334155;
+        --pwd-alert: #fca5a5;
+    }
+
+    #passwordChangedNoticeModal .pwd-notice-card {
+        background: var(--pwd-surface) !important;
+        color: var(--pwd-text) !important;
+    }
+
+    #passwordChangedNoticeModal .pwd-notice-title {
+        color: var(--pwd-heading) !important;
+        -webkit-text-fill-color: var(--pwd-heading) !important;
+    }
+
+    #passwordChangedNoticeModal .pwd-notice-message,
+    #passwordChangedNoticeModal .pwd-notice-message strong,
+    #passwordChangedNoticeModal .pwd-notice-timer-box .text-muted {
+        color: var(--pwd-text) !important;
+        -webkit-text-fill-color: var(--pwd-text) !important;
+    }
+
+    #passwordChangedNoticeModal .pwd-notice-timer-box {
+        background: var(--pwd-timer-surface) !important;
+        border-color: var(--pwd-border) !important;
+    }
+
+    #passwordChangedNoticeModal .pwd-timer-display {
+        color: var(--pwd-alert) !important;
+        -webkit-text-fill-color: var(--pwd-alert) !important;
+    }
+
+    #passwordChangedNoticeModal .pwd-progress-bar-bg {
+        background: var(--pwd-border) !important;
+    }
+
+    #passwordChangedNoticeModal .pwd-notice-icon,
+    #passwordChangedNoticeModal .pwd-notice-icon i,
+    #passwordChangedNoticeModal .pwd-notice-btn,
+    #passwordChangedNoticeModal .pwd-notice-btn i {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
     .pwd-notice-overlay {
         position: fixed;
         top: 0;

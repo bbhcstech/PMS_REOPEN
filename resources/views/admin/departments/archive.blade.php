@@ -3,6 +3,7 @@
 @section('title', 'Archived Sub Departments')
 
 @section('content')
+@include('admin.settings.partials.workforce-navigation')
 <style>
     html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark) .sub-archive-page {
         min-height: calc(100vh - 100px);
@@ -746,6 +747,34 @@
         color: #cbd5e1 !important;
         border: 1px solid rgba(79, 131, 255, 0.2) !important;
     }
+    /* Light-theme contrast for the filled archive controls only. */
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .sub-archive-page :is(.back-button, .search-button, .badge-premium, .action-btn.btn-view, .action-btn.btn-restore),
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .sub-archive-page :is(.back-button, .search-button, .badge-premium, .action-btn.btn-view, .action-btn.btn-restore) *,
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .sub-archive-page :is(.back-button, .search-button, .badge-premium, .action-btn.btn-view, .action-btn.btn-restore) i::before {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .sub-archive-page .archive-header .badge-premium {
+        width: auto !important;
+        height: auto !important;
+        min-height: 0 !important;
+        padding: 0.35rem 1.1rem !important;
+        border-radius: 999px !important;
+        line-height: 1.5 !important;
+    }
+    /* Preserve readable glyphs and values on the pale table badges in dark theme. */
+    :is([data-pms-theme="dark"], [data-bs-theme="dark"], [data-theme="dark"], .dark, .dark-mode) .sub-archive-page .archive-table .pill.parent {
+        --archive-pill-foreground: #0369a1;
+    }
+    :is([data-pms-theme="dark"], [data-bs-theme="dark"], [data-theme="dark"], .dark, .dark-mode) .sub-archive-page .archive-table .pill.employee {
+        --archive-pill-foreground: #15803d;
+    }
+    :is([data-pms-theme="dark"], [data-bs-theme="dark"], [data-theme="dark"], .dark, .dark-mode) .sub-archive-page .archive-table .pill:is(.parent, .employee),
+    :is([data-pms-theme="dark"], [data-bs-theme="dark"], [data-theme="dark"], .dark, .dark-mode) .sub-archive-page .archive-table .pill:is(.parent, .employee) > i,
+    :is([data-pms-theme="dark"], [data-bs-theme="dark"], [data-theme="dark"], .dark, .dark-mode) .sub-archive-page .archive-table .pill:is(.parent, .employee) > i::before {
+        color: var(--archive-pill-foreground) !important;
+        -webkit-text-fill-color: var(--archive-pill-foreground) !important;
+    }
 </style>
 
 <div class="sub-archive-page">
@@ -758,7 +787,7 @@
                 </h1>
                 <p><i class="fas fa-info-circle me-1"></i>Restore archived sub department records whenever they need to return to the active list.</p>
             </div>
-            <a href="{{ route('departments.index') }}" class="back-button">
+            <a href="{{ \App\Support\WorkforceSettings::route('departments.index') }}" class="back-button">
                 <i class="fas fa-arrow-left"></i>Back to Active Sub Departments
             </a>
         </div>
@@ -809,7 +838,7 @@
         </div>
 
         <div class="search-card">
-            <form method="GET" action="{{ route('departments.archive') }}" class="archive-search-bar">
+            <form method="GET" action="{{ \App\Support\WorkforceSettings::route('departments.archive') }}" class="archive-search-bar">
                 <div class="search-field">
                     <i class="fas fa-search"></i>
                     <input type="text" name="search" value="{{ request('search') }}" placeholder="Search archived sub departments...">
@@ -818,7 +847,7 @@
                     <i class="fas fa-filter"></i>Search
                 </button>
                 @if(request('search'))
-                    <a href="{{ route('departments.archive') }}" class="reset-button">
+                    <a href="{{ \App\Support\WorkforceSettings::route('departments.archive') }}" class="reset-button">
                         <i class="fas fa-times"></i>Reset
                     </a>
                 @endif
@@ -837,7 +866,7 @@
                         <div class="empty-icon"><i class="fas fa-archive"></i></div>
                         <h5 class="fw-bold">No Archived Sub Departments Found</h5>
                         <p class="text-muted">There are no sub departments in the archive at the moment.</p>
-                        <a href="{{ route('departments.index') }}" class="back-button mt-3">
+                        <a href="{{ \App\Support\WorkforceSettings::route('departments.index') }}" class="back-button mt-3">
                             <i class="fas fa-arrow-left"></i>Back to Active Sub Departments
                         </a>
                     </div>
@@ -879,10 +908,10 @@
                                     </td>
                                     <td>
                                         <div class="action-group">
-                                            <a href="{{ route('departments.show', $department->id) }}" class="action-btn btn-view" title="View">
+                                            <a href="{{ \App\Support\WorkforceSettings::route('departments.show', $department->id) }}" class="action-btn btn-view" title="View">
                                                 <i class="fas fa-eye"></i>
                                             </a>
-                                            <form action="{{ route('departments.restore', $department->id) }}" method="POST" onsubmit="return confirm('Restore this sub department to the active list?');">
+                                            <form action="{{ \App\Support\WorkforceSettings::route('departments.restore', $department->id) }}" method="POST" onsubmit="return confirm('Restore this sub department to the active list?');">
                                                 @csrf
                                                 <button type="submit" class="action-btn btn-restore" title="Restore">
                                                     <i class="fas fa-trash-restore"></i>

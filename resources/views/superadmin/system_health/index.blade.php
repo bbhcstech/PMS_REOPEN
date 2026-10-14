@@ -590,7 +590,75 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
+        gap: 16px;
         background: #f8fafc;
+        flex-shrink: 0;
+    }
+
+    .drawer-panel,
+    .drawer-panel * {
+        box-sizing: border-box;
+    }
+
+    .drawer-panel {
+        overflow: hidden;
+    }
+
+    /* Drawer content: same side spacing as the header, never wider than the panel */
+    .drawer-body {
+        flex: 1 1 auto;
+        min-width: 0;
+        width: 100%;
+        padding: 20px 24px 28px;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    .drawer-body #drawerServiceDesc {
+        line-height: 1.55;
+        overflow-wrap: anywhere;
+    }
+
+    .drawer-metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+
+    .drawer-metrics-grid > div {
+        min-width: 0;
+    }
+
+    #drawerChecksList > div {
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+    }
+
+    #drawerChecksList > div > span:first-child {
+        min-width: 0;
+        overflow-wrap: anywhere;
+    }
+
+    #drawerChecksList > div > span:last-child {
+        flex-shrink: 0;
+    }
+
+    @media (max-width: 575.98px) {
+        .drawer-panel {
+            max-width: 100vw;
+        }
+
+        .drawer-header,
+        .drawer-body {
+            padding-left: 16px;
+            padding-right: 16px;
+        }
+
+        .drawer-metrics-grid {
+            grid-template-columns: minmax(0, 1fr);
+        }
     }
 
     /* ============================================================
@@ -1116,31 +1184,23 @@
                     <i class="fas fa-chart-line" style="color: var(--primary); margin-right: 8px;"></i>
                     Platform Response Time Latency (ms)
                 </div>
-                <div class="time-range-pills">
-                    <button class="time-pill">1H</button>
-                    <button class="time-pill">6H</button>
-                    <button class="time-pill active">24H</button>
-                    <button class="time-pill">7D</button>
-                    <button class="time-pill">30D</button>
-                </div>
+                <form method="GET" action="{{ url()->current() }}" class="time-range-pills">
+                    @foreach(request()->except('latency_range') as $key => $value)
+                        @if(is_scalar($value))
+                        <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+                        @endif
+                    @endforeach
+                    @foreach(array_keys(\App\Services\PlatformLatency::RANGES) as $range)
+                    <button type="submit" name="latency_range" value="{{ $range }}" class="time-pill {{ $latencyChart['range'] === $range ? 'active' : '' }}" aria-pressed="{{ $latencyChart['range'] === $range ? 'true' : 'false' }}">{{ $range }}</button>
+                    @endforeach
+                </form>
             </div>
 
             <div style="height: 180px; display: flex; align-items: flex-end; gap: 12px; padding: 20px 10px; background: var(--bg-subtle); border-radius: var(--radius-md); border: 1px solid var(--border-color);">
-                @php
-                    $points = [
-                        ['time' => '00:00', 'api' => 22, 'db' => 12],
-                        ['time' => '04:00', 'api' => 18, 'db' => 10],
-                        ['time' => '08:00', 'api' => 35, 'db' => 24],
-                        ['time' => '12:00', 'api' => 28, 'db' => 15],
-                        ['time' => '16:00', 'api' => 42, 'db' => 28],
-                        ['time' => '20:00', 'api' => 25, 'db' => 14],
-                        ['time' => 'Now',   'api' => 24, 'db' => 12.4],
-                    ];
-                @endphp
-                @foreach($points as $pt)
+                @foreach($latencyChart['points'] as $pt)
                 <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; height: 100%; justify-content: flex-end;">
-                    <div style="width: 100%; max-width: 28px; background: var(--primary); height: {{ $pt['api'] * 2 }}%; border-radius: 4px 4px 0 0; position: relative;" title="API Latency: {{ $pt['api'] }}ms">
-                        <div style="position: absolute; bottom: 0; left: 0; right: 0; background: var(--purple); height: {{ $pt['db'] * 2 }}%; border-radius: 4px 4px 0 0;" title="DB Latency: {{ $pt['db'] }}ms"></div>
+                    <div style="width: 100%; max-width: 28px; background: var(--primary); height: {{ max($pt['api'] ?? 0, $pt['db'] ?? 0) / $latencyChart['scale'] * 85 }}%; border-radius: 4px 4px 0 0; position: relative;" title="{{ $pt['api'] === null ? 'No samples in this interval' : 'API Latency: '.$pt['api'].'ms' }}">
+                        <div style="position: absolute; bottom: 0; left: 0; right: 0; background: var(--purple); height: {{ ($pt['db'] ?? 0) / max(0.1, $pt['api'] ?? 0, $pt['db'] ?? 0) * 100 }}%; border-radius: 4px 4px 0 0;" title="{{ $pt['db'] === null ? 'No samples in this interval' : 'DB Latency: '.$pt['db'].'ms' }}"></div>
                     </div>
                     <span style="font-size: 11px; font-weight: 700; color: var(--text-subtle);">{{ $pt['time'] }}</span>
                 </div>
@@ -1149,10 +1209,10 @@
 
             <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 14px; font-size: 12px;">
                 <div style="display: flex; align-items: center; gap: 16px;">
-                    <span style="display: flex; align-items: center; gap: 6px; color: var(--text-muted); font-weight: 600;"><span style="width: 10px; height: 10px; border-radius: 2px; background: var(--primary);"></span> API Response (24ms)</span>
-                    <span style="display: flex; align-items: center; gap: 6px; color: var(--text-muted); font-weight: 600;"><span style="width: 10px; height: 10px; border-radius: 2px; background: var(--purple);"></span> Database Response (12.4ms)</span>
+                    <span style="display: flex; align-items: center; gap: 6px; color: var(--text-muted); font-weight: 600;"><span style="width: 10px; height: 10px; border-radius: 2px; background: var(--primary);"></span> API Response ({{ $latencyChart['api'] === null ? 'No samples' : $latencyChart['api'].'ms' }})</span>
+                    <span style="display: flex; align-items: center; gap: 6px; color: var(--text-muted); font-weight: 600;"><span style="width: 10px; height: 10px; border-radius: 2px; background: var(--purple);"></span> Database Response ({{ $latencyChart['db'] === null ? 'No samples' : $latencyChart['db'].'ms' }})</span>
                 </div>
-                <span style="color: var(--text-subtle); font-weight: 500;">99.9th percentile: 45ms</span>
+                <span style="color: var(--text-subtle); font-weight: 500;">99.9th percentile: {{ $latencyChart['percentile'] === null ? 'No samples' : $latencyChart['percentile'].'ms' }}</span>
             </div>
         </div>
 
@@ -1216,9 +1276,9 @@
                 <span style="font-size: 12px; color: var(--text-subtle); margin-top: 2px; display: block;">Central Database (`pms_central`) + {{ count($tenantHealthData) }} Multi-Tenant Databases</span>
             </div>
             <div style="display: flex; gap: 16px; font-size: 12px; align-items: center;">
-                <span style="color: var(--text-muted);">Active Connections: <strong style="color: var(--text-main);">42 / 100</strong></span>
-                <span style="color: var(--text-muted);">Pool Load: <strong style="color: var(--text-main);">42%</strong></span>
-                <span style="color: var(--text-muted);">Ping Latency: <strong style="color: var(--success);">{{ $dbLatencyMs ?? 12.4 }} ms</strong></span>
+                <span style="color: var(--text-muted);">Active Connections: <strong style="color: var(--text-main);" id="dbPoolActive">{{ $dbPool['active'] !== null ? $dbPool['active'] . ' / ' . $dbPool['max'] : '—' }}</strong></span>
+                <span style="color: var(--text-muted);">Pool Load: <strong style="color: var(--text-main);" id="dbPoolLoad">{{ $dbPool['load_pct'] !== null ? $dbPool['load_pct'] . '%' : '—' }}</strong></span>
+                <span style="color: var(--text-muted);">Ping Latency: <strong style="color: var(--success);" id="dbPoolPing">{{ $dbPool['ping_ms'] !== null ? $dbPool['ping_ms'] . ' ms' : '—' }}</strong></span>
             </div>
         </div>
 
@@ -1280,7 +1340,7 @@
                 </thead>
                 <tbody>
                     @foreach($tenantHealthData as $th)
-                    <tr class="tenant-health-row" data-status="{{ $th['status'] }}" data-company="{{ strtolower($th['name']) }}" data-code="{{ strtolower($th['code']) }}" data-db="{{ strtolower($th['db_name']) }}">
+                    <tr class="tenant-health-row" data-tenant-id="{{ $th['company_id'] }}" data-status="{{ $th['status'] }}" data-company="{{ strtolower($th['name']) }}" data-code="{{ strtolower($th['code']) }}" data-db="{{ strtolower($th['db_name']) }}">
                         <!-- Checkbox -->
                         <td style="text-align: center;">
                             <input type="checkbox" class="tenant-db-checkbox" value="{{ $th['company_id'] }}" style="cursor: pointer;" />
@@ -1318,31 +1378,33 @@
 
                         <!-- Connection -->
                         <td style="text-align: center;">
-                            <span style="color: var(--success); font-weight: 700; font-size: 12px;"><i class="fas fa-link"></i> {{ $th['connection'] }}</span>
+                            <span data-health-cell="connection" title="{{ $th['error'] ?? '' }}" style="color: {{ $th['connected'] ? 'var(--success)' : '#dc2626' }}; font-weight: 700; font-size: 12px;"><i class="fas {{ $th['connected'] ? 'fa-link' : 'fa-link-slash' }}"></i> {{ $th['connection'] }}</span>
                         </td>
 
                         <!-- Latency -->
-                        <td style="text-align: center; font-family: monospace; font-weight: 700; color: var(--text-main);">
+                        <td data-health-cell="latency" style="text-align: center; font-family: monospace; font-weight: 700; color: var(--text-main);">
                             {{ $th['latency_ms'] }}
                         </td>
 
                         <!-- Storage Usage -->
-                        <td style="text-align: center; font-family: monospace; font-weight: 700; color: {{ $th['status'] === 'warning' ? '#d97706' : 'var(--text-main)' }};">
+                        <td data-health-cell="storage" title="{{ $th['storage_detail'] ?? '' }}" style="text-align: center; font-family: monospace; font-weight: 700; color: {{ $th['status'] === 'warning' ? '#d97706' : 'var(--text-main)' }};">
                             {{ $th['storage_pct'] }}
                         </td>
 
                         <!-- Health Status -->
-                        <td style="text-align: center;">
+                        <td data-health-cell="status" style="text-align: center;">
                             @if($th['status'] === 'healthy')
                                 <span class="service-status-pill status-operational"><i class="fas fa-check-circle"></i> Healthy</span>
-                            @else
+                            @elseif($th['status'] === 'warning')
                                 <span class="service-status-pill status-degraded"><i class="fas fa-exclamation-triangle"></i> Warning</span>
+                            @else
+                                <span class="service-status-pill status-down"><i class="fas fa-circle-xmark"></i> Down</span>
                             @endif
                         </td>
 
                         <!-- Last Check -->
-                        <td style="font-size: 11.5px; color: var(--text-subtle);">
-                            {{ $th['last_check'] }}
+                        <td style="font-size: 11.5px; color: var(--text-subtle); white-space: nowrap;">
+                            <span data-health-cell="last-check" data-relative-time="{{ $th['last_check_iso'] }}" title="{{ $th['last_check_at'] }}">{{ $th['last_check'] }}</span>
                         </td>
 
                         <!-- Actions -->
@@ -1354,6 +1416,10 @@
                                     data-db="{{ $th['db_name'] }}"
                                     data-latency="{{ $th['latency_ms'] }}"
                                     data-storage="{{ $th['storage_pct'] }}"
+                                    data-storage-detail="{{ $th['storage_detail'] ?? '' }}"
+                                    data-tables="{{ $th['tables'] ?? '' }}"
+                                    data-error="{{ $th['error'] ?? '' }}"
+                                    data-checked="{{ $th['last_check_at'] }}"
                                     data-status="{{ $th['status'] }}"
                                     data-logo="{{ $th['logo_url'] ?? '' }}"
                                     style="padding: 5px 10px; font-size: 12px;">
@@ -1465,9 +1531,9 @@
                     Active Incidents &amp; Alerts
                 </div>
             </div>
-            <div style="display: flex; flex-direction: column; gap: 12px;">
-                @forelse($incidents as $inc)
-                <div class="incident-item-row" style="display: flex; align-items: flex-start; gap: 12px; padding: 12px; background: var(--bg-subtle); border-radius: 8px; border-left: 3px solid {{ $inc['severity'] === 'warning' ? 'var(--warning)' : 'var(--primary)' }};">
+            <div style="display: flex; flex-direction: column; gap: 12px;" id="activeIncidentsList">
+                @foreach($incidents as $inc)
+                <div class="incident-item-row" data-incident-id="{{ $inc['id'] }}" style="display: flex; align-items: flex-start; gap: 12px; padding: 12px; background: var(--bg-subtle); border-radius: 8px; border-left: 3px solid {{ $inc['severity'] === 'warning' ? 'var(--warning)' : 'var(--primary)' }};">
                     <div style="flex: 1;">
                         <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 2px;">
                             <span class="incident-id-badge" style="font-family: monospace; font-size: 11px; font-weight: 800; color: #475569;">{{ $inc['id'] }}</span>
@@ -1475,14 +1541,16 @@
                         </div>
                         <div style="font-size: 11px; color: var(--text-subtle);">Target: {{ $inc['company'] }} • {{ $inc['service'] }} • {{ $inc['detected'] }}</div>
                     </div>
-                    <button class="btn-action-secondary" style="padding: 3px 8px; font-size: 11px;">Dismiss</button>
+                    <button type="button"
+                            class="btn-action-secondary dismiss-incident-btn"
+                            data-dismiss-url="{{ route('super-admin.system-health.incidents.dismiss', $inc['id']) }}"
+                            style="padding: 3px 8px; font-size: 11px; flex-shrink: 0;">Dismiss</button>
                 </div>
-                @empty
-                <div style="text-align: center; color: var(--success); font-weight: 700; padding: 20px; font-size: 13px;">
+                @endforeach
+                <div id="noActiveIncidents" style="text-align: center; color: var(--success); font-weight: 700; padding: 20px; font-size: 13px; {{ count($incidents) ? 'display: none;' : '' }}">
                     <i class="fas fa-circle-check" style="font-size: 24px; margin-bottom: 6px; display: block;"></i>
                     No active system incidents reported. All monitored services operating normally.
                 </div>
-                @endforelse
             </div>
         </div>
 
@@ -1531,7 +1599,7 @@
             </p>
 
             <!-- Metrics grid -->
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px;">
+            <div class="drawer-metrics-grid">
                 <div style="background: var(--bg-subtle); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
                     <span style="font-size: 11px; color: var(--text-subtle); font-weight: 700; text-transform: uppercase;">Response Latency</span>
                     <div style="font-size: 20px; font-weight: 800; color: var(--primary);" id="drawerServiceLatency">24 ms</div>
@@ -1619,6 +1687,86 @@
 
 @push('scripts')
 <script>
+// "x sec ago" that keeps ticking between checks; the exact check time stays in the tooltip.
+function healthRelativeTime(iso) {
+    const seconds = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 1000));
+    if (!Number.isFinite(seconds)) return '';
+    if (seconds < 5) return 'Just now';
+    if (seconds < 60) return `${seconds} sec ago`;
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes} min${minutes > 1 ? 's' : ''} ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+    const days = Math.floor(hours / 24);
+    return `${days} day${days > 1 ? 's' : ''} ago`;
+}
+
+function refreshHealthTimes() {
+    document.querySelectorAll('[data-relative-time]').forEach(el => {
+        const text = healthRelativeTime(el.dataset.relativeTime);
+        if (text) el.textContent = text;
+    });
+}
+
+const healthStatusPills = {
+    healthy: '<span class="service-status-pill status-operational"><i class="fas fa-check-circle"></i> Healthy</span>',
+    warning: '<span class="service-status-pill status-degraded"><i class="fas fa-exclamation-triangle"></i> Warning</span>',
+    down: '<span class="service-status-pill status-down"><i class="fas fa-circle-xmark"></i> Down</span>',
+};
+
+// Apply a live check result (POST system-health/check) to the pool header and tenant rows.
+function applyTenantHealth(data) {
+    if (data.pool) {
+        const pool = data.pool;
+        const set = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
+        set('dbPoolActive', pool.active !== null ? `${pool.active} / ${pool.max}` : '—');
+        set('dbPoolLoad', pool.load_pct !== null ? `${pool.load_pct}%` : '—');
+        set('dbPoolPing', pool.ping_ms !== null ? `${pool.ping_ms} ms` : '—');
+    }
+    (data.tenants || []).forEach(t => {
+        const row = document.querySelector(`.tenant-health-row[data-tenant-id="${t.company_id}"]`);
+        if (!row) return;
+        row.dataset.status = t.status;
+        const cell = name => row.querySelector(`[data-health-cell="${name}"]`);
+        const connection = cell('connection');
+        if (connection) {
+            connection.style.color = t.connected ? 'var(--success)' : '#dc2626';
+            connection.title = t.error || '';
+            connection.innerHTML = `<i class="fas ${t.connected ? 'fa-link' : 'fa-link-slash'}"></i> ${t.connection}`;
+        }
+        if (cell('latency')) cell('latency').textContent = t.latency_ms;
+        const storage = cell('storage');
+        if (storage) {
+            storage.textContent = t.storage_pct;
+            storage.title = t.storage_detail || '';
+            storage.style.color = t.status === 'warning' ? '#d97706' : 'var(--text-main)';
+        }
+        if (cell('status')) cell('status').innerHTML = healthStatusPills[t.status] || healthStatusPills.down;
+        const lastCheck = cell('last-check');
+        if (lastCheck) {
+            lastCheck.dataset.relativeTime = t.last_check_iso;
+            lastCheck.title = t.last_check_at;
+            lastCheck.textContent = healthRelativeTime(t.last_check_iso);
+        }
+        const diag = row.querySelector('.run-db-diagnostics-btn');
+        if (diag) {
+            diag.dataset.latency = t.latency_ms;
+            diag.dataset.storage = t.storage_pct;
+            diag.dataset.storageDetail = t.storage_detail || '';
+            diag.dataset.tables = t.tables ?? '';
+            diag.dataset.error = t.error || '';
+            diag.dataset.checked = t.last_check_at;
+            diag.dataset.status = t.status;
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    refreshHealthTimes();
+    setInterval(refreshHealthTimes, 5000);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshHealthTimes(); });
+});
+
 document.addEventListener('DOMContentLoaded', function() {
     // 1. Auto Refresh Engine
     const autoRefreshSelect = document.getElementById('autoRefreshSelect');
@@ -1645,6 +1793,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (data.timestamp) {
                 lastCheckedText.textContent = 'Last checked: ' + data.timestamp;
             }
+            applyTenantHealth(data);
         })
         .catch(err => {
             manualRefreshBtn.disabled = false;
@@ -1663,6 +1812,52 @@ document.addEventListener('DOMContentLoaded', function() {
     autoRefreshSelect.addEventListener('change', setupAutoRefresh);
     manualRefreshBtn.addEventListener('click', triggerCheck);
     setupAutoRefresh();
+
+    // Dismiss Active Incidents (persisted server-side)
+    document.querySelectorAll('.dismiss-incident-btn').forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const row = btn.closest('.incident-item-row');
+            const originalLabel = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = 'Dismissing...';
+
+            fetch(btn.dataset.dismissUrl, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                }
+            })
+            .then(function (response) {
+                if (!response.ok) {
+                    throw new Error('Request failed (' + response.status + ')');
+                }
+                return response.json();
+            })
+            .then(function () {
+                row.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
+                row.style.opacity = '0';
+                row.style.transform = 'translateX(12px)';
+                setTimeout(function () {
+                    row.remove();
+                    if (!document.querySelector('#activeIncidentsList .incident-item-row')) {
+                        const empty = document.getElementById('noActiveIncidents');
+                        if (empty) empty.style.display = '';
+                    }
+                }, 250);
+            })
+            .catch(function () {
+                btn.disabled = false;
+                btn.textContent = originalLabel;
+                alert('Could not dismiss this incident. Please try again.');
+            });
+        });
+    });
 
     // 2. Slide-Over Service Details Drawer
     const drawerOverlay = document.getElementById('serviceDetailsDrawer');
@@ -1820,48 +2015,55 @@ document.addEventListener('DOMContentLoaded', function() {
     const retestDiagBtn = document.getElementById('retestDiagBtn');
     const diagBtns = document.querySelectorAll('.run-db-diagnostics-btn');
 
+    let currentDiagBtn = null;
+    const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+
+    // Real results of the last live check for this tenant (no simulated steps).
+    function renderDiagnostics(btn) {
+        const d = btn.dataset;
+        const statusVal = document.getElementById('diagStatusVal');
+        const statusMap = { healthy: ['var(--success)', '● Healthy'], warning: ['#d97706', '● Warning'], down: ['#dc2626', '● Down'] };
+        const [color, label] = statusMap[d.status] || statusMap.down;
+        statusVal.style.color = color;
+        statusVal.textContent = label;
+        document.getElementById('diagLatencyVal').textContent = d.latency;
+        document.getElementById('diagStorageVal').textContent = d.storage;
+
+        const pass = text => `<strong style="color: #4ade80;">[ ${escapeHtml(text)} ]</strong>`;
+        const fail = text => `<strong style="color: #f87171;">[ ${escapeHtml(text)} ]</strong>`;
+        const warn = text => `<strong style="color: #fbbf24;">[ ${escapeHtml(text)} ]</strong>`;
+        const line = (tag, text, result) => `<div><span style="color: #38bdf8;">${tag}</span> ${escapeHtml(text)} ${result}</div>`;
+        const connected = d.status !== 'down';
+        let html = `<div><span style="color: #64748b;">Checked at ${escapeHtml(d.checked)}</span></div>`;
+        html += line('PING', `Connecting to tenant database (${d.db})...`, connected ? pass(`PASSED - ${d.latency}`) : fail('FAILED'));
+        if (connected) {
+            html += line('SCHEMA', 'Counting tenant tables...', pass(`${d.tables} tables`));
+            html += line('STORAGE', 'Measuring database size...', d.status === 'warning' && d.storage.endsWith('%') && parseInt(d.storage, 10) >= 80
+                ? warn(`HIGH - ${d.storageDetail || d.storage}`) : pass(d.storageDetail || d.storage));
+        } else if (d.error) {
+            html += `<div style="color: #f87171;">${escapeHtml(d.error)}</div>`;
+        }
+        document.getElementById('diagConsoleLog').innerHTML = html;
+    }
+
     diagBtns.forEach(btn => {
         btn.addEventListener('click', function() {
             const name = this.getAttribute('data-name');
-            const code = this.getAttribute('data-code');
-            const db = this.getAttribute('data-db');
-            const latency = this.getAttribute('data-latency');
-            const storage = this.getAttribute('data-storage');
-            const status = this.getAttribute('data-status');
             const logo = this.getAttribute('data-logo');
+            currentDiagBtn = this;
 
             document.getElementById('diagCompanyName').textContent = name;
-            document.getElementById('diagTenantCode').textContent = code;
-            document.getElementById('diagDbName').textContent = db;
-            document.getElementById('diagLatencyVal').textContent = latency;
-            document.getElementById('diagStorageVal').textContent = storage;
+            document.getElementById('diagTenantCode').textContent = this.getAttribute('data-code');
+            document.getElementById('diagDbName').textContent = this.getAttribute('data-db');
 
             const logoBox = document.getElementById('diagLogoBox');
             if (logo && logo.trim() !== '') {
-                logoBox.innerHTML = `<img src="${logo}" alt="${name}" style="width: 100%; height: 100%; object-fit: cover;" />`;
+                logoBox.innerHTML = `<img src="${escapeHtml(logo)}" alt="${escapeHtml(name)}" style="width: 100%; height: 100%; object-fit: cover;" />`;
             } else {
-                logoBox.innerHTML = name.substring(0, 2).toUpperCase();
+                logoBox.textContent = name.substring(0, 2).toUpperCase();
             }
 
-            const statusVal = document.getElementById('diagStatusVal');
-            if (status === 'healthy') {
-                statusVal.style.color = 'var(--success)';
-                statusVal.textContent = '● Healthy';
-            } else {
-                statusVal.style.color = '#d97706';
-                statusVal.textContent = '● Warning';
-            }
-
-            // Simulate diagnostic execution console output
-            const consoleLog = document.getElementById('diagConsoleLog');
-            consoleLog.innerHTML = `
-                <div><span style="color: #64748b;">[00:00.01]</span> <span style="color: #38bdf8;">PING</span> Connecting to tenant host (${db})... <strong style="color: #4ade80;">[ PASSED - ${latency} ]</strong></div>
-                <div><span style="color: #64748b;">[00:00.04]</span> <span style="color: #38bdf8;">POOL</span> Checking PDO connection pool... <strong style="color: #4ade80;">[ PASSED - Pool OK ]</strong></div>
-                <div><span style="color: #64748b;">[00:00.08]</span> <span style="color: #38bdf8;">SCHEMA</span> Validating tenant table schemas... <strong style="color: #4ade80;">[ PASSED - 48 Tables Validated ]</strong></div>
-                <div><span style="color: #64748b;">[00:00.12]</span> <span style="color: #38bdf8;">INDEX</span> Checking index & query performance... <strong style="color: #4ade80;">[ PASSED - 0 Deadlocks ]</strong></div>
-                <div><span style="color: #64748b;">[00:00.15]</span> <span style="color: #38bdf8;">STORAGE</span> Verifying storage quota (${storage})... <strong style="color: #4ade80;">[ PASSED - Normal ]</strong></div>
-            `;
-
+            renderDiagnostics(this);
             tenantDiagModal.classList.add('open');
         });
     });
@@ -1889,16 +2091,21 @@ document.addEventListener('DOMContentLoaded', function() {
     if (retestDiagBtn) {
         retestDiagBtn.addEventListener('click', function() {
             const consoleLog = document.getElementById('diagConsoleLog');
-            consoleLog.innerHTML = `<div><span style="color: #eab308;"><i class="fas fa-spinner fa-spin"></i> Running diagnostic test suite...</span></div>`;
-            setTimeout(() => {
-                consoleLog.innerHTML = `
-                    <div><span style="color: #64748b;">[00:00.01]</span> <span style="color: #38bdf8;">PING</span> Re-pinging tenant database host... <strong style="color: #4ade80;">[ PASSED ]</strong></div>
-                    <div><span style="color: #64748b;">[00:00.04]</span> <span style="color: #38bdf8;">POOL</span> Re-checking connection pool load... <strong style="color: #4ade80;">[ PASSED - Pool OK ]</strong></div>
-                    <div><span style="color: #64748b;">[00:00.08]</span> <span style="color: #38bdf8;">SCHEMA</span> Re-checking table schemas... <strong style="color: #4ade80;">[ PASSED - 48 Tables Validated ]</strong></div>
-                    <div><span style="color: #64748b;">[00:00.12]</span> <span style="color: #38bdf8;">INDEX</span> Re-verifying indexes & query plan... <strong style="color: #4ade80;">[ PASSED - 0 Deadlocks ]</strong></div>
-                    <div><span style="color: #64748b;">[00:00.15]</span> <span style="color: #38bdf8;">STORAGE</span> Re-verifying storage logs... <strong style="color: #4ade80;">[ PASSED - Capacity OK ]</strong></div>
-                `;
-            }, 600);
+            consoleLog.innerHTML = `<div><span style="color: #eab308;"><i class="fas fa-spinner fa-spin"></i> Running live database check...</span></div>`;
+            retestDiagBtn.disabled = true;
+            fetch("{{ route('super-admin.system-health.check') }}", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' }
+            })
+            .then(res => res.json())
+            .then(data => {
+                applyTenantHealth(data);
+                if (currentDiagBtn) renderDiagnostics(currentDiagBtn);
+            })
+            .catch(err => {
+                consoleLog.innerHTML = `<div style="color: #f87171;">Check failed: ${escapeHtml(err.message)}</div>`;
+            })
+            .finally(() => { retestDiagBtn.disabled = false; });
         });
     }
 });

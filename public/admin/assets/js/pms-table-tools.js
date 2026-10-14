@@ -32,6 +32,8 @@
 
   function isEligible(table) {
     if (!table || table.tagName !== 'TABLE') return false;
+    // FullCalendar tables are layout grids, not selectable/exportable records.
+    if (table.closest('.fc')) return false;
     if (table.matches('[data-pms-export="off"], [role="presentation"]')) return false;
     if (table.closest('[data-pms-export="off"]')) return false;
     if (!table.tHead || !table.tBodies.length) return false;
@@ -158,6 +160,55 @@
     label.addEventListener('click', function (event) { event.stopPropagation(); });
   }
 
+  function placeToolbar(controller, toolbar) {
+    var table = controller.table;
+    var hostId = table.getAttribute('data-pms-toolbar-host');
+    var host = hostId ? document.getElementById(hostId) : null;
+    if (host && (host.compareDocumentPosition(table) & 4)) {
+      if (!host.contains(toolbar)) host.appendChild(toolbar);
+      return;
+    }
+
+    // Use the nearest header belonging to this table, never a page header or another table's header.
+    var container = table.parentElement;
+    while (container && container !== document.body) {
+      var tables = container.querySelectorAll('table');
+      if (tables.length > 1) break;
+      var header = container.querySelector('.table-header, .card-header, [data-pms-table-header]');
+      if (header && !header.closest('table') &&
+          (header.compareDocumentPosition(table) & 4)) {
+        var headerHost = host || header.querySelector('.pms-table-header-tools');
+        if (!headerHost) {
+          headerHost = document.createElement('div');
+          headerHost.className = 'pms-table-header-tools';
+          headerHost.setAttribute('data-live-preserve', '');
+          header.appendChild(headerHost);
+        }
+        if (headerHost.parentNode !== header) {
+          headerHost.classList.add('pms-table-header-tools');
+          header.appendChild(headerHost);
+        }
+        header.classList.add('pms-table-header-with-tools');
+        if (!headerHost.contains(toolbar)) headerHost.appendChild(toolbar);
+        return;
+      }
+      if (container.matches('.content-wrapper, main, body')) break;
+      container = container.parentElement;
+    }
+
+    // Tables without a title header get a toolbar immediately above their scroll area.
+    var anchor = table.closest('.dataTables_wrapper') || controller.scrollHost || table;
+    if (anchor.querySelectorAll('table').length > 1) anchor = table;
+    if (host && anchor.parentNode) {
+      if (host.parentNode !== anchor.parentNode || host.nextElementSibling !== anchor) anchor.parentNode.insertBefore(host, anchor);
+      if (!host.contains(toolbar)) host.appendChild(toolbar);
+      return;
+    }
+    if (anchor.parentNode && (toolbar.parentNode !== anchor.parentNode || toolbar.nextElementSibling !== anchor)) {
+      anchor.parentNode.insertBefore(toolbar, anchor);
+    }
+  }
+
   function createToolbar(controller) {
     var toolbar = document.createElement('div');
     toolbar.className = 'pms-table-tools';
@@ -168,7 +219,7 @@
         '<button class="pms-table-export__toggle" type="button" aria-haspopup="menu" aria-expanded="false">' +
           icon('download') + '<span>Export</span>' + icon('chevron') +
         '</button>' +
-        '<div class="pms-table-export__menu" role="menu">' +
+        '<div class="pms-table-export__menu" role="menu" popover="manual">' +
           '<button class="pms-table-export__option" type="button" role="menuitem" data-export-scope="all">' + icon('rows') + '<span>Export all</span></button>' +
           '<button class="pms-table-export__option" type="button" role="menuitem" data-export-scope="selected">' + icon('download') + '<span>Export selected</span></button>' +
         '</div>' +
@@ -189,10 +240,7 @@
     }
 
     ensureTableScrolling(controller);
-    var dataTableWrapper = controller.table.closest('.dataTables_wrapper');
-    var anchor = dataTableWrapper || controller.scrollHost || controller.table.closest('.table-responsive, .gantt-matrix-wrapper, .table-wrapper') || controller.table;
-    var parent = anchor.parentNode;
-    if (parent) parent.insertBefore(toolbar, anchor);
+    placeToolbar(controller, toolbar);
     controller.toolbar = toolbar;
   }
 
@@ -270,6 +318,13 @@
 
     if (controller.selectAll) {
       controller.selectAll.disabled = rows.length === 0;
+      // Explain the disabled state instead of looking like a broken checkbox.
+      var selectAllLabel = rows.length === 0 ? 'No rows to select yet' : 'Select all rows';
+      controller.selectAll.title = selectAllLabel;
+      controller.selectAll.setAttribute('aria-label', selectAllLabel);
+      if (controller.selectAll.parentElement && controller.selectAll.parentElement.classList.contains('pms-table-select')) {
+        controller.selectAll.parentElement.title = selectAllLabel;
+      }
       controller.selectAll.checked = rows.length > 0 && selected.length === rows.length;
       controller.selectAll.indeterminate = selected.length > 0 && selected.length < rows.length;
     }
@@ -425,6 +480,8 @@
     var exportBox = controller.toolbar.querySelector('.pms-table-export');
     var toggle = controller.toolbar.querySelector('.pms-table-export__toggle');
     if (exportBox) exportBox.classList.remove('is-open');
+    var menu = controller.toolbar.querySelector('.pms-table-export__menu');
+    if (menu && typeof menu.hidePopover === 'function' && menu.matches(':popover-open')) menu.hidePopover();
     if (toggle) toggle.setAttribute('aria-expanded', 'false');
   }
 
@@ -447,19 +504,21 @@
       if (!input || input.getAttribute('data-pms-table') !== controller.id) return;
 
       if (input.getAttribute('data-pms-select') === 'all') {
+        // Row change handlers update the header state; preserve the user's intent.
+        var selectAllChecked = input.checked;
         dataRows(controller.table).forEach(function (row) {
           var rowCheckbox = row.querySelector('[data-pms-select="row"][data-pms-table="' + controller.id + '"]') ||
                             (row.cells[0] ? row.cells[0].querySelector('input[type="checkbox"]') : null);
           if (rowCheckbox) {
-            var stateChanged = (rowCheckbox.checked !== input.checked);
-            rowCheckbox.checked = input.checked;
+            var stateChanged = (rowCheckbox.checked !== selectAllChecked);
+            rowCheckbox.checked = selectAllChecked;
             if (stateChanged) {
               rowCheckbox.dispatchEvent(new Event('change', { bubbles: true }));
             }
           }
-          if (input.checked) controller.selectedRows.add(row);
+          if (selectAllChecked) controller.selectedRows.add(row);
           else controller.selectedRows.delete(row);
-          row.classList.toggle('pms-row-selected', input.checked);
+          row.classList.toggle('pms-row-selected', selectAllChecked);
         });
       } else {
         var selectedRow = input.closest('tr');
@@ -479,11 +538,31 @@
         var isOpen = !exportBox.classList.contains('is-open');
         document.querySelectorAll('.pms-table-export.is-open').forEach(function (openMenu) {
           openMenu.classList.remove('is-open');
+          var popup = openMenu.querySelector('.pms-table-export__menu');
+          if (popup && typeof popup.hidePopover === 'function' && popup.matches(':popover-open')) popup.hidePopover();
           var openToggle = openMenu.querySelector('.pms-table-export__toggle');
           if (openToggle) openToggle.setAttribute('aria-expanded', 'false');
         });
         exportBox.classList.toggle('is-open', isOpen);
+        var toggleRect = toggle.getBoundingClientRect();
+        exportBox.classList.toggle('opens-up', window.innerHeight - toggleRect.bottom < 140 && toggleRect.top > 140);
         toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        var popupMenu = exportBox.querySelector('.pms-table-export__menu');
+        if (isOpen && popupMenu) {
+          // Native popovers render above overflow and stacking contexts while retaining event handlers.
+          if (typeof popupMenu.showPopover === 'function') popupMenu.showPopover();
+          popupMenu.style.setProperty('position', 'fixed', 'important');
+          popupMenu.style.setProperty('margin', '0', 'important');
+          popupMenu.style.setProperty('right', 'auto', 'important');
+          popupMenu.style.setProperty('bottom', 'auto', 'important');
+          popupMenu.style.setProperty('max-width', 'calc(100vw - 16px)', 'important');
+          var popupBounds = popupMenu.getBoundingClientRect();
+          var popupLeft = Math.max(8, Math.min(toggleRect.right - popupBounds.width, window.innerWidth - popupBounds.width - 8));
+          var popupTop = toggleRect.bottom + 8;
+          if (popupTop + popupBounds.height > window.innerHeight - 8) popupTop = toggleRect.top - popupBounds.height - 8;
+          popupMenu.style.setProperty('left', popupLeft + 'px', 'important');
+          popupMenu.style.setProperty('top', Math.max(8, popupTop) + 'px', 'important');
+        }
         var isDarkClick = isDarkMode();
         if (isDarkClick) {
           var tSpan = toggle.querySelector('span');
@@ -528,7 +607,12 @@
   }
 
   function enhance(table) {
-    if (!isEligible(table) || controllers.has(table)) return;
+    if (!isEligible(table)) return;
+    if (controllers.has(table)) {
+      var existing = controllers.get(table);
+      placeToolbar(existing, existing.toolbar);
+      return;
+    }
     controllerNumber += 1;
     var controller = {
       id: 'pms-table-' + controllerNumber,
@@ -617,6 +701,12 @@
         scanQueued = false;
         pendingScanRoots.forEach(function (root) { scan(root); });
         pendingScanRoots.clear();
+        // Live DOM reconciliation and DataTables can move preserved toolbars.
+        // Repair existing controls too, retaining their selection state and handlers.
+        controllerList.forEach(function (controller) {
+          if (controller.table.isConnected) placeToolbar(controller, controller.toolbar);
+          else if (controller.toolbar && controller.toolbar.isConnected) controller.toolbar.remove();
+        });
       });
     }
 
@@ -649,6 +739,8 @@
       if (event.target.closest('.pms-table-export')) return;
       document.querySelectorAll('.pms-table-export.is-open').forEach(function (menu) {
         menu.classList.remove('is-open');
+        var popup = menu.querySelector('.pms-table-export__menu');
+        if (popup && typeof popup.hidePopover === 'function' && popup.matches(':popover-open')) popup.hidePopover();
         var toggle = menu.querySelector('.pms-table-export__toggle');
         if (toggle) toggle.setAttribute('aria-expanded', 'false');
       });
@@ -658,6 +750,8 @@
       if (event.key !== 'Escape') return;
       document.querySelectorAll('.pms-table-export.is-open').forEach(function (menu) {
         menu.classList.remove('is-open');
+        var popup = menu.querySelector('.pms-table-export__menu');
+        if (popup && typeof popup.hidePopover === 'function' && popup.matches(':popover-open')) popup.hidePopover();
         var toggle = menu.querySelector('.pms-table-export__toggle');
         if (toggle) {
           toggle.setAttribute('aria-expanded', 'false');

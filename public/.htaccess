@@ -21,6 +21,9 @@
 </IfModule>
 
 <IfModule mod_headers.c>
+    <FilesMatch "^(sw\.js|manifest\.json|pwa-register\.js|offline\.html)$">
+        Header set Cache-Control "no-cache, must-revalidate"
+    </FilesMatch>
     <FilesMatch "^logo\.png$">
         Header set Cache-Control "no-cache, no-store, must-revalidate"
         Header set Pragma "no-cache"

@@ -158,6 +158,51 @@
     .archive-restore-btn { background: #EEF2FF; color: #2F6BFF; border: 1px solid #C7D2FE; }
     .archive-empty { text-align: center; padding: 50px 20px; color: #667085; } .archive-empty i { font-size: 4rem; color: #C7D2FE; margin-bottom: 14px; }
     .archive-pagination { display: flex; justify-content: space-between; align-items: center; gap: 14px; margin-top: 18px; color: #667085; font-weight: 700; }
+    :is([data-pms-theme="dark"], [data-bs-theme="dark"], [data-theme="dark"], .dark, .dark-mode) .holiday-archive-page {
+        --ha-surface: #10162f;
+        --ha-control: #171f3e;
+        --ha-text: #eef2ff;
+        --ha-muted: #a7b3cd;
+        --ha-border: #2c385a;
+        background: #080d1c !important;
+        color: var(--ha-text) !important;
+        color-scheme: dark;
+    }
+    :is([data-pms-theme="dark"], [data-bs-theme="dark"], [data-theme="dark"], .dark, .dark-mode) .holiday-archive-page :is(.archive-header, .archive-card, .archive-stat) {
+        background: var(--ha-surface) !important;
+        border-color: var(--ha-border) !important;
+        box-shadow: 0 12px 30px #00000020 !important;
+    }
+    :is([data-pms-theme="dark"], [data-bs-theme="dark"], [data-theme="dark"], .dark, .dark-mode) .holiday-archive-page :is(h1, h3, h5, strong, .archive-reason, td) {
+        color: var(--ha-text) !important;
+        -webkit-text-fill-color: currentColor !important;
+    }
+    :is([data-pms-theme="dark"], [data-bs-theme="dark"], [data-theme="dark"], .dark, .dark-mode) .holiday-archive-page :is(p, small, .archive-empty, .archive-pagination) {
+        color: var(--ha-muted) !important;
+        -webkit-text-fill-color: currentColor !important;
+    }
+    :is([data-pms-theme="dark"], [data-bs-theme="dark"], [data-theme="dark"], .dark, .dark-mode) .holiday-archive-page :is(.archive-back-btn, .archive-total, .archive-stat > span, .archive-day, .archive-type, .archive-restore-btn, .archive-search a, .archive-table th) {
+        background: var(--ha-control) !important;
+        border-color: var(--ha-border) !important;
+        color: #93c5fd !important;
+        -webkit-text-fill-color: currentColor !important;
+    }
+    :is([data-pms-theme="dark"], [data-bs-theme="dark"], [data-theme="dark"], .dark, .dark-mode) .holiday-archive-page .archive-search :is(input, select) {
+        background: var(--ha-control) !important;
+        border-color: var(--ha-border) !important;
+        color: var(--ha-text) !important;
+        -webkit-text-fill-color: currentColor !important;
+    }
+    :is([data-pms-theme="dark"], [data-bs-theme="dark"], [data-theme="dark"], .dark, .dark-mode) .holiday-archive-page .archive-search input::placeholder { color: var(--ha-muted) !important; }
+    :is([data-pms-theme="dark"], [data-bs-theme="dark"], [data-theme="dark"], .dark, .dark-mode) .holiday-archive-page .archive-table td { border-color: var(--ha-border) !important; }
+    :is([data-pms-theme="dark"], [data-bs-theme="dark"], [data-theme="dark"], .dark, .dark-mode) .holiday-archive-page .archive-table tbody tr:hover { background: var(--ha-control) !important; }
+    :is([data-pms-theme="dark"], [data-bs-theme="dark"], [data-theme="dark"], .dark, .dark-mode) .holiday-archive-page :is(i, i::before) {
+        background: transparent !important;
+        color: inherit !important;
+        -webkit-text-fill-color: currentColor !important;
+        filter: none !important;
+        box-shadow: none !important;
+    }
     @keyframes archiveRise { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
     @media (max-width: 992px) { .archive-stats { grid-template-columns: repeat(2, minmax(0,1fr)); } .archive-header, .archive-card-head { flex-direction: column; } }
     @media (max-width: 576px) { .holiday-archive-page { padding: 16px; } .archive-stats { grid-template-columns: 1fr; } .archive-title { flex-direction: column; align-items: flex-start; } }

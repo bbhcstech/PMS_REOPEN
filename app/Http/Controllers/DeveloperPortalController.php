@@ -38,6 +38,8 @@ class DeveloperPortalController extends Controller
         if (! $dev) {
             return [];
         }
+        // Bring Super Admin (platform) assignments into the workspace this developer signed in to.
+        \App\Services\DeveloperTaskSync::pull($dev);
 
         $emails = array_filter([
             strtolower(trim((string) ($dev->email ?? ''))),
@@ -46,8 +48,8 @@ class DeveloperPortalController extends Controller
 
         $ids = User::whereIn('id', [$dev->id])
             ->when(! empty($emails), function ($q) use ($emails) {
-                $q->orWhereIn('email', $emails)
-                  ->orWhereIn('personal_email', $emails);
+                $q->orWhereIn('email', $emails);
+                if (Schema::hasColumn('users', 'personal_email')) $q->orWhereIn('personal_email', $emails);
             })
             ->pluck('id')
             ->toArray();
@@ -61,14 +63,17 @@ class DeveloperPortalController extends Controller
      */
     private function applyDeveloperTaskScope($query, array $devUserIds)
     {
-        return $query->where(function ($q) {
+        if (Schema::hasColumn('tasks', 'deleted_at')) $query->where(function ($q) {
                 $q->whereNull('tasks.deleted_at')
                   ->orWhere('tasks.deleted_at', '=', '0000-00-00 00:00:00');
-            })
-            ->where(function ($q) use ($devUserIds) {
-                $q->whereIn('tasks.assigned_to', $devUserIds);
-                foreach ($devUserIds as $devId) {
-                    $q->orWhereRaw("FIND_IN_SET(?, tasks.assigned_to)", [(string)$devId]);
+            });
+        return $query->where(function ($q) use ($devUserIds) {
+                $q->whereRaw('1 = 0');
+                if (Schema::hasColumn('tasks', 'assigned_to')) {
+                    $q->orWhereIn('tasks.assigned_to', $devUserIds);
+                    if (DB::connection()->getDriverName() === 'mysql') foreach ($devUserIds as $devId) {
+                        $q->orWhereRaw("FIND_IN_SET(?, tasks.assigned_to)", [(string)$devId]);
+                    }
                 }
                 if (Schema::hasTable('assigned_task_user')) {
                     $q->orWhereExists(function ($sub) use ($devUserIds) {
@@ -81,9 +86,30 @@ class DeveloperPortalController extends Controller
             });
     }
 
-    /**
-     * Helper to log activity to central super_admin_activity_logs or audit table
-     */
+    /** Optional tenant metadata must not prevent developer task pages from loading. */
+    private function developerTasksQuery()
+    {
+        $query = DB::table('tasks')->select('tasks.*');
+        foreach (['companies' => 'company', 'projects' => 'project'] as $table => $prefix) {
+            $nameColumn = $this->taskMetadataNameColumn($table);
+            if (Schema::hasColumn('tasks', $prefix.'_id') && $nameColumn) {
+                $query->leftJoin($table, 'tasks.'.$prefix.'_id', '=', $table.'.id')
+                    ->addSelect($table.'.'.$nameColumn.' as '.$prefix.'_name');
+            } else {
+                $query->selectRaw('NULL as '.$prefix.'_name');
+            }
+        }
+        return $query;
+    }
+
+    private function taskMetadataNameColumn(string $table): ?string
+    {
+        if (Schema::hasColumn($table, 'name')) return 'name';
+        if ($table === 'companies' && Schema::hasColumn($table, 'company_name')) return 'company_name';
+        return null;
+    }
+
+    /** Log developer activity in the central audit database. */
     private function logDevActivity(string $action, string $description, ?array $details = null): void
     {
         $user = Auth::user();
@@ -119,12 +145,12 @@ class DeveloperPortalController extends Controller
         $empDetail = Schema::hasTable('employee_details') ? DB::table('employee_details')->whereIn('user_id', $devUserIds)->first() : null;
 
         // Real Tasks Query for Logged-In Developer
-        $tasksQuery = DB::table('tasks')
-            ->leftJoin('companies', 'tasks.company_id', '=', 'companies.id')
-            ->leftJoin('projects', 'tasks.project_id', '=', 'projects.id')
-            ->select('tasks.*', 'companies.name as company_name', 'projects.name as project_name');
-        $this->applyDeveloperTaskScope($tasksQuery, $devUserIds);
-        $allDevTasks = $tasksQuery->latest('tasks.created_at')->get();
+        $allDevTasks = collect();
+        if (Schema::hasTable('tasks')) {
+            $tasksQuery = $this->developerTasksQuery();
+            $this->applyDeveloperTaskScope($tasksQuery, $devUserIds);
+            $allDevTasks = $tasksQuery->latest('tasks.id')->get();
+        }
 
         $activeTasks = $allDevTasks->where('status', '!=', 'completed')->where('status', '!=', 'cancelled');
         $completedTasks = $allDevTasks->where('status', 'completed');
@@ -157,11 +183,7 @@ class DeveloperPortalController extends Controller
         $recentContributions = $completedTasks->take(5);
 
         // Developer Notifications / System Alerts
-        $notifQuery = DB::table('tasks');
-        $this->applyDeveloperTaskScope($notifQuery, $devUserIds);
-        $notifications = $notifQuery->latest('tasks.updated_at')
-            ->take(5)
-            ->get();
+        $notifications = $allDevTasks->sortByDesc(fn ($task) => $task->updated_at ?? $task->created_at)->take(5);
 
         return view('developer.dashboard', compact(
             'dev',
@@ -186,16 +208,9 @@ class DeveloperPortalController extends Controller
         $priorityFilter = $request->input('priority', 'all');
         $search = trim((string) $request->input('search', ''));
 
-        $query = DB::table('tasks')
-            ->leftJoin('companies', 'tasks.company_id', '=', 'companies.id')
-            ->leftJoin('projects', 'tasks.project_id', '=', 'projects.id')
+        $query = $this->developerTasksQuery()
             ->leftJoin('users as assigner', 'tasks.created_by', '=', 'assigner.id')
-            ->select(
-                'tasks.*',
-                'companies.name as company_name',
-                'projects.name as project_name',
-                'assigner.name as assigner_name'
-            );
+            ->addSelect('assigner.name as assigner_name');
         $this->applyDeveloperTaskScope($query, $devUserIds);
 
         if ($statusFilter !== 'all') {
@@ -209,9 +224,13 @@ class DeveloperPortalController extends Controller
         if ($search !== '') {
             $query->where(function ($q) use ($search) {
                 $q->where('tasks.title', 'like', "%{$search}%")
-                    ->orWhere('tasks.description', 'like', "%{$search}%")
-                    ->orWhere('companies.name', 'like', "%{$search}%")
-                    ->orWhere('projects.name', 'like', "%{$search}%");
+                    ->orWhere('tasks.description', 'like', "%{$search}%");
+                foreach (['companies' => 'company', 'projects' => 'project'] as $table => $prefix) {
+                    $column = $this->taskMetadataNameColumn($table);
+                    if ($column && Schema::hasColumn('tasks', $prefix.'_id')) {
+                        $q->orWhere($table.'.'.$column, 'like', "%{$search}%");
+                    }
+                }
             });
         }
 
@@ -228,10 +247,7 @@ class DeveloperPortalController extends Controller
         $dev = $this->getDevUser();
         $devUserIds = $this->getDevUserIds();
 
-        $allTasksQuery = DB::table('tasks')
-            ->leftJoin('companies', 'tasks.company_id', '=', 'companies.id')
-            ->leftJoin('projects', 'tasks.project_id', '=', 'projects.id')
-            ->select('tasks.*', 'companies.name as company_name', 'projects.name as project_name');
+        $allTasksQuery = $this->developerTasksQuery();
         $this->applyDeveloperTaskScope($allTasksQuery, $devUserIds);
         $allTasks = $allTasksQuery->get();
 
@@ -266,10 +282,7 @@ class DeveloperPortalController extends Controller
         ];
 
         // Chronological Completed Work History
-        $historyQuery = DB::table('tasks')
-            ->leftJoin('companies', 'tasks.company_id', '=', 'companies.id')
-            ->leftJoin('projects', 'tasks.project_id', '=', 'projects.id')
-            ->select('tasks.*', 'companies.name as company_name', 'projects.name as project_name')
+        $historyQuery = $this->developerTasksQuery()
             ->where('tasks.status', 'completed');
         $this->applyDeveloperTaskScope($historyQuery, $devUserIds);
         $contributionHistory = $historyQuery->latest('tasks.updated_at')
@@ -286,10 +299,7 @@ class DeveloperPortalController extends Controller
         $dev = $this->getDevUser();
         $devUserIds = $this->getDevUserIds();
 
-        $tasksQuery = DB::table('tasks')
-            ->leftJoin('companies', 'tasks.company_id', '=', 'companies.id')
-            ->leftJoin('projects', 'tasks.project_id', '=', 'projects.id')
-            ->select('tasks.*', 'companies.name as company_name', 'projects.name as project_name')
+        $tasksQuery = $this->developerTasksQuery()
             ->where('tasks.status', '!=', 'completed')
             ->where('tasks.status', '!=', 'cancelled');
         $this->applyDeveloperTaskScope($tasksQuery, $devUserIds);
@@ -327,10 +337,7 @@ class DeveloperPortalController extends Controller
         $dev = $this->getDevUser();
         $devUserIds = $this->getDevUserIds();
 
-        $query = DB::table('tasks')
-            ->leftJoin('companies', 'tasks.company_id', '=', 'companies.id')
-            ->leftJoin('projects', 'tasks.project_id', '=', 'projects.id')
-            ->select('tasks.*', 'companies.name as company_name', 'projects.name as project_name');
+        $query = $this->developerTasksQuery();
         $this->applyDeveloperTaskScope($query, $devUserIds);
 
         $notifications = $query->latest('tasks.updated_at')
@@ -364,7 +371,7 @@ class DeveloperPortalController extends Controller
         // Calculate average completion time in days
         $completionDays = [];
         foreach ($completedTasks as $ct) {
-            if ($ct->completed_on && $ct->created_at) {
+            if (!empty($ct->completed_on) && !empty($ct->created_at)) {
                 $days = Carbon::parse($ct->created_at)->diffInDays(Carbon::parse($ct->completed_on));
                 $completionDays[] = max(1, $days);
             }
@@ -380,12 +387,9 @@ class DeveloperPortalController extends Controller
             'avg_completion_time' => $avgCompletionTime,
         ];
 
-        $recentTasks = DB::table('tasks')
-            ->leftJoin('companies', 'tasks.company_id', '=', 'companies.id')
-            ->leftJoin('projects', 'tasks.project_id', '=', 'projects.id')
-            ->select('tasks.*', 'companies.name as company_name', 'projects.name as project_name')
-            ->whereIn('tasks.assigned_to', $devUserIds)
-            ->whereNull('tasks.deleted_at')
+        $recentTasksQuery = $this->developerTasksQuery();
+        $this->applyDeveloperTaskScope($recentTasksQuery, $devUserIds);
+        $recentTasks = $recentTasksQuery
             ->latest('tasks.updated_at')
             ->take(6)
             ->get();
@@ -506,7 +510,7 @@ class DeveloperPortalController extends Controller
 
         $data = $request->validate([
             'current_password' => ['required', 'string'],
-            'new_password' => ['required', 'string', 'min:8', 'confirmed'],
+            'new_password' => ['required', 'string', \Illuminate\Validation\Rules\Password::min(8)->mixedCase()->numbers()->symbols(), 'confirmed'],
         ]);
 
         if (! Hash::check($data['current_password'], $dev->password)) {
@@ -572,6 +576,7 @@ class DeveloperPortalController extends Controller
 
         // Update default database tasks record
         DB::table('tasks')->where('id', $id)->update($updateData);
+        \App\Services\DeveloperTaskSync::push($task, $updateData);
 
         // Also sync update to tenant database if company has a dedicated db_name
         if (!empty($task->company_id)) {
@@ -685,16 +690,9 @@ class DeveloperPortalController extends Controller
         $dev = $this->getDevUser();
         $devUserIds = $this->getDevUserIds();
 
-        $taskQuery = DB::table('tasks')
-            ->leftJoin('companies', 'tasks.company_id', '=', 'companies.id')
-            ->leftJoin('projects', 'tasks.project_id', '=', 'projects.id')
+        $taskQuery = $this->developerTasksQuery()
             ->leftJoin('users as assigner', 'tasks.created_by', '=', 'assigner.id')
-            ->select(
-                'tasks.*',
-                'companies.name as company_name',
-                'projects.name as project_name',
-                'assigner.name as assigner_name'
-            )
+            ->addSelect('assigner.name as assigner_name')
             ->where('tasks.id', $id);
         $this->applyDeveloperTaskScope($taskQuery, $devUserIds);
         $task = $taskQuery->first();
