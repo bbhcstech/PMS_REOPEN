@@ -523,7 +523,16 @@ class SuperAdminController extends Controller
             'admin_email' => $admin->email,
         ];
 
-        $admin->delete();
+        try {
+            $admin->delete();
+        } catch (\Illuminate\Database\QueryException $e) {
+            // Retain attribution on leads and other business records referencing this account.
+            if (!in_array((string) $e->getCode(), ['23000', '23503'], true)
+                || !str_contains(strtolower($e->getMessage()), 'foreign key')) throw $e;
+            $admin->update(['archived_at' => now(), 'login_allowed' => false, 'is_active' => false]);
+            $this->logAction('company_admin.archived', $company, $details + ['reason' => 'referenced_business_records']);
+            return back()->with('success', 'This admin is referenced by existing business records. The account has been archived and login disabled; its records are preserved.');
+        }
         $this->logAction('company_admin.deleted', $company, $details);
 
         return back()->with('success', 'Company admin deleted successfully.');

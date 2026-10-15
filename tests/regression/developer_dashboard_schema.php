@@ -7,6 +7,12 @@ $view=$controller->dashboard();
 app('view')->share('errors',new Illuminate\Support\ViewErrorBag);
 if(!str_contains($view->render(),'Dashboard Overview'))throw new RuntimeException('Dashboard HTML render failed');
 if($view->getData()['kpis']['total_assigned']<1)throw new RuntimeException('Assigned tasks missing');
+// Production login rendered this dashboard against an attendance table without timezone columns.
+Schema::create('attendances',function($t){$t->id();$t->integer('user_id');$t->date('date');$t->string('clock_in')->nullable();$t->string('clock_out')->nullable();});
+DB::table('attendances')->insert(['user_id'=>1,'date'=>now()->toDateString(),'clock_in'=>'09:00:00']);
+$attendance=App\Services\WorkforceAccess::currentAttendance($developer);
+if(!$attendance||$attendance->user_id!==1)throw new RuntimeException('Legacy attendance lookup lost the current developer shift');
+if(!str_contains($controller->dashboard()->render(),'Dashboard Overview'))throw new RuntimeException('Legacy attendance schema breaks actual developer dashboard rendering');
 Schema::table('users',fn($t)=>$t->dropColumn('personal_email'));
 Schema::table('tasks',fn($t)=>$t->dropColumn('deleted_at'));
 $view=$controller->dashboard();
