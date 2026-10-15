@@ -53,3 +53,39 @@ checkSave(Attendance::count() === 31, 'Date range did not save both dates.');
 $response = saveAttendance(['date' => '2024-03-03']);
 checkSave($response->getStatusCode() === 200 && Attendance::count() === 32, 'Single date save failed.');
 echo "Attendance save, validation, leap month, date range, notification and overwrite checks passed.\n";
+
+foreach (['10/15/2026-10/16/2026', ' 10/15/2026  -  10/16/2026 ', "10/15/2026\t-\t10/16/2026", '10/15/2026 - 10/15/2026'] as $range) {
+    saveAttendance(['mark_attendance_by' => 'date', 'date_range' => $range]);
+    checkSave(Attendance::where('user_id', 2)->whereDate('date', '>=', '2026-10-15')->whereDate('date', '<=', '2026-10-16')->count() === 2, 'Valid typed range failed or duplicated dates.');
+}
+$beforeInvalid = Attendance::count();
+foreach (['02/29/2025-03/01/2025', '10/16/2026-10/15/2026', '10/15/2026-', '10/15/2026-10/16/2026-extra', '2026-10-15-2026-10-16'] as $range) {
+    try { saveAttendance(['mark_attendance_by' => 'date', 'date_range' => $range]); throw new RuntimeException('Malformed or impossible range accepted.'); }
+    catch (ValidationException $e) {}
+}
+checkSave(Attendance::count() === $beforeInvalid, 'Rejected ranges wrote attendance.');
+DB::table('users')->insert([
+    ['id' => 3, 'company_id' => 1, 'name' => 'HR', 'role' => 'hr', 'is_active' => true],
+    ['id' => 4, 'company_id' => 2, 'name' => 'Other company employee', 'role' => 'employee', 'is_active' => true],
+]);
+saveAttendance(['user_id' => 3, 'mark_attendance_by' => 'date', 'date_range' => '10/15/2026-10/16/2026']);
+checkSave(Attendance::where('user_id', 3)->count() === 2, 'Company admin could not manage HR attendance.');
+$beforeRejected = Attendance::count();
+try {
+    saveAttendance(['user_id' => [2, 4], 'date' => '2026-10-17']);
+    throw new RuntimeException('Mixed-company bulk request accepted.');
+} catch (\Symfony\Component\HttpKernel\Exception\HttpException $e) {
+    checkSave($e->getStatusCode() === 403, 'Wrong company boundary rejection.');
+}
+checkSave(Attendance::count() === $beforeRejected, 'Mixed-company request partially wrote attendance.');
+Auth::guard('web')->setUser(User::findOrFail(3));
+foreach ([3, [3], [2, 3]] as $ids) {
+    try {
+        saveAttendance(['user_id' => $ids, 'date' => '2026-10-17', 'overwrite_attendance' => 'yes']);
+        throw new RuntimeException('HR own manual attendance accepted.');
+    } catch (\Symfony\Component\HttpKernel\Exception\HttpException $e) {
+        checkSave($e->getStatusCode() === 403, 'Wrong HR self-write rejection.');
+    }
+}
+checkSave(Attendance::count() === $beforeRejected, 'Rejected HR request partially wrote attendance.');
+echo "PASS: compact/spaced date ranges, impossible/reversed dates, admin HR access, HR single/bulk self-write denial and company isolation.\n";

@@ -19,7 +19,7 @@ class SubscriptionCatalogSeeder extends Seeder
             ['name' => 'CRM Deals', 'slug' => 'crm-deals', 'icon' => 'handshake', 'description' => 'Leads, contacts, deal stages, and follow-ups.', 'route_prefix' => 'admin/deals', 'is_core' => false, 'sort_order' => 60],
             ['name' => 'Contracts', 'slug' => 'contracts', 'icon' => 'file-signature', 'description' => 'Contract templates, approvals, and signing.', 'route_prefix' => 'admin/contracts', 'is_core' => false, 'sort_order' => 70],
         ])->map(function ($module) {
-            return Module::updateOrCreate(
+            return Module::firstOrCreate(
                 ['slug' => $module['slug']],
                 $module + ['is_active' => true]
             );
@@ -43,7 +43,9 @@ class SubscriptionCatalogSeeder extends Seeder
                 $planData + ['is_active' => true]
             );
 
-            $plan->modules()->syncWithoutDetaching($modules->whereIn('slug', $moduleSlugs)->pluck('id')->all());
+            if ($plan->wasRecentlyCreated) {
+                $plan->modules()->syncWithoutDetaching($modules->whereIn('slug', $moduleSlugs)->pluck('id')->all());
+            }
         }
     }
 }

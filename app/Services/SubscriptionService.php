@@ -447,37 +447,10 @@ class SubscriptionService
                 'upgraded_at'        => $action === 'PLAN_UPGRADED' ? now() : null,
             ]);
 
-            // Sync plan modules to company_modules in central DB
-            $planSlug = strtolower($plan->slug ?? '');
-            $isPaidTier = in_array($planSlug, ['gold', 'platinum', 'diamond'], true);
-
-            $planModuleIds = DB::connection('central')->table('plan_modules')
-                ->where('plan_id', $plan->id)
-                ->pluck('module_id');
-
-            if ($isPaidTier || $planModuleIds->isEmpty()) {
-                $allModuleIds = DB::connection('central')->table('modules')->pluck('id');
-                if ($isPaidTier && $allModuleIds->isNotEmpty()) {
-                    foreach ($allModuleIds as $mId) {
-                        DB::connection('central')->table('plan_modules')->updateOrInsert(
-                            ['plan_id' => $plan->id, 'module_id' => $mId],
-                            ['updated_at' => now()]
-                        );
-                    }
-                }
-                $targetModuleIds = $allModuleIds;
-            } else {
-                $targetModuleIds = $planModuleIds;
-            }
-
-            if ($targetModuleIds->isNotEmpty()) {
-                foreach ($targetModuleIds as $modId) {
-                    DB::connection('central')->table('company_modules')->updateOrInsert(
-                        ['company_id' => $centralComp->id, 'module_id' => $modId],
-                        ['is_enabled' => 1, 'updated_at' => now()]
-                    );
-                }
-            }
+            // Plan defaults are resolved at read time. Company overrides and plan choices
+            // must survive renewals and upgrades without being copied or rewritten.
+            app(FeatureEntitlements::class)->forget((int) $centralComp->id);
+            app(PlanFeatureEntitlements::class)->forget();
 
             // Log Lifecycle History
             $this->historyService->log(

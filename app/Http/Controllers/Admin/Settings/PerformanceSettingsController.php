@@ -41,6 +41,9 @@ class PerformanceSettingsController extends Controller
             'increment_a_plus' => ['required', 'numeric', 'between:0,100'], 'increment_a' => ['required', 'numeric', 'between:0,100'],
             'increment_b' => ['required', 'numeric', 'between:0,100'], 'increment_c' => ['required', 'numeric', 'between:0,100'],
             'increment_d' => ['required', 'numeric', 'between:0,100'],
+            'attendance_full_marks_at' => ['sometimes', 'required', 'numeric', 'between:1,100'],
+            'work_full_marks_at' => ['sometimes', 'required', 'numeric', 'between:1,100'],
+            'behaviour_full_marks_at' => ['sometimes', 'required', 'numeric', 'between:1,10'],
         ]);
         if ($request->integer('work_weight') + $request->integer('attendance_weight') + $request->integer('behaviour_weight') !== 100) {
             throw \Illuminate\Validation\ValidationException::withMessages(['work_weight' => 'Attendance, work and cultural behaviour weights must total 100%.']);
@@ -56,6 +59,10 @@ class PerformanceSettingsController extends Controller
             'increment_enabled' => $request->boolean('increment_enabled') ? '1' : '0',
         ];
         foreach (['a_plus', 'a', 'b', 'c', 'd'] as $grade) $data['increment_'.$grade] = round((float) $request->input('increment_'.$grade), 2);
+        foreach (['attendance', 'work', 'behaviour'] as $criterion) {
+            $key = $criterion.'_full_marks_at';
+            if ($request->has($key)) $data[$key] = round((float) $request->input($key), 2);
+        }
 
         \Illuminate\Support\Facades\DB::connection('tenant')->transaction(function () use ($data) {
         foreach ($data as $key => $val) {

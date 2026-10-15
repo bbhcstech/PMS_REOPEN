@@ -1757,7 +1757,7 @@
         @foreach(['FREE', 'GOLD', 'PLATINUM', 'DIAMOND'] as $idx => $pName)
         @php
             $pClass = strtolower($pName);
-            $planObj = $plans->first(fn($p) => strtoupper($p->name) === $pName);
+            $planObj = $plans->first(fn($p) => strtoupper($p->slug) === $pName);
             $mPrice = $planObj?->monthly_price ?? match($pName) { 'FREE' => 0, 'GOLD' => 4999, 'PLATINUM' => 9999, 'DIAMOND' => 19999 };
             $yPrice = $planObj?->yearly_price ?? ($mPrice * 10);
             $uLimit = $planObj?->max_users ?? match($pName) { 'FREE' => 5, 'GOLD' => 25, 'PLATINUM' => 100, 'DIAMOND' => 0 };
@@ -1900,26 +1900,14 @@
 
                         @foreach(['FREE', 'GOLD', 'PLATINUM', 'DIAMOND'] as $pIndex => $pName)
                         @php
-                            $planObj = $plans->first(fn($p) => strtoupper($p->name) === $pName);
+                            $planObj = $plans->first(fn($p) => strtoupper($p->slug) === $pName);
                             $planId = $planObj?->id ?? ($pIndex + 1);
                             
-                            // Default availability rules
-                            $isDefaultEnabled = match($pName) {
-                                'FREE' => in_array($mod->slug, ['dashboard', 'notifications', 'organization', 'hr', 'employees', 'attendance', 'leave-management']),
-                                'GOLD' => !in_array($mod->slug, ['payroll', 'analytics', 'advanced-reports']),
-                                'PLATINUM' => true,
-                                'DIAMOND' => true,
-                            };
-                            
-                            $isEnabledInDb = false;
-                            if ($planObj && method_exists($planObj, 'modules')) {
-                                $isEnabledInDb = $planObj->modules->contains('id', $mod->id);
-                            }
-                            $checked = $isEnabledInDb || $isDefaultEnabled;
+                            $checked = $planObj && app(\App\Services\PlanFeatureEntitlements::class)->allows($planObj, $mod->slug);
                         @endphp
                         <td>
                             <label class="toggle-switch-wrap">
-                                <input type="checkbox" class="matrix-toggle-input" data-planid="{{ $planId }}" data-moduleid="{{ $mod->id }}" {{ $checked ? 'checked' : '' }} />
+                                <input type="checkbox" class="matrix-toggle-input" data-planid="{{ $planId }}" data-moduleid="{{ $mod->id }}" @disabled(!$planObj) {{ $checked ? 'checked' : '' }} />
                                 <span class="toggle-slider"></span>
                             </label>
                         </td>
@@ -2312,7 +2300,7 @@
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 6px;" id="modalPlanOptionsGrid">
                     @foreach(['FREE', 'GOLD', 'PLATINUM', 'DIAMOND'] as $pIdx => $pName)
                     @php
-                        $planObj = $plans->first(fn($p) => strtoupper($p->name) === $pName);
+                        $planObj = $plans->first(fn($p) => strtoupper($p->slug) === $pName);
                         $pId = $planObj?->id ?? $pName;
                         $pPrice = $planObj?->monthly_price ?? match($pName) { 'FREE' => 0, 'GOLD' => 4999, 'PLATINUM' => 9999, 'DIAMOND' => 19999 };
                         $pLevel = match($pName) { 'FREE' => 0, 'GOLD' => 1, 'PLATINUM' => 2, 'DIAMOND' => 3 };
@@ -2422,6 +2410,9 @@ document.addEventListener('DOMContentLoaded', function() {
             const planId = this.getAttribute('data-planid');
             const moduleId = this.getAttribute('data-moduleid');
             const enabled = this.checked ? 1 : 0;
+            const input = this;
+            const planInputs = Array.from(document.querySelectorAll('.matrix-toggle-input')).filter(item => item.getAttribute('data-planid') === planId);
+            planInputs.forEach(item => { item.disabled = true; });
 
             fetch("{{ Route::has('super-admin.plans.toggle-module') ? route('super-admin.plans.toggle-module') : route('superadmin.plans.toggle-module') }}", {
                 method: 'POST',
@@ -2432,11 +2423,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
                 body: JSON.stringify({ plan_id: planId, module_id: moduleId, enabled: enabled })
             })
-            .then(res => res.json())
-            .then(data => {
-                showToast(data.message || 'Plan feature access updated successfully.');
+            .then(async res => {
+                const data = await res.json();
+                if (!res.ok || data.success === false) throw new Error(data.message || 'Unable to save plan access.');
+                return data;
             })
-            .catch(() => showToast('Feature access updated.'));
+            .then(data => {
+                if (data.states) planInputs.forEach(item => {
+                    const state = data.states[item.getAttribute('data-moduleid')];
+                    if (state !== undefined) item.checked = Number(state) === 1;
+                });
+                showToast(data.message || 'Plan feature access updated successfully.');
+                if (overrideCompanySelect && overrideCompanySelect.value) loadCompanyFeatureStates(overrideCompanySelect.value);
+            })
+            .catch(() => {
+                input.checked = !enabled;
+                showToast('Plan feature access could not be saved. Please try again.');
+            })
+            .finally(() => { planInputs.forEach(item => { item.disabled = false; }); });
         });
     });
 
@@ -3175,95 +3179,57 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     function renderCompanyFeatureOverrides(companyId) {
-        if (!companyId) return;
         const compData = window.companyOverridesMap[companyId];
-        if (!compData) return;
-
-        const selectedNameEl = document.getElementById('overrideSelectedCompanyName');
-        if (selectedNameEl) {
-            selectedNameEl.innerText = compData.name + ' (' + compData.plan + ' Plan)';
+        if (!companyId || !compData) {
+            ++featureStateGeneration;
+            document.querySelectorAll('.company-override-input').forEach(input => { input.checked = false; input.disabled = true; input.setAttribute('data-companyid', ''); });
+            return;
         }
-
-        const planName = compData.plan;
-        const planClass = planName.toLowerCase();
-        const planFeatures = Array.isArray(compData.plan_features) ? compData.plan_features : [];
-
-        document.querySelectorAll('.override-module-row').forEach(row => {
-            const modId = row.getAttribute('data-moduleid');
-            const modSlug = row.getAttribute('data-moduleslug');
-            const checkbox = row.querySelector('.company-override-input');
-            const basePlanCell = row.querySelector('.base-plan-status-cell');
-            const overrideStatusCell = row.querySelector('.override-status-cell');
-
-            const isIncludedInBasePlan = planFeatures.includes('*') || 
-                                         planFeatures.includes(modSlug) || 
-                                         ['gold', 'platinum', 'diamond'].includes(planClass) || 
-                                         ['dashboard', 'notifications', 'organization'].includes(modSlug);
-
-            if (basePlanCell) {
-                if (isIncludedInBasePlan) {
-                    basePlanCell.innerHTML = `<span class="plan-badge-cell plan-${['free','gold','platinum','diamond'].includes(planClass) ? planClass : 'gold'}">Included (${planName})</span>`;
-                } else {
-                    basePlanCell.innerHTML = `<span class="plan-badge-cell plan-free">Not Included (${planName})</span>`;
-                }
-            }
-
-            const hasExplicitOverride = (compData.overrides && compData.overrides[modId] !== undefined);
-            const overrideValue = hasExplicitOverride ? parseInt(compData.overrides[modId], 10) : null;
-
-            if (checkbox) {
-                checkbox.setAttribute('data-companyid', companyId);
-                if (hasExplicitOverride) {
-                    checkbox.checked = (overrideValue === 1);
-                } else {
-                    checkbox.checked = isIncludedInBasePlan;
-                }
-            }
-
-            if (overrideStatusCell) {
-                if (hasExplicitOverride) {
-                    if (overrideValue === 1) {
-                        overrideStatusCell.innerHTML = `<span style="font-size: 11px; font-weight: 700; color: #16a34a; background: #f0fdf4; border: 1px solid #bbf7d0; padding: 3px 8px; border-radius: 4px;"><i class="fas fa-circle-check"></i> Active · Super Admin Granted</span>`;
-                    } else {
-                        overrideStatusCell.innerHTML = `<span style="font-size: 11px; font-weight: 700; color: #dc2626; background: #fef2f2; border: 1px solid #fecaca; padding: 3px 8px; border-radius: 4px;"><i class="fas fa-ban"></i> Inactive · Super Admin Revoked</span>`;
-                    }
-                } else {
-                    overrideStatusCell.innerHTML = `<span style="font-size: 11px; font-weight: 700; color: ${isIncludedInBasePlan ? '#16a34a' : '#dc2626'}; background: ${isIncludedInBasePlan ? '#f0fdf4' : '#fef2f2'}; padding: 3px 8px; border-radius: 4px;">${isIncludedInBasePlan ? 'Active' : 'Inactive'} · Plan Default</span>`;
-                }
-            }
+        if (overrideCompanySelect && String(overrideCompanySelect.value) !== String(companyId)) return;
+        const name = document.getElementById('overrideSelectedCompanyName');
+        if (name) name.textContent = compData.name + ' (' + compData.plan + ' Plan)';
+        document.querySelectorAll('.company-override-input').forEach(input => {
+            input.disabled = true;
+            input.setAttribute('data-companyid', companyId);
         });
-
-        // The values above are an instant preview; the server then reports what the company's
-        // workspace actually resolves (overrides, parent categories, plan), so the switches never lie.
-        if (typeof applyCompanyFeatureStates === 'function' && compData.states) applyCompanyFeatureStates(companyId, compData.states);
-        if (typeof loadCompanyFeatureStates === 'function') loadCompanyFeatureStates(companyId);
+        if (compData.states) applyCompanyFeatureStates(companyId, compData.states);
+        loadCompanyFeatureStates(companyId);
     }
-
     const overrideCompanySelect = document.getElementById('overrideCompanySelect');
 
     const featureStatesUrl = @json(route('super-admin.subscriptions.feature-states', ['company' => '__COMPANY__']));
+    let featureStateGeneration = 0;
     const escapeFeatureText = value => String(value ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
 
     function loadCompanyFeatureStates(companyId) {
+        const generation = ++featureStateGeneration;
         fetch(featureStatesUrl.replace('__COMPANY__', encodeURIComponent(companyId)), { headers: { Accept: 'application/json' }, cache: 'no-store' })
             .then(res => res.ok ? res.json() : Promise.reject(new Error('Feature states unavailable')))
             .then(data => {
+                if (generation !== featureStateGeneration) return;
                 if (!data || !data.states) return;
                 if (window.companyOverridesMap && window.companyOverridesMap[companyId]) window.companyOverridesMap[companyId].states = data.states;
                 applyCompanyFeatureStates(companyId, data.states);
             })
-            .catch(() => {});
+            .catch(() => {
+                if (generation === featureStateGeneration) showToast('Unable to load saved company features. Please select the company again.');
+            });
     }
 
     function applyCompanyFeatureStates(companyId, states) {
         const selector = document.getElementById('overrideCompanySelect');
-        if (selector && selector.value && String(selector.value) !== String(companyId)) return;
+        if (selector && String(selector.value) !== String(companyId)) return;
         document.querySelectorAll('.override-module-row').forEach(row => {
             const state = states[row.getAttribute('data-moduleid')];
             if (!state) return;
             const on = Number(state.effective) === 1;
             const checkbox = row.querySelector('.company-override-input');
-            if (checkbox) checkbox.checked = on;
+            if (checkbox) { checkbox.checked = on; checkbox.disabled = false; }
+            const basePlanCell = row.querySelector('.base-plan-status-cell');
+            if (basePlanCell) {
+                const plan = window.companyOverridesMap[companyId]?.plan || 'FREE';
+                basePlanCell.textContent = (Number(state.plan) === 1 ? 'Included' : 'Not Included') + ' (' + plan + ')';
+            }
             const statusCell = row.querySelector('.override-status-cell');
             if (!statusCell) return;
             const source = state.blocked_by
@@ -3280,7 +3246,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (overrideCompanySelect.value) {
             renderCompanyFeatureOverrides(overrideCompanySelect.value);
-        }
+        } else renderCompanyFeatureOverrides(null);
     }
 
     // Attach click listener to Manage Features button in drawer
@@ -3316,6 +3282,10 @@ document.addEventListener('DOMContentLoaded', function() {
             const enabled = this.checked ? 1 : 0;
 
             if (!compId || !modId) return;
+            const input = this;
+            document.querySelectorAll('.company-override-input').forEach(item => { item.disabled = true; });
+            if (overrideCompanySelect) overrideCompanySelect.disabled = true;
+            ++featureStateGeneration;
 
             fetch("{{ Route::has('super-admin.subscriptions.toggle-override') ? route('super-admin.subscriptions.toggle-override') : (Route::has('superadmin.subscriptions.toggle-override') ? route('superadmin.subscriptions.toggle-override') : url('/super-admin/subscriptions/toggle-override')) }}", {
                 method: 'POST',
@@ -3343,9 +3313,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 showToast(data.message || 'Company feature override updated successfully.');
             })
             .catch(() => {
+                input.checked = !enabled;
                 renderCompanyFeatureOverrides(compId);
                 showToast('Feature access could not be saved. Please try again.');
-            });
+            })
+            .finally(() => { if (overrideCompanySelect) overrideCompanySelect.disabled = false; });
         });
     });
 

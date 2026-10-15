@@ -5,8 +5,13 @@
 @section('content')
 @php
     $canManageEmployees = in_array(auth()->user()?->role, ['admin', 'hr'], true);
+    $canDeleteEmployees = in_array(auth()->user()?->normalizedRole(), ['admin', 'hr'], true)
+        && auth()->user()->hasModulePermission('employees', 'delete');
     $userRole = auth()->user()?->role ?? 'employee';
     $activeView = in_array(request('view'), ['grid', 'tree', 'table'], true) ? request('view') : 'table';
+    $directoryCompany = app(\App\Services\CompanyContext::class)->current();
+    $directoryCompanyName = $directoryCompany?->display_name ?: ($directoryCompany?->name
+        ?? $companies->firstWhere('id', auth()->user()?->company_id)?->name ?? 'Company');
 @endphp
 
 <div class="org-page">
@@ -156,15 +161,11 @@
                 <input type="text" name="search" class="org-input" value="{{ request('search') }}" placeholder="Search employee by name, ID, email, skills...">
             </div>
 
-            <!-- Company Filter -->
-            @if(!empty($companies) && count($companies) > 0)
-                <select name="company_id" class="org-select">
-                    <option value="">All Companies</option>
-                    @foreach($companies as $company)
-                        <option value="{{ $company->id }}" @selected((string) request('company_id') === (string) $company->id)>{{ $company->name }}</option>
-                    @endforeach
-                </select>
-            @endif
+            <!-- Company identity is resolved from the signed-in workspace. -->
+            <div class="org-select org-company-context" aria-label="Current company: {{ $directoryCompanyName }}">
+                <i class="fas fa-building" aria-hidden="true"></i>
+                <span>{{ $directoryCompanyName }}</span>
+            </div>
 
             <!-- Department Filter -->
             <select name="department_id" class="org-select">
@@ -250,6 +251,15 @@
                 </div>
             </div>
 
+            @if($canDeleteEmployees)
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+                    <span id="directorySelectionCount" aria-live="polite">0 employees selected on this page</span>
+                    <button type="button" id="directoryBulkDelete" class="org-btn org-btn-secondary" disabled onclick="deleteDirectoryEmployees()">
+                        <i class="fas fa-trash text-danger" aria-hidden="true"></i> Delete Selected
+                    </button>
+                </div>
+                <div id="directoryDeleteFeedback" class="alert" role="status" hidden></div>
+            @endif
             <div class="org-table-container">
                 <table class="org-table" id="employeeDataTable">
                     <thead>
@@ -280,7 +290,7 @@
                                 $managerName = $detail?->reportingTo?->name ?? 'N/A';
                             @endphp
                             <tr data-emp-id="{{ $employee->id }}">
-                                <td><input type="checkbox" class="emp-checkbox" value="{{ $employee->id }}"></td>
+                                <td><input type="checkbox" class="emp-checkbox" value="{{ $employee->id }}" aria-label="Select {{ $employee->name }}" onchange="updateDirectorySelection()"></td>
                                 <td>
                                     <div class="org-emp-cell">
                                         @if($avatar)
@@ -344,6 +354,9 @@
                                 <td style="text-align: right;">
                                     <div class="d-inline-flex gap-1">
                                         <!-- View Action Button -->
+                                        @if($canDeleteEmployees)
+                                            <button type="button" class="org-btn org-btn-secondary org-btn-icon" title="Delete Employee" aria-label="Delete {{ $employee->name }}" onclick="deleteDirectoryEmployees({{ $employee->id }})"><i class="fas fa-trash text-danger" aria-hidden="true"></i></button>
+                                        @endif
                                         <a href="{{ route('organization.show', ['employee' => $employee, 'from_view' => 'table']) }}" class="org-btn org-btn-secondary org-btn-icon" title="View Directory Profile">
                                             <i class="fas fa-eye text-emerald-600"></i>
                                         </a>
@@ -704,6 +717,53 @@
     function toggleSelectAll(master) {
         const checkboxes = document.querySelectorAll('.emp-checkbox');
         checkboxes.forEach(cb => cb.checked = master.checked);
+        updateDirectorySelection();
+    }
+
+    function updateDirectorySelection() {
+        const boxes = [...document.querySelectorAll('#employeeDataTable .emp-checkbox')];
+        const count = boxes.filter(box => box.checked).length;
+        const master = document.getElementById('selectAllCheckbox');
+        if (master) {
+            master.checked = boxes.length > 0 && count === boxes.length;
+            master.indeterminate = count > 0 && count < boxes.length;
+        }
+        const label = document.getElementById('directorySelectionCount');
+        if (label) label.textContent = count + ' employees selected on this page';
+        const button = document.getElementById('directoryBulkDelete');
+        if (button) button.disabled = count === 0 || directoryDeletePending;
+    }
+
+    let directoryDeletePending = false;
+    async function deleteDirectoryEmployees(employeeId = null) {
+        if (directoryDeletePending) return;
+        const ids = employeeId === null
+            ? [...document.querySelectorAll('#employeeDataTable .emp-checkbox:checked')].map(box => Number(box.value))
+            : [employeeId];
+        if (!ids.length) return;
+        if (!window.confirm('Delete ' + ids.length + ' employee' + (ids.length === 1 ? '' : 's') + '? They will be removed from the directory and their login disabled. Records can be restored from Archived Employees.')) return;
+        directoryDeletePending = true;
+        updateDirectorySelection();
+        const feedback = document.getElementById('directoryDeleteFeedback');
+        try {
+            const response = await fetch(@json(route('organization.employees.delete')), {
+                method: 'DELETE',
+                credentials: 'same-origin',
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': @json(csrf_token()) },
+                body: JSON.stringify({ employee_ids: ids })
+            });
+            const result = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(Object.values(result.errors || {}).flat()[0] || result.message || 'Unable to delete employees. Refresh the page and try again.');
+            window.location.reload();
+        } catch (error) {
+            if (feedback) {
+                feedback.textContent = error.message;
+                feedback.className = 'alert alert-danger';
+                feedback.hidden = false;
+            }
+            directoryDeletePending = false;
+            updateDirectorySelection();
+        }
     }
 
     // Export Directory (CSV / Excel)

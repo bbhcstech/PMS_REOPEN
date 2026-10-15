@@ -40,8 +40,9 @@ class Plan extends Model
 
     public function modules()
     {
-        return $this->belongsToMany(\App\Models\Module::class, 'plan_modules', 'plan_id', 'module_id')
-            ->withTimestamps();
+        $relation = $this->belongsToMany(\App\Models\Module::class, 'plan_modules', 'plan_id', 'module_id')->withTimestamps();
+        if (\Illuminate\Support\Facades\Schema::connection('central')->hasColumn('plan_modules', 'is_enabled')) $relation->wherePivot('is_enabled', true);
+        return $relation;
     }
 
     public function getPriceForCycle(string $cycle): float

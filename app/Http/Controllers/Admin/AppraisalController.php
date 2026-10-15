@@ -20,7 +20,7 @@ class AppraisalController extends Controller
     private function authorizeEmployee(User $actor, User $employee, string $action): void
     {
         abort_unless(app(AppraisalPolicy::class)->canEvaluate($actor, $employee), 403,
-            'HR cannot change their own appraisal. A company administrator must evaluate it.');
+            'Only company administrators can evaluate HR. HR may evaluate other employees and managers in their own company.');
         abort_unless($actor->hasModulePermission('appraisal', $action), 403, 'You do not have permission to perform this appraisal action.');
     }
 
@@ -34,15 +34,14 @@ class AppraisalController extends Controller
         $periods = $policy->periods();
         if (!in_array($selectedPeriod, $periods, true)) $selectedPeriod = $policy->currentPeriod();
         $search = $request->get('search');
-        $employeesQuery = User::whereIn(DB::raw('LOWER(role)'), ['employee', 'user', 'manager', 'hr'])
-            ->where('company_id', $actor->company_id)
-            ->where(fn ($query) => $query->where('is_active', true)->orWhereNull('is_active'));
+        $employeesQuery = $policy->staffQuery($actor);
         if (!$canManage) $employeesQuery->whereKey($actor->id);
         if ($search) $employeesQuery->where(fn ($query) => $query->where('name', 'like', '%'.$search.'%')->orWhere('email', 'like', '%'.$search.'%')->orWhere('designation', 'like', '%'.$search.'%'));
         $employees = $employeesQuery->orderBy('name')->get();
         $query = Appraisal::with(['employee', 'evaluator'])->where('company_id', $actor->company_id)
             ->whereHas('employee', fn ($query) => $query->where('company_id', $actor->company_id))->where('appraisal_period', $selectedPeriod);
         if (!$canManage) $query->where('employee_id', $actor->id);
+        if ($actor->normalizedRole() === 'hr') $query->whereHas('employee', fn ($q) => $q->whereRaw('LOWER(role) <> ?', ['hr'])->orWhere('id', $actor->id));
         if ($search) $query->whereHas('employee', fn ($query) => $query->where('name', 'like', '%'.$search.'%')->orWhere('email', 'like', '%'.$search.'%')->orWhere('designation', 'like', '%'.$search.'%'));
         // GET is read-only: it never creates, restores or changes appraisals.
         $appraisals = $query->get();
@@ -73,7 +72,7 @@ class AppraisalController extends Controller
     public function saveBehaviour(Request $request)
     {
         $actor = $this->actor();
-        abort_unless(WorkforceAccess::isAdmin($actor), 403, 'Only a company administrator may enter these ratings.');
+        abort_unless(app(AppraisalPolicy::class)->canManage($actor), 403, 'Only appraisal reviewers may enter ratings.');
         $data = $request->validate([
             'employee_id' => ['required', 'integer'], 'appraisal_period' => ['required', 'string', 'max:30'],
             'teamwork_score' => ['required', 'numeric', 'between:1,10'],
@@ -84,7 +83,7 @@ class AppraisalController extends Controller
         $policy = app(AppraisalPolicy::class);
         $policy->periodDates($data['appraisal_period']);
         $employee = User::where('company_id', $actor->company_id)->findOrFail($data['employee_id']);
-        $behaviour = round(($data['teamwork_score'] + $data['communication_score'] + $data['punctuality_score']) / 3 * 10, 2);
+        $behaviour = $policy->behaviourScore([$data['teamwork_score'], $data['communication_score'], $data['punctuality_score']]);
         DB::connection('tenant')->transaction(function () use ($actor, $employee, $data, $policy, $behaviour) {
             User::where('company_id', $actor->company_id)->whereKey($employee->id)->lockForUpdate()->firstOrFail();
             $record = Appraisal::withTrashed()->where('company_id', $actor->company_id)
@@ -130,9 +129,10 @@ class AppraisalController extends Controller
             if (abs((float) $data[$field] - (float) $metrics[$field]) > 0.01 && empty(trim($data[$criterion.'_remarks'] ?? ''))) {
                 throw \Illuminate\Validation\ValidationException::withMessages([$criterion.'_remarks' => 'Explain why the '.$criterion.' score differs from recorded metrics.']);
             }
+            if (empty(trim($data[$criterion.'_remarks'] ?? ''))) $data[$criterion.'_remarks'] = $metrics[$criterion.'_remarks'];
         }
         $settings = $policy->settings();
-        $behaviour = round(($data['teamwork_score'] + $data['communication_score'] + $data['punctuality_score']) / 3 * 10, 2);
+        $behaviour = $policy->behaviourScore([$data['teamwork_score'], $data['communication_score'], $data['punctuality_score']], $settings);
         $overall = $policy->score((float) $data['project_score'], (float) $data['attendance_score'], $behaviour, $settings);
         $grade = Appraisal::computeGrade($overall);
         $status = $settings['admin_approval_required'] === '1' && !WorkforceAccess::isAdmin($actor) ? 'submitted' : 'approved';
@@ -159,11 +159,17 @@ class AppraisalController extends Controller
         $actor = $this->actor();
         $policy = app(AppraisalPolicy::class);
         abort_unless($policy->canManage($actor), 403);
+        $request->validate(['employee_ids' => ['required_if:selected_staff_calculation,1', 'array', 'min:1', 'max:500'], 'employee_ids.*' => ['required', 'integer', 'distinct']]);
         $period = (string) $request->get('period', $policy->currentPeriod());
         $policy->periodDates($period);
         $settings = $policy->settings();
-        $employees = User::where('company_id', $actor->company_id)->whereIn(DB::raw('LOWER(role)'), ['employee', 'user', 'manager', 'hr'])
-            ->where(fn ($query) => $query->where('is_active', true)->orWhereNull('is_active'))->get();
+        $employeesQuery = $policy->staffQuery($actor);
+        if ($request->has('employee_ids')) $employeesQuery->whereIn('id', $request->input('employee_ids'));
+        $employees = $employeesQuery->get();
+        if ($request->has('employee_ids')) {
+            abort_unless($employees->count() === count($request->input('employee_ids'))
+                && $employees->every(fn ($employee) => $policy->canEvaluate($actor, $employee)), 403, 'Select only staff you are permitted to appraise.');
+        }
         $count = 0;
         DB::connection('tenant')->transaction(function () use ($employees, $actor, $policy, $period, $settings, &$count) {
             foreach ($employees as $employee) {
@@ -180,14 +186,18 @@ class AppraisalController extends Controller
                     'behaviour_remarks' => 'Awaiting reviewer feedback on teamwork, communication and professional conduct.',
                     'evaluated_by' => null,
                 ];
+                if ($behaviourData['teamwork_score'] >= 1) $behaviourData['behaviour_score'] = $policy->behaviourScore([
+                    $behaviourData['teamwork_score'], $behaviourData['communication_score'], $behaviourData['punctuality_score'],
+                ], $settings);
                 Appraisal::updateOrCreate(['company_id' => $actor->company_id, 'employee_id' => $employee->id, 'appraisal_period' => $period], array_merge($metrics, $behaviourData, [
-                    'overall_score' => 0, 'overall_grade' => 'Pending', 'recommendation' => 'Reviewer evaluation required',
+                    'overall_score' => $behaviourData['teamwork_score'] >= 1 ? $policy->score($metrics['project_score'], $metrics['attendance_score'], $behaviourData['behaviour_score'], $settings) : 0,
+                    'overall_grade' => 'Pending', 'recommendation' => 'Reviewer evaluation required',
                     'status' => 'draft', 'recommended_increment_percent' => null, 'policy_snapshot' => $settings,
                 ]));
                 $count++;
             }
         });
-        return back()->with('success', $count.' drafts calculated from recorded work and attendance. Behaviour needs reviewer feedback. Your own HR appraisal, deleted reviews and submitted/approved evaluations were left unchanged.');
+        return back()->with('success', $count.' appraisal drafts calculated using the company policy. Add behaviour ratings and complete the review. Protected HR records, deleted reviews and submitted/approved evaluations were left unchanged.');
     }
 
     public function destroy(int $id)

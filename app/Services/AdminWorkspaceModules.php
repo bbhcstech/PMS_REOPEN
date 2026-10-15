@@ -56,7 +56,18 @@ class AdminWorkspaceModules
             }
         }
         if ($exact) return $exact;
-        if (! $prefixed) return [];
+        if (! $prefixed) {
+            // Implemented catalog modules may have URI prefixes instead of registry entries
+            // (for example contracts). Apply their entitlement to direct URLs as well.
+            $uri = Route::getRoutes()->getByName($routeName)?->uri() ?? '';
+            foreach (Module::query()->get(['slug', 'route_name', 'route_prefix']) as $module) {
+                if ($module->route_name === $routeName) return [$module->slug];
+                $prefix = trim((string) $module->route_prefix, '/');
+                if ($prefix !== '' && ($routeName === $prefix || str_starts_with($routeName, $prefix.'.')
+                    || $uri === $prefix || str_starts_with($uri, $prefix.'/'))) $prefixed[$module->slug] = strlen($prefix);
+            }
+            if (!$prefixed) return [];
+        }
         $longest = max($prefixed);
         return array_keys(array_filter($prefixed, fn ($length) => $length === $longest));
     }

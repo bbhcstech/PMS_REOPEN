@@ -40,20 +40,21 @@ class AttendanceCalendar
         $leaves = $leaveQuery->get();
 
         $workingDays = \App\Models\AppSetting::getCompanyWorkingDays();
+        $schedule = WorkScheduleService::getSettings();
         $days = collect();
         for ($month = $first->copy(); $month->lte($to); $month->addMonthNoOverflow()->startOfMonth()) {
-            $calendar = $this->build($month->copy(), $records, $holidays, $leaves, $user->employeeDetail, $workingDays);
+            $calendar = $this->build($month->copy(), $records, $holidays, $leaves, $user->employeeDetail, $workingDays, $user->id, $schedule);
             $days = $days->merge(array_filter($calendar['days'], fn ($day) => $day['date']->betweenIncluded($from, $to)));
         }
 
         return $days->values();
     }
 
-    public function build(Carbon $month, Collection $records, Collection $holidays, Collection $leaves, $employeeDetail, array $workingDays): array
+    public function build(Carbon $month, Collection $records, Collection $holidays, Collection $leaves, $employeeDetail, array $workingDays, ?int $userId = null, array $schedule = []): array
     {
         $sessions = $records->groupBy(fn ($record) => Carbon::parse($record->date)->toDateString());
         $days = [];
-        $totals = array_fill_keys(['present', 'absent', 'late', 'half_day', 'holiday', 'leave', 'unpaid_leave', 'day_off', 'wfh', 'seconds', 'scheduled_days'], 0);
+        $totals = array_fill_keys(['present', 'absent', 'late', 'half_day', 'holiday', 'leave', 'unpaid_leave', 'day_off', 'wfh', 'wfh_present', 'seconds', 'scheduled_days'], 0);
         $joiningDate = ! empty($employeeDetail->joining_date) ? Carbon::parse($employeeDetail->joining_date)->startOfDay() : null;
         for ($day = 1; $day <= $month->daysInMonth; $day++) {
             $date = $month->copy()->day($day)->startOfDay();
@@ -74,8 +75,18 @@ class AttendanceCalendar
                 return $from && $date->betweenIncluded(Carbon::parse($from)->startOfDay(), Carbon::parse($to)->endOfDay());
             });
             $record = $daily->last();
+            if (!$holiday) {
+                foreach ($schedule['special_days'] ?? [] as $special) {
+                    if (($special['date'] ?? '') === $key && ($special['type'] ?? '') === 'holiday') {
+                        $holiday = (object) ['date' => $key, 'title' => $special['title'] ?? 'Company holiday'];
+                        break;
+                    }
+                }
+            }
             $status = 'not_marked';
-            if ($record) {
+            if (!$record && $joiningDate && $date->lt($joiningDate)) {
+                $status = 'not_joined';
+            } elseif ($record) {
                 $status = strtolower((string) $record->status);
                 if (($record->half_day ?? 'no') === 'yes') $status = 'half_day';
                 elseif (($record->late ?? 'no') === 'yes' && $status === 'present') $status = 'late';
@@ -91,17 +102,22 @@ class AttendanceCalendar
                 $status = 'absent';
             }
             $wfh = $daily->contains(function ($session) {
-                return in_array(strtolower((string) ($session->work_from_type ?? $session->working_from ?? '')), ['home', 'wfh', 'work_from_home', 'work from home'], true);
+                return strtolower((string) ($session->status ?? '')) === 'wfh'
+                    || in_array(strtolower((string) ($session->work_from_type ?? $session->working_from ?? '')), ['home', 'wfh', 'work_from_home', 'work from home'], true);
             });
+            $scheduledWfh = !in_array($status, ['holiday', 'day_off', 'not_joined', 'leave', 'unpaid_leave'], true)
+                && $userId && $schedule && WorkScheduleService::isUserWfhOnDate($userId, $key, $schedule) !== null;
+            $wfh = $wfh || $scheduledWfh;
             $seconds = (int) $daily->sum(fn ($session) => max(0, (int) ($session->total_seconds ?? 0)));
-            if (array_key_exists($status, $totals)) $totals[$status]++;
+            if ($status !== 'wfh' && array_key_exists($status, $totals)) $totals[$status]++;
             if ($wfh) $totals['wfh']++;
+            if ($status === 'wfh' && $record) $totals['wfh_present']++;
             $totals['seconds'] += $seconds;
             if (! $date->isFuture() && (! $joiningDate || $date->gte($joiningDate)) && ! in_array($status, ['holiday', 'day_off', 'not_joined'], true)) $totals['scheduled_days']++;
-            $days[] = compact('date', 'key', 'status', 'daily', 'holiday', 'leave', 'seconds', 'wfh');
+            $days[] = compact('date', 'key', 'status', 'daily', 'holiday', 'leave', 'seconds', 'wfh', 'scheduledWfh');
         }
         $totals['attendance_rate'] = $totals['scheduled_days'] > 0
-            ? round(100 * ($totals['present'] + $totals['late'] + $totals['half_day'] * 0.5) / $totals['scheduled_days'], 1) : 0;
+            ? round(100 * ($totals['present'] + $totals['late'] + $totals['wfh_present'] + $totals['half_day'] * 0.5) / $totals['scheduled_days'], 1) : 0;
         return ['days' => $days, 'totals' => $totals, 'offset' => $month->copy()->startOfMonth()->dayOfWeek];
     }
 }

@@ -12,6 +12,9 @@ Route::middleware(['auth', 'role:admin', 'module.access'])
             Route::get("{$path}/archive", [$controller, 'archive'])->name("{$path}.archive");
             Route::post("{$path}/{id}/restore", [$controller, 'restore'])->name("{$path}.restore");
             Route::post("{$path}/bulk-delete", [$controller, 'bulkDestroy'])->name("{$path}.bulk-delete");
+            if ($path === 'parent-departments') {
+                Route::delete("{$path}/{id}/permanent", [$controller, 'deletePermanently'])->name("{$path}.delete-permanent");
+            }
             if ($path === 'departments') {
                 Route::delete("{$path}/bulk-destroy", [$controller, 'bulkDestroy'])->name("{$path}.bulkDestroy");
             }

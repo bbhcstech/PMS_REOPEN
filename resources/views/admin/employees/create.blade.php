@@ -1910,6 +1910,11 @@
     .employee-department-feedback .swal2-html-container {
         line-height: 1.5;
     }
+    /* This informational toast has no input. Keep SweetAlert's dormant
+       checkbox container hidden even when form/theme styles are applied. */
+    .employee-department-feedback.swal2-popup .swal2-checkbox {
+        display: none !important;
+    }
     :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"]) #employee-create-page .alert-custom-err {
         background: #321c2b;
         color: #fecaca;

@@ -1224,29 +1224,40 @@
                     <form method="POST" action="{{ route('admin.settings.work-schedule.update') }}">
                         @csrf
 
-                        <!-- Section 1: Company Working Days -->
-                        <div class="section-badge">
-                            <i class="fas fa-calendar-week"></i> Company Operating Days
-                        </div>
-
-                        <div class="mb-5">
-                            <label class="form-label-custom mb-3">
-                                Select Operating Working Days <span class="req-asterisk">*</span>
-                            </label>
-                            <div class="days-pill-grid">
+                        <!-- Weekly company attendance schedule -->
+                        <section class="mb-5" data-weekly-schedule aria-labelledby="weeklyScheduleTitle">
+                            <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-3">
+                                <div>
+                                    <h5 id="weeklyScheduleTitle" class="mb-1">Weekly Attendance Schedule</h5>
+                                    <p class="text-muted small mb-0">Choose Office, Work From Home or Weekend for each day. Applies only to this company's staff.</p>
+                                </div>
+                                @if($isAdmin)
+                                    <button type="button" class="btn btn-outline-primary" data-weekly-preset><i class="fas fa-calendar-check me-1" aria-hidden="true"></i>Saturday WFH · Sunday weekend</button>
+                                @endif
+                            </div>
+                            <div class="row g-3">
                                 @foreach(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] as $day)
-                                    @php $isChecked = in_array($day, $settings['working_days'] ?? []); @endphp
-                                    <div class="day-pill-item">
-                                        <input class="day-pill-input" type="checkbox" name="working_days[]" value="{{ $day }}" id="day_{{ $day }}"
-                                            {{ $isChecked ? 'checked' : '' }} {{ ! $isAdmin ? 'disabled' : '' }}>
-                                        <label class="day-pill-label" for="day_{{ $day }}">
-                                            <i class="fas {{ $isChecked ? 'fa-check-circle' : 'fa-circle' }}" style="font-size: 0.85rem;"></i> {{ $day }}
-                                        </label>
+                                    @php
+                                        $mode = !in_array($day, $settings['working_days'] ?? [], true) ? 'weekend' : (in_array($day, $settings['weekly_wfh_days'] ?? [], true) ? 'wfh' : 'office');
+                                        $mode = old('weekly_modes.'.$day, $mode);
+                                    @endphp
+                                    <div class="col-12 col-sm-6 col-lg-3">
+                                        <div class="border rounded-3 p-3 h-100">
+                                            <label for="weekly-{{ $day }}" class="form-label fw-bold">{{ $day }}</label>
+                                            <select id="weekly-{{ $day }}" name="weekly_modes[{{ $day }}]" class="form-select" required data-weekly-day="{{ $day }}" @disabled(!$isAdmin)>
+                                                <option value="office" @selected($mode === 'office')>Office</option>
+                                                <option value="wfh" @selected($mode === 'wfh')>Work From Home</option>
+                                                <option value="weekend" @selected($mode === 'weekend')>Weekend / Day off</option>
+                                            </select>
+                                            @error('weekly_modes.'.$day)<small class="text-danger">{{ $message }}</small>@enderror
+                                        </div>
                                     </div>
                                 @endforeach
                             </div>
-                        </div>
-
+                            <div class="d-flex flex-wrap gap-2 mt-3" aria-live="polite" data-weekly-summary></div>
+                            @error('working_days')<p class="text-danger mt-2">Choose at least one Office or WFH day.</p>@enderror
+                            <div class="alert alert-info mt-3 mb-0">WFH days are working days. Attendance records are saved as WFH when staff clock in on those days. Weekend days show as OFF and are excluded from required working days. Scheduled WFH appears in calendars even before a clock-in; attendance and hours still require a real record. Save below to apply your schedule.</div>
+                        </section>
                         <!-- Section 2: Shift Hours & Break Duration -->
                         <div class="section-badge">
                             <i class="fas fa-clock"></i> Shift Schedule & Break Policy
@@ -1802,3 +1813,7 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 @endsection
+
+@push('scripts')
+<script src="{{ asset('admin/assets/js/pms-weekly-schedule.js') }}" defer></script>
+@endpush

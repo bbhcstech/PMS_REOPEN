@@ -205,6 +205,33 @@
         </div>
 
         <!-- Settings Form -->
+        @if($page === 'app')
+            <form action="{{ route('admin.settings.app.dashboard') }}" method="POST" class="section-card">
+                @csrf
+                <div class="section-header">
+                    <h3 class="h5 mb-0"><i class="bi bi-grid me-2" aria-hidden="true"></i>Dashboard Preferences</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row align-items-center g-3">
+                        <div class="col-md-8">
+                            <label for="dashboard_shortcuts_enabled" class="setting-label">Feature Shortcuts</label>
+                            <p class="setting-description mb-0">Show available features on the admin dashboard, grouped by area. Only features enabled for your company and account appear.</p>
+                        </div>
+                        <div class="col-md-4">
+                            <select id="dashboard_shortcuts_enabled" name="dashboard_shortcuts_enabled" class="form-select" @disabled($isSettingsReadOnly)>
+                                <option value="0" @selected((string) old('dashboard_shortcuts_enabled', app(\App\Services\DashboardShortcuts::class)->enabled() ? '1' : '0') === '0')>Inactive — hide shortcuts</option>
+                                <option value="1" @selected((string) old('dashboard_shortcuts_enabled', app(\App\Services\DashboardShortcuts::class)->enabled() ? '1' : '0') === '1')>Active — show shortcuts</option>
+                            </select>
+                            @error('dashboard_shortcuts_enabled')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+                        </div>
+                    </div>
+                    @if(!$isSettingsReadOnly)
+                        <div class="text-end mt-3"><button type="submit" class="btn btn-primary"><i class="bi bi-save me-1" aria-hidden="true"></i>Save Dashboard Preferences</button></div>
+                    @endif
+                </div>
+            </form>
+        @endif
+
         <form action="{{ route('admin.settings.app.update') }}" method="POST" id="settingsForm">
             @csrf
 

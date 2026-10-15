@@ -2165,15 +2165,19 @@
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label fw-bold" for="recPdfHeaderImage">Company Header (PDF) <span class="text-danger">*</span></label>
-                            <input type="file" name="pdf_header_image" id="recPdfHeaderImage" class="form-control" accept="image/png,image/jpeg" required>
-                            <small class="text-muted d-block mt-1">Shown at the top of every page of the requirement PDF. JPG or PNG, max 2 MB (wide banner recommended).</small>
+                            <label class="form-label fw-bold" for="recPdfHeaderImage">Company Header Image <span class="text-danger">*</span></label>
+                            <input type="file" name="pdf_header_image" id="recPdfHeaderImage" class="form-control" accept=".jpg,.jpeg,.png,image/png,image/jpeg" required data-recruitment-banner data-width="{{ \App\Support\RecruitmentPdfBranding::WIDTH }}" data-height="{{ \App\Support\RecruitmentPdfBranding::HEADER_HEIGHT }}" data-max-bytes="{{ \App\Support\RecruitmentPdfBranding::MAX_KB * 1024 }}" aria-describedby="recPdfHeaderImageHelp recPdfHeaderImageFeedback">
+                            <small id="recPdfHeaderImageHelp" class="text-muted d-block mt-1">Top of every PDF page. Exactly {{ \App\Support\RecruitmentPdfBranding::WIDTH }} × {{ \App\Support\RecruitmentPdfBranding::HEADER_HEIGHT }} px. JPG/JPEG or PNG, max 2 MB. PDF files are not accepted.</small>
+                            <div id="recPdfHeaderImageFeedback" class="small mt-2" aria-live="polite">@error('pdf_header_image')<span class="text-danger">{{ $message }}</span>@enderror</div>
+                            <img id="recPdfHeaderImagePreview" class="img-fluid border rounded mt-2" alt="Company header preview" hidden style="width: 100%; height: auto;">
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label fw-bold" for="recPdfFooterImage">Company Footer (PDF) <span class="text-danger">*</span></label>
-                            <input type="file" name="pdf_footer_image" id="recPdfFooterImage" class="form-control" accept="image/png,image/jpeg" required>
-                            <small class="text-muted d-block mt-1">Shown at the bottom of every page of the requirement PDF. JPG or PNG, max 2 MB (wide banner recommended).</small>
+                            <label class="form-label fw-bold" for="recPdfFooterImage">Company Footer Image <span class="text-danger">*</span></label>
+                            <input type="file" name="pdf_footer_image" id="recPdfFooterImage" class="form-control" accept=".jpg,.jpeg,.png,image/png,image/jpeg" required data-recruitment-banner data-width="{{ \App\Support\RecruitmentPdfBranding::WIDTH }}" data-height="{{ \App\Support\RecruitmentPdfBranding::FOOTER_HEIGHT }}" data-max-bytes="{{ \App\Support\RecruitmentPdfBranding::MAX_KB * 1024 }}" aria-describedby="recPdfFooterImageHelp recPdfFooterImageFeedback">
+                            <small id="recPdfFooterImageHelp" class="text-muted d-block mt-1">Bottom of every PDF page. Exactly {{ \App\Support\RecruitmentPdfBranding::WIDTH }} × {{ \App\Support\RecruitmentPdfBranding::FOOTER_HEIGHT }} px. JPG/JPEG or PNG, max 2 MB. PDF files are not accepted.</small>
+                            <div id="recPdfFooterImageFeedback" class="small mt-2" aria-live="polite">@error('pdf_footer_image')<span class="text-danger">{{ $message }}</span>@enderror</div>
+                            <img id="recPdfFooterImagePreview" class="img-fluid border rounded mt-2" alt="Company footer preview" hidden style="width: 100%; height: auto;">
                         </div>
                     </div>
                 </div>
@@ -2200,6 +2204,14 @@
 </div>
 
 <script src="{{ asset('admin/assets/js/pms-recruitment-actions.js') }}"></script>
+<script src="{{ asset('admin/assets/js/pms-recruitment-branding.js') }}"></script>
+@if($errors->has('pdf_header_image') || $errors->has('pdf_footer_image'))
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('createRequirementModal')).show();
+});
+</script>
+@endif
 <script>
 function updateSalaryRangeValue() {
     const currencySelect = document.getElementById('recruitment_salary_currency');

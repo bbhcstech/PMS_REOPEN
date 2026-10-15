@@ -26,4 +26,9 @@ inputs[0].value = '11'; change(); assert.match(output.textContent, /Enter all th
 inputs[0].value = '8.1'; inputs[1].value = '9.2'; inputs[2].value = '7.3'; change();
 assert.equal(output.textContent, '82.00 / 100');
 inputs[0].validity.valid = false; change(); assert.match(output.textContent, /Enter all three/);
+inputs[0].validity.valid = true;
+inputs.forEach(input => input.value = '8');
+form.dataset = { behaviourTarget: '8' }; change(); assert.equal(output.textContent, '100.00 / 100');
+inputs.forEach(input => input.value = '10'); change(); assert.equal(output.textContent, '100.00 / 100');
+inputs.forEach(input => input.value = '4'); change(); assert.equal(output.textContent, '50.00 / 100');
 console.log('PASS: manual behaviour score preview, incomplete/out-of-range/invalid inputs, decimals and restoring the affected tab/modal after validation.');

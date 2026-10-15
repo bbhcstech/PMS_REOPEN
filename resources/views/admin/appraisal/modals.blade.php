@@ -40,7 +40,7 @@
                                                     <div class="p-3 bg-light rounded border border-warning">
                                                         <small class="text-warning d-block fw-bold uppercase">3. Cultural behaviour ({{ $appr->policy_snapshot['behaviour_weight'] ?? 30 }}%)</small>
                                                         <div class="fs-4 fw-extrabold text-dark mt-1">{{ number_format($appr->behaviour_score, 1) }} / 100</div>
-                                                        <small class="text-muted d-block mt-1">Teamwork: {{ $appr->teamwork_score }}/10 | Comm: {{ $appr->communication_score }}/10</small>
+                                                        <small class="text-muted d-block mt-1">Teamwork: {{ $appr->teamwork_score }}/10 | Communication: {{ $appr->communication_score }}/10 | Conduct: {{ $appr->punctuality_score }}/10</small>
                                                         <small class="text-secondary d-block mt-2 font-italic">"{{ $appr->behaviour_remarks }}"</small>
                                                     </div>
                                                 </div>

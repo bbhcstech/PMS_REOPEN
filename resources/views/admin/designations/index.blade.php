@@ -167,19 +167,6 @@
             <button class="level-filter-btn reset-btn" onclick="resetFilters()"><i class="fas fa-undo-alt"></i> All</button>
         </div>
 
-        <!-- Bulk Actions Bar -->
-        <div class="bulk-actions-bar" id="bulk-actions-bar" style="display: none;">
-            <div class="bulk-actions-content">
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="select-all">
-                    <label class="form-check-label" for="select-all">Select All</label>
-                </div>
-                <span class="selected-badge" id="selected-count">0 selected</span>
-                <button class="btn-clear" id="clear-selection"><i class="fas fa-times"></i> Clear</button>
-                <button class="btn-bulk-delete" id="bulk-delete-btn" disabled><i class="fas fa-box-archive"></i> Archive Selected</button>
-            </div>
-        </div>
-
         <div class="table-wrapper">
             <table id="designationTable" class="designation-list-table" data-pms-toolbar-host="designation-export-tools">
                 <thead>
@@ -1038,71 +1025,6 @@
         background: #F8FAFC;
     }
 
-    /* Bulk Actions Bar */
-    .bulk-actions-bar {
-        padding: 14px 28px;
-        background: #EEF2FF;
-        border-bottom: 1px solid rgba(47, 107, 255, 0.12);
-    }
-
-    .bulk-actions-content {
-        display: flex;
-        align-items: center;
-        gap: 20px;
-        flex-wrap: wrap;
-    }
-
-    .selected-badge {
-        padding: 6px 18px;
-        background: white;
-        color: #2F6BFF;
-        border-radius: 40px;
-        font-size: 0.85rem;
-        font-weight: 600;
-        border: 1px solid rgba(47, 107, 255, 0.2);
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
-    }
-
-    .btn-clear, .btn-bulk-delete {
-        padding: 8px 20px;
-        border-radius: 12px;
-        font-size: 0.85rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        border: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .btn-clear {
-        background: #f3f4f6;
-        color: #6b7280;
-        border: 1px solid #e5e7eb;
-    }
-
-    .btn-clear:hover {
-        background: #e5e7eb;
-        color: #374151;
-    }
-
-    .btn-bulk-delete {
-        background: #fffbeb;
-        color: #b45309;
-        border: 1px solid #fde68a;
-    }
-
-    .btn-bulk-delete:hover:not(:disabled) {
-        background: #fef3c7;
-        color: #92400e;
-    }
-
-    .btn-bulk-delete:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-    }
-
     /* Table Wrapper */
     .table-wrapper {
         overflow-x: auto;
@@ -1652,7 +1574,7 @@
 
     /* Print Styles */
     @media print {
-        .btn-group, .search-box, .level-filters-bar, .bulk-actions-bar, .legend-card, .action-btn, .dropdown {
+        .btn-group, .search-box, .level-filters-bar, .legend-card, .action-btn, .dropdown {
             display: none;
         }
 
@@ -1735,9 +1657,6 @@
         font-size: .95rem;
     }
 
-    .designation-page .selected-badge,
-    .designation-page .btn-clear,
-    .designation-page .btn-bulk-delete,
     .designation-page .form-check-label {
         font-size: .95rem;
     }
@@ -2602,91 +2521,16 @@ $(document).ready(function() {
         window.location.href = url.toString();
     });
 
-    // Bulk actions functionality
-    function getSelectedIds() {
-        return $('.select-item:checked').map(function() {
-            return $(this).val();
-        }).get();
-    }
-
-    function updateUI() {
-        var count = getSelectedIds().length;
-        var bulkBar = $('#bulk-actions-bar');
-
-        if (count > 0) {
-            bulkBar.slideDown();
-        } else {
-            bulkBar.slideUp();
-        }
-
-        $('#selected-count').text(count + ' selected');
-        $('#bulk-delete-btn').prop('disabled', count === 0);
-    }
-
+    // Keep table selection available for the shared selection/export toolbar.
     $(document).on('change', '.select-item', function() {
-        updateUI();
-        var totalCheckboxes = $('.select-item').length;
-        var checkedCheckboxes = $('.select-item:checked').length;
-        $('#table-select-all').prop('checked', totalCheckboxes === checkedCheckboxes && totalCheckboxes > 0);
-        $('#select-all').prop('checked', totalCheckboxes === checkedCheckboxes && totalCheckboxes > 0);
-    });
-
-    $('#clear-selection').on('click', function() {
-        $('.select-item').prop('checked', false);
-        $('#table-select-all').prop('checked', false);
-        $('#select-all').prop('checked', false);
-        updateUI();
+        var total = $('.select-item').length;
+        var checked = $('.select-item:checked').length;
+        $('#table-select-all').prop('checked', total > 0 && total === checked)
+            .prop('indeterminate', checked > 0 && checked < total);
     });
 
     $('#table-select-all').on('change', function() {
-        var isChecked = $(this).is(':checked');
-        $('.select-item').prop('checked', isChecked);
-        $('#select-all').prop('checked', isChecked);
-        updateUI();
-    });
-
-    $('#select-all').on('change', function() {
-        var isChecked = $(this).is(':checked');
-        $('.select-item').prop('checked', isChecked);
-        $('#table-select-all').prop('checked', isChecked);
-        updateUI();
-    });
-
-    // Bulk archive
-    $('#bulk-delete-btn').on('click', function() {
-        var ids = getSelectedIds();
-        if (ids.length === 0) {
-            if (typeof toastr !== 'undefined') {
-                toastr.warning('Please select at least one designation.');
-            } else {
-                alert('Please select at least one designation.');
-            }
-            return;
-        }
-
-        if (confirm(`Archive ${ids.length} designation(s)?\n\nThey will move to Archived Designations and can be restored later.`)) {
-            var form = document.createElement('form');
-            form.method = 'POST';
-            form.action = '{{ \App\Support\WorkforceSettings::route("designations.bulk-archive") }}';
-            form.style.display = 'none';
-
-            var csrfToken = document.createElement('input');
-            csrfToken.type = 'hidden';
-            csrfToken.name = '_token';
-            csrfToken.value = '{{ csrf_token() }}';
-            form.appendChild(csrfToken);
-
-            ids.forEach(function(id) {
-                var idInput = document.createElement('input');
-                idInput.type = 'hidden';
-                idInput.name = 'ids[]';
-                idInput.value = id;
-                form.appendChild(idInput);
-            });
-
-            document.body.appendChild(form);
-            form.submit();
-        }
+        $('.select-item').prop('checked', $(this).is(':checked'));
     });
 
     // Export functions

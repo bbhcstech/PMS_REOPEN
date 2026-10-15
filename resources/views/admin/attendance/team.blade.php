@@ -68,7 +68,11 @@
                                     <a href="{{ route($attendanceRoute, ['user_id' => $employee->id, 'month' => $month, 'year' => $year]) }}">Open employee calendar</a>
                                 </div>
                             </details>
-                            @else<span class="at-status at-{{ $day['status'] }}" title="{{ $day['key'] }}: {{ $label }}" aria-label="{{ $label }}">{{ $code }}</span>@endif
+                            @else
+                                @if($day['wfh'])
+                                    <span class="at-status at-wfh" title="{{ $day['key'] }}: Scheduled WFH — {{ $label }}" aria-label="Scheduled WFH, {{ $label }}">WFH</span><small class="d-block">{{ $code }}</small>
+                                @else<span class="at-status at-{{ $day['status'] }}" title="{{ $day['key'] }}: {{ $label }}" aria-label="{{ $label }}">{{ $code }}</span>@endif
+                            @endif
                         </td>
                     @endforeach
                     @foreach($totalColumns as $key => $label)<td class="at-total">{{ $totals[$key] }}</td>@endforeach<td class="at-total at-hours">{{ $hours($totals['seconds']) }}</td><td class="at-total">{{ $totals['attendance_rate'] }}%</td>
@@ -78,7 +82,7 @@
             </table>
         </div>
         <footer class="at-footer"><p>Showing {{ $teamRows->firstItem() ?? 0 }}–{{ $teamRows->lastItem() ?? 0 }} of {{ $teamRows->total() }} employees. Totals above cover all matching employees.</p>{{ $teamRows->links() }}</footer>
-        <p class="at-note">Attendance rate uses the existing calendar rules: present and late days count fully, half days count as half. Holidays and day offs are excluded. Future working days remain unmarked.</p>
+        <p class="at-note">WFH totals include scheduled WFH days. A schedule alone does not count as attendance: recorded present, late and WFH days count fully; half days count as half. Holidays and weekends are excluded. Future working days remain unmarked.</p>
     </section>
 </div>
 <style>

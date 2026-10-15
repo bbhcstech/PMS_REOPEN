@@ -8,6 +8,15 @@ use App\Models\AppSetting;
 
 class AppSettingController extends Controller
 {
+    public function updateDashboard(Request $request, \App\Services\DashboardShortcuts $shortcuts)
+    {
+        abort_unless($request->user()?->normalizedRole() === 'admin', 403);
+        $validated = $request->validate(['dashboard_shortcuts_enabled' => 'required|boolean']);
+        $shortcuts->save((bool) $validated['dashboard_shortcuts_enabled']);
+
+        return back()->with('success', 'Dashboard preferences saved successfully.');
+    }
+
     /**
      * 1. App Settings Page (Main Page)
      */

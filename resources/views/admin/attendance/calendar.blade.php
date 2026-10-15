@@ -51,7 +51,7 @@
     <section class="ac-panel ac-profile">
         <div class="ac-person"><div class="ac-avatar">{{ mb_substr($selectedEmployee->name, 0, 1) }}</div><div><h2>{{ $selectedEmployee->name }}</h2><p>{{ $selectedEmployee->employeeDetail?->employee_id ?: 'Employee ID not set' }} · {{ $selectedEmployee->companyStaffRole?->name ?? ucfirst($selectedEmployee->role) }}</p><p>{{ $selectedEmployee->employeeDetail?->designation?->name }} @if($selectedEmployee->employeeDetail?->designation) · Level {{ $selectedEmployee->employeeDetail->designation->level }} @endif</p><p>{{ $selectedEmployee->email }}</p></div></div>
         <div class="ac-metrics">
-            @foreach(['present' => 'Present', 'absent' => 'Absent', 'late' => 'Late', 'half_day' => 'Half days', 'holiday' => 'Holidays', 'leave' => 'Leave', 'unpaid_leave' => 'Unpaid', 'wfh' => 'WFH'] as $key => $label)
+            @foreach(['present' => 'Present', 'absent' => 'Absent', 'late' => 'Late', 'half_day' => 'Half days', 'holiday' => 'Holidays', 'leave' => 'Leave', 'unpaid_leave' => 'Unpaid', 'day_off' => 'Weekend / Day off', 'wfh' => 'WFH'] as $key => $label)
                 <div class="ac-metric ac-{{ $key }}"><strong>{{ $totals[$key] }}</strong><span>{{ $label }}</span></div>
             @endforeach
             <div class="ac-metric"><strong>{{ $hours($totals['seconds']) }}</strong><span>Total hours</span></div>
@@ -59,6 +59,7 @@
         </div>
     </section>
     <section class="ac-panel ac-month-panel" aria-label="{{ $start->format('F Y') }} attendance">
+        <p class="ac-note">WFH includes scheduled remote days. Scheduled WFH alone does not mark attendance or add hours; the daily attendance status remains visible.</p>
         <div class="ac-month-heading"><div><span class="ac-eyebrow">MONTH AT A GLANCE</span><h2>{{ $start->format('F Y') }}</h2></div><div class="ac-actions"><button type="button" class="ac-button" id="ac-export">Export month CSV</button>@if(\App\Services\WorkforceAccess::isAdmin(auth()->user()))<a class="ac-button" href="{{ route('attendance.byHour', ['staff_category' => request('staff_category'), 'user_id' => $selectedEmployee->id, 'month' => $month, 'year' => $year]) }}">Hours report</a>@endif</div></div>
         <p class="ac-help">Select any date for clock times, locations, leave and holiday details. Hours include all recorded sessions.</p>
         <div class="ac-calendar-scroll"><div class="ac-calendar">

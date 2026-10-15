@@ -1,6 +1,33 @@
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
 
+    /* Keep the table empty state centered across themes and screen sizes. */
+    .org-page #tableViewSection > .org-empty-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        box-sizing: border-box;
+        padding: 2rem 1rem;
+        text-align: center;
+    }
+
+    .org-page #tableViewSection > .org-empty-card .org-empty-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 3rem;
+        height: 3rem;
+        border-radius: 50%;
+        margin-bottom: 1rem;
+    }
+
+    .org-page #tableViewSection > .org-empty-card p {
+        max-width: 100%;
+        margin: 0 0 1rem;
+    }
+
     :root {
         --org-navy-dark: #0f172a;
         --org-navy-main: #1e293b;
@@ -309,6 +336,20 @@
         -webkit-text-fill-color: var(--org-navy-dark) !important;
         outline: none;
         transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .org-page .org-company-context {
+        display: flex;
+        align-items: center;
+        gap: 0.65rem;
+        max-width: 100%;
+        padding: 0.65rem 1rem;
+        background-image: none !important;
+        cursor: default;
+    }
+
+    .org-page .org-company-context span {
+        overflow-wrap: anywhere;
     }
 
     .org-input:focus, .org-select:focus {

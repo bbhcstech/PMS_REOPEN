@@ -11,6 +11,40 @@ use Illuminate\Support\Facades\Schema;
 
 class OrganizationDirectoryController extends Controller
 {
+    public function deleteEmployees(Request $request)
+    {
+        $actor = $request->user();
+        abort_unless($actor && in_array($actor->normalizedRole(), ['admin', 'hr'], true)
+            && $actor->hasModulePermission('employees', 'delete'), 403);
+        $data = $request->validate([
+            'employee_ids' => 'required|array|min:1|max:500',
+            'employee_ids.*' => 'required|integer|distinct',
+        ]);
+        $companyId = (int) $actor->company_id;
+        abort_unless($companyId > 0, 403);
+
+        $count = \Illuminate\Support\Facades\DB::connection('tenant')->transaction(function () use ($data, $companyId, $actor) {
+            $employees = User::where('company_id', $companyId)->where('role', 'employee')
+                ->whereNull('archived_at')->whereIn('id', $data['employee_ids'])->lockForUpdate()->get();
+            abort_unless($employees->count() === count($data['employee_ids'])
+                && ! $employees->contains('id', $actor->id), 403, 'The selection contains employees you cannot delete.');
+
+            // Reject the whole selection rather than deleting only some employees.
+            if (\App\Models\EmployeeDetail::whereIn('reporting_to', $employees->modelKeys())->exists()) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'employee_ids' => 'Reassign reporting employees before deleting their manager. No employees were deleted.',
+                ]);
+            }
+            User::whereIn('id', $employees->modelKeys())->where('company_id', $companyId)->update([
+                'archived_at' => now(), 'is_active' => false, 'login_allowed' => false,
+            ]);
+
+            return $employees->count();
+        });
+
+        return response()->json(['message' => $count.' employee'.($count === 1 ? '' : 's').' deleted and moved to Archived Employees.']);
+    }
+
     public function index(Request $request)
     {
         // Tenant isolation: company users only ever see their own company's directory.

@@ -19,6 +19,7 @@ class AppServiceProvider extends ServiceProvider
 
         // One Super Admin feature-override lookup per company per request (sidebar + routes share it).
         $this->app->scoped(\App\Services\FeatureEntitlements::class);
+        $this->app->scoped(\App\Services\PlanFeatureEntitlements::class);
 
         if (!class_exists('CountryPhone', false)) {
             class_alias(\App\Support\CountryPhone::class, 'CountryPhone');

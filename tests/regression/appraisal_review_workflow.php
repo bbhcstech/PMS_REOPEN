@@ -56,7 +56,7 @@ $hr = User::findOrFail(2); Auth::guard('web')->setUser($hr);
 $check($policy->currentPeriod() === '2026 Q4', 'Current quarter is hard-coded');
 // The following fixtures exercise monthly reviews, so select that cycle explicitly.
 AppSetting::updateOrCreate(['key' => 'perf_appraisal_cycle'], ['value' => 'Monthly']);
-$check($metrics->calculate(User::findOrFail(3), '2026-10')['project_score'] === 0, 'Missing work invented a score');
+$check($metrics->calculate(User::findOrFail(3), '2026-10')['project_score'] === 0.0, 'Missing work invented a score');
 DB::table('attendances')->insert([
     ['company_id' => 1, 'user_id' => 3, 'date' => '2026-10-01', 'status' => 'present'],
     ['company_id' => 1, 'user_id' => 3, 'date' => '2026-10-01', 'status' => 'present'],
@@ -130,6 +130,7 @@ $validPolicy = ['appraisal_cycle' => 'Monthly', 'work_weight' => 50, 'attendance
 $settingsController->update($request($validPolicy));
 $check($policy->settings()['work_weight'] == 50 && $policy->settings()['increment_a_plus'] == 12.25 && $policy->currentPeriod() === '2026-10', 'Admin policy save did not affect the appraisal process');
 $formData = $settingsController->index()->getData();
+app('view')->share('errors', new Illuminate\Support\ViewErrorBag);
 $policyHtml = Blade::render("@include('admin.settings.partials.appraisal-policy-form')", $formData + ['isSettingsReadOnly' => false]);
 $check(str_contains($policyHtml, 'Salary increase recommendations') && str_contains($policyHtml, 'value="12.25"'), 'Saved policy values did not render');
 Auth::guard('web')->setUser($hr);

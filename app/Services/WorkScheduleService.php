@@ -20,6 +20,7 @@ class WorkScheduleService
     {
         return [
             'working_days' => json_decode(AppSetting::valueFor('work_working_days', '["Monday","Tuesday","Wednesday","Thursday","Friday"]'), true) ?? ["Monday","Tuesday","Wednesday","Thursday","Friday"],
+            'weekly_wfh_days' => json_decode(AppSetting::valueFor('work_weekly_wfh_days', '[]'), true) ?? [],
             'work_start_time' => AppSetting::valueFor('work_start_time', '09:00'),
             'work_end_time' => AppSetting::valueFor('work_end_time', '18:00'),
             'break_duration' => AppSetting::valueFor('work_break_duration', '60'),
@@ -49,6 +50,9 @@ class WorkScheduleService
 
         // 1. Company Holidays table
         $dbHolidaysQuery = Holiday::whereBetween('date', [$startDate->toDateString(), $endDate->toDateString()]);
+        if ($dbHolidaysQuery->getModel()->getConnection()->getSchemaBuilder()->hasColumn('holidays', 'archived_at')) {
+            $dbHolidaysQuery->whereNull('archived_at');
+        }
         if ($companyId && $dbHolidaysQuery->getModel()->getConnection()->getSchemaBuilder()->hasColumn('holidays', 'company_id')) {
             $dbHolidaysQuery->where(function ($q) use ($companyId) {
                 $q->where('company_id', $companyId)->orWhereNull('company_id');
@@ -106,14 +110,14 @@ class WorkScheduleService
      *
      * @return array|null [ 'is_wfh' => true, 'type' => 'specific_date'|'global_special'|'standard_mode', 'reason' => '...' ]
      */
-    public static function isUserWfhOnDate(int|string|null $userId, string|Carbon|null $date): ?array
+    public static function isUserWfhOnDate(int|string|null $userId, string|Carbon|null $date, ?array $settings = null): ?array
     {
         if (empty($userId) || empty($date)) {
             return null;
         }
 
         $dateStr = $date instanceof Carbon ? $date->format('Y-m-d') : Carbon::parse($date)->format('Y-m-d');
-        $settings = self::getSettings();
+        $settings ??= self::getSettings();
 
         // 1. Check Date-Specific Assignment for this employee
         $wfhDates = $settings['employee_wfh_dates'] ?? [];
@@ -137,6 +141,13 @@ class WorkScheduleService
                     'reason' => $sd['title'] ?? 'Company-Wide Work From Home (WFH)',
                 ];
             }
+        }
+
+        // Recurring company WFH days are working days, never weekly days off.
+        $weekday = Carbon::parse($dateStr)->format('l');
+        if (in_array($weekday, $settings['weekly_wfh_days'] ?? [], true)
+            && in_array($weekday, $settings['working_days'] ?? [], true)) {
+            return ['is_wfh' => true, 'type' => 'weekly_schedule', 'reason' => $weekday.' — company WFH schedule'];
         }
 
         // 3. Check Employee Standard Mode

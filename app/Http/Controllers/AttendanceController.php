@@ -62,6 +62,24 @@ class AttendanceController extends Controller
         return \App\Services\WorkforceAccess::isAdmin($user);
     }
 
+    private function parseManualDateRange($value): ?array
+    {
+        if (!is_string($value) || !preg_match('/\A\s*(\d{2}\/\d{2}\/\d{4})\s*-\s*(\d{2}\/\d{2}\/\d{4})\s*\z/', $value, $parts)) {
+            return null;
+        }
+
+        try {
+            $start = Carbon::createFromFormat('!m/d/Y', $parts[1]);
+            $end = Carbon::createFromFormat('!m/d/Y', $parts[2]);
+            if ($start->format('m/d/Y') !== $parts[1] || $end->format('m/d/Y') !== $parts[2] || $end->lt($start)) {
+                return null;
+            }
+            return [$start, $end];
+        } catch (\Throwable $e) {
+            return null;
+        }
+    }
+
     private function isEmployeeUser($user): bool
     {
         if (!$user) return false;
@@ -416,6 +434,7 @@ class AttendanceController extends Controller
             });
             $leaves = $leaveQuery->get();
         }
+        $schedule = WorkScheduleService::getSettings();
         if ($teamView) {
             $builder = app(\App\Services\AttendanceCalendar::class);
             $workingDays = \App\Models\AppSetting::getCompanyWorkingDays();
@@ -423,7 +442,7 @@ class AttendanceController extends Controller
             $leavesByEmployee = $leaves->groupBy('user_id');
             $rows = $visibleEmployees->map(fn ($employee) => [
                 'employee' => $employee,
-                'calendar' => $builder->build($start, $recordsByEmployee->get($employee->id, collect()), $holidays, $leavesByEmployee->get($employee->id, collect()), $employee->employeeDetail, $workingDays),
+                'calendar' => $builder->build($start, $recordsByEmployee->get($employee->id, collect()), $holidays, $leavesByEmployee->get($employee->id, collect()), $employee->employeeDetail, $workingDays, $employee->id, $schedule),
             ]);
             if ($request->query('format') === 'csv') {
                 return response()->streamDownload(function () use ($rows) {
@@ -443,7 +462,7 @@ class AttendanceController extends Controller
             }
             $summary = ['employees' => $rows->count(), 'present' => 0, 'absent' => 0, 'seconds' => 0];
             foreach ($rows as $row) {
-                $summary['present'] += $row['calendar']['totals']['present'] + $row['calendar']['totals']['late'];
+                $summary['present'] += $row['calendar']['totals']['present'] + $row['calendar']['totals']['late'] + $row['calendar']['totals']['wfh_present'];
                 $summary['absent'] += $row['calendar']['totals']['absent'];
                 $summary['seconds'] += $row['calendar']['totals']['seconds'];
             }
@@ -453,7 +472,7 @@ class AttendanceController extends Controller
         }
         $calendar = app(\App\Services\AttendanceCalendar::class)->build(
             $start, $records, $holidays, $leaves, $selectedEmployee?->employeeDetail,
-            \App\Models\AppSetting::getCompanyWorkingDays()
+            \App\Models\AppSetting::getCompanyWorkingDays(), $selectedEmployee?->id, $schedule
         );
         return view('admin.attendance.calendar', compact('employees', 'selectedEmployee', 'month', 'year', 'start', 'calendar', 'canManage'));
     }
@@ -932,6 +951,7 @@ class AttendanceController extends Controller
         // Normalize user_id to array (accept both single id and array)
         $userIds = $request->input('user_id', []);
         if (!is_array($userIds)) $userIds = [$userIds];
+        $request->merge(['user_id' => $userIds]);
 
         abort_if(\App\Services\WorkforceAccess::isHr($user)
             && collect($userIds)->contains(fn ($id) => (int) $id === (int) $user->id),
@@ -958,31 +978,22 @@ class AttendanceController extends Controller
                 ->with('error', 'You do not have permission to add attendance.');
         }
 
+        $parsedDateRange = null;
         $request->validate([
-            'user_id'   => 'required',
+            'user_id'   => 'required|array|min:1',
             'mark_attendance_by' => 'nullable|in:month,date',
             'year' => 'required_if:mark_attendance_by,month|nullable|integer|min:2000|max:2100',
             'month' => 'required_if:mark_attendance_by,month|nullable|integer|min:1|max:12',
             'date' => 'required_without:mark_attendance_by|nullable|date_format:Y-m-d',
-            'date_range' => ['required_if:mark_attendance_by,date', 'nullable', function ($attribute, $value, $fail) {
-                $parts = explode(' - ', $value);
-                if (count($parts) !== 2) {
-                    $fail('Select a valid date range (MM/DD/YYYY - MM/DD/YYYY).');
-                    return;
-                }
-                try {
-                    $start = Carbon::createFromFormat('!m/d/Y', trim($parts[0]));
-                    $end = Carbon::createFromFormat('!m/d/Y', trim($parts[1]));
-                    if ($start->format('m/d/Y') !== trim($parts[0]) || $end->format('m/d/Y') !== trim($parts[1]) || $end->lt($start)) {
-                        $fail('Select a valid date range with the end on or after the start.');
-                    }
-                } catch (\Throwable $e) {
-                    $fail('Select a valid date range (MM/DD/YYYY - MM/DD/YYYY).');
+            'date_range' => ['required_if:mark_attendance_by,date', 'nullable', function ($attribute, $value, $fail) use (&$parsedDateRange) {
+                $parsedDateRange = $this->parseManualDateRange($value);
+                if ($parsedDateRange === null) {
+                    $fail('Select a valid date range (MM/DD/YYYY - MM/DD/YYYY), with the end on or after the start.');
                 }
             }],
             'location_id' => 'nullable|integer|exists:tenant.company_addresses,id',
             'clock_in_address' => 'nullable|string|max:1000',
-            'user_id.*' => 'sometimes|exists:users,id',
+            'user_id.*' => 'required|integer|exists:users,id',
             'clock_in'  => ['nullable', function ($attribute, $value, $fail) {
                 if (!preg_match('/^(?:[01]\d|2[0-3]):[0-5]\d$/', $value)) {
                     $fail('Clock In must be in HH:MM format (00–23 hours, 00–59 minutes).');
@@ -999,15 +1010,18 @@ class AttendanceController extends Controller
         $userIds = $request->input('user_id', []);
         if (!is_array($userIds)) $userIds = [$userIds];
 
+        // Check every target before writing any date, including mixed-company bulk requests.
+        foreach (User::whereIn('id', $userIds)->get() as $employee) {
+            \App\Services\TenantScope::authorizeCompany($employee->company_id);
+        }
+
         // If user selected mark by date-range (bulk)
         if (in_array($request->mark_attendance_by, ['month', 'date'], true)) {
             if ($request->mark_attendance_by === 'month') {
                 $startDate = Carbon::create($request->integer('year'), $request->integer('month'), 1)->startOfDay();
                 $endDate = $startDate->copy()->endOfMonth();
             } else {
-                [$start, $end] = explode(' - ', $request->date_range);
-                $startDate = Carbon::createFromFormat('!m/d/Y', trim($start));
-                $endDate = Carbon::createFromFormat('!m/d/Y', trim($end));
+                [$startDate, $endDate] = $parsedDateRange;
             }
 
             $period = CarbonPeriod::create($startDate, $endDate);

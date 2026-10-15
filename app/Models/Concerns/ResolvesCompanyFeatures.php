@@ -34,53 +34,20 @@ trait ResolvesCompanyFeatures
         }
 
         // 2. Active Subscription Plan Module Entitlements
-        $slugs = $this->featurePlanSlugs($featureSlug);
         try {
             $centralComp = $this->getConnectionName() === 'central'
                 ? $this
                 : (\App\Models\Central\Company::on('central')->find($centralCompanyId) ?? $this);
 
-            $sub = $centralComp?->activeSubscription ?? $this->activeSubscription;
+            $sub = $centralComp?->activeSubscription;
             if ($sub && $sub->plan_id) {
                 $plan = $sub->plan ?? \App\Models\Central\Plan::on('central')->find($sub->plan_id);
-                $planSlug = strtolower($plan?->slug ?? '');
-
-                $planModules = \Illuminate\Support\Facades\DB::connection('central')
-                    ->table('plan_modules')
-                    ->join('modules', 'modules.id', '=', 'plan_modules.module_id')
-                    ->where('plan_modules.plan_id', $sub->plan_id)
-                    ->pluck('modules.slug')
-                    ->toArray();
-
-                if (! empty($planModules)) {
-                    foreach ($slugs as $slug) {
-                        if (in_array($slug, $planModules, true)) {
-                            return true;
-                        }
-                    }
-                    if (in_array($featureSlug, ['community', 'products', 'orders'], true)) {
-                        return true;
-                    }
-                    return false;
-                }
-
-                // Standard paid plans (gold, platinum, diamond) include all base platform features by default if plan_modules not explicitly populated
-                if (in_array($planSlug, ['gold', 'platinum', 'diamond'], true)) {
-                    return true;
-                }
-
-                // Free tier default allowed features
-                if (in_array($planSlug, ['free', 'trial', 'starter'], true)) {
-                    $freeAllowed = ['dashboard', 'notifications', 'organization', 'hr', 'employees', 'attendance', 'leave-management', 'leaves', 'holidays', 'events', 'my-documents', 'community', 'tickets', 'settings', 'products', 'orders'];
-                    foreach ($slugs as $slug) {
-                        if (in_array($slug, $freeAllowed, true)) {
-                            return true;
-                        }
-                    }
-                    return false;
-                }
+                return app(\App\Services\PlanFeatureEntitlements::class)->allows($plan, $featureSlug);
             }
-        } catch (\Throwable $e) {}
+        } catch (\Throwable $e) {
+            report($e);
+            return false;
+        }
 
         // 3. Default for active or trial accounts without explicit restrictions
         if ($this->isOnTrial() || $this->isActive()) {
@@ -99,57 +66,4 @@ trait ResolvesCompanyFeatures
         return method_exists($this, 'getCentralCompanyId') ? $this->getCentralCompanyId() : null;
     }
 
-    /** Plan-module slugs that grant a feature (unchanged plan entitlement mapping). */
-    protected function featurePlanSlugs(string $featureSlug): array
-    {
-        $inheritedFeature = config('workspace_modules.'.$featureSlug.'.inherits');
-        $slugs = match ($inheritedFeature ?: $featureSlug) {
-            'crm', 'deals', 'crm-deals' => ['crm-deals', 'crm', 'deals', 'leads-contacts'],
-            'leads', 'leads-contacts' => ['leads-contacts', 'leads', 'crm'],
-            'leaves', 'leave-management', 'leave-settings' => ['leave-management', 'leaves', 'leave-settings'],
-            'employees', 'user-management' => ['employees', 'user-management'],
-            'designations' => ['designations'],
-            'departments', 'parent-departments' => ['departments', 'parent-departments'],
-            'attendance', 'attendance-settings' => ['attendance', 'attendance-settings'],
-            'holidays', 'holiday-settings' => ['holidays', 'holiday-settings'],
-            'awards', 'recognition', 'letterhead' => ['recognition', 'awards', 'letterhead'],
-            'recruitment', 'recruitment-settings' => ['recruitment', 'recruitment-settings'],
-            'appraisal', 'performance-settings' => ['appraisal', 'performance-settings'],
-            'hr', 'hr-management' => ['hr', 'hr-management', 'hr-employees'],
-            'projects' => ['projects'],
-            'tasks' => ['tasks'],
-            'timelogs', 'timesheets' => ['timesheets', 'timelogs'],
-            'work' => ['work'],
-            'payroll', 'payslips', 'salary-structures', 'employee-salary', 'my-payslips',
-            'payroll-processing', 'payroll-history', 'formula-builder' => ['payroll'],
-            'expenses' => ['expenses'],
-            'billing' => ['billing', 'expenses'],
-            'clients', 'client' => ['clients', 'client', 'leads-contacts'],
-            'products' => ['products', 'projects', 'work'],
-            'orders' => ['orders', 'projects', 'work'],
-            'events' => ['events'],
-            'my-documents', 'documents' => ['my-documents', 'documents'],
-            'community' => ['community'],
-            'collaborating-companies', 'collaborating_companies' => ['collaborating-companies', 'collaborating_companies'],
-            'reports', 'standard-reports', 'analytics', 'advanced-reports', 'company-complaints', 'activity-logs', 'system-logs' => ['reports', 'standard-reports', 'analytics', 'advanced-reports', 'company-complaints', 'activity-logs', 'system-logs'],
-            'organization', 'teams' => ['organization', 'teams'],
-            'tickets' => ['tickets'],
-            'contracts' => ['contracts'],
-            'notifications', 'notification-settings' => ['notifications', 'notification-settings'],
-            'settings' => ['settings'],
-            'settings-dashboard' => ['settings-dashboard', 'settings'],
-            'company-profile-settings' => ['company-profile-settings', 'settings'],
-            'organization-details-settings' => ['organization-details-settings', 'settings'],
-            'business-address-settings' => ['business-address-settings', 'settings'],
-            'work-schedule-settings' => ['work-schedule-settings', 'settings'],
-            'security-settings' => ['security-settings', 'settings'],
-            'change-password-settings' => ['change-password-settings', 'settings'],
-            'role-permissions-settings' => ['role-permissions-settings', 'role-management', 'settings'],
-            'localization-settings' => ['localization-settings', 'settings'],
-            'terms-policy-settings' => ['terms-policy-settings', 'settings'],
-            default => [$featureSlug],
-        };
-        if ($inheritedFeature) array_unshift($slugs, $featureSlug);
-        return $slugs;
-    }
 }

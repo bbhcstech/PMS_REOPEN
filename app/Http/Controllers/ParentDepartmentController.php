@@ -272,6 +272,41 @@ class ParentDepartmentController extends Controller
     }
 }
 
+    /**
+     * Permanently delete a parent department ("Archive" above keeps it restorable). Refused while
+     * sub-departments or employees are linked, so no record is left pointing at a missing department.
+     */
+    public function deletePermanently(Request $request, $id)
+    {
+        abort_unless(auth()->user()?->hasModulePermission('department-parent', 'delete'), 403);
+        $respond = function (string $type, string $message, int $status = 200) use ($request) {
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json(['status' => $type, 'message' => $message], $status);
+            }
+            return back()->with($type === 'success' ? 'success' : 'error', $message);
+        };
+
+        try {
+            return DB::transaction(function () use ($id, $respond) {
+                $department = ParentDepartment::lockForUpdate()->findOrFail($id);
+                if ($department->departments()->exists()) {
+                    return $respond('error', '"' . $department->dpt_name . '" cannot be deleted because sub-departments are linked to it. Move or delete them first.', 422);
+                }
+                if ($department->employees()->exists()) {
+                    return $respond('error', '"' . $department->dpt_name . '" cannot be deleted because it is tagged with employees. Reassign them first.', 422);
+                }
+                $name = $department->dpt_name;
+                $department->delete();
+                return $respond('success', 'Department "' . $name . '" deleted permanently.');
+            });
+        } catch (\Illuminate\Database\QueryException $e) {
+            if (($e->errorInfo[0] ?? null) !== '23000') {
+                throw $e;
+            }
+            return $respond('error', 'This department cannot be deleted because other records still reference it.', 422);
+        }
+    }
+
     public function archive(Request $request)
     {
         $perPage = (int) $request->input('per_page', 10);

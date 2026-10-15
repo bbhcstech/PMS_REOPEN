@@ -1,4 +1,9 @@
 <?php
+if (!function_exists('app')) {
+    require dirname(__DIR__, 2).'/vendor/autoload.php';
+    $app = require dirname(__DIR__, 2).'/bootstrap/app.php';
+    $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
+}
 /**
  * Super Admin "Manage Features" regression check (no MySQL needed).
  *
@@ -209,6 +214,7 @@ $check('routes outside any feature are untouched (profile.edit)', $call('profile
 
 // ---- 4. Super Admin toggle + feature-states endpoint ----------------------------------------------
 echo "Super Admin Manage Features endpoints\n";
+\Illuminate\Support\Facades\Auth::guard('super_admin')->setUser((new \App\Models\Central\SuperAdmin)->forceFill(['id' => 1]));
 $clearOverrides();
 $controller = app(\App\Http\Controllers\SuperAdmin\CompanyController::class);
 $setOverride($companyA, 'deals', false); // stale legacy decision
@@ -234,6 +240,7 @@ $check('feature-states lists every registry feature', count($states) >= count(co
 
 // ---- 5. Existing behaviour that must not change -----------------------------------------------------
 echo "Unchanged behaviour (role permissions, plans)\n";
+\Illuminate\Support\Facades\Auth::guard('super_admin')->forgetUser();
 $clearOverrides();
 $context->company = $fresh($companyA);
 $check('hr with no saved role decisions keeps default access to Deals', $hr->moduleToggleAllows('crm-deals'));
@@ -266,3 +273,4 @@ DB::connection('central')->table('companies')->where('id', $companyB->id)->updat
 $check('suspended company has no features', ! $fresh($companyB)->hasFeature('tasks'));
 
 echo "\nRESULT: $pass passed, $fail failed\n";
+if ($fail) throw new RuntimeException('Feature entitlement regression failed.');

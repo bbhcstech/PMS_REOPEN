@@ -37,7 +37,7 @@ foreach ([['teamwork_score' => 0], ['communication_score' => 11], ['punctuality_
     catch (\Illuminate\Validation\ValidationException $e) { $check(count($e->errors()) > 0, 'Validation error missing'); }
 }
 $denied(fn () => $controller->saveBehaviour(Request::create('/ratings', 'POST', array_replace($rating, ['employee_id' => 5]))), 404);
-foreach ([2, 3, 4] as $actorId) {
+foreach ([3, 4] as $actorId) {
     Auth::guard('web')->setUser(User::findOrFail($actorId));
     $denied(fn () => $controller->saveBehaviour(Request::create('/ratings', 'POST', $rating)));
 }
@@ -50,7 +50,9 @@ $check(str_contains($html, 'action="'.route('appraisal.behaviour.save').'"') && 
 Auth::guard('web')->setUser(User::findOrFail(2));
 $hrData = $controller->index(Request::create('/appraisals', 'GET', ['period' => '2026-10']))->getData();
 $hrHtml = Blade::render("@include('admin.appraisal.behaviour-table') @stack('appraisal-behaviour-modals')", $hrData);
-$check(!str_contains($hrHtml, 'data-behaviour-rating-form'), 'HR received admin-only direct rating form');
+$check(str_contains($hrHtml, 'data-behaviour-rating-form') && !str_contains($hrHtml, 'id="behaviourRating-2"') && !str_contains($hrHtml, 'id="behaviourRating-6"'), 'HR rating permissions do not match eligible staff');
+$controller->saveBehaviour(Request::create('/ratings', 'POST', $rating));
+foreach ([2, 6] as $hrId) $denied(fn () => $controller->saveBehaviour(Request::create('/ratings', 'POST', array_replace($rating, ['employee_id' => $hrId]))));
 $check(Appraisal::count() === $count, 'Validation or opening the table wrote appraisal rows');
 Carbon::setTestNow();
-echo "PASS: admin manual ratings for employees/HR/managers, new/existing periods, derived score, preserved work/attendance, approval invalidation, recalculation preservation, validation, tenant boundaries and read-only HR UI.\n";
+echo "PASS: admin staff ratings; HR ratings for employees/managers only; derived score, preserved metrics, approval invalidation, recalculation, validation and tenant boundaries.\n";

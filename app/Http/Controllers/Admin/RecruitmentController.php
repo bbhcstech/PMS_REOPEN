@@ -94,12 +94,9 @@ class RecruitmentController extends Controller
             'location' => 'nullable|string|max:150',
             'description' => 'nullable|string',
             'requirements_summary' => 'nullable|string',
-            'pdf_header_image' => 'required|image|mimes:jpg,jpeg,png|max:2048',
-            'pdf_footer_image' => 'required|image|mimes:jpg,jpeg,png|max:2048',
-        ], [
-            'pdf_header_image.required' => 'Please upload the company header image for the requirement PDF.',
-            'pdf_footer_image.required' => 'Please upload the company footer image for the requirement PDF.',
-        ]);
+            'pdf_header_image' => \App\Support\RecruitmentPdfBranding::rules(\App\Support\RecruitmentPdfBranding::HEADER_HEIGHT),
+            'pdf_footer_image' => \App\Support\RecruitmentPdfBranding::rules(\App\Support\RecruitmentPdfBranding::FOOTER_HEIGHT),
+        ], \App\Support\RecruitmentPdfBranding::messages());
 
         $this->ensurePdfBrandingColumns();
 

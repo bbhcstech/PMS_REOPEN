@@ -90,7 +90,7 @@ class EnforceRolePermissionToggles
             return false;
         } catch (\Throwable $e) {
             report($e);
-            return true;
+            return false;
         }
     }
 

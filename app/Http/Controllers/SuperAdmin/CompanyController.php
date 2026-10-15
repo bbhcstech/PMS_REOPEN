@@ -688,7 +688,8 @@ class CompanyController extends Controller
                 ['email' => $companyEmail],
                 [
                     'company_id'    => $company->id,
-                    'name'          => $data['name'] . ' Contact',
+                    // The company-email login belongs to the same admin: use the name entered on the provision form.
+                    'name'          => $adminName,
                     'password'      => Hash::make($data['admin_password']),
                     'raw_password'  => $data['admin_password'],
                     'profile_image' => $adminProfileImagePath,
@@ -1089,9 +1090,10 @@ class CompanyController extends Controller
      */
     public function togglePlanModule(Request $request): RedirectResponse|\Illuminate\Http\JsonResponse
     {
+        abort_unless(\App\Services\TenantScope::isPlatformAdmin(), 403);
         $request->validate([
-            'plan_id' => 'required',
-            'module_id' => 'required',
+            'plan_id' => 'required|integer|exists:central.plans,id',
+            'module_id' => 'required|integer|exists:central.modules,id',
             'enabled' => 'required|boolean',
         ]);
 
@@ -1104,31 +1106,7 @@ class CompanyController extends Controller
             $module = \App\Models\Module::on('central')->find($moduleId) ?? \App\Models\Module::find($moduleId);
 
             if ($plan && $module) {
-                if ($enabled) {
-                    DB::connection('central')->table('plan_modules')->updateOrInsert(
-                        ['plan_id' => $plan->id, 'module_id' => $module->id],
-                        ['created_at' => now(), 'updated_at' => now()]
-                    );
-
-                    // Sync feature array on plan
-                    $features = (array) ($plan->features ?? []);
-                    if (! in_array($module->slug, $features, true)) {
-                        $features[] = $module->slug;
-                        $plan->features = array_values(array_unique($features));
-                        $plan->save();
-                    }
-                } else {
-                    DB::connection('central')->table('plan_modules')
-                        ->where('plan_id', $plan->id)
-                        ->where('module_id', $module->id)
-                        ->delete();
-
-                    // Sync feature array on plan
-                    $features = (array) ($plan->features ?? []);
-                    $features = array_diff($features, [$module->slug]);
-                    $plan->features = array_values($features);
-                    $plan->save();
-                }
+                app(\App\Services\PlanFeatureEntitlements::class)->set($plan, $module, $enabled);
 
                 // Log Audit
                 try {
@@ -1151,7 +1129,10 @@ class CompanyController extends Controller
         }
 
         if ($request->wantsJson()) {
-            return response()->json(['success' => true, 'message' => 'Plan module access updated successfully.']);
+            $states = \App\Models\Module::on('central')->get()->mapWithKeys(fn ($item) => [
+                $item->id => app(\App\Services\PlanFeatureEntitlements::class)->allows($plan, $item->slug) ? 1 : 0,
+            ]);
+            return response()->json(['success' => true, 'message' => 'Plan module access updated successfully.', 'states' => $states]);
         }
 
         return back()->with('success', 'Plan module access updated successfully.');
@@ -1453,9 +1434,10 @@ class CompanyController extends Controller
      */
     public function toggleCompanyOverride(Request $request): RedirectResponse|\Illuminate\Http\JsonResponse
     {
+        abort_unless(\App\Services\TenantScope::isPlatformAdmin(), 403);
         $request->validate([
-            'company_id' => 'required',
-            'module_id' => 'required',
+            'company_id' => 'required|integer|exists:central.companies,id',
+            'module_id' => 'required|integer|exists:central.modules,id',
             'enabled' => 'required|boolean',
         ]);
 
@@ -1464,6 +1446,7 @@ class CompanyController extends Controller
         $enabled = $request->boolean('enabled');
 
         try {
+            DB::connection('central')->transaction(function () use ($companyId, $moduleId, $enabled) {
             DB::connection('central')->table('company_modules')->updateOrInsert(
                 ['company_id' => $companyId, 'module_id' => $moduleId],
                 ['is_enabled' => $enabled, 'updated_at' => now()]
@@ -1480,6 +1463,7 @@ class CompanyController extends Controller
                     ->delete();
             }
             $entitlements->forget((int) $companyId);
+            });
 
             // Log Audit Action
             try {
@@ -1531,11 +1515,14 @@ class CompanyController extends Controller
         $overrides = DB::connection('central')->table('company_modules')
             ->where('company_id', $company->id)->pluck('is_enabled', 'module_id');
         $states = [];
+        $plan = $company->activeSubscription?->plan;
         foreach (app(\App\Services\AdminWorkspaceModules::class)->all(false) as $module) {
             if ($entitlements->isLegacyAlias($module->slug)) continue;
             $blockedBy = $entitlements->disabledAncestor((int) $company->id, $module->slug);
             $states[$module->id] = [
                 'effective' => $company->hasFeature($module->slug) ? 1 : 0,
+                'plan' => $plan ? (int) app(\App\Services\PlanFeatureEntitlements::class)->allows($plan, $module->slug)
+                    : (int) ($company->isOnTrial() || $company->isActive()),
                 'override' => $overrides->has($module->id) ? (int) $overrides[$module->id] : null,
                 'blocked_by' => $blockedBy ? (config('workspace_modules.'.$blockedBy.'.name') ?? \Illuminate\Support\Str::headline($blockedBy)) : null,
             ];

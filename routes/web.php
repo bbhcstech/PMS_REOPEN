@@ -640,6 +640,7 @@ Route::middleware(['auth', 'module.access'])->group(function () {
     // Payroll routes moved to standalone group below (line ~1226)
 
     Route::get('/organization', [OrganizationDirectoryController::class, 'index'])->name('organization.index');
+    Route::delete('/organization/employees', [OrganizationDirectoryController::class, 'deleteEmployees'])->name('organization.employees.delete');
     Route::get('/organization/employees/{employee}', [OrganizationDirectoryController::class, 'show'])->name('organization.show');
     Route::patch('/organization/employees/{employee}/directory-profile', [OrganizationDirectoryController::class, 'updateDirectoryProfile'])->name('organization.directory-profile.update');
 
@@ -731,6 +732,8 @@ Route::middleware(['auth', 'module.access'])->group(function () {
         ->name('parent-departments.restore');
     Route::post('parent-departments/bulk-delete', [ParentDepartmentController::class, 'bulkDestroy'])
         ->name('parent-departments.bulk-delete');
+    Route::delete('parent-departments/{id}/permanent', [ParentDepartmentController::class, 'deletePermanently'])
+        ->name('parent-departments.delete-permanent');
     Route::resource('parent-departments', ParentDepartmentController::class);
 
     // Departments
@@ -1441,6 +1444,7 @@ Route::middleware(['auth', 'module.access'])->group(function () {
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/admin/settings/app', [AppSettingController::class, 'appSettings'])->name('admin.settings.app');
+    Route::post('/admin/settings/app/dashboard', [AppSettingController::class, 'updateDashboard'])->name('admin.settings.app.dashboard');
     Route::get('/admin/settings/app/client-signup', [AppSettingController::class, 'clientSignupSettings'])->name('admin.settings.app.client-signup');
     Route::get('/admin/settings/app/file-upload', [AppSettingController::class, 'fileUploadSettings'])->name('admin.settings.app.file-upload');
     Route::get('/admin/settings/app/google-map', [AppSettingController::class, 'googleMapSettings'])->name('admin.settings.app.google-map');

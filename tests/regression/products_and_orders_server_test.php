@@ -33,6 +33,7 @@ Schema::connection('central')->create('companies', function (Blueprint $table) {
     $table->string('email')->nullable();
     $table->string('company_code')->nullable();
     $table->string('db_name')->nullable();
+    $table->text('settings')->nullable();
     $table->softDeletes();
     $table->timestamps();
 });
@@ -74,11 +75,12 @@ Schema::connection('central')->create('company_modules', function (Blueprint $ta
     $table->timestamps();
 });
 
-Schema::connection('central')->create('subscriptions', function (Blueprint $table) {
+Schema::connection('central')->create('company_subscriptions', function (Blueprint $table) {
     $table->id();
     $table->unsignedBigInteger('company_id');
     $table->unsignedBigInteger('plan_id');
     $table->string('status')->default('active');
+    $table->timestamp('ends_at')->nullable();
     $table->timestamps();
 });
 
@@ -87,6 +89,8 @@ Schema::create('companies', function (Blueprint $table) {
     $table->id();
     $table->string('name');
     $table->string('status')->default('active');
+    $table->text('settings')->nullable();
+    $table->string('db_name')->nullable();
     $table->timestamps();
 });
 
@@ -269,8 +273,8 @@ $projectsCentralMod = DB::connection('central')->table('modules')->insertGetId([
 DB::connection('central')->table('plan_modules')->insert([
     ['plan_id' => $plan, 'module_id' => $projectsCentralMod],
 ]);
-DB::connection('central')->table('subscriptions')->insert([
-    'company_id' => $company->id, 'plan_id' => $plan, 'status' => 'active'
+DB::connection('central')->table('company_subscriptions')->insert([
+    'company_id' => $company->id, 'plan_id' => $plan, 'status' => 'active', 'ends_at' => now()->addMonth()
 ]);
 
 assert($company->hasFeature('products') === true, "Company::hasFeature('products') must be true under subscription plan with projects/work");

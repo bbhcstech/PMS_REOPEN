@@ -845,6 +845,7 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
             $hours[] = round($day['seconds'] / 3600, 2);
             $slice = match ($day['status']) {
                 'present', 'late' => $day['wfh'] ? 'Work From Home' : 'Present',
+                'wfh' => 'Work From Home',
                 'half_day' => 'Half Day',
                 'leave', 'unpaid_leave' => 'On Leave',
                 'absent' => 'Absent',
@@ -853,7 +854,7 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
             if ($slice) $summary[$slice]++;
             if (! $day['date']->isFuture() && ! in_array($day['status'], ['holiday', 'day_off', 'not_joined'], true)) {
                 $scheduled++;
-                $attended += in_array($day['status'], ['present', 'late'], true) ? 1 : ($day['status'] === 'half_day' ? 0.5 : 0);
+                $attended += in_array($day['status'], ['present', 'late', 'wfh'], true) ? 1 : ($day['status'] === 'half_day' ? 0.5 : 0);
             }
         }
 

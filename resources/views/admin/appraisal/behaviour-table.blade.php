@@ -1,8 +1,8 @@
 @php
     $behaviourEmployees = $employees->merge($appraisals->pluck('employee')->filter())->unique('id');
-    $isBehaviourAdmin = \App\Services\WorkforceAccess::isAdmin(auth()->user());
+    $isBehaviourAdmin = $canManage;
 @endphp
-<p class="small text-muted px-3 pt-3 mb-2">These ratings require a human review. Enter each rating from 1 to 10; the behaviour score is their average multiplied by 10. Saving ratings leaves the appraisal awaiting final review.</p>
+<p class="small text-muted px-3 pt-3 mb-2">Enter observed ratings from 1 to 10 with remarks. An average of {{ $settings['behaviour_full_marks_at'] }}/10 earns 100 marks; lower averages earn proportional marks. Saving ratings leaves the appraisal awaiting final review.</p>
 <div class="table-responsive" data-behaviour-section data-behaviour-open="{{ session('appraisal_tab') === 'behaviour' || old('behaviour_rating_form') ? '1' : '0' }}" data-behaviour-employee="{{ old('behaviour_rating_form') ? (int) old('employee_id') : '' }}">
     <table class="table app-table align-middle mb-0">
         <thead><tr>
@@ -23,7 +23,7 @@
                 <td>{{ $hasRatings ? number_format($record->communication_score, 1) : 'Not rated' }}</td>
                 <td>{{ $hasRatings ? number_format($record->punctuality_score, 1) : 'Not rated' }}</td>
                 <td><span class="fw-bold text-warning">{{ $hasRatings ? number_format($record->behaviour_score, 1).' / 100' : 'Awaiting ratings' }}</span></td>
-                <td><small class="text-muted">{{ $hasRatings ? $record->behaviour_remarks : 'Administrator feedback required.' }}</small></td>
+                <td><small class="text-muted">{{ $hasRatings ? $record->behaviour_remarks : 'Reviewer feedback required.' }}</small></td>
                 @if($isBehaviourAdmin)<td>
                     @if($canRate)
                     <button type="button" class="btn btn-sm btn-purple-primary" data-bs-toggle="modal" data-bs-target="#behaviourRating-{{ $employee->id }}">{{ $hasRatings ? 'Edit ratings' : 'Add ratings' }}</button>
@@ -43,7 +43,7 @@
         @if(($record ? $canEdit : $canCreate) && in_array($employee->id, $editableEmployeeIds, true))
         <div class="modal fade" id="behaviourRating-{{ $employee->id }}" tabindex="-1" aria-labelledby="behaviourTitle-{{ $employee->id }}" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered modal-lg"><div class="modal-content">
-                <form method="POST" action="{{ route('appraisal.behaviour.save') }}" data-behaviour-rating-form>
+                <form method="POST" action="{{ route('appraisal.behaviour.save') }}" data-behaviour-rating-form data-behaviour-target="{{ $settings['behaviour_full_marks_at'] }}">
                     @csrf
                     <input type="hidden" name="behaviour_rating_form" value="1">
                     <input type="hidden" name="employee_id" value="{{ $employee->id }}">

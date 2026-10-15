@@ -286,6 +286,19 @@
                                             <i class="fas fa-box-archive"></i> Archive Department
                                         </button>
                                     </li>
+                                    @if(auth()->user()?->hasModulePermission('department-parent', 'delete'))
+                                    <li>
+                                        {{-- Permanent delete (Archive above keeps it restorable). Refused while sub-departments or employees are linked. --}}
+                                        <form method="POST" action="{{ \App\Support\WorkforceSettings::route('parent-departments.delete-permanent', $dpt->id) }}"
+                                              onsubmit="return confirm('Permanently delete &quot;{{ addslashes($dpt->dpt_name) }}&quot;? This cannot be undone. Use Archive instead if you may need it again.');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="dropdown-item text-danger">
+                                                <i class="fas fa-trash-alt"></i> Delete Department
+                                            </button>
+                                        </form>
+                                    </li>
+                                    @endif
                                 </ul>
                             </div>
                             <form action="{{ \App\Support\WorkforceSettings::route('parent-departments.destroy', $dpt) }}"

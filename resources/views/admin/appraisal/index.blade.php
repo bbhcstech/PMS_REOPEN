@@ -806,7 +806,10 @@
             <h3>Employee Performance Appraisal</h3>
             <p>Review attendance ({{ $settings['attendance_weight'] }}%), work delivery ({{ $settings['work_weight'] }}%), and cultural behaviour ({{ $settings['behaviour_weight'] }}%). Weights and salary increase recommendations are managed in Admin Settings.</p>
         </div>
-        <div class="d-flex gap-2">
+        <div class="d-flex gap-2 flex-wrap">
+            @if($canCreate)
+                <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#calculateAppraisalModal"><i class="bx bx-user-plus me-1"></i>Add employees &amp; calculate</button>
+            @endif
             @if($canCreate && $canEdit)
             <form method="POST" action="{{ route('appraisal.autoCalculate') }}">
                 @csrf
@@ -825,7 +828,7 @@
     </div>
 
     @if($errors->any())<div class="alert alert-danger" role="alert">{{ $errors->first() }}</div>@endif
-    @if(auth()->user()?->normalizedRole() === 'hr')<div class="alert alert-info">You may evaluate other company employees and managers. Your own appraisal is read-only and must be completed by Admin.</div>@endif
+    @if(auth()->user()?->normalizedRole() === 'hr')<div class="alert alert-info">You may evaluate other company employees and managers. HR appraisals are reserved for Admin. Your own appraisal is read-only.</div>@endif
     @if(\App\Services\WorkforceAccess::isAdmin(auth()->user()))<a href="{{ route('admin.settings.performance') }}" class="btn btn-outline-primary mb-3">Appraisal &amp; salary increase settings</a>@endif
     <p class="small text-muted">Drafts contain recorded attendance and task metrics only. Cultural behaviour needs reviewer evidence. Each saved evaluation retains its policy weights; salary recommendations do not change payroll automatically.</p>
     {{-- METRIC SUMMARY CARDS --}}
@@ -907,6 +910,11 @@
         </div>
     </div>
 
+    @unless($canManage)
+        @foreach($appraisals as $personalAppraisal)
+            @include('admin.appraisal.personal-breakdown', ['record' => $personalAppraisal])
+        @endforeach
+    @endunless
     {{-- APPRAISAL TABS FOR SEPARATE TABLES & MASTER OVERALL TABLE --}}
     <ul class="nav nav-tabs appraisal-tabs" id="appraisalTabs" role="tablist">
         <li class="nav-item" role="presentation">
@@ -1163,6 +1171,29 @@
 @endforeach
 
 @if($canCreate)
+<div class="modal fade" id="calculateAppraisalModal" tabindex="-1" aria-labelledby="calculateAppraisalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered"><div class="modal-content">
+        <form method="POST" action="{{ route('appraisal.autoCalculate') }}">
+            @csrf
+            <input type="hidden" name="period" value="{{ $selectedPeriod }}">
+            <div class="modal-header"><h5 class="modal-title" id="calculateAppraisalTitle">Add employees to {{ $selectedPeriod }}</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
+            <div class="modal-body">
+                <p class="text-muted">Select staff to calculate attendance and work marks using the saved company policy. Then enter behaviour ratings and complete the review. Submitted and approved appraisals stay unchanged.</p>
+                <input type="hidden" name="selected_staff_calculation" value="1">
+                <div class="border rounded p-3" style="max-height: 360px; overflow-y: auto;">
+                    @forelse($employees->whereIn('id', $editableEmployeeIds) as $staff)
+                        <div class="form-check py-2">
+                            <input class="form-check-input" type="checkbox" name="employee_ids[]" value="{{ $staff->id }}" id="appraisal-staff-{{ $staff->id }}">
+                            <label class="form-check-label" for="appraisal-staff-{{ $staff->id }}"><strong>{{ $staff->name }}</strong><span class="d-block small text-muted">{{ ucfirst($staff->role) }}{{ $staff->designation ? ' · '.$staff->designation : '' }}</span></label>
+                        </div>
+                    @empty<p class="text-muted mb-0">No eligible staff match your filters.</p>@endforelse
+                </div>
+                <p class="small text-muted mt-2 mb-0">Select at least one employee. Only staff in your company are available.</p>
+            </div>
+            <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button type="submit" class="btn btn-purple-primary">Calculate selected appraisals</button></div>
+        </form>
+    </div></div>
+</div>
 {{-- EVALUATE EMPLOYEE MODAL --}}
 <div class="modal fade" id="evaluateAppraisalModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">

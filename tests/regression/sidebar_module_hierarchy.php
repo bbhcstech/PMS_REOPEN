@@ -43,7 +43,7 @@ DB::connection('central')->table('plan_modules')->insert(['plan_id' => 99, 'modu
 $company = new Company;
 $company->setConnection('central');
 $company->forceFill(['id' => 1, 'status' => 'active']);
-$company->setRelation('activeSubscription', (object) ['plan_id' => 99, 'plan' => (object) ['slug' => 'gold']]);
+$company->setRelation('activeSubscription', (object) ['plan_id' => 99, 'plan' => (object) ['id' => 99, 'slug' => 'gold']]);
 $secondCompany = clone $company;
 $secondCompany->id = 2;
 DB::connection('central')->table('company_modules')->insert(['company_id' => 2, 'module_id' => $reports->id, 'is_enabled' => false]);

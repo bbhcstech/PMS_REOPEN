@@ -143,13 +143,16 @@
     @if($pdfHeaderImage || $pdfFooterImage)
     <style>
         /* Company header/footer repeat on every page; the page margins reserve their space. */
-        @page { margin: {{ $pdfHeaderImage ? '120px' : '30px' }} 30px {{ $pdfFooterImage ? '100px' : '30px' }} 30px; }
+        @page { size: A4 portrait; margin: {{ $pdfHeaderImage ? '42mm' : '15mm' }} 15mm {{ $pdfFooterImage ? '34mm' : '18mm' }} 15mm; }
         body { padding: 0; }
-        .pdf-brand-header, .pdf-brand-footer { position: fixed; left: 0; right: 0; text-align: center; }
-        .pdf-brand-header { top: -105px; height: 95px; }
-        .pdf-brand-footer { bottom: -88px; height: 80px; }
-        .pdf-brand-header img { max-width: 100%; max-height: 95px; }
-        .pdf-brand-footer img { max-width: 100%; max-height: 80px; }
+        .pdf-brand-header, .pdf-brand-footer { position: fixed; left: 15mm; right: 15mm; text-align: center; }
+        .pdf-brand-header { top: 10mm; height: 24mm; }
+        .pdf-brand-footer { bottom: 8mm; height: 16mm; }
+        .pdf-brand-header img { max-width: 180mm; max-height: 24mm; width: auto; height: auto; }
+        .pdf-brand-footer img { max-width: 180mm; max-height: 16mm; width: auto; height: auto; }
+        .header-table, .title-box, .params-table { page-break-inside: avoid; }
+        .section-header { page-break-after: avoid; }
+        .section-text { overflow-wrap: break-word; word-wrap: break-word; }
     </style>
     @endif
 </head>

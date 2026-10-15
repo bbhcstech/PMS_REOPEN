@@ -19,6 +19,7 @@ class AppraisalPolicy
             'behaviour_weight' => 30, 'admin_approval_required' => '1',
             'increment_enabled' => '1', 'increment_a_plus' => 10, 'increment_a' => 7,
             'increment_b' => 3, 'increment_c' => 0, 'increment_d' => 0,
+            'attendance_full_marks_at' => 100, 'work_full_marks_at' => 100, 'behaviour_full_marks_at' => 10,
         ];
         foreach ($defaults as $key => $value) $defaults[$key] = $values['perf_'.$key] ?? $value;
         return $defaults;
@@ -33,7 +34,34 @@ class AppraisalPolicy
     {
         return $this->canManage($actor) && (int) $actor->company_id === (int) $employee->company_id
             && (WorkforceAccess::isAdmin($actor) || (int) $actor->id !== (int) $employee->id)
-            && in_array($employee->normalizedRole(), ['employee', 'manager', 'hr'], true);
+            && (WorkforceAccess::isAdmin($actor) || $employee->normalizedRole() !== 'hr')
+            && in_array($employee->normalizedRole(), ['employee', 'user', 'manager', 'hr', 'developer', 'dev'], true)
+            && ! $employee->archived_at;
+    }
+
+    public function staffQuery(User $actor): \Illuminate\Database\Eloquent\Builder
+    {
+        $query = User::where('company_id', $actor->company_id)
+            ->whereIn(\Illuminate\Support\Facades\DB::raw('LOWER(role)'), ['employee', 'user', 'manager', 'hr', 'developer', 'dev'])
+            ->where(fn ($q) => $q->where('is_active', true)->orWhereNull('is_active'));
+        if (Schema::connection('tenant')->hasColumn('users', 'archived_at')) $query->whereNull('archived_at');
+        if (!WorkforceAccess::isAdmin($actor)) {
+            if ($actor->normalizedRole() === 'hr') $query->where(fn ($q) => $q->whereRaw('LOWER(role) <> ?', ['hr'])->orWhere('id', $actor->id));
+            else $query->whereKey($actor->id);
+        }
+        return $query;
+    }
+
+    public function criterionScore(float $value, string $criterion, ?array $settings = null): float
+    {
+        $settings ??= $this->settings();
+        $target = max(0.01, (float) ($settings[$criterion.'_full_marks_at'] ?? ($criterion === 'behaviour' ? 10 : 100)));
+        return round(max(0, min(100, $value / $target * 100)), 2);
+    }
+
+    public function behaviourScore(array $ratings, ?array $settings = null): float
+    {
+        return $this->criterionScore(array_sum($ratings) / 3, 'behaviour', $settings);
     }
 
     public function periodDates(string $period): array

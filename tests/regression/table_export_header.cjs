@@ -2,6 +2,11 @@ const fs = require('node:fs');
 const vm = require('node:vm');
 const assert = require('node:assert/strict');
 const source = fs.readFileSync(require('node:path').join(__dirname, '../../public/admin/assets/js/pms-table-tools.js'), 'utf8');
+const attendanceView = fs.readFileSync(require('node:path').join(__dirname, '../../resources/views/admin/attendance/create.blade.php'), 'utf8');
+const adminHeader = fs.readFileSync(require('node:path').join(__dirname, '../../resources/views/admin/layout/header.blade.php'), 'utf8');
+assert.match(adminHeader, /@stack\('styles'\)/);
+assert.match(attendanceView, /@push\('styles'\)[\s\S]*?daterangepicker\.css[\s\S]*?@endpush/,
+  'Attendance date-picker CSS must be sent to the stack rendered by the admin layout');
 const eligible = vm.runInNewContext(source.slice(source.indexOf('  function isEligible('), source.indexOf('  function dataRows(')) + '\nisEligible');
 const recordTable = {
   tagName: 'TABLE', matches: () => false, closest: () => null,
@@ -10,6 +15,8 @@ const recordTable = {
 assert.equal(eligible(recordTable), true, 'Record tables must retain export controls');
 assert.equal(eligible({...recordTable, closest: selector => selector === '.fc' ? {} : null}), false,
   'Calendar layout tables must not receive selection columns, export controls or scroll hosts');
+assert.equal(eligible({...recordTable, closest: selector => selector === '.daterangepicker' ? {} : null}), false,
+  'Date-range picker tables must not receive selection columns, export controls or scroll hosts');
 assert.equal(eligible({...recordTable, closest: selector => selector === '[data-pms-export="off"]' ? {} : null}), false,
   'Explicitly excluded containers must remain untouched');
 const code = source.slice(source.indexOf('  function placeToolbar('), source.indexOf('  function createToolbar('));

@@ -6,7 +6,8 @@
         var valid = inputs.length === 3 && inputs.every(function (input) {
             return input.value !== '' && input.validity.valid && Number(input.value) >= 1 && Number(input.value) <= 10;
         });
-        output.textContent = valid ? (inputs.reduce(function (sum, input) { return sum + Number(input.value); }, 0) / 3 * 10).toFixed(2) + ' / 100' : 'Enter all three ratings (1–10)';
+        var target = Number(form.dataset && form.dataset.behaviourTarget) || 10;
+        output.textContent = valid ? Math.min(100, inputs.reduce(function (sum, input) { return sum + Number(input.value); }, 0) / 3 / target * 100).toFixed(2) + ' / 100' : 'Enter all three ratings (1–10)';
     }
     document.querySelectorAll('[data-behaviour-rating-form]').forEach(preview);
     document.addEventListener('input', function (event) {

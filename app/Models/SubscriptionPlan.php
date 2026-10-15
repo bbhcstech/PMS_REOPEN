@@ -29,8 +29,9 @@ class SubscriptionPlan extends Model
 
     public function modules(): BelongsToMany
     {
-        return $this->belongsToMany(Module::class, 'plan_modules', 'plan_id', 'module_id')
-            ->withTimestamps();
+        $relation = $this->belongsToMany(Module::class, 'plan_modules', 'plan_id', 'module_id')->withTimestamps();
+        if (\Illuminate\Support\Facades\Schema::connection('central')->hasColumn('plan_modules', 'is_enabled')) $relation->wherePivot('is_enabled', true);
+        return $relation;
     }
 
     public function companySubscriptions()

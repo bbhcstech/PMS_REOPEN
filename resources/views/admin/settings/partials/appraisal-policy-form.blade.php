@@ -1,7 +1,7 @@
 <form method="POST" action="{{ route('admin.settings.performance.update') }}">
     @csrf
     <div class="alert alert-info">
-        Admin and HR review employees and managers. HR's own appraisal is reserved for the company administrator. Self-rating and manager editing are disabled.
+        Company admins review all staff, including HR and managers. HR reviews other employees and managers; all HR evaluations are reserved for the company admin. Employees can view their own scores and remarks.
     </div>
     <div class="row g-4">
         <div class="col-md-6">
@@ -15,7 +15,7 @@
         <div class="col-md-6">
             <label class="form-label fw-semibold">Cultural behaviour rating</label>
             <div class="form-control bg-light">1–10: teamwork, communication and professional conduct</div>
-            <small class="text-muted">These three ratings are averaged and converted to a score out of 100.</small>
+            <small class="text-muted">These three ratings are averaged and converted using the full-marks target below.</small>
         </div>
         <div class="col-12"><h5 class="mb-1">Three appraisal criteria</h5><p class="text-muted small mb-0">Weights must total 100%. Attendance and work drafts use recorded data. Reviewers must supply evidence when adjusting these scores.</p></div>
         @foreach(['attendance_weight' => 'Attendance', 'work_weight' => 'Work delivery', 'behaviour_weight' => 'Cultural behaviour'] as $key => $label)
@@ -24,6 +24,20 @@
                 <input id="{{ $key }}" type="number" name="{{ $key }}" class="form-control" min="1" max="98" step="1" value="{{ old($key, $settings[$key]) }}" required @disabled($isSettingsReadOnly)>
             </div>
         @endforeach
+        <div class="col-12 border-top pt-4">
+            <h5>Full-marks targets</h5>
+            <p class="text-muted small">Each component earns 100 marks when it reaches its target. Lower results earn proportional marks, capped at 100. The final score is the weighted total out of 100.</p>
+            <div class="row g-3">
+                @foreach(['attendance' => ['Attendance target (%)', 100], 'work' => ['Completed tasks target (%)', 100], 'behaviour' => ['Average behaviour rating target (1–10)', 10]] as $criterion => [$label, $maximum])
+                    <div class="col-md-4">
+                        <label for="{{ $criterion }}_full_marks_at" class="form-label fw-semibold">{{ $label }}</label>
+                        <input id="{{ $criterion }}_full_marks_at" name="{{ $criterion }}_full_marks_at" type="number" min="1" max="{{ $maximum }}" step="0.01" class="form-control" value="{{ old($criterion.'_full_marks_at', $settings[$criterion.'_full_marks_at']) }}" required @disabled($isSettingsReadOnly)>
+                        @error($criterion.'_full_marks_at')<small class="text-danger">{{ $message }}</small>@enderror
+                    </div>
+                @endforeach
+            </div>
+            <div class="alert alert-info mt-3 mb-0">Default attendance rule: present for every required working day = 100% attendance = 100/100 marks. Weekends, holidays, approved leave and days before joining are excluded; half days earn half credit. No work or attendance evidence earns 0 marks. Behaviour needs a reviewer’s ratings and remarks.</div>
+        </div>
         <div class="col-12">
             <div class="form-check form-switch">
                 <input id="adminApproval" type="checkbox" name="admin_approval_required" value="1" class="form-check-input" @checked(old('admin_approval_required', $settings['admin_approval_required']) === '1') @disabled($isSettingsReadOnly)>

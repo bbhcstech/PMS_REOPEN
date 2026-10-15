@@ -48,7 +48,7 @@ class AppraisalMetrics
             return $rows->max(function ($row) {
                 $status = strtolower((string) $row->status);
                 if (in_array($status, ['half_day', 'half-day', 'half day'], true)) return 0.5;
-                return in_array($status, ['present', 'late'], true) ? 1 : 0;
+                return in_array($status, ['present', 'late', 'wfh'], true) ? 1 : 0;
             });
         });
         $credited = $credits->map(fn ($credit, $date) => min($credit, $expectedCredits[$date]))->sum();
@@ -64,13 +64,16 @@ class AppraisalMetrics
             });
         $completed = $tasks->filter(fn ($task) => ((bool) $task->is_completed || in_array(strtolower((string) $task->status), ['completed', 'finished', 'done'], true))
             && (empty($task->completed_on) || Carbon::parse($task->completed_on)->lte($end)))->count();
+        $policy = app(AppraisalPolicy::class);
+        $settings = $policy->settings();
+        $workPercentage = $tasks->count() ? round($completed / $tasks->count() * 100, 2) : 0;
         return [
             'projects_count' => $tasks->pluck('project_id')->filter()->unique()->count(),
-            'completed_tasks' => $completed, 'project_score' => $tasks->count() ? round($completed / $tasks->count() * 100, 2) : 0,
-            'project_remarks' => $completed.' of '.$tasks->count().' assigned tasks completed in this review period.',
+            'completed_tasks' => $completed, 'project_score' => $policy->criterionScore($workPercentage, 'work', $settings),
+            'project_remarks' => $completed.' of '.$tasks->count().' assigned tasks completed ('.$workPercentage.'%). Full marks target: '.$settings['work_full_marks_at'].'%.',
             'present_days' => $credits->filter(fn ($credit) => $credit > 0)->count(), 'total_working_days' => count($eligibleDates),
-            'attendance_percentage' => $attendanceScore, 'attendance_score' => $attendanceScore,
-            'attendance_remarks' => 'Recorded attendance on scheduled working days; half days count as 0.5. Future days, holidays and approved leave time are excluded.',
+            'attendance_percentage' => $attendanceScore, 'attendance_score' => $policy->criterionScore($attendanceScore, 'attendance', $settings),
+            'attendance_remarks' => $credited.' of '.array_sum($expectedCredits).' required day credits ('.$attendanceScore.'%). Full marks target: '.$settings['attendance_full_marks_at'].'%. Half days count as 0.5. Future days, holidays and approved leave time are excluded.',
         ];
     }
 }
