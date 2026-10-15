@@ -21,6 +21,10 @@ class TicketController extends Controller
 {
     public function index(Request $request)
     {
+        if (\App\Support\PlatformSupportAccess::companyAdmin(auth()->user())) {
+            $company = \App\Models\Central\Company::find(auth()->user()->company_id);
+            if ($company) app(\App\Services\InternalTicketRouting::class)->reconcile($company);
+        }
         $agents = User::where('company_id', auth()->user()->company_id)->whereRaw('LOWER(role) IN (?, ?, ?, ?, ?)', ['employee', 'developer', 'dev', 'manager', 'hr'])->whereNull('archived_at')->get();
         $projects = Project::where('company_id', auth()->user()->company_id)->get();
 
@@ -589,8 +593,7 @@ class TicketController extends Controller
 
     private function canCreateWorkItems(): bool
     {
-        return auth()->user()?->company_id && (\App\Services\WorkforceAccess::isAdmin(auth()->user())
-            || in_array(strtolower((string) auth()->user()?->role), ['hr', 'manager', 'employee', 'developer', 'dev'], true));
+        return (bool) auth()->user()?->company_id;
     }
 
     private function authorizeAssignment(Request $request, ?Ticket $ticket = null): void

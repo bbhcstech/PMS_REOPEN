@@ -316,6 +316,7 @@ class User extends Authenticatable
         if (\Illuminate\Support\Facades\Auth::guard('super_admin')->check()) {
             return true;
         }
+        if ($moduleSlug === 'company-complaints' && !\App\Support\PlatformSupportAccess::companyAdmin($this)) return false;
         if (! $this->featureEnabled($moduleSlug)) {
             return false;
         }
@@ -405,6 +406,7 @@ class User extends Authenticatable
      */
     public function moduleToggleAllows(string $moduleSlug, string $permission = 'view'): bool
     {
+        if ($moduleSlug === 'company-complaints' && !\App\Support\PlatformSupportAccess::companyAdmin($this)) return false;
         // The company must have the feature (Super Admin Manage Features + Module Management) for every role,
         // admins included; the saved role decision is applied on top of that.
         if (! $this->featureEnabled($moduleSlug)) {

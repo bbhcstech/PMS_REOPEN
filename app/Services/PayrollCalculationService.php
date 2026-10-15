@@ -1385,7 +1385,18 @@ class PayrollCalculationService
     /**
      * Generate Payslips for a payroll run.
      */
-    public function generatePayslips(Payroll $payroll, ?int $userId = null): int
+    public function generatePayslips(Payroll $payroll, ?int $userId = null, bool $missingOnly = false): int
+    {
+        return DB::connection($payroll->getConnectionName())->transaction(function () use ($payroll, $userId, $missingOnly) {
+            $run = Payroll::whereKey($payroll->id)->lockForUpdate()->firstOrFail();
+            if (!in_array($run->status, ['approved', 'finalized'], true)) {
+                throw \Illuminate\Validation\ValidationException::withMessages(['payroll' => 'Approve or finalize the saved payroll run before generating payslips.']);
+            }
+            return $this->persistPayslips($run, $userId, $missingOnly);
+        });
+    }
+
+    private function persistPayslips(Payroll $payroll, ?int $userId, bool $missingOnly): int
     {
         $histories = PayrollHistory::where('payroll_id', $payroll->id)->get();
         $count = 0;
@@ -1398,8 +1409,14 @@ class PayrollCalculationService
             $snap = $history->snapshot;
             $empUser = User::find($history->user_id);
             if (! $empUser) continue;
+            if (($payroll->company_id && (int) $empUser->company_id !== (int) $payroll->company_id)
+                || ($history->company_id && (int) $history->company_id !== (int) $empUser->company_id)) continue;
+            // A payslip must have an actual saved calculation, not a zero-filled placeholder.
+            if (!is_array($snap) || !is_numeric($snap['gross_salary'] ?? $snap['ac_gross'] ?? null)) continue;
 
-            $existingPayslip = Payslip::where('payroll_id', $payroll->id)->where('user_id', $history->user_id)->first();
+            $existingPayslip = Payslip::withTrashed()->where('payroll_id', $payroll->id)->where('user_id', $history->user_id)->first();
+            if ($existingPayslip?->trashed()) continue;
+            if ($existingPayslip && ($missingOnly || $existingPayslip->locked_at)) continue;
             $payslipNo = $existingPayslip?->payslip_number ?: ($this->payslipPrefix($payroll->company_id ?: $empUser->company_id, $prefixes) . '-' . date('Ym', strtotime($payroll->period_start)) . '-' . str_pad($payroll->id, 3, '0', STR_PAD_LEFT) . '-' . str_pad($history->user_id, 4, '0', STR_PAD_LEFT));
 
             $earnings = [
@@ -1447,7 +1464,7 @@ class PayrollCalculationService
             }
 
             $grossSalary = (float) ($snap['gross_salary'] ?? $snap['ac_gross'] ?? 0);
-            $totalDed = round(array_sum(array_values($deductions)), 2);
+            $totalDed = round((float) ($snap['total_deductions'] ?? $history->total_deductions ?? array_sum(array_values($deductions))), 2);
             $netSalary = (float) ($snap['net_pay'] ?? max(0.0, $grossSalary - $totalDed));
 
             Payslip::updateOrCreate(
@@ -1470,6 +1487,8 @@ class PayrollCalculationService
                     'net_salary' => round($netSalary, 2),
                     'status' => 'generated',
                     'generated_by' => $actorId,
+                    'generated_at' => $existingPayslip?->generated_at ?? now(),
+                    'locked_at' => $payroll->status === 'finalized' ? ($payroll->finalized_at ?? $payroll->locked_at ?? now()) : null,
                 ])
             );
 

@@ -27,9 +27,11 @@
                     <option value="{{ $y }}" {{ $kpis['selected_year'] == $y ? 'selected' : '' }}>{{ $y }}</option>
                 @endfor
             </select>
-            <a href="{{ route('payroll.processing', ['year' => $kpis['selected_year'], 'month' => $kpis['selected_month']]) }}" class="pr-btn pr-btn-primary">
+            @if(auth()->user()?->canViewModule('payroll-processing'))
+<a href="{{ route('payroll.processing', ['year' => $kpis['selected_year'], 'month' => $kpis['selected_month']]) }}" class="pr-btn pr-btn-primary">
                 ⚙️ Process {{ $kpis['month_name'] }}
             </a>
+@endif
         </form>
     </div>
 
@@ -158,21 +160,31 @@
                 </div>
                 <div class="pr-card-body">
                     <div class="d-flex flex-wrap gap-2 mb-4">
-                        <a href="{{ route('payroll.processing', ['year' => $kpis['selected_year'], 'month' => $kpis['selected_month']]) }}" class="pr-btn pr-btn-primary">
+                        @if(auth()->user()?->canViewModule('payroll-processing'))
+<a href="{{ route('payroll.processing', ['year' => $kpis['selected_year'], 'month' => $kpis['selected_month']]) }}" class="pr-btn pr-btn-primary">
                             <span>⚙️</span> Process Payroll
                         </a>
-                        <a href="{{ route('payroll.salary-structures.index') }}" class="pr-btn">
+@endif
+                        @if(auth()->user()?->canViewModule('salary-structures'))
+<a href="{{ route('payroll.salary-structures.index') }}" class="pr-btn">
                             <span>🏗️</span> New Salary Structure
                         </a>
-                        <a href="{{ route('payroll.employee-salary.index') }}" class="pr-btn">
+@endif
+                        @if(auth()->user()?->canViewModule('employee-salary'))
+<a href="{{ route('payroll.employee-salary.index') }}" class="pr-btn">
                             <span>👤</span> Assign Employee Salary
                         </a>
-                        <a href="{{ route('payroll.history') }}" class="pr-btn">
+@endif
+                        @if(auth()->user()?->canViewModule('payroll-history'))
+<a href="{{ route('payroll.history') }}" class="pr-btn">
                             <span>📚</span> View History
                         </a>
-                        <a href="{{ route('payroll.payslips.index') }}" class="pr-btn">
+@endif
+                        @if(auth()->user()?->canViewModule('payslips'))
+<a href="{{ route('payroll.payslips.index') }}" class="pr-btn">
                             <span>🧾</span> View Payslips
                         </a>
+@endif
                     </div>
 
                     <h6 class="fw-bold mb-2 text-uppercase small text-muted">System Counts</h6>
@@ -213,7 +225,9 @@
         <div class="pr-card-head">
             <h2>🕒 Recent Payroll Runs</h2>
             <div class="spacer"></div>
-            <a href="{{ route('payroll.history') }}" class="small fw-bold text-decoration-none">View All Runs →</a>
+            @if(auth()->user()?->canViewModule('payroll-history'))
+<a href="{{ route('payroll.history') }}" class="small fw-bold text-decoration-none">View All Runs →</a>
+@endif
         </div>
         <div class="table-wrap">
             <table class="pr-table">
@@ -247,9 +261,11 @@
                         <td class="num text-success fw-bold">₹{{ number_format($run->total_in_hand ?? $run->net_total, 2) }}</td>
                         <td class="num text-purple fw-bold">₹{{ number_format($run->total_ctc ?? $run->gross_total, 2) }}</td>
                         <td class="text-center">
-                            <a href="{{ route('payroll.processing', ['year' => date('Y', strtotime($run->period_start)), 'month' => date('n', strtotime($run->period_start))]) }}" class="pr-btn pr-btn-sm">
+                            @if(auth()->user()?->canViewModule('payroll-processing'))
+<a href="{{ route('payroll.processing', ['year' => date('Y', strtotime($run->period_start)), 'month' => date('n', strtotime($run->period_start))]) }}" class="pr-btn pr-btn-sm">
                                 👁️ View Run
                             </a>
+@endif
                         </td>
                     </tr>
                     @endforeach

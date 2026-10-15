@@ -20,8 +20,12 @@
             </div>
             <div class="d-flex gap-2 flex-wrap">
                 <a href="{{ route('payroll.payslips.index') }}" class="btn btn-outline-secondary btn-sm">← Back to Payslips</a>
-                <a href="{{ route('payroll.payslips.print', $activeId) }}" target="_blank" class="btn btn-outline-secondary btn-sm">🖨 Print</a>
-                <a href="{{ route('payroll.payslips.pdf', $activeId) }}" class="btn btn-primary btn-sm">📥 Download PDF</a>
+                @if(auth()->user()?->hasModulePermission('payslips', 'export'))
+<a href="{{ route('payroll.payslips.print', $activeId) }}" target="_blank" class="btn btn-outline-secondary btn-sm">🖨 Print</a>
+@endif
+                @if(auth()->user()?->hasModulePermission('payslips', 'export'))
+<a href="{{ route('payroll.payslips.pdf', $activeId) }}" class="btn btn-primary btn-sm">📥 Download PDF</a>
+@endif
             </div>
         </div>
 

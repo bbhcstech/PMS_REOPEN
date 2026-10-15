@@ -141,18 +141,26 @@
                                 </td>
                                 <td class="text-end">
                                     <div class="btn-group btn-group-sm">
-                                        <a href="{{ route('payroll.preview', $h->id) }}" class="btn btn-outline-secondary" title="View Breakdown">
+                                        @if(auth()->user()?->canViewModule('payroll-processing'))
+<a href="{{ route('payroll.preview', $h->id) }}" class="btn btn-outline-secondary" title="View Breakdown">
                                             👁
                                         </a>
-                                        <a href="{{ route('payroll.payslips.view', $h->id) }}" class="btn btn-outline-info" title="View Payslip">
+@endif
+                                        @if(auth()->user()?->canViewModule('payslips'))
+<a href="{{ route('payroll.payslips.view', $h->id) }}" class="btn btn-outline-info" title="View Payslip">
                                             🧾
                                         </a>
-                                        <a href="{{ route('payroll.payslips.print', $h->id) }}" target="_blank" class="btn btn-outline-secondary" title="Print Payslip">
+@endif
+                                        @if(auth()->user()?->hasModulePermission('payslips', 'export'))
+<a href="{{ route('payroll.payslips.print', $h->id) }}" target="_blank" class="btn btn-outline-secondary" title="Print Payslip">
                                             🖨
                                         </a>
-                                        <a href="{{ route('payroll.payslips.pdf', $h->id) }}" class="btn btn-outline-primary" title="Download PDF">
+@endif
+                                        @if(auth()->user()?->hasModulePermission('payslips', 'export'))
+<a href="{{ route('payroll.payslips.pdf', $h->id) }}" class="btn btn-outline-primary" title="Download PDF">
                                             📥
                                         </a>
+@endif
                                     </div>
                                 </td>
                             </tr>

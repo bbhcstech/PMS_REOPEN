@@ -97,10 +97,11 @@
                         @forelse($payslips as $ps)
                             @php
                                 $u = $ps->user;
-                                $empDetail = $u->employeeDetails ?? null;
-                                $monthName = date('M', mktime(0, 0, 0, $ps->month ?? ($ps->payroll->month ?? 1), 1));
-                                $yearVal = $ps->year ?? ($ps->payroll->year ?? date('Y'));
-                                $pStatus = strtolower($ps->payroll->status ?? 'approved');
+                                $empDetail = $u?->employeeDetail;
+                                $period = $ps->payroll?->period_start;
+                                $monthName = $period ? \Carbon\Carbon::parse($period)->format('M') : '—';
+                                $yearVal = $period ? \Carbon\Carbon::parse($period)->format('Y') : '';
+                                $pStatus = strtolower($ps->payroll?->status ?? '');
                             @endphp
                             <tr>
                                 <td data-pms-selection-column class="payslip-selection"><input type="checkbox" class="form-check-input" aria-label="Select payslip for {{ $u->name ?? 'employee' }}" value="{{ $ps->id }}"></td>
@@ -116,7 +117,7 @@
                                         </div>
                                     </div>
                                 </td>
-                                <td><span class="badge bg-light text-dark">{{ $empDetail->employee_id ?? 'EMP'.$u->id }}</span></td>
+                                <td><span class="badge bg-light text-dark">{{ $empDetail->employee_id ?? ($ps->employee_snapshot['employee_id'] ?? '—') }}</span></td>
                                 <td>
                                     @php $designationDetails = \App\Services\PayslipDesignation::details($ps->employee_snapshot ?? [], $empDetail?->designation); @endphp
                                     <div class="small fw-semibold">{{ $designationDetails['name'] }}</div>
@@ -145,12 +146,16 @@
                                     <a href="{{ route('payroll.payslips.view', $ps->id) }}" class="btn btn-sm btn-outline-info">
                                         👁 View
                                     </a>
-                                    <a href="{{ route('payroll.payslips.print', $ps->id) }}" target="_blank" class="btn btn-sm btn-outline-secondary">
+                                    @if(auth()->user()?->hasModulePermission('payslips', 'export'))
+<a href="{{ route('payroll.payslips.print', $ps->id) }}" target="_blank" class="btn btn-sm btn-outline-secondary">
                                         🖨 Print
                                     </a>
-                                    <a href="{{ route('payroll.payslips.pdf', $ps->id) }}" class="btn btn-sm btn-primary">
+@endif
+                                    @if(auth()->user()?->hasModulePermission('payslips', 'export'))
+<a href="{{ route('payroll.payslips.pdf', $ps->id) }}" class="btn btn-sm btn-primary">
                                         📥 PDF
                                     </a>
+@endif
                                 </td>
                             </tr>
                         @empty

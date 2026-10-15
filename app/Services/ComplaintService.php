@@ -20,6 +20,7 @@ class ComplaintService
      */
     public function createComplaint(array $data, Company $company, $user): CompanyComplaint
     {
+        \App\Support\PlatformSupportAccess::authorizeCompanyAdmin($user, (int) $company->id);
         $ticketId = CompanyComplaint::generateTicketId();
 
         $complaint = CompanyComplaint::create([
@@ -87,6 +88,7 @@ class ComplaintService
      */
     public function addResponse(CompanyComplaint $complaint, string $message, $sender, string $senderType = 'super_admin', array $files = []): ComplaintConversation
     {
+        if ($senderType !== 'super_admin') \App\Support\PlatformSupportAccess::authorizeCompanyAdmin($sender, (int) $complaint->company_id);
         $senderName = $sender?->name ?? ($senderType === 'super_admin' ? 'Super Admin' : 'Company Admin');
         $senderEmail = $sender?->email ?? null;
 
@@ -170,6 +172,7 @@ class ComplaintService
      */
     public function updateStatus(CompanyComplaint $complaint, string $newStatus, $actor, string $actorType = 'super_admin', ?string $note = null): bool
     {
+        if ($actorType !== 'super_admin') \App\Support\PlatformSupportAccess::authorizeCompanyAdmin($actor, (int) $complaint->company_id);
         $newStatus = strtoupper($newStatus);
         $oldStatus = $complaint->status;
 

@@ -1780,12 +1780,14 @@
                         <div class="text-truncate">Notifications Center</div>
                     </a>
                 </li>
+                @if(\App\Support\PlatformSupportAccess::companyAdmin(auth()->user()))
                 <li class="menu-item {{ request()->routeIs('admin.company-complaints.*') ? 'active' : '' }}">
                     <a href="{{ route('admin.company-complaints.index') }}" class="menu-link">
                         <i class="menu-icon tf-icons bx bx-support"></i>
                         <div class="text-truncate">Platform Support</div>
                     </a>
                 </li>
+                @endif
                 <li class="menu-item">
                     <a href="{{ route('logout.get') }}" class="menu-link text-muted">
                         <i class="menu-icon tf-icons bx bx-log-out"></i>
@@ -2380,7 +2382,7 @@
             @endif
 
             <!-- Platform Support & Complaints -->
-            @if(strtolower(trim((string) (auth()->user()->role ?? ''))) !== 'hr' && auth()->user()->moduleToggleAllows('company-complaints'))
+            @if(\App\Support\PlatformSupportAccess::companyAdmin(auth()->user()) && auth()->user()->moduleToggleAllows('company-complaints'))
             <li class="menu-item {{ request()->routeIs('admin.company-complaints.*') ? 'active' : '' }}">
                 <a href="{{ route('admin.company-complaints.index') }}" class="menu-link">
                     <i class="menu-icon tf-icons bx bx-support"></i>

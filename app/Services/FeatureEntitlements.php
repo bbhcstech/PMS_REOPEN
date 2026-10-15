@@ -79,7 +79,8 @@ class FeatureEntitlements
 
     /**
      * Explicit Super Admin decision for a feature: false when it or a parent is switched off,
-     * true when it is explicitly switched on (and no parent is off), null when not configured.
+     * true when it or an inherited workspace is switched on (and no parent is off),
+     * null when not configured.
      */
     public function overrideDecision(?int $centralCompanyId, string $slug): ?bool
     {
@@ -87,12 +88,22 @@ class FeatureEntitlements
             return null;
         }
         $rows = $this->overridesFor($centralCompanyId);
+        $inheritedGrants = [];
+        $current = $this->canonical($slug);
+        while ($parent = config('workspace_modules.'.$current.'.inherits')) {
+            $parent = $this->canonical($parent);
+            if (in_array($parent, $inheritedGrants, true)) break;
+            $inheritedGrants[] = $parent;
+            $current = $parent;
+        }
         $explicitOn = null;
         foreach ($this->ancestry($slug) as $depth => $feature) {
             foreach (array_merge([$feature], $this->aliasesOf($feature)) as $candidate) {
                 if (! array_key_exists($candidate, $rows)) continue;
                 if (! $rows[$candidate]) return false;
-                if ($depth === 0) $explicitOn = true;
+                // A company grant to an inherited workspace (e.g. Payroll) also grants
+                // its tabs. Independent children still need their own entitlement.
+                if ($depth === 0 || in_array($feature, $inheritedGrants, true)) $explicitOn = true;
             }
         }
         return $explicitOn;

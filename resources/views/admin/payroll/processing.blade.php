@@ -418,9 +418,11 @@
                         <span class="pr-pill finalized fs-7">
                             🔒 Finalized on {{ Carbon\Carbon::parse($payrollRun->finalized_at ?? now())->format('d M Y H:i') }}
                         </span>
+                        @if(auth()->user()?->canViewModule('payslips'))
                         <a href="{{ route('payroll.payslips.index', ['month' => $month, 'year' => $year]) }}" class="pr-btn pr-btn-success">
                             🧾 View Generated Payslips
                         </a>
+                        @endif
                     @endif
                 </div>
                 @endif

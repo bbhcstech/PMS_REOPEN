@@ -26,8 +26,10 @@ class CompanyComplaintController extends Controller
 
     private function getActiveCompany(): Company
     {
+        \App\Support\PlatformSupportAccess::authorizeCompanyAdmin(auth()->user());
         $company = app(CompanyContext::class)->current();
         if ($company instanceof Company) {
+            \App\Support\PlatformSupportAccess::authorizeCompanyAdmin(auth()->user(), (int) $company->id);
             return $company;
         }
 
@@ -46,6 +48,8 @@ class CompanyComplaintController extends Controller
     public function index(Request $request): View
     {
         $company = $this->getActiveCompany();
+
+        app(\App\Services\InternalTicketRouting::class)->reconcile($company);
 
         $query = CompanyComplaint::on('central')
             ->where('company_id', $company->id)
@@ -109,6 +113,7 @@ class CompanyComplaintController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        $company = $this->getActiveCompany();
         $request->validate([
             'subject'           => 'required|string|max:255',
             'category'          => 'required|string',
@@ -120,7 +125,6 @@ class CompanyComplaintController extends Controller
             'requested_plan_id' => ['nullable', 'integer', \Illuminate\Validation\Rule::exists('central.plans', 'id')->where(fn ($q) => $q->whereIn('slug', \App\Support\SupportedPlans::SLUGS)->where('is_active', true))],
         ]);
 
-        $company = $this->getActiveCompany();
         $user = auth()->user();
 
         $complaint = $request->filled('requested_plan_id')

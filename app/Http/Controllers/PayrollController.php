@@ -905,10 +905,13 @@ class PayrollController extends Controller
                 ->whereIn('status', ['approved', 'finalized'])
                 ->get()
                 ->each(function (Payroll $payroll) use ($service) {
-                    $lines = PayrollHistory::where('payroll_id', $payroll->id)->count();
-                    $slips = Payslip::where('payroll_id', $payroll->id)->count();
-                    if ($lines > $slips) {
-                        $service->generatePayslips($payroll, auth()->id());
+                    $missing = PayrollHistory::where('payroll_id', $payroll->id)->whereNotExists(function ($query) {
+                        $query->selectRaw('1')->from('payslips')
+                            ->whereColumn('payslips.payroll_id', 'payroll_histories.payroll_id')
+                            ->whereColumn('payslips.user_id', 'payroll_histories.user_id');
+                    })->exists();
+                    if ($missing) {
+                        $service->generatePayslips($payroll, auth()->id(), true);
                     }
                 });
         }, null);
@@ -917,7 +920,8 @@ class PayrollController extends Controller
                 'user.employeeDetail.designation',
                 'user.employeeDetail.department',
                 'payroll',
-            ])
+            ])->whereHas('payroll', fn ($run) => $run->whereIn('status', ['approved', 'finalized'])
+                ->when($companyId, fn ($own) => $own->where('company_id', $companyId)))
             ->when($companyId, function ($q) use ($companyId) {
                 if (Schema::hasColumn('payslips', 'company_id')) {
                     // Older payslips may have no company recorded: match them through the employee.

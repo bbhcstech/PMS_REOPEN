@@ -14,6 +14,7 @@ $migration->up();
 $assert(Module::count() === $count, 'Payroll registration was not idempotent');
 $payroll = Module::where('slug', 'payroll')->firstOrFail();
 DB::connection('central')->table('plan_modules')->insert(['plan_id' => 99, 'module_id' => $payroll->id]);
+app(App\Services\PlanFeatureEntitlements::class)->forget(99);
 $modules = $service->companyModules($company);
 $children = ['salary-structures', 'employee-salary', 'payroll-processing', 'payroll-history', 'payslips', 'formula-builder'];
 $positions = $modules->pluck('slug')->all();
