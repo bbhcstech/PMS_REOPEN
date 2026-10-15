@@ -8,8 +8,7 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Keeps the ticket system out of the Admin Workspace, where
- * "Platform Support & Complaints" is the single support channel.
+ * Internal tickets require a company workspace; platform support stays separate.
  */
 class BlockTicketsInAdminWorkspace
 {
@@ -19,12 +18,12 @@ class BlockTicketsInAdminWorkspace
             return $next($request);
         }
 
-        $message = 'Tickets are not part of the Admin Workspace. Please use Platform Support & Complaints.';
+        $message = 'Internal tickets require a company workspace.';
 
         if ($request->expectsJson() || $request->ajax()) {
             return response()->json(['message' => $message], 403);
         }
 
-        return redirect()->route('admin.company-complaints.index')->with('info', $message);
+        abort(403, $message);
     }
 }

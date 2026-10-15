@@ -24,7 +24,7 @@ class ProtectWorkforceRecords
             if (($attendance || $leave) && ! $isAdmin) {
                 abort_if($request->input('staff_category') === 'authority', 403, 'Higher-level staff records are managed only by the company admin.');
                 if (WorkforceAccess::isAuthority($actor) && ! $isHr) {
-                    $allowed = $leave ? ['create', 'store'] : ['clockIn'];
+                    $allowed = $leave ? ['create', 'store', 'index', 'myLeaves', 'show'] : ['index', 'employeeIndex', 'clockIn', 'showAttendanceDetails', 'photo'];
                     abort_unless(in_array($action, $allowed, true), 403, 'Your leave and attendance records are managed only by the company admin.');
                 }
                 if ($leave && $isHr) {
@@ -56,7 +56,7 @@ class ProtectWorkforceRecords
                 abort_unless(in_array($action, ['index', 'employeeIndex', 'clockIn', 'showAttendanceDetails', 'photo'], true), 403, 'Only your company admin may manage attendance.');
                 if ($action === 'showAttendanceDetails') {
                     $owner = \App\Models\User::findOrFail($request->integer('user_id'));
-                    abort_unless(WorkforceAccess::canAccessRecord($actor, $owner), 403);
+                    abort_unless((int) $owner->id === (int) $actor->id || WorkforceAccess::canAccessRecord($actor, $owner), 403);
                 }
             }
             if ($clock || ($attendance && $route->getActionMethod() === 'clockIn')) {

@@ -5,7 +5,7 @@
     <!-- Header -->
     <div class="d-flex align-items-center justify-content-between mb-4">
         <div>
-            <h3 class="fw-bold mb-0 text-dark"><i class="bx bx-plus-circle text-primary me-2"></i> Create Support Ticket</h3>
+            <h3 class="fw-bold mb-0 text-dark"><i class="bx bx-plus-circle text-primary me-2"></i> Create Internal Ticket</h3>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0">
                     <li class="breadcrumb-item"><a href="{{ route('dashboard') }}" class="text-decoration-none">Dashboard</a></li>
@@ -48,11 +48,11 @@
                                 <label class="form-label fw-semibold text-dark">Requester Category <span class="text-danger">*</span></label>
                                 <div class="d-flex align-items-center gap-4 p-2 bg-light rounded-3 border">
                                     <div class="form-check mb-0">
-                                        <input type="radio" class="form-check-input" name="requester_type" id="requester-client" value="client" checked required>
+                                        <input type="radio" class="form-check-input" name="requester_type" id="requester-client" value="client" required>
                                         <label class="form-check-label fw-semibold" for="requester-client">Client / Product Owner</label>
                                     </div>
                                     <div class="form-check mb-0">
-                                        <input type="radio" class="form-check-input" name="requester_type" id="requester-employee" value="employee" required>
+                                        <input type="radio" class="form-check-input" name="requester_type" id="requester-employee" value="employee" checked required>
                                         <label class="form-check-label fw-semibold" for="requester-employee">Employee / Internal</label>
                                     </div>
                                 </div>
@@ -66,7 +66,7 @@
                                         <option value="{{ $client->id }}" data-type="client">{{ $client->name }} (Client)</option>
                                     @endforeach
                                     @foreach($employees as $employee)
-                                        <option value="{{ $employee->id }}" data-type="employee" style="display: none;">{{ $employee->name }} (Employee)</option>
+                                        <option value="{{ $employee->id }}" data-type="employee" @selected($employee->id === auth()->id())>{{ $employee->name }} (Employee)</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -82,8 +82,8 @@
                     <div class="card-body p-4">
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label for="project_id" class="form-label fw-semibold text-dark">Delivered Project / Product <span class="text-danger">*</span></label>
-                                <select name="project_id" id="project_id" class="form-select rounded-3" required>
+                                <label for="project_id" class="form-label fw-semibold text-dark">Related Project (optional)</label>
+                                <select name="project_id" id="project_id" class="form-select rounded-3">
                                     <option value="">-- Select Project --</option>
                                     @foreach($projects as $project)
                                         <option value="{{ $project->id }}">{{ $project->name }}</option>
@@ -99,7 +99,7 @@
 
                             <div class="col-md-6">
                                 <label for="ticket_type_id" class="form-label fw-semibold text-dark">Issue Classification / Type <span class="text-danger">*</span></label>
-                                <select name="type_id" id="ticket_type_id" class="form-select rounded-3" required>
+                                <select name="type_id" id="ticket_type_id" class="form-select rounded-3">
                                     <option value="">-- Select Type --</option>
                                     <option value="1">Bug / Defect</option>
                                     <option value="2">Suggestion</option>
@@ -155,8 +155,8 @@
                     <div class="card-body p-4">
                         <div class="mb-3">
                             <label for="agent_id" class="form-label fw-semibold text-dark">Assign Developer / Employee <span class="text-danger">*</span></label>
-                            <select name="agent_id" id="agent_id" class="form-select rounded-3" required>
-                                <option value="">-- Select Developer --</option>
+                            <select name="agent_id" id="agent_id" class="form-select rounded-3" @disabled(!\App\Support\TicketAccess::canManage())>
+                                <option value="">-- Select Employee --</option>
                                 @foreach($agents as $agent)
                                     <option value="{{ $agent->id }}">{{ $agent->name }}</option>
                                 @endforeach
@@ -217,7 +217,7 @@
                 }
             });
 
-            requesterSelect.value = '';
+            if (requesterSelect.selectedOptions[0]?.getAttribute('data-type') !== targetType) requesterSelect.value = '';
         }
 
         if (clientRadio && employeeRadio && requesterSelect) {

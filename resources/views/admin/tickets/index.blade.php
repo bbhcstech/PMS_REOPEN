@@ -15,7 +15,7 @@
         <!-- Top Header -->
         <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
             <div>
-                <h3 class="fw-bold mb-0 text-dark">Support Tickets</h3>
+                <h3 class="fw-bold mb-0 text-dark">Internal Tickets</h3>
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb mb-0">
                         <li class="breadcrumb-item"><a href="{{ route('dashboard') }}" class="text-decoration-none">Dashboard</a></li>
@@ -24,7 +24,7 @@
                 </nav>
             </div>
 
-            @if(in_array(strtolower((string) auth()->user()?->role), ['admin', 'hr', 'manager'], true))
+            @if(auth()->user()->canViewModule('tickets') && (\App\Services\WorkforceAccess::isAdmin(auth()->user()) || auth()->user()->moduleToggleAllows('tickets', 'create')))
                 <a href="{{ route('tickets.create') }}" class="btn btn-primary rounded-pill px-4 shadow-sm">
                     <i class="bx bx-plus-circle me-1"></i> Create Ticket
                 </a>
@@ -68,10 +68,11 @@
                         <label for="status" class="form-label fw-semibold text-dark mb-1">Filter by Status</label>
                         <select class="form-select rounded-3" id="status" name="status">
                             <option value="">All Statuses</option>
-                            <option value="open" {{ request('status') == 'open' ? 'selected' : '' }}>Open</option>
+                            <option value="open" {{ request('status') == 'open' ? 'selected' : '' }}>Start</option>
                             <option value="reopened" {{ request('status') == 'reopened' ? 'selected' : '' }}>REOPENED</option>
-                            <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
-                            <option value="resolved" {{ request('status') == 'resolved' ? 'selected' : '' }}>Resolved</option>
+                            <option value="in_progress" {{ request('status') == 'in_progress' ? 'selected' : '' }}>In progress</option>
+                            <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>On hold</option>
+                            <option value="resolved" {{ request('status') == 'resolved' ? 'selected' : '' }}>Finished</option>
                             <option value="closed" {{ request('status') == 'closed' ? 'selected' : '' }}>Closed</option>
                         </select>
                     </div>
@@ -101,28 +102,28 @@
 
         <div class="col-lg-2 col-md-4 col-6">
             <div class="card border-0 shadow-sm rounded-4 text-center p-3 h-100 bg-warning-subtle text-dark border-start border-warning border-4">
-                <small class="text-warning-emphasis text-uppercase fw-bold mb-1">Open</small>
+                <small class="text-warning-emphasis text-uppercase fw-bold mb-1">Start</small>
                 <h4 class="fw-extrabold text-warning-emphasis mb-0">{{ $tickets->where('status', 'open')->count() }}</h4>
             </div>
         </div>
 
         <div class="col-lg-2 col-md-4 col-6">
             <div class="card border-0 shadow-sm rounded-4 text-center p-3 h-100 bg-danger-subtle text-danger border-start border-danger border-4">
-                <small class="text-danger text-uppercase fw-bold mb-1">Reopened</small>
-                <h4 class="fw-extrabold text-danger mb-0">{{ $tickets->where('status', 'reopened')->count() }}</h4>
+                <small class="text-danger text-uppercase fw-bold mb-1">In progress</small>
+                <h4 class="fw-extrabold text-danger mb-0">{{ $tickets->where('status', 'in_progress')->count() }}</h4>
             </div>
         </div>
 
         <div class="col-lg-2 col-md-4 col-6">
             <div class="card border-0 shadow-sm rounded-4 text-center p-3 h-100 bg-info-subtle text-info border-start border-info border-4">
-                <small class="text-info-emphasis text-uppercase fw-bold mb-1">Pending</small>
+                <small class="text-info-emphasis text-uppercase fw-bold mb-1">On hold</small>
                 <h4 class="fw-extrabold text-info-emphasis mb-0">{{ $tickets->where('status', 'pending')->count() }}</h4>
             </div>
         </div>
 
         <div class="col-lg-2 col-md-4 col-6">
             <div class="card border-0 shadow-sm rounded-4 text-center p-3 h-100 bg-success-subtle text-success border-start border-success border-4">
-                <small class="text-success text-uppercase fw-bold mb-1">Resolved</small>
+                <small class="text-success text-uppercase fw-bold mb-1">Finished</small>
                 <h4 class="fw-extrabold text-success mb-0">{{ $tickets->where('status', 'resolved')->count() }}</h4>
             </div>
         </div>
@@ -136,6 +137,7 @@
     </div>
 
     <!-- Bulk Action Toolbar -->
+    @if(\App\Support\TicketAccess::canManage())
     <div class="d-flex align-items-center justify-content-between mb-3" id="bulk-action-div" style="display: none !important;">
         <div class="d-flex align-items-center gap-2 bg-white p-2 px-3 rounded-pill shadow-sm border">
             <span class="fw-semibold text-dark small me-1"><i class="bx bx-check-square text-primary me-1"></i> Bulk Action:</span>
@@ -149,6 +151,7 @@
     </div>
 
     <!-- Tickets Datatable Card -->
+    @endif
     <div class="card border-0 shadow-sm rounded-4">
         <div class="card-body p-4">
             <div class="table-responsive">
@@ -159,7 +162,7 @@
                             <th style="width: 80px;">Ticket#</th>
                             <th>Subject & Project</th>
                             <th>Requester (Client)</th>
-                            <th>Assigned Developer</th>
+                            <th>Assigned Employee</th>
                             <th>Requested On</th>
                             <th>Priority</th>
                             <th>Status</th>
@@ -213,11 +216,13 @@
                                     <select name="status"
                                             class="form-select form-select-sm change-status rounded-pill px-3"
                                             data-ticket-id="{{ $ticket->id }}"
+                                            @disabled(!\App\Support\TicketAccess::canManage() && (int) $ticket->agent_id !== (int) auth()->id())
                                             style="min-width: 130px;">
-                                        <option value="open" {{ strtolower($ticket->status) == 'open' ? 'selected' : '' }}>Open</option>
+                                        <option value="open" {{ strtolower($ticket->status) == 'open' ? 'selected' : '' }}>Start</option>
                                         <option value="reopened" {{ strtolower($ticket->status) == 'reopened' ? 'selected' : '' }}>REOPENED</option>
-                                        <option value="pending" {{ strtolower($ticket->status) == 'pending' ? 'selected' : '' }}>Pending</option>
-                                        <option value="resolved" {{ strtolower($ticket->status) == 'resolved' ? 'selected' : '' }}>Resolved</option>
+                                        <option value="in_progress" {{ strtolower($ticket->status) == 'in_progress' ? 'selected' : '' }}>In progress</option>
+                            <option value="pending" {{ strtolower($ticket->status) == 'pending' ? 'selected' : '' }}>On hold</option>
+                                        <option value="resolved" {{ strtolower($ticket->status) == 'resolved' ? 'selected' : '' }}>Finished</option>
                                         <option value="closed" {{ strtolower($ticket->status) == 'closed' ? 'selected' : '' }}>Closed</option>
                                     </select>
                                 </td>
@@ -232,6 +237,7 @@
                                                     <i class="bx bx-show me-2 text-primary"></i> View Details
                                                 </a>
                                             </li>
+                                            @if(\App\Support\TicketAccess::canManage())
                                             <li>
                                                 <a class="dropdown-item py-2" href="{{ route('tickets.edit', $ticket->id) }}">
                                                     <i class="bx bx-edit me-2 text-info"></i> Edit Ticket
@@ -249,6 +255,7 @@
                                                     </button>
                                                 </form>
                                             </li>
+                                            @endif
                                         </ul>
                                     </div>
                                 </td>

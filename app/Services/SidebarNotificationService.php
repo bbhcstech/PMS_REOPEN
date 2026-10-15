@@ -39,7 +39,7 @@ class SidebarNotificationService
             } catch (\Throwable $e) { $pendingTimers = 0; }
             try {
                 if (\Illuminate\Support\Facades\Schema::hasColumn('tickets', 'status')) {
-                    $openTickets = Ticket::whereIn('status', ['open', 'pending'])->count();
+                    $openTickets = Ticket::whereIn('status', ['open', 'in_progress', 'pending', 'reopened'])->count();
                 } else {
                     $openTickets = Ticket::count();
                 }
@@ -103,7 +103,7 @@ class SidebarNotificationService
                     $activeTickets = Ticket::where(function ($query) use ($user) {
                             $query->where('agent_id', $user->id)->orWhere('requester_id', $user->id);
                         })
-                        ->whereIn('status', ['open', 'pending'])
+                        ->whereIn('status', ['open', 'in_progress', 'pending', 'reopened'])
                         ->count();
                 } else {
                     $activeTickets = Ticket::where('agent_id', $user->id)->orWhere('requester_id', $user->id)->count();

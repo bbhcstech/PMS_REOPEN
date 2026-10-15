@@ -4,6 +4,7 @@
 
 <style>
 .crm-kpi-card {
+    min-width: 0;
     background: #ffffff;
     border-radius: 10px;
     padding: 18px 20px;
@@ -108,6 +109,8 @@
     margin-bottom: 4px;
 }
 .crm-kpi-value {
+    max-width: 100%;
+    overflow-wrap: anywhere;
     font-size: 22px;
     font-weight: 700;
     color: #1e293b;
@@ -583,7 +586,7 @@ html[data-pms-theme="dark"] .premium-table-footer {
                     <span class="crm-kpi-title">Pipeline Value</span>
                     <div class="crm-kpi-icon bg-purple bg-opacity-10 text-purple"><i class="fas fa-chart-line"></i></div>
                 </div>
-                <h3 class="crm-kpi-value text-primary fs-5">₹{{ number_format($kpiStats['pipeline_value'] ?? 0, 2) }}</h3>
+                <h3 class="crm-kpi-value text-primary fs-5" title="₹{{ number_format($kpiStats['pipeline_value'] ?? 0, 2) }}" aria-label="Pipeline value: ₹{{ number_format($kpiStats['pipeline_value'] ?? 0, 2) }}">₹{{ \App\Support\CompactNumber::format($kpiStats['pipeline_value'] ?? 0) }}</h3>
             </div>
         </div>
 
@@ -593,7 +596,7 @@ html[data-pms-theme="dark"] .premium-table-footer {
                     <span class="crm-kpi-title">Weighted Value</span>
                     <div class="crm-kpi-icon bg-success bg-opacity-10 text-success"><i class="fas fa-coins"></i></div>
                 </div>
-                <h3 class="crm-kpi-value text-success fs-5">₹{{ number_format($kpiStats['weighted_value'] ?? 0, 2) }}</h3>
+                <h3 class="crm-kpi-value text-success fs-5" title="₹{{ number_format($kpiStats['weighted_value'] ?? 0, 2) }}" aria-label="Weighted value: ₹{{ number_format($kpiStats['weighted_value'] ?? 0, 2) }}">₹{{ \App\Support\CompactNumber::format($kpiStats['weighted_value'] ?? 0) }}</h3>
             </div>
         </div>
     </div>

@@ -27,7 +27,8 @@ function checkCalendar($condition, $message) { if (!$condition) throw new Runtim
 checkCalendar(count($result['days']) === 31 && $result['offset'] === 4, 'October calendar alignment is incorrect.');
 checkCalendar($days['2026-10-01']['seconds'] === 28800 && $days['2026-10-01']['wfh'], 'Multiple sessions or WFH were lost.');
 checkCalendar($days['2026-10-01']['status'] === 'present' && $days['2026-10-01']['leave'] !== null, 'Leave overwrote recorded hours.');
-checkCalendar($days['2026-10-03']['status'] === 'day_off', 'Configured day off was marked absent.');
+checkCalendar($days['2026-10-03']['status'] === 'scheduled_off', 'Configured non-Sunday rest day was marked absent or counted as a short shift.');
+checkCalendar($days['2026-10-04']['status'] === 'weekend', 'Sunday was not distinguished as Weekend.');
 checkCalendar($days['2026-10-06']['status'] === 'holiday', 'Holiday was not applied.');
 checkCalendar($days['2026-10-07']['status'] === 'half_day' && $days['2026-10-07']['holiday'] === null, 'Half-day leave or holiday targeting failed.');
 checkCalendar($days['2026-10-09']['status'] === 'not_marked', 'Future day was marked absent.');

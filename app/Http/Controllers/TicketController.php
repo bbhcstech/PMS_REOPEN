@@ -5,30 +5,29 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Ticket;
 use App\Models\User;
-use App\Models\Client;
 use App\Models\Project;
 use App\Models\TicketGroup;
 use App\Models\Reply;
 use App\Models\TicketActivity;
-use App\Notifications\TicketCreatedNotification;
 use App\Services\SystemNotificationService;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Notification;
 use Carbon\Carbon;
+use App\Support\TicketAccess;
+use Illuminate\Validation\Rule;
 
 class TicketController extends Controller
 {
     public function index(Request $request)
     {
-        $agents = User::where('role', 'employee')->get();
-        $projects = Project::all();
+        $agents = User::where('company_id', auth()->user()->company_id)->whereRaw('LOWER(role) IN (?, ?, ?, ?, ?)', ['employee', 'developer', 'dev', 'manager', 'hr'])->whereNull('archived_at')->get();
+        $projects = Project::where('company_id', auth()->user()->company_id)->get();
 
         $tickets = Ticket::query();
         $user = auth()->user();
 
-        if ($user && strtolower((string) $user->role) === 'employee') {
+        if (! TicketAccess::canManage()) {
             $tickets->where(function ($employeeTickets) use ($user) {
                 $employeeTickets->where('agent_id', $user->id)
                     ->orWhere('requester_id', $user->id);
@@ -97,7 +96,7 @@ class TicketController extends Controller
         }
 
         $tickets = $tickets->latest()->get();
-        $currentProject = $request->filled('project_id') ? Project::find($request->project_id) : null;
+        $currentProject = $request->filled('project_id') ? $projects->firstWhere('id', $request->project_id) : null;
         $project = $currentProject;
 
         return view('admin.tickets.index', compact('tickets', 'agents', 'projects', 'currentProject', 'project'));
@@ -107,10 +106,10 @@ class TicketController extends Controller
     {
         abort_unless($this->canCreateWorkItems(), 403);
 
-        $agents = User::where('role', 'employee')->get();
-        $projects = Project::all();
-        $clients = User::where('role', 'client')->get();
-        $employees = User::where('role', 'employee')->get();
+        $agents = User::where('company_id', auth()->user()->company_id)->whereRaw('LOWER(role) IN (?, ?, ?, ?, ?)', ['employee', 'developer', 'dev', 'manager', 'hr'])->whereNull('archived_at')->get();
+        $projects = Project::where('company_id', auth()->user()->company_id)->get();
+        $clients = User::where('company_id', auth()->user()->company_id)->where('role', 'client')->get();
+        $employees = User::where('company_id', auth()->user()->company_id)->whereRaw('LOWER(role) <> ?', ['client'])->whereNull('archived_at')->get();
         $ticketgroup  = TicketGroup::all();
 
         return view('admin.tickets.create', compact('agents', 'projects','ticketgroup','clients', 'employees'));
@@ -119,26 +118,30 @@ class TicketController extends Controller
    public function store(Request $request)
 {
     abort_unless($this->canCreateWorkItems(), 403);
+    if (!TicketAccess::canManage()) {
+        abort_unless((int) $request->requester_name === (int) auth()->id() && !$request->filled('agent_id'), 403, 'You can raise your own ticket; assignments are managed by your company.');
+    }
 
     $request->validate([
         'requester_type' => 'required|in:client,employee',
-        'requester_name' => 'required|exists:users,id',
-        'group_id'       => 'nullable',
+        'requester_name' => ['required', Rule::exists('tenant.users', 'id')->where('company_id', auth()->user()->company_id)],
+        'group_id'       => 'nullable|integer|exists:tenant.ticket_groups,id',
         'subject'        => 'required|string|max:255',
         'description'    => 'required|string',
         'attachment'     => 'nullable|file|mimes:jpeg,png,jpg,pdf,docx,xlsx,xls,csv,txt,zip|max:10240',
         'priority'       => 'nullable|in:low,medium,high,critical',
         'channel'        => 'nullable|string|max:100',
         'tags'           => 'nullable|string|max:255',
-        'type_id'        => 'nullable|string|max:100',
-        'agent_id'       => 'nullable|exists:users,id',
-        'project_id'     => 'nullable|exists:projects,id',
+        'type_id'        => 'nullable|integer|min:1',
+        'agent_id'       => ['nullable', Rule::exists('tenant.users', 'id')->where('company_id', auth()->user()->company_id)->whereIn('role', ['employee', 'developer', 'dev', 'manager', 'hr'])],
+        'project_id'     => ['nullable', Rule::exists('tenant.projects', 'id')->where('company_id', auth()->user()->company_id)],
         'affected_module' => 'nullable|string|max:255',
         'deadline'       => 'nullable|date',
-        'status'         => 'nullable|in:open,pending,closed,resolved,reopened',
+        'status'         => 'nullable|in:open,in_progress,pending,closed,resolved,reopened',
     ]);
 
     // create ticket
+    $this->authorizeAssignment($request);
     $ticket = new Ticket();
 
     $ticket->requester_type = $request->requester_type;
@@ -159,11 +162,12 @@ class TicketController extends Controller
 
     if ($request->hasFile('attachment')) {
         $file = $request->file('attachment');
-        $filename = time() . '-' . $file->getClientOriginalName();
+        $filename = (string) Str::uuid() . '.' . $file->extension();
         $file->move(public_path('admin/uploads/tickets'), $filename);
         $ticket->attachment = 'admin/uploads/tickets/' . $filename;
     }
 
+    DB::connection('tenant')->transaction(function () use ($ticket, $request) {
     $ticket->save();
 
     // store ticket activity
@@ -171,95 +175,33 @@ class TicketController extends Controller
         'ticket_id' => $ticket->id,
         'project_id' => $request->project_id,
         'user_id' => auth()->id(),
-        'assigned_to' => $ticket->assigned_to ?? null,
+        'assigned_to' => $ticket->agent_id,
         'channel_id' => $ticket->channel_id ?? null,
         'group_id' => $ticket->group_id,
         'type_id' => $ticket->type_id,
         'status' => $ticket->status,
         'priority' => $ticket->priority,
         'type' => 'Status Update',
-        'content' => 'Ticket status changed to ' . $ticket->status,
+        'content' => 'Ticket status changed to ' . Ticket::statusLabel($ticket->status),
     ]);
+    });
 
-    // --------------------------
-    // notify assigned agent (database notification) with fallback
-    // --------------------------
-    if ($ticket->agent_id) {
-        $agent = User::find($ticket->agent_id);
-
-        // Temporary debug helpers (uncomment to debug)
-        // dd($ticket->agent_id);
-        // dd($agent);
-
-        if ($agent) {
-            // 1) try normal notify() which will insert into notifications table
-            try {
-                $agent->notify(new TicketCreatedNotification($ticket));
-            } catch (\Throwable $e) {
-                // Logging error but continue to fallback insert
-                \Log::error('Ticket notification failed: ' . $e->getMessage());
-            }
-
-            // 2) quick check: if a notification for this ticket & agent already exists, skip fallback insert
-            $exists = \DB::table('notifications')
-                ->where('notifiable_type', 'App\\Models\\User')
-                ->where('notifiable_id', $agent->id)
-                ->where('type', 'App\\Notifications\\TicketCreatedNotification')
-                ->whereRaw("JSON_UNQUOTE(JSON_EXTRACT(data, '$.ticket_id')) = ?", [(string) $ticket->id])
-                ->exists();
-
-            if (! $exists) {
-                // Insert fallback notification row (safe, idempotent for this ticket/agent)
-                \DB::table('notifications')->insert([
-                    'id' => (string) \Illuminate\Support\Str::uuid(),
-                    'type' => 'App\\Notifications\\TicketCreatedNotification',
-                    'notifiable_type' => 'App\\Models\\User',
-                    'notifiable_id' => $agent->id,
-                    'data' => json_encode([
-                        'ticket_id' => $ticket->id,
-                        'title' => 'New Ticket Assigned',
-                        'message' => 'A new ticket has been assigned to you: ' . $ticket->subject,
-                        'url' => route('tickets.show', $ticket->id),
-                        'icon' => 'fa-ticket',
-                        'color' => 'info',
-                        'created_by' => auth()->id(),
-                    ]),
-                    'read_at' => null,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]);
-            }
-
-            // If you want to immediately inspect the inserted notification, uncomment:
-            // dd(\DB::table('notifications')->where('notifiable_type', 'App\\Models\\User')->where('notifiable_id', $agent->id)->latest('created_at')->first());
-        }
-    }
-
-    SystemNotificationService::notifyAllRoles(
-        'Ticket Raised',
-        auth()->user()->name . ' raised ticket #' . $ticket->id . ': ' . $ticket->subject,
-        route('tickets.show', $ticket->id),
-        [
-            'ticket_id' => $ticket->id,
-            'project_id' => $ticket->project_id,
-            'type' => 'ticket_created',
-            'icon' => 'fa-ticket',
-            'color' => 'info',
-        ]
-    );
+    $this->notifyParticipants($ticket, 'Ticket Raised', auth()->user()->name . ' raised ticket #' . $ticket->id . ': ' . $ticket->subject);
 
     return redirect()->route('tickets.index')->with('success', 'Ticket created successfully');
 }
 
     public function edit($id)
     {
+        abort_unless(TicketAccess::canManage(), 403);
         $ticket = Ticket::findOrFail($id);
-        $agents = User::where('role', 'employee')->get();
-        $projects = Project::all();
-        $clients = Client::all();
-        $users = User::where('role', 'employee')->get();
-        $clients = User::where('role', 'client')->get();
-        $employees = User::where('role', 'employee')->get();
+        TicketAccess::authorize($ticket);
+        $agents = User::where('company_id', auth()->user()->company_id)->whereRaw('LOWER(role) IN (?, ?, ?, ?, ?)', ['employee', 'developer', 'dev', 'manager', 'hr'])->whereNull('archived_at')->get();
+        $projects = Project::where('company_id', auth()->user()->company_id)->get();
+
+        $users = User::where('company_id', auth()->user()->company_id)->whereRaw('LOWER(role) IN (?, ?, ?, ?, ?)', ['employee', 'developer', 'dev', 'manager', 'hr'])->whereNull('archived_at')->get();
+        $clients = User::where('company_id', auth()->user()->company_id)->where('role', 'client')->get();
+        $employees = User::where('company_id', auth()->user()->company_id)->whereRaw('LOWER(role) <> ?', ['client'])->whereNull('archived_at')->get();
         $ticketgroup  = TicketGroup::all();
 
         return view('admin.tickets.edit', compact('ticket', 'agents', 'projects', 'clients', 'users','ticketgroup','clients', 'employees'));
@@ -267,26 +209,29 @@ class TicketController extends Controller
 
     public function update(Request $request, $id)
     {
+        abort_unless(TicketAccess::canManage(), 403);
         $request->validate([
             'requester_type' => 'required|in:client,employee',
-            'requester_name' => 'required|exists:users,id',
-            'group_id' => 'nullable',
+            'requester_name' => ['required', Rule::exists('tenant.users', 'id')->where('company_id', auth()->user()->company_id)],
+            'group_id' => 'nullable|integer|exists:tenant.ticket_groups,id',
             'subject' => 'required|string|max:255',
             'description' => 'required|string',
             'attachment' => 'nullable|file|mimes:jpeg,png,jpg,pdf,docx,xlsx,xls,csv,txt,zip|max:10240',
             'priority' => 'nullable|in:low,medium,high,critical',
             'channel' => 'nullable|string|max:100',
             'tags' => 'nullable|string|max:255',
-            'type_id' => 'nullable|string|max:100',
-            'agent_id' => 'nullable|exists:users,id',
-            'project_id' => 'nullable|exists:projects,id',
+            'type_id' => 'nullable|integer|min:1',
+            'agent_id' => ['nullable', Rule::exists('tenant.users', 'id')->where('company_id', auth()->user()->company_id)->whereIn('role', ['employee', 'developer', 'dev', 'manager', 'hr'])],
+            'project_id' => ['nullable', Rule::exists('tenant.projects', 'id')->where('company_id', auth()->user()->company_id)],
             'affected_module' => 'nullable|string|max:255',
             'deadline' => 'nullable|date',
         ]);
 
         $ticket = Ticket::findOrFail($id);
+        TicketAccess::authorize($ticket);
 
         $ticket->requester_type = $request->requester_type;
+        $this->authorizeAssignment($request, $ticket);
         $ticket->requester_id = $request->requester_name;
         $ticket->requester_name = User::find($request->requester_name)->name ?? null;
         $ticket->group_id = $request->group_id;
@@ -307,27 +252,30 @@ class TicketController extends Controller
             }
 
             $file = $request->file('attachment');
-            $filename = time() . '-' . $file->getClientOriginalName();
+            $filename = (string) Str::uuid() . '.' . $file->extension();
             $file->move(public_path('admin/uploads/tickets'), $filename);
             $ticket->attachment = 'admin/uploads/tickets/' . $filename;
         }
 
-        $ticket->save();
+        DB::connection('tenant')->transaction(function () use ($ticket, $request) {
+    $ticket->save();
 
         TicketActivity::create([
             'ticket_id' => $ticket->id,
             'project_id' => $request->project_id,
             'user_id' => auth()->id(),
-            'assigned_to' => $ticket->assigned_to ?? null,
+            'assigned_to' => $ticket->agent_id,
             'channel_id' => $ticket->channel_id ?? null,
             'group_id' => $ticket->group_id,
             'type_id' => $ticket->type_id,
             'status' => $ticket->status,
             'priority' => $ticket->priority,
             'type' => 'Status Update',
-            'content' => 'Ticket status changed to ' . $ticket->status,
+            'content' => 'Ticket status changed to ' . Ticket::statusLabel($ticket->status),
         ]);
+    });
 
+        $this->notifyParticipants($ticket, 'Ticket Updated', auth()->user()->name . ' updated ticket #' . $ticket->id);
         return redirect()->route('tickets.index')->with('success', 'Ticket updated successfully');
     }
 
@@ -335,41 +283,35 @@ class TicketController extends Controller
     {
         $request->validate([
             'ticketId' => 'required|exists:tickets,id',
-            'status' => 'required|in:open,pending,resolved,closed'
+            'status' => 'required|in:open,in_progress,pending,resolved,closed,reopened'
         ]);
 
         $ticket = Ticket::findOrFail($request->ticketId);
         $user = auth()->user();
 
-        if ($user && strtolower((string) $user->role) === 'employee') {
-            abort_unless(
-                (int) $ticket->agent_id === (int) $user->id || (int) $ticket->requester_id === (int) $user->id,
-                403
-            );
-        }
+        TicketAccess::authorize($ticket, false, true);
 
-        $ticket->status = $request->status;
-        $ticket->save();
-
-        try {
+        DB::connection('tenant')->transaction(function () use ($ticket, $request) {
+            $ticket->status = $request->status;
+            $ticket->save();
             TicketActivity::create([
                 'ticket_id' => $ticket->id,
                 'project_id' => $ticket->project_id,
                 'user_id' => auth()->id(),
                 'assigned_to' => $ticket->agent_id,
-                'channel_id' => $ticket->channel,
+                'channel_id' => null,
                 'group_id' => $ticket->group_id,
                 'type_id' => $ticket->type_id,
                 'status' => $ticket->status,
                 'priority' => $ticket->priority,
                 'type' => 'Status Update',
-                'content' => 'Ticket status changed to ' . ucfirst($ticket->status),
+                'content' => 'Ticket status changed to ' . Ticket::statusLabel($ticket->status),
             ]);
-        } catch (\Throwable $e) {}
+        });
 
-        SystemNotificationService::notifyAllRoles(
+        $this->notifyParticipants($ticket,
             'Ticket Status Updated',
-            ($user?->name ?? 'Someone') . ' changed ticket #' . $ticket->id . ' to ' . ucfirst($ticket->status),
+            ($user?->name ?? 'Someone') . ' changed ticket #' . $ticket->id . ' to ' . Ticket::statusLabel($ticket->status),
             route('tickets.show', $ticket->id),
             ['ticket_id' => $ticket->id, 'project_id' => $ticket->project_id, 'type' => 'ticket_status_updated', 'icon' => 'fa-ticket', 'color' => 'info']
         );
@@ -384,6 +326,7 @@ class TicketController extends Controller
     public function destroy($ticketId)
     {
         $ticket = Ticket::findOrFail($ticketId);
+        TicketAccess::authorize($ticket, true);
         $ticket->delete();
 
         return redirect()->route('tickets.index')->with('success', 'Ticket removed successfully.');
@@ -391,6 +334,7 @@ class TicketController extends Controller
 
     public function storeGroup(Request $request)
     {
+        abort_unless(TicketAccess::canManage(), 403);
         $request->validate([
             'group_name' => 'required|string|max:255|unique:ticket_groups,group_name'
         ]);
@@ -410,6 +354,7 @@ class TicketController extends Controller
 
     public function destroygroup($id)
     {
+        abort_unless(TicketAccess::canManage(), 403);
         $group = TicketGroup::findOrFail($id);
         $group->delete();
 
@@ -419,7 +364,8 @@ class TicketController extends Controller
     public function show($id)
     {
         $ticket = Ticket::with(['requester', 'agent', 'project.client', 'group', 'replies.user', 'activities.user'])->findOrFail($id);
-        $agents = User::where('role', 'employee')->get();
+        TicketAccess::authorize($ticket);
+        $agents = User::where('company_id', auth()->user()->company_id)->whereRaw('LOWER(role) IN (?, ?, ?, ?, ?)', ['employee', 'developer', 'dev', 'manager', 'hr'])->whereNull('archived_at')->get();
         $groups = TicketGroup::all();
         $replies = Reply::where('ticket_id', $ticket->id)->with('user')->latest()->get();
         $activities = TicketActivity::where('ticket_id', $ticket->id)->with('user')->latest()->get();
@@ -436,24 +382,22 @@ class TicketController extends Controller
     {
         $request->validate([
             'message' => 'required|string',
-            'attachment' => 'nullable|file|max:2048',
+            'attachment' => 'nullable|file|mimes:jpeg,png,jpg,pdf,docx,xlsx,xls,csv,txt,zip|max:2048',
         ]);
 
         $ticket = Ticket::findOrFail($id);
+        TicketAccess::authorize($ticket);
 
         $attachmentPath = null;
 
         if ($request->hasFile('attachment')) {
-            if ($ticket->attachment && file_exists(public_path($ticket->attachment))) {
-                unlink(public_path($ticket->attachment));
-            }
-
             $file = $request->file('attachment');
-            $filename = time() . '-' . $file->getClientOriginalName();
+            $filename = (string) Str::uuid() . '.' . $file->extension();
             $file->move(public_path('admin/uploads/ticket_replies'), $filename);
             $attachmentPath = 'admin/uploads/ticket_replies/' . $filename;
         }
 
+        DB::connection('tenant')->transaction(function () use ($ticket, $request, $attachmentPath) {
         Reply::create([
             'ticket_id' => $ticket->id,
             'user_id' => auth()->id(),
@@ -471,52 +415,32 @@ class TicketController extends Controller
             'type' => 'Comment Added',
             'content' => auth()->user()->name . ' added a comment/update: ' . Str::limit($request->message, 80),
         ]);
+        });
 
+        $this->notifyParticipants($ticket, 'Ticket Reply', auth()->user()->name . ' replied to ticket #' . $ticket->id);
         return redirect()->back()->with('success', 'Reply added successfully.');
     }
 
     public function updateDetails(Request $request, $id)
     {
+        abort_unless(TicketAccess::canManage(), 403);
         $request->validate([
-            'agent_id' => 'nullable|exists:users,id',
+            'agent_id' => ['nullable', Rule::exists('tenant.users', 'id')->where('company_id', auth()->user()->company_id)->whereIn('role', ['employee', 'developer', 'dev', 'manager', 'hr'])],
             'group_id' => 'nullable|exists:ticket_groups,id',
             'priority' => 'nullable|in:low,medium,high,critical',
-            'status' => 'nullable|in:open,pending,resolved,closed,reopened',
-            'type_id' => 'nullable|string|max:100',
+            'status' => 'sometimes|required|in:open,in_progress,pending,resolved,closed,reopened',
+            'type_id' => 'nullable|integer|min:1',
         ]);
 
         $ticket = Ticket::findOrFail($id);
-        $oldAgentId = $ticket->agent_id;
+        TicketAccess::authorize($ticket);
 
-        $ticket->agent_id = $request->agent_id;
-        $ticket->group_id = $request->group_id;
-        $ticket->priority = $request->priority;
-        $ticket->status = $request->status;
-        $ticket->type_id = $request->type_id;
 
+        $this->authorizeAssignment($request, $ticket);
+        $ticket->fill($request->only(['agent_id', 'group_id', 'priority', 'status', 'type_id']));
+
+        DB::connection('tenant')->transaction(function () use ($ticket, $request) {
         $ticket->save();
-
-        if ($request->agent_id && $oldAgentId != $request->agent_id) {
-            $projectName = $ticket->project?->name ?? 'Assigned Project';
-            \DB::table('notifications')->insert([
-                'id' => (string) \Illuminate\Support\Str::uuid(),
-                'type' => 'App\\Notifications\\TicketCreatedNotification',
-                'notifiable_type' => 'App\\Models\\User',
-                'notifiable_id' => $request->agent_id,
-                'data' => json_encode([
-                    'ticket_id' => $ticket->id,
-                    'title' => 'Ticket Assigned: #' . $ticket->id,
-                    'message' => 'You have been assigned Ticket #' . $ticket->id . ': ' . $ticket->subject . ' for Project ' . $projectName,
-                    'url' => route('tickets.show', $ticket->id),
-                    'icon' => 'fa-ticket',
-                    'color' => 'info',
-                    'created_by' => auth()->id(),
-                ]),
-                'read_at' => null,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-        }
 
         TicketActivity::create([
             'ticket_id' => $ticket->id,
@@ -528,17 +452,22 @@ class TicketController extends Controller
             'type' => 'Details Updated',
             'content' => 'Ticket details updated by ' . auth()->user()->name,
         ]);
+        });
 
+        $this->notifyParticipants($ticket, 'Ticket Details Updated', auth()->user()->name . ' updated ticket #' . $ticket->id);
         return redirect()->back()->with('success', 'Ticket details updated.');
     }
 
     public function reopen(Request $request, $id)
     {
+        abort_unless(TicketAccess::canManage(), 403);
         $request->validate([
             'reason' => 'nullable|string|max:1000',
         ]);
 
         $ticket = Ticket::findOrFail($id);
+        TicketAccess::authorize($ticket);
+        DB::connection('tenant')->transaction(function () use ($ticket, $request) {
         $ticket->status = 'reopened';
         $ticket->save();
 
@@ -554,30 +483,9 @@ class TicketController extends Controller
             'type' => 'Reopened',
             'content' => 'Ticket reopened by Admin. Statement: ' . $reasonText,
         ]);
+        });
 
-        if ($ticket->agent_id) {
-            $projectName = $ticket->project?->name ?? 'Assigned Project';
-            \DB::table('notifications')->insert([
-                'id' => (string) \Illuminate\Support\Str::uuid(),
-                'type' => 'App\\Notifications\\TicketReopenedNotification',
-                'notifiable_type' => 'App\\Models\\User',
-                'notifiable_id' => $ticket->agent_id,
-                'data' => json_encode([
-                    'ticket_id' => $ticket->id,
-                    'title' => 'Ticket REOPENED: #' . $ticket->id,
-                    'message' => 'Ticket #' . $ticket->id . ' "' . $ticket->subject . '" for Project ' . $projectName . ' has been REOPENED by Admin. Reason: ' . $reasonText,
-                    'url' => route('tickets.show', $ticket->id),
-                    'icon' => 'fa-redo',
-                    'color' => 'danger',
-                    'created_by' => auth()->id(),
-                ]),
-                'read_at' => null,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-        }
-
-        SystemNotificationService::notifyAllRoles(
+        $this->notifyParticipants($ticket,
             'Ticket Reopened',
             auth()->user()->name . ' reopened Ticket #' . $ticket->id . ': ' . $ticket->subject,
             route('tickets.show', $ticket->id),
@@ -602,8 +510,11 @@ class TicketController extends Controller
         ]);
 
         $ticket = Ticket::findOrFail($id);
+        TicketAccess::authorize($ticket);
         $user = auth()->user();
         $logDate = $request->input('start_date', now()->toDateString());
+        TicketAccess::authorize($ticket, false, true);
+        abort_unless($ticket->project_id, 422, 'Link a project before logging project time.');
         $hours = (float) $request->hours;
         $memo = $request->memo;
 
@@ -637,21 +548,24 @@ class TicketController extends Controller
 
     public function bulkAction(Request $request)
     {
-        $tickets = Ticket::whereIn('id', $request->tickets);
-
-        if ($request->action == 'delete') {
-            $tickets->delete();
-        }
-
-        if ($request->action == 'change_status' && $request->status) {
-            $tickets->update(['status' => $request->status]);
-        }
+        abort_unless(TicketAccess::canManage(), 403);
+        $request->validate(['tickets' => 'required|array|min:1', 'tickets.*' => 'required|integer|distinct', 'action' => 'required|in:delete,change_status', 'status' => ['required_if:action,change_status', 'nullable', Rule::in(array_keys(Ticket::STATUSES))]]);
+        $tickets = Ticket::whereIn('id', $request->tickets)->get();
+        abort_unless($tickets->count() === count($request->tickets), 403);
+        foreach ($tickets as $ticket) TicketAccess::authorize($ticket, true);
+        DB::connection('tenant')->transaction(function () use ($tickets, $request) {
+            foreach ($tickets as $ticket) {
+                if ($request->action === 'delete') $ticket->delete();
+                else $this->changeStatus(Request::create('/tickets/change-status', 'POST', ['ticketId' => $ticket->id, 'status' => $request->status]));
+            }
+        });
 
         return response()->json(['status' => 'success']);
     }
 
     public function bulkDelete(Request $request)
     {
+        abort_unless(TicketAccess::canManage(), 403);
         $ids = $request->input('ids', []);
 
         if (!is_array($ids) || empty($ids)) {
@@ -661,7 +575,11 @@ class TicketController extends Controller
             ], 422);
         }
 
-        Ticket::whereIn('id', $ids)->delete();
+        $request->validate(['ids.*' => 'required|integer|distinct']);
+        $tickets = Ticket::whereIn('id', $ids)->get();
+        abort_unless($tickets->count() === count($ids), 403);
+        foreach ($tickets as $ticket) TicketAccess::authorize($ticket, true);
+        DB::connection('tenant')->transaction(fn () => $tickets->each->delete());
 
         return response()->json([
             'status'  => 'success',
@@ -671,6 +589,23 @@ class TicketController extends Controller
 
     private function canCreateWorkItems(): bool
     {
-        return in_array(strtolower((string) auth()->user()?->role), ['admin', 'hr', 'manager'], true);
+        return auth()->user()?->company_id && (\App\Services\WorkforceAccess::isAdmin(auth()->user())
+            || in_array(strtolower((string) auth()->user()?->role), ['hr', 'manager', 'employee', 'developer', 'dev'], true));
+    }
+
+    private function authorizeAssignment(Request $request, ?Ticket $ticket = null): void
+    {
+        if (!$request->has('agent_id') || (int) $request->agent_id === (int) $ticket?->agent_id) return;
+        abort_unless(\App\Services\WorkforceAccess::isAdmin(auth()->user())
+            || (TicketAccess::canManage() && auth()->user()->moduleToggleAllows('tickets', 'assign')), 403, 'You do not have permission to assign tickets.');
+    }
+
+    private function notifyParticipants(Ticket $ticket, string $title, string $message, ?string $url = null, array $data = []): void
+    {
+        $companyId = (int) auth()->user()->company_id;
+        $recipients = SystemNotificationService::admins($companyId)->merge(User::where('company_id', $companyId)
+            ->whereIn('id', array_filter([$ticket->agent_id, $ticket->requester_id]))->get())->unique('id');
+        DB::connection('tenant')->afterCommit(fn () => SystemNotificationService::notifyUser($recipients, $title, $message,
+            $url ?? route('tickets.show', $ticket->id), $data + ['ticket_id' => $ticket->id, 'type' => 'internal_ticket', 'icon' => 'fa-ticket']));
     }
 }

@@ -77,7 +77,8 @@ class SetTenantConnection
         }
 
         $boundUser = \Illuminate\Support\Facades\Auth::guard('web')->user();
-        if ($boundUser?->company_id && !$sessionCompanyId && !\App\Services\TenantScope::isPlatformAdmin()) {
+        if ($boundUser?->company_id && !$sessionCompanyId && !\App\Services\TenantScope::isPlatformAdmin()
+            && !\App\Services\SecureCompanyLogin::isPlatformDeveloper($boundUser)) {
             abort(403, 'Company session is missing. Please sign in again.');
         }
         if ($sessionCompanyId && $boundUser && !\App\Services\TenantScope::isPlatformAdmin()) {

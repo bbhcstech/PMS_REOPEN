@@ -98,6 +98,10 @@ class EnsureModuleAccess
     /** The action a request performs on its module (view/create/edit/delete/approve/export/assign). */
     public static function permissionForRequest(Request $request, string $routeName, string $permission = 'view'): string
     {
+        if ($permission === 'view' && !$request->isMethodSafe() && str_starts_with($routeName, 'tickets.')) {
+            if ($routeName === 'tickets.bulk-action') return $request->input('action') === 'delete' ? 'delete' : 'edit';
+            if (in_array($routeName, ['tickets.change-status', 'tickets.reply', 'tickets.reopen', 'tickets.logTime'], true)) return 'edit';
+        }
         if ($permission === 'view' && ! $request->isMethodSafe()) {
             $action = strtolower((string) strrchr($routeName, '.'));
             $permission = match (true) {

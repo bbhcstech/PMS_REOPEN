@@ -79,6 +79,30 @@ $managerLeave = Leave::findOrFail(6);
 Auth::guard('web')->setUser($hr);
 $check(! $service->canReview($managerLeave, $hr), 'HR cannot review the Manager\'s request');
 
+echo "Manager personal access\n";
+$check($hit(6, 'myLeaves') === 'allowed', 'Manager can open My Leave Requests');
+$check($hit(6, 'index') === 'allowed', 'Manager can open their own leave status list');
+$check($hit(6, 'show', 6) === 'allowed', 'Manager can read their own leave status');
+$check($denied(fn () => $hit(6, 'edit', 6)), 'Manager cannot edit their own request');
+$check($denied(fn () => $hit(6, 'updateStatus', 6)), 'Manager cannot approve their own request');
+$check(! $service->canReview($managerLeave, $manager), 'Manager has no review authority over their own leave');
+
+echo "Actual reviewer notification routing\n";
+foreach ([5, 6, 8] as $ownerId) {
+    $owner = User::findOrFail($ownerId);
+    Auth::guard('web')->setUser($owner);
+    Illuminate\Support\Facades\Notification::fake();
+    App\Services\SystemNotificationService::notifyLeaveReviewers($owner, 'New Leave Request', 'Review requested');
+    foreach ([1, 2] as $adminId) {
+        $check(Illuminate\Support\Facades\Notification::sent(User::findOrFail($adminId), App\Notifications\SystemNotification::class)->isNotEmpty(), "Owner {$ownerId}: company admin {$adminId} notified");
+    }
+    $hrNotified = Illuminate\Support\Facades\Notification::sent(User::findOrFail(5), App\Notifications\SystemNotification::class)->isNotEmpty();
+    $check($hrNotified === ($ownerId === 8), "Owner {$ownerId}: HR notified only for ordinary employee requests");
+    foreach ([3, 6] as $excludedId) {
+        $check(Illuminate\Support\Facades\Notification::sent(User::findOrFail($excludedId), App\Notifications\SystemNotification::class)->isEmpty(), "Owner {$ownerId}: unrelated admin/manager {$excludedId} not notified");
+    }
+}
+
 echo "Pages compile\n";
 foreach (['index', 'show'] as $view) {
     token_get_all(app('blade.compiler')->compileString(file_get_contents(resource_path("views/admin/leaves/{$view}.blade.php"))), TOKEN_PARSE);

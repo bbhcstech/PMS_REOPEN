@@ -48,7 +48,7 @@ Carbon::setTestNow(Carbon::parse('2026-10-15 12:00:00'));
 $build = fn ($records = null, $schedule = null, $detail = null) => (new AttendanceCalendar())->build(Carbon::parse('2026-10-01'), $records ?? collect(), collect(), collect(), $detail,
     $settings['working_days'], 2, $schedule ?? $settings);
 $calendar = $build(); $days = collect($calendar['days'])->keyBy('key');
-weeklyCheck($calendar['totals']['wfh'] === 5 && $calendar['totals']['day_off'] === 4, 'October must have five WFH Saturdays and four Sundays off.');
+weeklyCheck($calendar['totals']['wfh'] === 5 && $calendar['totals']['weekend'] === 4 && $calendar['totals']['day_off'] === 0, 'October must have five WFH Saturdays and four Sundays counted separately from short shifts.');
 weeklyCheck($days['2026-10-03']['status'] === 'absent' && $days['2026-10-03']['wfh'], 'Scheduled WFH fabricated presence or lost mode.');
 weeklyCheck($days['2026-10-31']['status'] === 'not_marked' && $days['2026-10-31']['wfh'], 'Future WFH schedule missing or counted as present.');
 weeklyCheck((float) $calendar['totals']['attendance_rate'] === 0.0 && $calendar['totals']['seconds'] === 0, 'Schedule invented attendance/hours.');

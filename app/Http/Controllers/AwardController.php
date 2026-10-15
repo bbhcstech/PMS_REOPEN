@@ -148,17 +148,7 @@ class AwardController extends Controller
     public function appreciationStore(Request $request)
     {
         abort_unless(Auth::user()?->hasModulePermission('awards', 'create'), 403);
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'color_code' => 'required|string|max:7',
-            'status' => 'required|in:active,inactive',
-        ]);
-
-        Appreciations::create([
-            'title' => $request->title,
-            'color_code' => $request->color_code,
-            'status' => $request->status,
-        ]);
+        Appreciations::create($this->appreciationData($request));
 
         return redirect()->route('awards.appreciation-index')->with('success', 'Appreciation created successfully.');
     }
@@ -213,17 +203,26 @@ class AwardController extends Controller
 
     public function appreciationUpdate(Request $request, $id)
     {
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'given_to' => 'nullable|string|max:255',
-            'given_on' => 'nullable|date',
-            'status' => 'required|in:active,inactive',
-        ]);
-
+        $data = $this->appreciationData($request);
         $appreciation = Appreciations::findOrFail($id);
-        $appreciation->update($request->all());
+        $appreciation->update($data);
 
         return redirect()->route('awards.appreciation-index')->with('success', 'Appreciation updated successfully.');
+    }
+
+    private function appreciationData(Request $request): array
+    {
+        $data = $request->validate([
+            'title' => 'required|string|max:255',
+            'color_code' => 'required|string|max:7',
+            'status' => 'nullable|in:active,inactive',
+            'given_to' => 'nullable|string|max:255',
+            'given_on' => 'nullable|date_format:Y-m-d',
+            'summary' => 'nullable|string|max:255',
+            'icon' => 'nullable|string|max:255',
+        ]);
+        $data['status'] = $data['status'] ?? 'active';
+        return $data;
     }
 
     public function destroy($id)

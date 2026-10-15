@@ -33,6 +33,7 @@ class LeaveController extends Controller
 
     public function index(Request $request, bool $ownLeaves = false)
     {
+        $ownLeaves = $ownLeaves || (\App\Services\WorkforceAccess::isAuthority(Auth::user()) && ! $this->isAdmin());
         $this->leaveService->ensureDefaultTypes();
         $policy = $this->leaveService->policy();
         $leaveTypes = $this->leaveService->leaveTypes();
@@ -227,7 +228,7 @@ class LeaveController extends Controller
             );
         }
 
-        $destination = \App\Services\WorkforceAccess::isAuthority($actor) && ! $this->isAdmin() ? 'dashboard' : (request()->input('staff_category') === 'authority' ? 'admin.authority-leaves' : 'leaves.index');
+        $destination = \App\Services\WorkforceAccess::isAuthority($actor) && ! $isPureAdmin ? 'leaves.mine' : (request()->input('staff_category') === 'authority' ? 'admin.authority-leaves' : 'leaves.index');
         return redirect()->route($destination)->with('success', 'Leave request submitted successfully.');
     }
 

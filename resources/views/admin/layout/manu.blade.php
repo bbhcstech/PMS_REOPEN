@@ -1875,6 +1875,23 @@
                 $isHrSidebarUser = strtolower((string)(auth()->user()?->role ?? '')) === 'hr';
             @endphp
 
+            @if(in_array(strtolower((string) auth()->user()?->role), ['hr', 'manager'], true))
+                @if($canSeeModule('attendance'))
+                <li class="menu-item {{ request()->routeIs('attendance.index') && request('view') === 'personal' ? 'active' : '' }}">
+                    <a href="{{ route('attendance.index', ['view' => 'personal']) }}" class="menu-link">
+                        <i class="menu-icon tf-icons bx bx-calendar-check"></i><div>My Attendance</div>
+                    </a>
+                </li>
+                @endif
+                @if($canSeeModule('leaves'))
+                <li class="menu-item {{ request()->routeIs('leaves.mine') ? 'active' : '' }}">
+                    <a href="{{ route('leaves.mine') }}" class="menu-link">
+                        <i class="menu-icon tf-icons bx bx-user-check"></i><div>My Leave Requests</div>
+                    </a>
+                </li>
+                @endif
+            @endif
+
             @if(in_array(strtolower((string) auth()->user()?->role), ['admin', 'administrator'], true) && $canSeeModule('upper-level-employees'))
                 <li class="menu-item {{ request()->routeIs('admin.upper-level-employees.*') ? 'active' : '' }}">
                     <a href="{{ route('admin.upper-level-employees.index') }}" class="menu-link">
@@ -1963,15 +1980,6 @@
                         </a>
                     </li>
 @endif
-                    @if(\App\Services\WorkforceAccess::isHr(auth()->user()))
-                    {{-- HR's own requests to the admin ("My Leaves" above is the employee queue HR manages). --}}
-                    <li class="menu-item {{ request()->routeIs('leaves.mine') ? 'active' : '' }}">
-                        <a href="{{ route('leaves.mine') }}" class="menu-link">
-                            <i class="menu-icon tf-icons bx bx-user-check"></i>
-                            <div class="text-truncate">My Leave Requests</div>
-                        </a>
-                    </li>
-                    @endif
                     @if($canSeeModule('leaves-apply'))
                     <li class="menu-item {{ request()->routeIs('leaves.create') ? 'active' : '' }}">
                         <a href="{{ route('leaves.create') }}" class="menu-link" data-sidebar-key="leaves-apply">
@@ -2361,12 +2369,12 @@
                 <!-- //ticket section . -->
 
 
-            {{-- Admin Workspace uses Platform Support & Complaints instead of tickets --}}
+            {{-- Internal work tickets are separate from Platform Support & Complaints. --}}
             @if($canSeeModule('tickets') && ! \App\Support\TicketAccess::hiddenForCurrentUser())
             <li class="menu-item {{ request()->routeIs('tickets.*') || request()->routeIs('ticket-groups.*') ? 'active' : '' }}">
                   <a href="{{ route('tickets.index') }}" class="menu-link" data-sidebar-key="tickets">
                        <i class="menu-icon tf-icons bx bx-receipt"></i>
-                      <div class="text-truncate" data-i18n="Dashboard">Ticket</div>
+                      <div class="text-truncate" data-i18n="Dashboard">Internal Tickets</div>
                   </a>
               </li>
             @endif

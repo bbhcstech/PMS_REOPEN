@@ -3,10 +3,10 @@
 @section('content')
 @php
     $attendanceRoute = request('staff_category') === 'authority' ? 'admin.authority-attendance' : 'attendance.index';
-    $statuses = ['present' => ['P', 'Present'], 'late' => ['LT', 'Late'], 'half_day' => ['HD', 'Half day'], 'absent' => ['A', 'Absent'], 'holiday' => ['H', 'Holiday'], 'leave' => ['L', 'Leave'], 'unpaid_leave' => ['UL', 'Unpaid leave'], 'day_off' => ['OFF', 'Day off'], 'wfh' => ['WFH', 'Work from home'], 'not_marked' => ['—', 'Not marked'], 'not_joined' => ['NJ', 'Before joining']];
+    $statuses = ['present' => ['P', 'Present'], 'late' => ['LT', 'Late'], 'half_day' => ['HD', 'Half day'], 'absent' => ['A', 'Absent'], 'holiday' => ['H', 'Holiday'], 'leave' => ['L', 'Leave'], 'unpaid_leave' => ['UL', 'Unpaid leave'], 'weekend' => ['WE', 'Weekend'], 'scheduled_off' => ['SO', 'Scheduled off'], 'day_off' => ['OFF', 'Day off'], 'wfh' => ['WFH', 'Work from home'], 'not_marked' => ['—', 'Not marked'], 'not_joined' => ['NJ', 'Before joining']];
     $hours = fn ($seconds) => sprintf('%dh %02dm', intdiv((int) $seconds, 3600), intdiv((int) $seconds % 3600, 60));
     $link = fn ($date) => route($attendanceRoute, ['view' => 'team', 'month' => $date->month, 'year' => $date->year, 'search' => request('search')]);
-    $totalColumns = ['present' => 'Present', 'late' => 'Late', 'absent' => 'Absent', 'half_day' => 'Half day', 'holiday' => 'Holiday', 'leave' => 'Leave', 'unpaid_leave' => 'Unpaid', 'day_off' => 'Day off', 'wfh' => 'WFH'];
+    $totalColumns = ['present' => 'Present', 'late' => 'Late', 'absent' => 'Absent', 'half_day' => 'Half day', 'holiday' => 'Holiday', 'leave' => 'Leave', 'unpaid_leave' => 'Unpaid', 'day_off' => 'Day off', 'weekend' => 'Weekend', 'scheduled_off' => 'Scheduled off', 'wfh' => 'WFH'];
 @endphp
 <div id="attendance-team-page" class="attendance-team-page">
     <header class="at-panel at-header">
@@ -82,7 +82,7 @@
             </table>
         </div>
         <footer class="at-footer"><p>Showing {{ $teamRows->firstItem() ?? 0 }}–{{ $teamRows->lastItem() ?? 0 }} of {{ $teamRows->total() }} employees. Totals above cover all matching employees.</p>{{ $teamRows->links() }}</footer>
-        <p class="at-note">WFH totals include scheduled WFH days. A schedule alone does not count as attendance: recorded present, late and WFH days count fully; half days count as half. Holidays and weekends are excluded. Future working days remain unmarked.</p>
+        <p class="at-note">WFH totals include scheduled WFH days. A schedule alone does not count as attendance: recorded present, late and WFH days count fully; half days count as half. Holidays and scheduled rest days are excluded. Short shifts marked Day off remain working days. Future working days remain unmarked.</p>
     </section>
 </div>
 <style>

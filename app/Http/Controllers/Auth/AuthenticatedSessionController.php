@@ -77,7 +77,7 @@ class AuthenticatedSessionController extends Controller
             str_contains(strtolower((string) ($user->designation ?? '')), 'engineer')
         );
 
-        if ($user && $user->company_id) {
+        if ($user && $user->company_id && !\App\Services\SecureCompanyLogin::isPlatformDeveloper($user)) {
             $company = \App\Models\Central\Company::find(session('current_company_id'));
             if (!$company || (int) $company->id !== (int) $user->company_id
                 || $company->db_name !== config('database.connections.tenant.database')) {

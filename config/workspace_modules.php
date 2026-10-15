@@ -49,7 +49,7 @@ $items = [
     ['crm-deals', 'Deals', 'leads', 'admin.deals.index'],
     ['products', 'Products', null, 'products.index'],
     ['orders', 'Orders', null, 'orders.index'],
-    ['tickets', 'Ticket', null, 'tickets.index'],
+    ['tickets', 'Internal Tickets', null, 'tickets.index'],
     ['company-complaints', 'Platform Support & Complaints', null, 'admin.company-complaints.index'],
     ['payroll', 'Payroll', null, 'payroll.index'],
     ['salary-structures', 'Salary Structure', 'payroll', 'payroll.salary-structures.index', true],
@@ -117,4 +117,6 @@ $modules['recruitment']['route_prefixes'] = ['recruitment'];
 $modules['appraisal']['route_prefixes'] = ['appraisal'];
 $modules['leads-contacts']['route_prefixes'] = ['leads.contacts'];
 $modules['company-complaints']['route_prefixes'] = ['admin.company-complaints'];
+$modules['tickets']['route_prefixes'] = ['tickets', 'ticket-groups'];
+$modules['tickets']['route_names'] = ['dashboard.ticket'];
 return $modules;

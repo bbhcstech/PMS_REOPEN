@@ -4,10 +4,10 @@
 @php
     $attendanceRoute = request('staff_category') === 'authority' ? 'admin.authority-attendance' : 'attendance.index';
     $totals = $calendar['totals'];
-    $labels = ['present' => ['✅', 'Present'], 'late' => ['⏰', 'Late'], 'half_day' => ['🌓', 'Half day'], 'absent' => ['❌', 'Absent'], 'holiday' => ['🎉', 'Holiday'], 'leave' => ['🌴', 'Leave'], 'unpaid_leave' => ['📋', 'Unpaid leave'], 'day_off' => ['☕', 'Day off'], 'not_marked' => ['○', 'Not marked'], 'not_joined' => ['—', 'Before joining']];
+    $labels = ['present' => ['✅', 'Present'], 'late' => ['⏰', 'Late'], 'half_day' => ['🌓', 'Half day'], 'absent' => ['❌', 'Absent'], 'holiday' => ['🎉', 'Holiday'], 'leave' => ['🌴', 'Leave'], 'unpaid_leave' => ['📋', 'Unpaid leave'], 'weekend' => ['WE', 'Weekend'], 'scheduled_off' => ['SO', 'Scheduled off'], 'day_off' => ['☕', 'Day off'], 'not_marked' => ['○', 'Not marked'], 'not_joined' => ['—', 'Before joining']];
     $previous = $start->copy()->subMonth();
     $next = $start->copy()->addMonth();
-    $personalView = \App\Services\WorkforceAccess::isHr(auth()->user()) && request('view') === 'personal';
+    $personalView = in_array(strtolower((string) auth()->user()->role), ['hr', 'manager'], true) && request('view') === 'personal';
     $navigation = fn ($date) => route($attendanceRoute, array_merge($canManage ? ['user_id' => $selectedEmployee?->id] : [], $personalView ? ['view' => 'personal'] : [], ['month' => $date->month, 'year' => $date->year]));
     $hours = fn ($seconds) => sprintf('%dh %02dm', intdiv((int) $seconds, 3600), intdiv((int) $seconds % 3600, 60));
     $exportRows = collect($calendar['days'])->map(fn ($day) => [$day['key'], $day['status'], $day['seconds'], $day['wfh'] ? 'Yes' : 'No'])->values();
@@ -51,7 +51,7 @@
     <section class="ac-panel ac-profile">
         <div class="ac-person"><div class="ac-avatar">{{ mb_substr($selectedEmployee->name, 0, 1) }}</div><div><h2>{{ $selectedEmployee->name }}</h2><p>{{ $selectedEmployee->employeeDetail?->employee_id ?: 'Employee ID not set' }} · {{ $selectedEmployee->companyStaffRole?->name ?? ucfirst($selectedEmployee->role) }}</p><p>{{ $selectedEmployee->employeeDetail?->designation?->name }} @if($selectedEmployee->employeeDetail?->designation) · Level {{ $selectedEmployee->employeeDetail->designation->level }} @endif</p><p>{{ $selectedEmployee->email }}</p></div></div>
         <div class="ac-metrics">
-            @foreach(['present' => 'Present', 'absent' => 'Absent', 'late' => 'Late', 'half_day' => 'Half days', 'holiday' => 'Holidays', 'leave' => 'Leave', 'unpaid_leave' => 'Unpaid', 'day_off' => 'Weekend / Day off', 'wfh' => 'WFH'] as $key => $label)
+            @foreach(['present' => 'Present', 'absent' => 'Absent', 'late' => 'Late', 'half_day' => 'Half days', 'holiday' => 'Holidays', 'leave' => 'Leave', 'unpaid_leave' => 'Unpaid', 'weekend' => 'Weekend', 'scheduled_off' => 'Scheduled off', 'day_off' => 'Day off', 'wfh' => 'WFH'] as $key => $label)
                 <div class="ac-metric ac-{{ $key }}"><strong>{{ $totals[$key] }}</strong><span>{{ $label }}</span></div>
             @endforeach
             <div class="ac-metric"><strong>{{ $hours($totals['seconds']) }}</strong><span>Total hours</span></div>
@@ -79,7 +79,7 @@
             @for($blank = 0; $blank < (7 - (($calendar['offset'] + count($calendar['days'])) % 7)) % 7; $blank++)<div class="ac-day ac-blank" aria-hidden="true"></div>@endfor
         </div></div>
         <div class="ac-legend">@foreach($labels as $key => [$emoji, $label])@if($key !== 'not_joined')<span>{{ $emoji }} {{ $label }}</span>@endif @endforeach<span>🏠 Work from home</span></div>
-        <p class="ac-help">Attendance % = present + late + half of half days, divided by elapsed scheduled days. Holidays and days off are excluded.</p>
+        <p class="ac-help">Attendance % = present + late + half of half days, divided by elapsed scheduled days. Holidays and scheduled rest days are excluded. Short shifts marked Day off remain working days.</p>
     </section>
     @foreach($calendar['days'] as $day)
         <dialog class="ac-dialog" id="ac-day-{{ $day['key'] }}">

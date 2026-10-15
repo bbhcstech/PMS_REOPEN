@@ -54,7 +54,7 @@ class AttendanceCalendar
     {
         $sessions = $records->groupBy(fn ($record) => Carbon::parse($record->date)->toDateString());
         $days = [];
-        $totals = array_fill_keys(['present', 'absent', 'late', 'half_day', 'holiday', 'leave', 'unpaid_leave', 'day_off', 'wfh', 'wfh_present', 'seconds', 'scheduled_days'], 0);
+        $totals = array_fill_keys(['present', 'absent', 'late', 'half_day', 'holiday', 'leave', 'unpaid_leave', 'weekend', 'scheduled_off', 'day_off', 'wfh', 'wfh_present', 'seconds', 'scheduled_days'], 0);
         $joiningDate = ! empty($employeeDetail->joining_date) ? Carbon::parse($employeeDetail->joining_date)->startOfDay() : null;
         for ($day = 1; $day <= $month->daysInMonth; $day++) {
             $date = $month->copy()->day($day)->startOfDay();
@@ -97,7 +97,7 @@ class AttendanceCalendar
             } elseif ($joiningDate && $date->lt($joiningDate)) {
                 $status = 'not_joined';
             } elseif (! in_array($date->format('l'), $workingDays, true)) {
-                $status = 'day_off';
+                $status = $date->isSunday() ? 'weekend' : 'scheduled_off';
             } elseif ($date->isPast() && ! $date->isToday()) {
                 $status = 'absent';
             }
@@ -105,7 +105,7 @@ class AttendanceCalendar
                 return strtolower((string) ($session->status ?? '')) === 'wfh'
                     || in_array(strtolower((string) ($session->work_from_type ?? $session->working_from ?? '')), ['home', 'wfh', 'work_from_home', 'work from home'], true);
             });
-            $scheduledWfh = !in_array($status, ['holiday', 'day_off', 'not_joined', 'leave', 'unpaid_leave'], true)
+            $scheduledWfh = !in_array($status, ['holiday', 'weekend', 'scheduled_off', 'not_joined', 'leave', 'unpaid_leave'], true)
                 && $userId && $schedule && WorkScheduleService::isUserWfhOnDate($userId, $key, $schedule) !== null;
             $wfh = $wfh || $scheduledWfh;
             $seconds = (int) $daily->sum(fn ($session) => max(0, (int) ($session->total_seconds ?? 0)));
@@ -113,7 +113,8 @@ class AttendanceCalendar
             if ($wfh) $totals['wfh']++;
             if ($status === 'wfh' && $record) $totals['wfh_present']++;
             $totals['seconds'] += $seconds;
-            if (! $date->isFuture() && (! $joiningDate || $date->gte($joiningDate)) && ! in_array($status, ['holiday', 'day_off', 'not_joined'], true)) $totals['scheduled_days']++;
+            // A short completed shift is still a required working day, unlike a scheduled rest day.
+            if (! $date->isFuture() && (! $joiningDate || $date->gte($joiningDate)) && ! in_array($status, ['holiday', 'weekend', 'scheduled_off', 'not_joined'], true)) $totals['scheduled_days']++;
             $days[] = compact('date', 'key', 'status', 'daily', 'holiday', 'leave', 'seconds', 'wfh', 'scheduledWfh');
         }
         $totals['attendance_rate'] = $totals['scheduled_days'] > 0

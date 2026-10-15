@@ -18,7 +18,8 @@ class EnsureCompanySubscriptionActive
         if (
             $request->is('super-admin*') ||
             $request->is('superadmin*') ||
-            ($request->is('developer*') && !Auth::user()?->company_id && !session('current_company_id'))
+            ($request->is('developer*') && ((!Auth::user()?->company_id && !session('current_company_id'))
+                || \App\Services\SecureCompanyLogin::isPlatformDeveloper(Auth::guard('web')->user())))
         ) {
             return $next($request);
         }

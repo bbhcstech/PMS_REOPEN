@@ -388,7 +388,7 @@ class AttendanceController extends Controller
         $year = $request->integer('year') ?: now()->year;
         $start = Carbon::create($year, $month, 1)->startOfDay();
         $end = $start->copy()->endOfMonth();
-        $personalView = \App\Services\WorkforceAccess::isHr($actor) && $request->query('view') === 'personal';
+        $personalView = in_array(strtolower((string) $actor->role), ['hr', 'manager'], true) && $request->query('view') === 'personal';
         $canManage = !$personalView && ($this->isAdminUser($actor) || $this->canManageAttendance($actor) || \App\Services\WorkforceAccess::isHr($actor));
         $staffCategory = $canManage ? ($request->input('staff_category') === 'authority' ? 'authority' : 'employee') : null;
         $query = User::with(['employeeDetail.designation', 'companyStaffRole'])->where('company_id', $actor->company_id)
@@ -1835,7 +1835,7 @@ class AttendanceController extends Controller
                 Log::warning('Attendance record not found', ['attendance_id' => $attendanceId]);
                 return response('<div class="alert alert-danger">Attendance record not found.</div>', 404);
             }
-            if (! $attendance->user || ! \App\Services\WorkforceAccess::canAccessRecord($user, $attendance->user, $attendance->staff_category)) {
+            if (! $attendance->user || ((int) $attendance->user_id !== (int) $user->id && ! \App\Services\WorkforceAccess::canAccessRecord($user, $attendance->user, $attendance->staff_category))) {
                 return response('<div class="alert alert-danger">You cannot access this attendance record.</div>', 403);
             }
 

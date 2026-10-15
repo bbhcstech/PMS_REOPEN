@@ -39,4 +39,16 @@ checkCalendar($record->fresh()->clock_in === '09:00:00', 'Rejected HR edit chang
 Auth::guard('web')->setUser(User::findOrFail(1));
 $admin = $controller->authorityIndex(Request::create('/admin/authority-attendance', 'GET', ['user_id' => 40, 'month' => 10, 'year' => 2026]))->getData();
 checkCalendar($admin['selectedEmployee']->id === 40 && $admin['canManage'], 'Admin lost access to HR attendance');
+DB::table('users')->insert(['id' => 41, 'company_id' => 1, 'name' => 'Manager', 'email' => 'manager@local.test', 'role' => 'manager']);
+DB::table('attendances')->insert(['user_id' => 41, 'date' => '2026-10-01', 'status' => 'present', 'clock_in' => '09:00:00', 'clock_out' => '17:00:00']);
+Auth::guard('web')->setUser(User::findOrFail(41));
+$managerData = $controller->index(Request::create('/attendance', 'GET', ['view' => 'personal', 'month' => 10, 'year' => 2026]))->getData();
+checkCalendar($managerData['employees']->pluck('id')->all() === [41] && !$managerData['canManage'], 'Manager personal attendance is not isolated/read-only');
+checkCalendar($managerData['calendar']['totals']['seconds'] === 28800, 'Manager personal working hours missing');
+try {
+    $controller->index(Request::create('/attendance', 'GET', ['user_id' => 40]));
+    throw new RuntimeException('Manager viewed HR attendance');
+} catch (\Symfony\Component\HttpKernel\Exception\HttpException $e) {
+    checkCalendar($e->getStatusCode() === 403, 'Wrong manager attendance isolation rejection');
+}
 echo "PASS: HR own monthly hours, read-only personal view, forged employee rejection, single/bulk self-overwrite denial, unchanged saved times and admin access.\n";

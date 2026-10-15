@@ -10,6 +10,16 @@ use Illuminate\Validation\ValidationException;
 
 class SecureCompanyLogin
 {
+    /** Platform-managed developers authenticate in the primary workspace, even when assigned a company. */
+    public static function isPlatformDeveloper(?User $user): bool
+    {
+        $primary = DB::connection('session_db')->getDatabaseName();
+        return $user && !$user->company_staff_role_id
+            && in_array(strtolower((string) $user->role), ['developer', 'dev'], true)
+            && !session('current_company_id')
+            && config('database.connections.tenant.database') === $primary;
+    }
+
     public static function passwordMatches(string $input, ?string $stored): bool
     {
         if (!$stored) return false;
@@ -21,7 +31,7 @@ class SecureCompanyLogin
     {
         $login = strtolower(trim((string) $request->input('email')));
         $password = (string) $request->input('password');
-        $primary = config('database.connections.session_db.database') ?: config('database.connections.mysql.database');
+        $primary = DB::connection('session_db')->getDatabaseName();
         app(AuthenticationSession::class)->clear($request);
         $this->useDatabase($primary);
 
@@ -46,6 +56,28 @@ class SecureCompanyLogin
                 || ($request->filled('company_code') && strcasecmp($request->input('company_code'), $hostCompany->company_code) !== 0))) $this->invalid();
             $companies->whereKey($hostCompany->id);
             $explicitCompany = true;
+        }
+        if (!$explicitCompany && Schema::connection('tenant')->hasTable('users')) {
+            // Developer Management writes the authoritative account to the primary database.
+            // A company assignment is work metadata, not the database containing its login.
+            $this->useDatabase($primary);
+            $developers = User::query()->when(Schema::connection('tenant')->hasColumn('users', 'company_staff_role_id'), fn ($query) => $query->whereNull('company_staff_role_id'))
+                ->whereIn(DB::raw('LOWER(role)'), ['developer', 'dev'])
+                ->where(function ($query) use ($login) {
+                    $query->whereRaw('LOWER(email) = ?', [$login]);
+                    if (Schema::connection('tenant')->hasColumn('users', 'personal_email')) $query->orWhereRaw('LOWER(personal_email) = ?', [$login]);
+                })->get();
+            if ($developers->isNotEmpty()) {
+                if ($developers->count() !== 1) $this->invalid();
+                $developer = $developers->first();
+                if (!self::passwordMatches($password, $developer->password) || !$this->enabled($developer)) $this->invalid();
+                if (!password_get_info($developer->password)['algo']) {
+                    $developer->password = Hash::make($password);
+                    $developer->save();
+                }
+                Auth::guard('web')->login($developer, $request->boolean('remember'));
+                return;
+            }
         }
         $alias = Company::withTrashed()->where(function ($q) use ($login) {
             $q->where('email', $login)->orWhere('company_code', strtoupper($login))->orWhere('domain', $login)->orWhere('subdomain', $login);

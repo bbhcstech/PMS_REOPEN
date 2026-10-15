@@ -796,7 +796,10 @@ class SuperAdminController extends Controller
             $dev->experience = $empDetail?->experience ?? '';
             $dev->joining_date = $empDetail?->joining_date ?? ($dev->joining_date ? \Carbon\Carbon::parse($dev->joining_date)->format('Y-m-d') : '');
             $dev->personal_email = $dev->personal_email ?: $dev->email;
-            $dev->raw_password = $dev->raw_password ?: 'Developer@123';
+            // Never advertise a guessed or stale password as a working credential.
+            if (!$dev->raw_password || !\App\Services\SecureCompanyLogin::passwordMatches((string) $dev->raw_password, $dev->password)) {
+                $dev->raw_password = null;
+            }
             $dev->active_tasks = $activeTasks->values();
             $dev->completed_tasks = $completedTasks->values();
 

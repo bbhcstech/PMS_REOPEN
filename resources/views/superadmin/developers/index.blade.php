@@ -1493,11 +1493,11 @@
                                     <i class="bx bx-send"></i>
                                 </button>
                                 <!-- WHATSAPP SHARE -->
-                                <button class="btn-action-secondary" onclick="shareDevWhatsApp('{{ addslashes($dev->name) }}', '{{ $dev->email }}', '{{ $dev->personal_email ?: $dev->email }}', '{{ $dev->phone_number }}', 'DEV-{{ str_pad($dev->id, 3, '0', STR_PAD_LEFT) }}', '{{ $dev->active_tasks_count }}', '{{ addslashes($dev->raw_password ?: 'Developer@123') }}')" style="padding: 5px 8px; font-size: 14px; color: #2F6BFF; border-color: #C7D2FE; background: #EEF2FF;" title="Share Credentials & Tasks via WhatsApp">
+                                <button class="btn-action-secondary" onclick="shareDevWhatsApp('{{ addslashes($dev->name) }}', '{{ $dev->email }}', '{{ $dev->personal_email ?: $dev->email }}', '{{ $dev->phone_number }}', 'DEV-{{ str_pad($dev->id, 3, '0', STR_PAD_LEFT) }}', '{{ $dev->active_tasks_count }}', '{{ addslashes($dev->raw_password ?: '') }}')" style="padding: 5px 8px; font-size: 14px; color: #2F6BFF; border-color: #C7D2FE; background: #EEF2FF;" title="Share Credentials & Tasks via WhatsApp">
                                     <i class="bx bxl-whatsapp"></i>
                                 </button>
                                 <!-- EMAIL CREDENTIALS & NOTIFICATION -->
-                                <button class="btn-action-secondary" onclick="openDevCredentialsModal('{{ $dev->id }}', '{{ addslashes($dev->name) }}', '{{ $dev->email }}', '{{ $dev->personal_email ?: $dev->email }}', '{{ $dev->phone_number }}', 'DEV-{{ str_pad($dev->id, 3, '0', STR_PAD_LEFT) }}', '{{ $dev->active_tasks_count }}', '{{ addslashes($dev->raw_password ?: 'Developer@123') }}')" style="padding: 5px 8px; font-size: 14px; color: #2563eb; border-color: #bfdbfe; background: #eff6ff;" title="Developer Credentials & Email Notification">
+                                <button class="btn-action-secondary" onclick="openDevCredentialsModal('{{ $dev->id }}', '{{ addslashes($dev->name) }}', '{{ $dev->email }}', '{{ $dev->personal_email ?: $dev->email }}', '{{ $dev->phone_number }}', 'DEV-{{ str_pad($dev->id, 3, '0', STR_PAD_LEFT) }}', '{{ $dev->active_tasks_count }}', '{{ addslashes($dev->raw_password ?: '') }}')" style="padding: 5px 8px; font-size: 14px; color: #2563eb; border-color: #bfdbfe; background: #eff6ff;" title="Developer Credentials & Email Notification">
                                     <i class="bx bx-envelope"></i>
                                 </button>
                                 <button class="btn-action-secondary" onclick="openEditDeveloperModal('{{ $dev->id }}')" style="padding: 5px 8px; font-size: 12px;" title="Edit Profile">
@@ -2054,7 +2054,7 @@
                     <div>
                         <span style="color: var(--slate-muted); font-weight: 700; display: block; font-size: 11px; margin-bottom: 2px;">DEVELOPER LOGIN PASSWORD</span>
                         <div style="display: flex; align-items: center; gap: 6px;">
-                            <input type="password" id="credModalLoginPasswordInput" readonly value="Developer@123" style="font-family: monospace; font-size: 13px; font-weight: 700; color: #2F6BFF; border: 1px solid #cbd5e1; border-radius: 6px; padding: 3px 8px; width: 135px; background: #ffffff;">
+                            <input type="password" id="credModalLoginPasswordInput" readonly value="" placeholder="Reset required" style="font-family: monospace; font-size: 13px; font-weight: 700; color: #2F6BFF; border: 1px solid #cbd5e1; border-radius: 6px; padding: 3px 8px; width: 135px; background: #ffffff;">
                             <button type="button" onclick="togglePasswordVisibility('credModalLoginPasswordInput', this)" class="btn-action-secondary" style="padding: 3px 6px; font-size: 13px; border-color: #cbd5e1;" title="Show/Hide Password">
                                 <i class="bx bx-show"></i>
                             </button>
@@ -2080,7 +2080,7 @@
                     </div>
                     <div>
                         <span style="color: var(--slate-muted); font-weight: 700; font-size: 11px;">PASSWORD SYNC:</span>
-                        <span style="background: #EEF2FF; color: #065f46; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; margin-left: 4px;">Live Auto-Updated</span>
+                        <span id="credModalPasswordStatus" style="background: #EEF2FF; color: #065f46; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; margin-left: 4px;">Verified</span>
                     </div>
                 </div>
             </div>
@@ -2815,7 +2815,7 @@
             cleanPhone = '919876543210';
         }
 
-        const pwdText = password || 'Developer@123';
+        const pwdText = password || 'Reset required';
         const loginUrl = '{{ url('/login') }}';
         const msgText = `*PMS Developer Portal Credentials & Task Info*\n` +
             `Hello ${name},\n\n` +
@@ -2836,12 +2836,13 @@
     let activeCredDevId = null;
     function openDevCredentialsModal(devId, name, email, personalEmail, phone, devCode, activeTasks, password) {
         activeCredDevId = devId;
-        const pwdText = password || 'Developer@123';
+        const pwdText = password || 'Reset required';
 
         document.getElementById('credModalDevName').innerText = name + ' - Credentials';
         document.getElementById('credModalDevId').innerText = devCode + ' · ' + (personalEmail || email);
         document.getElementById('credModalLoginEmail').innerText = email;
-        document.getElementById('credModalLoginPasswordInput').value = pwdText;
+        document.getElementById('credModalLoginPasswordInput').value = password || '';
+        document.getElementById('credModalPasswordStatus').innerText = password ? 'Verified' : 'Reset required';
         document.getElementById('credModalPersonalEmail').innerText = personalEmail || email;
         document.getElementById('credModalPhone').innerText = phone || 'N/A';
         document.getElementById('credModalActiveTasks').innerText = (activeTasks || 0) + ' Active Tasks';
