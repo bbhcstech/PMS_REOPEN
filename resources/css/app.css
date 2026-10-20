@@ -1,38 +1,43 @@
 @import "tailwindcss";
 
 :root {
-    --pms-bg: #ecefec;
-    --pms-surface: #ffffff;
-    --pms-surface-soft: #f7f8f6;
-    --pms-text: #050706;
-    --pms-muted: #778078;
-    --pms-border: rgba(17, 42, 30, 0.1);
-    --pms-primary: #0f744c;
-    --pms-primary-strong: #094c32;
-    --pms-primary-soft: #e4f3eb;
-    --pms-shadow: 0 24px 56px rgba(22, 39, 30, 0.11);
-    --pms-shadow-soft: 0 12px 30px rgba(22, 39, 30, 0.07);
+    --brand-primary: #2F6BFF;
+    --brand-secondary: #8B5CF6;
+    --brand-accent: #22D3EE;
+
+    --pms-bg: #F6F7FC;
+    --pms-surface: #FFFFFF;
+    --pms-surface-soft: #F3F5FC;
+    --pms-text: #10142C;
+    --pms-muted: #545D82;
+    --pms-border: rgba(16, 20, 44, 0.08);
+    --pms-primary: #2F6BFF;
+    --pms-primary-strong: #1E4FCC;
+    --pms-primary-soft: rgba(47, 107, 255, 0.08);
+    --pms-shadow: 0 24px 56px rgba(16, 24, 60, 0.08);
+    --pms-shadow-soft: 0 12px 30px rgba(16, 24, 60, 0.05);
 }
 
-html[data-pms-theme="dark"] {
+html[data-pms-theme="dark"],
+html[data-theme="dark"] {
     color-scheme: dark;
-    --pms-bg: #07110d;
-    --pms-surface: #102119;
-    --pms-surface-soft: #183026;
-    --pms-text: #ffffff;
-    --pms-muted: #d9f1e4;
-    --pms-border: rgba(225, 255, 240, 0.18);
-    --pms-primary: #40d48c;
-    --pms-primary-strong: #7af0b5;
-    --pms-primary-soft: #173c2b;
-    --pms-shadow: 0 22px 54px rgba(0, 0, 0, 0.34);
-    --pms-shadow-soft: 0 12px 30px rgba(0, 0, 0, 0.24);
+    --pms-bg: #070B1A;
+    --pms-surface: #0F1530;
+    --pms-surface-soft: #141B3D;
+    --pms-text: #EEF1FB;
+    --pms-muted: #9AA3C7;
+    --pms-border: rgba(238, 241, 251, 0.09);
+    --pms-primary: #2F6BFF;
+    --pms-primary-strong: #4F83FF;
+    --pms-primary-soft: rgba(47, 107, 255, 0.18);
+    --pms-shadow: 0 22px 54px rgba(0, 0, 0, 0.45);
+    --pms-shadow-soft: 0 12px 30px rgba(0, 0, 0, 0.3);
 }
 
 .pms-tailwind-shell,
 .pms-tailwind-shell > .min-h-screen {
     background:
-        radial-gradient(circle at top left, rgba(15, 116, 76, 0.09), transparent 28rem),
+        radial-gradient(circle at top left, rgba(47, 107, 255, 0.08), transparent 28rem),
         linear-gradient(135deg, rgba(255, 255, 255, 0.78), transparent 24rem),
         var(--pms-bg) !important;
     color: var(--pms-text) !important;
@@ -220,12 +225,11 @@ html[data-pms-theme="dark"] .pms-tailwind-shell .text-sm {
     letter-spacing: -0.03em;
 }
 
-html[data-pms-theme="dark"] .pms-tailwind-shell *,
 html[data-pms-theme="dark"] .pms-tailwind-shell .text-gray-900,
 html[data-pms-theme="dark"] .pms-tailwind-shell .text-slate-900,
 html[data-pms-theme="dark"] .pms-tailwind-shell .text-gray-800,
 html[data-pms-theme="dark"] .pms-tailwind-shell .text-slate-800 {
-    color: #ffffff;
+    color: var(--pms-text) !important;
 }
 
 html[data-pms-theme="dark"] .pms-tailwind-shell .text-gray-500,
@@ -233,7 +237,7 @@ html[data-pms-theme="dark"] .pms-tailwind-shell .text-slate-500,
 html[data-pms-theme="dark"] .pms-tailwind-shell .text-gray-600,
 html[data-pms-theme="dark"] .pms-tailwind-shell .text-slate-600,
 html[data-pms-theme="dark"] .pms-tailwind-shell small {
-    color: #d9f1e4 !important;
+    color: var(--pms-muted) !important;
 }
 
 .pms-tailwind-shell .border-gray-200,

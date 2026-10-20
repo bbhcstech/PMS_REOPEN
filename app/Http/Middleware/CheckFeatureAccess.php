@@ -20,7 +20,12 @@ class CheckFeatureAccess
     public function handle(Request $request, Closure $next, string $feature): Response
     {
         // Platform Super Admin (central guard) bypasses feature checks
-        if (\Illuminate\Support\Facades\Auth::guard('super_admin')->check()) {
+        if (
+            \Illuminate\Support\Facades\Auth::guard('super_admin')->check() ||
+            $request->is('super-admin*') ||
+            $request->is('superadmin*') ||
+            (auth()->check() && in_array(strtolower((string)(auth()->user()->role ?? '')), ['superadmin', 'super-admin', 'super_admin'], true))
+        ) {
             return $next($request);
         }
 

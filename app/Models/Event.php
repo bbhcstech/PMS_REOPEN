@@ -47,6 +47,12 @@ class Event extends TenantModel
         parent::boot();
 
         static::creating(function ($event) {
+            if (empty($event->company_id)) {
+                $cid = app(\App\Services\CompanyContext::class)->id() ?? auth()->user()?->company_id;
+                if ($cid) {
+                    $event->company_id = $cid;
+                }
+            }
             if (empty($event->slug) && ! empty($event->title)) {
                 $event->slug = Str::slug($event->title) . '-' . Str::random(5);
             }
@@ -99,10 +105,7 @@ class Event extends TenantModel
     public function scopeForTenant($query, ?int $companyId)
     {
         if ($companyId) {
-            return $query->where(function ($q) use ($companyId) {
-                $q->where('company_id', $companyId)
-                  ->orWhereNull('company_id');
-            });
+            return $query->where('company_id', $companyId);
         }
         return $query;
     }

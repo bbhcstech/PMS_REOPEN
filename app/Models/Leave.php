@@ -94,6 +94,39 @@ class Leave extends TenantModel
         return $this->belongsTo(User::class, 'rejected_by');
     }
 
+    protected static function booted(): void
+    {
+        static::saving(function (Leave $leave) {
+            if (empty($leave->attributes['start_date']) && !empty($leave->attributes['date'])) {
+                $leave->attributes['start_date'] = $leave->attributes['date'];
+            }
+            if (empty($leave->attributes['end_date'])) {
+                $leave->attributes['end_date'] = $leave->attributes['start_date'] ?? ($leave->attributes['date'] ?? null);
+            }
+            if (empty($leave->attributes['date']) && !empty($leave->attributes['start_date'])) {
+                $leave->attributes['date'] = $leave->attributes['start_date'];
+            }
+        });
+    }
+
+    public function getStartDateAttribute($value)
+    {
+        $raw = $value ?: ($this->attributes['date'] ?? null);
+        return $raw ? \Carbon\Carbon::parse($raw)->startOfDay() : null;
+    }
+
+    public function getEndDateAttribute($value)
+    {
+        $raw = $value ?: ($this->attributes['start_date'] ?? ($this->attributes['date'] ?? null));
+        return $raw ? \Carbon\Carbon::parse($raw)->startOfDay() : null;
+    }
+
+    public function getDateAttribute($value)
+    {
+        $raw = $value ?: ($this->attributes['start_date'] ?? null);
+        return $raw ? \Carbon\Carbon::parse($raw)->startOfDay() : null;
+    }
+
     public function getAttachmentPathAttribute(): ?string
     {
         return $this->attachment ?: $this->files;

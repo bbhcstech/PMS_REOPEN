@@ -8,7 +8,7 @@
     .btn-primary *,
     .btn-primary i,
     .btn-primary span {
-        background: linear-gradient(135deg, #073a26 0%, #0f744c 60%, #10b981 100%) !important;
+        background: linear-gradient(135deg, #073a26 0%, #2F6BFF 60%, #10b981 100%) !important;
         border: none !important;
         color: #ffffff !important;
         fill: #ffffff !important;
@@ -19,7 +19,7 @@
     .btn-primary:hover * {
         color: #ffffff !important;
         transform: translateY(-2px);
-        box-shadow: 0 10px 25px rgba(15, 116, 76, 0.32) !important;
+        box-shadow: 0 10px 25px rgba(47, 107, 255, 0.32) !important;
     }
 </style>
 

@@ -46,6 +46,49 @@ class EventController extends Controller
     }
 
     /**
+     * Validate event payload dates and times.
+     */
+    protected function validateEventRequest(Request $request): array
+    {
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
+            'title' => 'required|string|max:255',
+            'event_type' => 'required|string|max:100',
+            'description' => 'required|string',
+            'start_date' => 'required|date',
+            'start_time' => 'nullable',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
+            'end_time' => 'nullable',
+            'location_type' => 'required|in:physical,online,hybrid',
+            'location' => 'nullable|string|max:255',
+            'meeting_url' => 'nullable|url|max:500',
+            'organizer_id' => 'nullable|exists:users,id',
+            'max_participants' => 'nullable|integer|min:1',
+            'reminder' => 'nullable|string',
+            'status' => 'required|in:draft,published,cancelled,completed',
+            'banner' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
+        ]);
+
+        $validator->after(function ($validator) use ($request) {
+            $startDate = $request->start_date;
+            $endDate = $request->end_date ?: $startDate;
+            $startTime = $request->start_time;
+            $endTime = $request->end_time;
+
+            if ($startDate && $endDate) {
+                if (strtotime($endDate) < strtotime($startDate)) {
+                    $validator->errors()->add('end_date', 'End Date cannot be before Start Date.');
+                } elseif ($startDate === $endDate && $startTime && $endTime) {
+                    if (strtotime($endTime) <= strtotime($startTime)) {
+                        $validator->errors()->add('end_time', 'End Time must be greater than Start Time when event is on the same day.');
+                    }
+                }
+            }
+        });
+
+        return $validator->validate();
+    }
+
+    /**
      * Display a listing of company events (List & Calendar Views).
      */
     public function index(Request $request)
@@ -239,23 +282,7 @@ class EventController extends Controller
             return redirect()->back()->with('error', 'Unauthorized action.');
         }
 
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'event_type' => 'required|string|max:100',
-            'description' => 'required|string',
-            'start_date' => 'required|date',
-            'start_time' => 'nullable',
-            'end_date' => 'nullable|date|after_or_equal:start_date',
-            'end_time' => 'nullable',
-            'location_type' => 'required|in:physical,online,hybrid',
-            'location' => 'nullable|string|max:255',
-            'meeting_url' => 'nullable|url|max:500',
-            'organizer_id' => 'nullable|exists:users,id',
-            'max_participants' => 'nullable|integer|min:1',
-            'reminder' => 'nullable|string',
-            'status' => 'required|in:draft,published,cancelled,completed',
-            'banner' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
-        ]);
+        $this->validateEventRequest($request);
 
         $companyId = $this->getCompanyId();
 
@@ -375,23 +402,7 @@ class EventController extends Controller
         $companyId = $this->getCompanyId();
         $event = Event::forTenant($companyId)->findOrFail($id);
 
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'event_type' => 'required|string|max:100',
-            'description' => 'required|string',
-            'start_date' => 'required|date',
-            'start_time' => 'nullable',
-            'end_date' => 'nullable|date|after_or_equal:start_date',
-            'end_time' => 'nullable',
-            'location_type' => 'required|in:physical,online,hybrid',
-            'location' => 'nullable|string|max:255',
-            'meeting_url' => 'nullable|url|max:500',
-            'organizer_id' => 'nullable|exists:users,id',
-            'max_participants' => 'nullable|integer|min:1',
-            'reminder' => 'nullable|string',
-            'status' => 'required|in:draft,published,cancelled,completed',
-            'banner' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
-        ]);
+        $this->validateEventRequest($request);
 
         $oldStatus = $event->status;
 

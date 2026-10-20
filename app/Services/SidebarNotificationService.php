@@ -14,8 +14,12 @@ use Carbon\Carbon;
 
 class SidebarNotificationService
 {
-    public static function forUser(User $user): array
+    public static function forUser(?User $user): array
     {
+        if (! $user) {
+            return [];
+        }
+
         $role = strtolower((string) $user->role);
         $isReviewer = in_array($role, ['admin', 'hr', 'manager'], true);
         $items = [];

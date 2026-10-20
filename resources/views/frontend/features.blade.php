@@ -146,7 +146,7 @@
     <div class="container">
       <div class="module-grid">
         <div class="module-copy" data-reveal>
-          <div class="module-icon" style="background:linear-gradient(135deg, #34D399, #6EE7B7)">
+          <div class="module-icon" style="background:linear-gradient(135deg, #60A5FA, #93C5FD)">
             <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
           </div>
           <span class="eyebrow">HR Management</span>
@@ -230,7 +230,7 @@
             <div class="illus-list">
               <div class="lrow"><span class="ldot" style="background:linear-gradient(135deg, #F59E0B, #FBBF24)"></span><span class="ltext"><b>Q3 review — Rohan Das</b>Self-review submitted</span><span class="ltag">Pending</span></div>
               <div class="lrow"><span class="ldot" style="background:linear-gradient(135deg, var(--brand-blue), #4A7CFF)"></span><span class="ltext"><b>Q3 review — Neha Kapoor</b>Manager review complete</span><span class="ltag">Done</span></div>
-              <div class="lrow"><span class="ldot" style="background:linear-gradient(135deg, #34D399, #6EE7B7)"></span><span class="ltext"><b>Spot award — delivery</b>Homepage redesign team</span><span class="ltag">Awarded</span></div>
+              <div class="lrow"><span class="ldot" style="background:linear-gradient(135deg, #60A5FA, #93C5FD)"></span><span class="ltext"><b>Spot award — delivery</b>Homepage redesign team</span><span class="ltag">Awarded</span></div>
             </div>
           </div>
         </div>
@@ -262,7 +262,7 @@
             <div class="illus-list">
               <div class="lrow"><span class="ldot" style="background:linear-gradient(135deg, var(--brand-blue), #4A7CFF)"></span><span class="ltext"><b>Ticket #4821 — Login issue</b>Rohan Das · Client Success</span><span class="ltag">In Progress</span></div>
               <div class="lrow"><span class="ldot" style="background:linear-gradient(135deg, var(--brand-purple), #B389FF)"></span><span class="ltext"><b>Vendor contract renewal</b>Arjun Mehta · Client</span><span class="ltag">In Review</span></div>
-              <div class="lrow"><span class="ldot" style="background:linear-gradient(135deg, #34D399, #6EE7B7)"></span><span class="ltext"><b>Onboarding call — Acme Co.</b>Scheduled Thu 3:00 PM</span><span class="ltag">Upcoming</span></div>
+              <div class="lrow"><span class="ldot" style="background:linear-gradient(135deg, #60A5FA, #93C5FD)"></span><span class="ltext"><b>Onboarding call — Acme Co.</b>Scheduled Thu 3:00 PM</span><span class="ltag">Upcoming</span></div>
             </div>
           </div>
         </div>

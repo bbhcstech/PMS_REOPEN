@@ -146,37 +146,47 @@ class PayrollModuleSeeder extends Seeder
             }
         }
 
-        $architecture = PayrollArchitecture::firstOrCreate(
-            ['code' => 'standard-payroll'],
-            [
-                'name' => 'Standard Payroll',
-                'type' => 'standard',
-                'description' => 'Default monthly payroll architecture.',
-                'is_active' => true,
-                'effective_date' => now()->toDateString(),
-                'version' => 1,
-                'settings' => ['workflow' => ['draft', 'generated', 'reviewed_by_hr', 'approved_by_manager', 'approved_by_admin', 'finalized', 'payslip_generated', 'locked']],
-            ]
-        );
+        try {
+            if (\Illuminate\Support\Facades\Schema::connection('tenant')->hasTable('payroll_architectures')) {
+                $architecture = PayrollArchitecture::firstOrCreate(
+                    ['code' => 'standard-payroll'],
+                    [
+                        'name' => 'Standard Payroll',
+                        'type' => 'standard',
+                        'description' => 'Default monthly payroll architecture.',
+                        'is_active' => true,
+                        'effective_date' => now()->toDateString(),
+                        'version' => 1,
+                        'settings' => ['workflow' => ['draft', 'generated', 'reviewed_by_hr', 'approved_by_manager', 'approved_by_admin', 'finalized', 'payslip_generated', 'locked']],
+                    ]
+                );
 
-        PayrollArchitecture::where('id', '!=', $architecture->id)->where('is_active', true)->update(['is_active' => false]);
+                PayrollArchitecture::where('id', '!=', $architecture->id)->where('is_active', true)->update(['is_active' => false]);
 
-        PayrollArchitectureVersion::firstOrCreate(
-            ['payroll_architecture_id' => $architecture->id, 'version' => 1],
-            ['snapshot' => $architecture->toArray(), 'effective_date' => $architecture->effective_date]
-        );
+                if (\Illuminate\Support\Facades\Schema::connection('tenant')->hasTable('payroll_architecture_versions')) {
+                    PayrollArchitectureVersion::firstOrCreate(
+                        ['payroll_architecture_id' => $architecture->id, 'version' => 1],
+                        ['snapshot' => $architecture->toArray(), 'effective_date' => $architecture->effective_date]
+                    );
+                }
+            }
 
-        foreach (['classic', 'modern', 'corporate', 'minimal', 'custom'] as $template) {
-            PayslipTemplate::firstOrCreate(
-                ['template_type' => $template],
-                [
-                    'name' => ucfirst($template),
-                    'content' => ['sections' => ['company', 'employee', 'attendance', 'earnings', 'deductions', 'net_salary', 'signature']],
-                    'is_active' => $template === 'classic',
-                    'version' => 1,
-                    'effective_date' => now()->toDateString(),
-                ]
-            );
+            if (\Illuminate\Support\Facades\Schema::connection('tenant')->hasTable('payslip_templates')) {
+                foreach (['classic', 'modern', 'corporate', 'minimal', 'custom'] as $template) {
+                    PayslipTemplate::firstOrCreate(
+                        ['template_type' => $template],
+                        [
+                            'name' => ucfirst($template),
+                            'content' => ['sections' => ['company', 'employee', 'attendance', 'earnings', 'deductions', 'net_salary', 'signature']],
+                            'is_active' => $template === 'classic',
+                            'version' => 1,
+                            'effective_date' => now()->toDateString(),
+                        ]
+                    );
+                }
+            }
+        } catch (\Throwable $e) {
+            // Ignore missing tenant table error during central database seeding
         }
     }
 }

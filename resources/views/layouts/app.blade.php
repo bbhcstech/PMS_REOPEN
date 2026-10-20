@@ -66,5 +66,6 @@
             })();
         </script>
         @include('partials.password-changed-modal')
+        @include('admin.layout.toasts')
     </body>
 </html>

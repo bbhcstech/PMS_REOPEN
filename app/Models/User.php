@@ -28,11 +28,15 @@ class User extends Authenticatable
                             ->exists();
 
                         if (! $exists) {
-                            $centralCompany = \App\Models\Central\Company::on('central')->find($user->company_id)
-                                ?? \App\Models\Company::on('central')->find($user->company_id);
+                            try {
+                                $centralCompany = \App\Models\Central\Company::on('central')->find($user->company_id)
+                                    ?? \App\Models\Company::on('central')->find($user->company_id);
 
-                            if ($centralCompany) {
-                                static::syncCompanyToConnection($connectionName, $centralCompany);
+                                if ($centralCompany) {
+                                    static::syncCompanyToConnection($connectionName, $centralCompany);
+                                }
+                            } catch (\Throwable $ce) {
+                                // Central DB may not exist on single-DB setup; continue gracefully
                             }
                         }
 
@@ -233,6 +237,19 @@ class User extends Authenticatable
         return strtolower((string) $this->role);
     }
 
+    public function isDeveloper(): bool
+    {
+        $role = strtolower((string) ($this->role ?? ''));
+        $designation = strtolower((string) ($this->designation ?? ''));
+
+        return in_array($role, ['developer', 'dev'], true)
+            || str_contains($role, 'developer')
+            || str_contains($designation, 'developer')
+            || str_contains($designation, 'engineer')
+            || str_contains($designation, 'devops')
+            || str_contains($designation, 'qa');
+    }
+
     public function hasModulePermission(string $moduleSlug, string $permission = 'view'): bool
     {
         // Platform Super Admin (central guard) bypasses company feature checks
@@ -262,11 +279,19 @@ class User extends Authenticatable
             return false;
         }
 
+        $slugsToTest = [$moduleSlug];
+        if (str_starts_with($moduleSlug, 'payroll-')) {
+            $slugsToTest[] = 'payroll';
+        }
+        if (str_contains($moduleSlug, 'reports')) {
+            $slugsToTest[] = 'reports';
+        }
+
         return RolePermission::query()
             ->where('role', $this->normalizedRole())
             ->where($column, true)
-            ->whereHas('module', function ($query) use ($moduleSlug) {
-                $query->where('slug', $moduleSlug)->where('is_active', true);
+            ->whereHas('module', function ($query) use ($slugsToTest) {
+                $query->whereIn('slug', array_unique($slugsToTest))->where('is_active', true);
             })
             ->exists();
     }
@@ -280,7 +305,7 @@ class User extends Authenticatable
     {
         $role = $this->normalizedRole();
 
-        if ($role === 'admin') {
+        if (in_array($role, ['admin', 'superadmin', 'administrator', 'hr'], true)) {
             return User::where('role', 'employee')
                 ->when($this->company_id, fn ($query) => $query->where('company_id', $this->company_id))
                 ->pluck('id');
@@ -288,17 +313,6 @@ class User extends Authenticatable
 
         if ($role === 'employee') {
             return collect([$this->id]);
-        }
-
-        if ($role === 'hr') {
-            return User::where('role', 'employee')
-                ->when($this->company_id, fn ($query) => $query->where('company_id', $this->company_id))
-                ->where(function ($query) {
-                    $query->where('hr_id', $this->id)
-                        ->orWhere('reports_to_id', $this->id)
-                        ->orWhereHas('employeeDetail', fn ($detail) => $detail->where('reporting_to', $this->id));
-                })
-                ->pluck('id');
         }
 
         if ($role === 'manager') {
@@ -476,20 +490,6 @@ class User extends Authenticatable
         return Carbon::now()->diffInDays($nextReset, false);
     }
 
-    /**
-     * Check if user account is a Developer role/designation
-     */
-    public function isDeveloper(): bool
-    {
-        $role = strtolower($this->role ?? '');
-        $designation = strtolower($this->designation ?? '');
-
-        return in_array($role, ['developer', 'dev'], true)
-            || str_contains($designation, 'developer')
-            || str_contains($designation, 'engineer')
-            || str_contains($designation, 'devops')
-            || str_contains($designation, 'qa');
-    }
 
     /**
      * Check if developer has any assigned tasks in the system
@@ -541,6 +541,11 @@ class User extends Authenticatable
         // Archived accounts cannot log in
         if (!empty($this->archived_at)) {
             return false;
+        }
+
+        // Developers with login_allowed can always login to Developer Portal
+        if ($this->isDeveloper()) {
+            return true;
         }
 
         $employeeStatus = $this->employeeDetail ? (string) $this->employeeDetail->status : 'Active';

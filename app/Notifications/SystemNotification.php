@@ -4,6 +4,7 @@ namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
+use Illuminate\Notifications\Messages\BroadcastMessage;
 
 class SystemNotification extends Notification
 {
@@ -36,5 +37,15 @@ class SystemNotification extends Notification
             'project_id' => $this->data['project_id'] ?? null,
             'employee_id' => $this->data['employee_id'] ?? null,
         ];
+    }
+
+    public function toArray($notifiable): array
+    {
+        return $this->toDatabase($notifiable);
+    }
+
+    public function toBroadcast($notifiable)
+    {
+        return new BroadcastMessage($this->toDatabase($notifiable));
     }
 }

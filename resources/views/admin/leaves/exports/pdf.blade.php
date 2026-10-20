@@ -8,7 +8,7 @@
         h1 { margin: 0 0 12px; }
         table { width: 100%; border-collapse: collapse; }
         th, td { border: 1px solid #d8dee6; padding: 7px; text-align: left; }
-        th { background: #ecfdf5; color: #065f46; }
+        th { background: #EEF2FF; color: #065f46; }
     </style>
 </head>
 <body>

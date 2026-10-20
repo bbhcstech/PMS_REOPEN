@@ -17,6 +17,13 @@ class AppServiceProvider extends ServiceProvider
     {
         require_once app_path('Support/helpers.php');
 
+        if (!class_exists('CountryPhone', false)) {
+            class_alias(\App\Support\CountryPhone::class, 'CountryPhone');
+        }
+        if (!class_exists(\App\Http\Controllers\CountryPhone::class, false)) {
+            class_alias(\App\Support\CountryPhone::class, \App\Http\Controllers\CountryPhone::class);
+        }
+
         $this->app->scoped(CompanyContext::class, fn () => new CompanyContext());
     }
 
@@ -26,6 +33,14 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Paginator::useBootstrapFive();
+
+        try {
+            $tz = AppSetting::valueFor('loc_timezone', config('app.timezone', 'Asia/Kolkata'));
+            if ($tz) {
+                config(['app.timezone' => $tz]);
+                date_default_timezone_set($tz);
+            }
+        } catch (\Throwable $e) {}
 
         view()->composer('*', function ($view) {
             try {

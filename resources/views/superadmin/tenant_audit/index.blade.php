@@ -11,8 +11,8 @@
         --primary-light: #eff6ff;
         --primary-border: #bfdbfe;
         --success: #10b981;
-        --success-light: #ecfdf5;
-        --success-border: #a7f3d0;
+        --success-light: #EEF2FF;
+        --success-border: #C7D2FE;
         --warning: #f59e0b;
         --warning-light: #fffbeb;
         --warning-border: #fde68a;
@@ -125,22 +125,22 @@
         height: 8px;
         border-radius: 50%;
         background: var(--success);
-        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+        box-shadow: 0 0 0 0 rgba(47, 107, 255, 0.7);
         animation: pulseAnimation 2s infinite;
     }
 
     @keyframes pulseAnimation {
         0% {
             transform: scale(0.95);
-            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+            box-shadow: 0 0 0 0 rgba(47, 107, 255, 0.7);
         }
         70% {
             transform: scale(1);
-            box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
+            box-shadow: 0 0 0 8px rgba(47, 107, 255, 0);
         }
         100% {
             transform: scale(0.95);
-            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+            box-shadow: 0 0 0 0 rgba(47, 107, 255, 0);
         }
     }
 
@@ -656,7 +656,7 @@
 
     .diff-added {
         color: #86efac;
-        background: rgba(16, 185, 129, 0.15);
+        background: rgba(47, 107, 255, 0.15);
         display: block;
         padding: 2px 6px;
         border-radius: 4px;
@@ -823,6 +823,214 @@
         max-width: 400px;
         margin-left: auto;
         margin-right: auto;
+    }
+    /* ============================================================
+       DARK THEME ARCHITECTURE FOR ACTIVITY LOGS
+       ============================================================ */
+    html[data-pms-theme="dark"],
+    html[data-theme="dark"],
+    html[data-bs-theme="dark"] {
+        --bg-surface: #0F1530;
+        --bg-subtle: #141B3D;
+        --bg-hover: #1A2247;
+        --border-color: rgba(238, 241, 251, 0.09);
+        --border-subtle: rgba(238, 241, 251, 0.12);
+        --text-main: #EEF1FB;
+        --text-muted: #CBD5E1;
+        --text-subtle: #9AA3C7;
+        --primary: #2F6BFF;
+        --primary-light: rgba(47, 107, 255, 0.15);
+        --primary-border: rgba(47, 107, 255, 0.35);
+        --success-light: rgba(47, 107, 255, 0.15);
+        --success-border: rgba(79, 131, 255, 0.3);
+        --warning-light: rgba(245, 158, 11, 0.15);
+        --warning-border: rgba(251, 191, 36, 0.3);
+        --danger-light: rgba(239, 68, 68, 0.15);
+        --danger-border: rgba(248, 113, 113, 0.3);
+        --purple-light: rgba(139, 92, 246, 0.15);
+        --purple-border: rgba(167, 139, 250, 0.3);
+        --cyan-light: rgba(6, 182, 212, 0.15);
+    }
+
+    html[data-pms-theme="dark"] .page-header-box,
+    html[data-theme="dark"] .page-header-box,
+    html[data-bs-theme="dark"] .page-header-box {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    html[data-pms-theme="dark"] .kpi-card,
+    html[data-theme="dark"] .kpi-card,
+    html[data-bs-theme="dark"] .kpi-card {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
+    }
+    html[data-pms-theme="dark"] .kpi-card:hover,
+    html[data-theme="dark"] .kpi-card:hover,
+    html[data-bs-theme="dark"] .kpi-card:hover {
+        border-color: rgba(47, 107, 255, 0.4) !important;
+    }
+    html[data-pms-theme="dark"] .kpi-card.active-kpi-filter,
+    html[data-theme="dark"] .kpi-card.active-kpi-filter,
+    html[data-bs-theme="dark"] .kpi-card.active-kpi-filter {
+        background: #141B3D !important;
+        border-color: #2F6BFF !important;
+        box-shadow: 0 0 0 2px rgba(47, 107, 255, 0.35) !important;
+    }
+
+    html[data-pms-theme="dark"] .filter-panel-box,
+    html[data-theme="dark"] .filter-panel-box,
+    html[data-bs-theme="dark"] .filter-panel-box {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
+    }
+    html[data-pms-theme="dark"] .filter-select,
+    html[data-theme="dark"] .filter-select,
+    html[data-bs-theme="dark"] .filter-select {
+        background: #141B3D !important;
+        color: #EEF1FB !important;
+        border-color: rgba(238, 241, 251, 0.12) !important;
+    }
+    html[data-pms-theme="dark"] .filter-select option,
+    html[data-theme="dark"] .filter-select option {
+        background: #0F1530 !important;
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .search-input,
+    html[data-theme="dark"] .search-input,
+    html[data-bs-theme="dark"] .search-input {
+        background: #141B3D !important;
+        color: #EEF1FB !important;
+        border-color: rgba(238, 241, 251, 0.12) !important;
+    }
+
+    html[data-pms-theme="dark"] .table-card,
+    html[data-theme="dark"] .table-card,
+    html[data-bs-theme="dark"] .table-card {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .grid-table,
+    html[data-theme="dark"] .grid-table,
+    html[data-bs-theme="dark"] .grid-table {
+        border-color: rgba(238, 241, 251, 0.09) !important;
+    }
+    html[data-pms-theme="dark"] .grid-table th,
+    html[data-theme="dark"] .grid-table th,
+    html[data-bs-theme="dark"] .grid-table th {
+        background: #141B3D !important;
+        color: #9AA3C7 !important;
+        border-bottom-color: rgba(238, 241, 251, 0.09) !important;
+        border-right-color: rgba(238, 241, 251, 0.09) !important;
+    }
+    html[data-pms-theme="dark"] .grid-table td,
+    html[data-theme="dark"] .grid-table td,
+    html[data-bs-theme="dark"] .grid-table td {
+        border-bottom-color: rgba(238, 241, 251, 0.09) !important;
+        border-right-color: rgba(238, 241, 251, 0.09) !important;
+        color: #CBD5E1 !important;
+    }
+    html[data-pms-theme="dark"] .grid-table tbody tr:hover,
+    html[data-theme="dark"] .grid-table tbody tr:hover,
+    html[data-bs-theme="dark"] .grid-table tbody tr:hover {
+        background: #1A2247 !important;
+    }
+
+    html[data-pms-theme="dark"] .table-pagination-bar,
+    html[data-theme="dark"] .table-pagination-bar,
+    html[data-bs-theme="dark"] .table-pagination-bar {
+        background: #141B3D !important;
+        border-top-color: rgba(238, 241, 251, 0.09) !important;
+        color: #9AA3C7 !important;
+    }
+    html[data-pms-theme="dark"] .page-num-btn,
+    html[data-theme="dark"] .page-num-btn,
+    html[data-bs-theme="dark"] .page-num-btn {
+        background: #0F1530 !important;
+        color: #EEF1FB !important;
+        border-color: rgba(238, 241, 251, 0.12) !important;
+    }
+    html[data-pms-theme="dark"] .page-num-btn:hover:not(:disabled),
+    html[data-theme="dark"] .page-num-btn:hover:not(:disabled),
+    html[data-bs-theme="dark"] .page-num-btn:hover:not(:disabled) {
+        background: #1A2247 !important;
+        color: #38bdf8 !important;
+        border-color: #2F6BFF !important;
+    }
+    html[data-pms-theme="dark"] .page-num-btn.active,
+    html[data-theme="dark"] .page-num-btn.active,
+    html[data-bs-theme="dark"] .page-num-btn.active {
+        background: #2F6BFF !important;
+        color: #ffffff !important;
+        border-color: #2F6BFF !important;
+    }
+
+    html[data-pms-theme="dark"] .btn-action-secondary,
+    html[data-theme="dark"] .btn-action-secondary,
+    html[data-bs-theme="dark"] .btn-action-secondary {
+        background: #141B3D !important;
+        color: #EEF1FB !important;
+        border-color: rgba(238, 241, 251, 0.12) !important;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .btn-action-secondary:hover,
+    html[data-theme="dark"] .btn-action-secondary:hover,
+    html[data-bs-theme="dark"] .btn-action-secondary:hover {
+        background: #1A2247 !important;
+        border-color: rgba(47, 107, 255, 0.4) !important;
+        color: #38bdf8 !important;
+    }
+
+    /* Audit Safeguard Box (Screenshot 2) */
+    html[data-pms-theme="dark"] .audit-safeguard-box,
+    html[data-theme="dark"] .audit-safeguard-box,
+    html[data-bs-theme="dark"] .audit-safeguard-box {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+    }
+    html[data-pms-theme="dark"] .audit-safeguard-icon,
+    html[data-theme="dark"] .audit-safeguard-icon,
+    html[data-bs-theme="dark"] .audit-safeguard-icon {
+        background: rgba(47, 107, 255, 0.15) !important;
+        color: #38bdf8 !important;
+    }
+
+    /* Drawer & Modal */
+    html[data-pms-theme="dark"] .drawer-panel,
+    html[data-theme="dark"] .drawer-panel,
+    html[data-bs-theme="dark"] .drawer-panel {
+        background: #0F1530 !important;
+        color: #EEF1FB !important;
+        border-left: 1px solid rgba(238, 241, 251, 0.09);
+    }
+    html[data-pms-theme="dark"] .drawer-header,
+    html[data-theme="dark"] .drawer-header,
+    html[data-bs-theme="dark"] .drawer-header {
+        background: #141B3D !important;
+        border-bottom-color: rgba(238, 241, 251, 0.09) !important;
+    }
+    html[data-pms-theme="dark"] .modal-box,
+    html[data-theme="dark"] .modal-box,
+    html[data-bs-theme="dark"] .modal-box {
+        background: #0F1530 !important;
+        color: #EEF1FB !important;
+        border-color: rgba(238, 241, 251, 0.16) !important;
+    }
+    html[data-pms-theme="dark"] .modal-header,
+    html[data-theme="dark"] .modal-header,
+    html[data-bs-theme="dark"] .modal-header {
+        background: #141B3D !important;
+        border-bottom-color: rgba(238, 241, 251, 0.09) !important;
+    }
+    html[data-pms-theme="dark"] .modal-footer,
+    html[data-theme="dark"] .modal-footer,
+    html[data-bs-theme="dark"] .modal-footer {
+        background: #141B3D !important;
+        border-top-color: rgba(238, 241, 251, 0.09) !important;
     }
 </style>
 @endpush
@@ -1230,7 +1438,10 @@
             <div style="display: flex; align-items: center; gap: 12px;">
                 <div style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-subtle);">
                     <span>Rows per page:</span>
-                    <select id="rowsPerPageSelect" class="filter-select" style="padding: 4px 8px; font-size: 12px; width: 70px;">
+                    <select id="rowsPerPageSelect" class="filter-select" style="padding: 4px 8px; font-size: 12px; width: 75px;">
+                        <option value="10" selected>10</option>
+                        <option value="20">20</option>
+                        <option value="30">30</option>
                         <option value="25">25</option>
                         <option value="50">50</option>
                         <option value="100">100</option>
@@ -1248,9 +1459,9 @@
     </div>
 
     <!-- 5. AUDIT INTEGRITY INFORMATION -->
-    <div style="background: var(--bg-surface); border-radius: var(--radius-lg); border: 1px solid var(--border-color); padding: 18px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; box-shadow: var(--shadow-sm);">
+    <div class="audit-safeguard-box" style="background: var(--bg-surface); border-radius: var(--radius-lg); border: 1px solid var(--border-color); padding: 18px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; box-shadow: var(--shadow-sm);">
         <div style="display: flex; align-items: center; gap: 14px;">
-            <div style="width: 42px; height: 42px; border-radius: 10px; background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 22px;">
+            <div class="audit-safeguard-icon" style="width: 42px; height: 42px; border-radius: 10px; background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 22px;">
                 <i class="bx bx-shield-check"></i>
             </div>
             <div>
@@ -1722,6 +1933,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         activeChipsBar.style.display = activeFilterCount > 0 ? 'flex' : 'none';
 
+        let tenantAuditMatched = [];
         rows.forEach(r => {
             const rActor = r.getAttribute('data-actor');
             const rComp = r.getAttribute('data-company-id');
@@ -1740,17 +1952,83 @@ document.addEventListener('DOMContentLoaded', function() {
             if (statVal && rStat !== statVal) match = false;
 
             if (match) {
-                r.style.display = '';
-                visibleCount++;
-            } else {
-                r.style.display = 'none';
+                tenantAuditMatched.push(r);
             }
+            r.style.display = 'none';
         });
 
-        emptyState.style.display = visibleCount === 0 ? 'block' : 'none';
-        document.getElementById('showingStart').textContent = visibleCount > 0 ? 1 : 0;
-        document.getElementById('showingEnd').textContent = visibleCount;
-        document.getElementById('totalEventsCount').textContent = visibleCount;
+        const rowsPerPage = parseInt(document.getElementById('rowsPerPageSelect')?.value || '10');
+        const totalMatched = tenantAuditMatched.length;
+        const totalPages = Math.ceil(totalMatched / rowsPerPage) || 1;
+
+        if (tenantAuditCurrentPage > totalPages) tenantAuditCurrentPage = totalPages;
+        if (tenantAuditCurrentPage < 1) tenantAuditCurrentPage = 1;
+
+        const startIdx = (tenantAuditCurrentPage - 1) * rowsPerPage;
+        const endIdx = Math.min(startIdx + rowsPerPage, totalMatched);
+
+        for (let i = startIdx; i < endIdx; i++) {
+            tenantAuditMatched[i].style.display = '';
+        }
+
+        emptyState.style.display = totalMatched === 0 ? 'block' : 'none';
+        document.getElementById('showingStart').textContent = totalMatched > 0 ? (startIdx + 1) : 0;
+        document.getElementById('showingEnd').textContent = endIdx;
+        document.getElementById('totalEventsCount').textContent = totalMatched;
+
+        renderTenantAuditPagination(totalPages);
+    }
+
+    let tenantAuditCurrentPage = 1;
+
+    function renderTenantAuditPagination(totalPages) {
+        const paginationContainer = document.getElementById('paginationButtons');
+        if (!paginationContainer) return;
+
+        paginationContainer.innerHTML = '';
+        if (totalPages <= 1) return;
+
+        const prevBtn = document.createElement('button');
+        prevBtn.className = 'page-num-btn';
+        prevBtn.innerHTML = '<i class="bx bx-chevron-left"></i>';
+        prevBtn.disabled = tenantAuditCurrentPage === 1;
+        prevBtn.onclick = () => {
+            if (tenantAuditCurrentPage > 1) {
+                tenantAuditCurrentPage--;
+                filterRows();
+            }
+        };
+        paginationContainer.appendChild(prevBtn);
+
+        let startP = Math.max(1, tenantAuditCurrentPage - 2);
+        let endP = Math.min(totalPages, startP + 4);
+        if (endP - startP < 4) {
+            startP = Math.max(1, endP - 4);
+        }
+
+        for (let p = startP; p <= endP; p++) {
+            const pageBtn = document.createElement('button');
+            pageBtn.className = 'page-num-btn' + (p === tenantAuditCurrentPage ? ' active' : '');
+            pageBtn.textContent = p;
+            const targetP = p;
+            pageBtn.onclick = () => {
+                tenantAuditCurrentPage = targetP;
+                filterRows();
+            };
+            paginationContainer.appendChild(pageBtn);
+        }
+
+        const nextBtn = document.createElement('button');
+        nextBtn.className = 'page-num-btn';
+        nextBtn.innerHTML = '<i class="bx bx-chevron-right"></i>';
+        nextBtn.disabled = tenantAuditCurrentPage === totalPages;
+        nextBtn.onclick = () => {
+            if (tenantAuditCurrentPage < totalPages) {
+                tenantAuditCurrentPage++;
+                filterRows();
+            }
+        };
+        paginationContainer.appendChild(nextBtn);
     }
 
     function addChip(label, onRemove) {
@@ -1774,13 +2052,19 @@ document.addEventListener('DOMContentLoaded', function() {
         filterRows();
     };
 
-    searchInput.addEventListener('input', filterRows);
-    actorFilter.addEventListener('change', filterRows);
-    companyFilter.addEventListener('change', filterRows);
-    actionFilter.addEventListener('change', filterRows);
-    moduleFilter.addEventListener('change', filterRows);
-    statusFilter.addEventListener('change', filterRows);
-    dateFilter.addEventListener('change', filterRows);
+    const onFilterChange = () => {
+        tenantAuditCurrentPage = 1;
+        filterRows();
+    };
+
+    searchInput.addEventListener('input', onFilterChange);
+    actorFilter.addEventListener('change', onFilterChange);
+    companyFilter.addEventListener('change', onFilterChange);
+    actionFilter.addEventListener('change', onFilterChange);
+    moduleFilter.addEventListener('change', onFilterChange);
+    statusFilter.addEventListener('change', onFilterChange);
+    dateFilter.addEventListener('change', onFilterChange);
+    document.getElementById('rowsPerPageSelect')?.addEventListener('change', onFilterChange);
     resetBtn?.addEventListener('click', resetAllFilters);
 
     // 4. Click-to-filter on KPI Cards
@@ -1848,7 +2132,10 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         rowsArr.forEach(r => tbody.appendChild(r));
+        filterRows();
     };
+
+    filterRows();
 });
 </script>
 @endpush

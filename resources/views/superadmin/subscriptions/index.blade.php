@@ -279,10 +279,38 @@
         box-shadow: var(--shadow-md);
         transform: translateY(-3px);
     }
+    /* Plan Specific Theme Variations */
     .plan-card-item.theme-free { border-color: var(--plan-free-border); }
     .plan-card-item.theme-gold { border-color: var(--plan-gold-border); background: linear-gradient(180deg, #ffffff 0%, #fffdf5 100%); }
     .plan-card-item.theme-platinum { border-color: var(--plan-platinum-border); background: linear-gradient(180deg, #ffffff 0%, #f7fcff 100%); }
     .plan-card-item.theme-diamond { border-color: var(--plan-diamond-border); background: linear-gradient(180deg, #ffffff 0%, #faf8ff 100%); }
+
+    /* Dark Mode: Ensure all plan cards adopt the dark surface background like the Free card */
+    html[data-pms-theme="dark"] .plan-card-item,
+    html[data-theme="dark"] .plan-card-item,
+    html[data-bs-theme="dark"] .plan-card-item {
+        background: var(--bg-surface);
+    }
+    html[data-pms-theme="dark"] .plan-card-item.theme-gold,
+    html[data-theme="dark"] .plan-card-item.theme-gold,
+    html[data-bs-theme="dark"] .plan-card-item.theme-gold,
+    html[data-pms-theme="dark"] .plan-card-item.theme-platinum,
+    html[data-theme="dark"] .plan-card-item.theme-platinum,
+    html[data-bs-theme="dark"] .plan-card-item.theme-platinum,
+    html[data-pms-theme="dark"] .plan-card-item.theme-diamond,
+    html[data-theme="dark"] .plan-card-item.theme-diamond,
+    html[data-bs-theme="dark"] .plan-card-item.theme-diamond {
+        background: var(--bg-surface);
+    }
+
+    @media (prefers-color-scheme: dark) {
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .plan-card-item,
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .plan-card-item.theme-gold,
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .plan-card-item.theme-platinum,
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .plan-card-item.theme-diamond {
+            background: var(--bg-surface);
+        }
+    }
 
     .popular-badge-ribbon {
         position: absolute;
@@ -479,6 +507,17 @@
     .plan-badge-cell.plan-platinum { background: var(--plan-platinum-bg); color: var(--plan-platinum-accent); border: 1px solid var(--plan-platinum-border); }
     .plan-badge-cell.plan-diamond { background: var(--plan-diamond-bg); color: var(--plan-diamond-accent); border: 1px solid var(--plan-diamond-border); }
 
+    .override-category-badge {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--text-muted);
+        background: #f1f5f9;
+        padding: 2px 8px;
+        border-radius: 4px;
+        display: inline-block;
+        letter-spacing: 0.3px;
+    }
+
     .status-pill {
         display: inline-flex;
         align-items: center;
@@ -497,6 +536,8 @@
     .status-pill.status-expiring .dot { background: var(--warning); }
     .status-pill.status-suspended { background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger-border); }
     .status-pill.status-suspended .dot { background: var(--danger); }
+    .status-pill.status-expired { background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger-border); }
+    .status-pill.status-expired .dot { background: var(--danger); }
 
     /* ============================================================
        SUBSCRIPTION COMMAND CENTER DRAWER (PREMIUM DESIGN)
@@ -563,7 +604,7 @@
         inset: 0;
         background: rgba(15, 23, 42, 0.6);
         backdrop-filter: blur(6px);
-        z-index: 500;
+        z-index: 1050;
         display: none;
         align-items: center;
         justify-content: center;
@@ -603,7 +644,716 @@
         gap: 10px;
         animation: fadeInUp 0.3s ease;
     }
+
+    /* Dark Mode: Outline Buttons & Header Actions */
+    html[data-pms-theme="dark"] .btn-outline-custom,
+    html[data-theme="dark"] .btn-outline-custom,
+    html[data-bs-theme="dark"] .btn-outline-custom {
+        background: var(--bg-surface-subtle, #141B3D);
+        border-color: var(--border-strong, rgba(238, 241, 251, 0.14));
+        color: var(--text-main, #EEF1FB);
+    }
+    html[data-pms-theme="dark"] .btn-outline-custom:hover,
+    html[data-theme="dark"] .btn-outline-custom:hover,
+    html[data-bs-theme="dark"] .btn-outline-custom:hover,
+    html[data-pms-theme="dark"] .btn-outline-custom:focus,
+    html[data-theme="dark"] .btn-outline-custom:focus,
+    html[data-bs-theme="dark"] .btn-outline-custom:focus {
+        background: var(--bg-surface-hover, #1A2247);
+        border-color: var(--primary, #2F6BFF);
+        color: #ffffff;
+        box-shadow: 0 4px 14px rgba(47, 107, 255, 0.22);
+    }
+
+    /* Dark Mode: Impersonation Banner */
+    html[data-pms-theme="dark"] .impersonation-banner-box,
+    html[data-theme="dark"] .impersonation-banner-box,
+    html[data-bs-theme="dark"] .impersonation-banner-box {
+        background: rgba(245, 158, 11, 0.1) !important;
+        border-color: rgba(245, 158, 11, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .impersonation-banner-box strong,
+    html[data-theme="dark"] .impersonation-banner-box strong,
+    html[data-bs-theme="dark"] .impersonation-banner-box strong {
+        color: #fbbf24 !important;
+    }
+    html[data-pms-theme="dark"] .impersonation-banner-box i.fa-right-to-bracket,
+    html[data-theme="dark"] .impersonation-banner-box i.fa-right-to-bracket,
+    html[data-bs-theme="dark"] .impersonation-banner-box i.fa-right-to-bracket {
+        color: #f59e0b !important;
+    }
+    html[data-pms-theme="dark"] .impersonation-db-code,
+    html[data-theme="dark"] .impersonation-db-code,
+    html[data-bs-theme="dark"] .impersonation-db-code {
+        background: rgba(245, 158, 11, 0.18) !important;
+        color: #fde68a !important;
+        border: 1px solid rgba(245, 158, 11, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .impersonation-leave-btn,
+    html[data-theme="dark"] .impersonation-leave-btn,
+    html[data-bs-theme="dark"] .impersonation-leave-btn {
+        background: rgba(245, 158, 11, 0.12) !important;
+        color: #fbbf24 !important;
+        border-color: rgba(245, 158, 11, 0.35) !important;
+    }
+    html[data-pms-theme="dark"] .impersonation-leave-btn:hover,
+    html[data-theme="dark"] .impersonation-leave-btn:hover,
+    html[data-bs-theme="dark"] .impersonation-leave-btn:hover {
+        background: rgba(245, 158, 11, 0.25) !important;
+        border-color: #f59e0b !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 14px rgba(245, 158, 11, 0.25) !important;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .btn-outline-custom {
+            background: var(--bg-surface-subtle, #141B3D);
+            border-color: var(--border-strong, rgba(238, 241, 251, 0.14));
+            color: var(--text-main, #EEF1FB);
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .btn-outline-custom:hover {
+            background: var(--bg-surface-hover, #1A2247);
+            border-color: var(--primary, #2F6BFF);
+            color: #ffffff;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .impersonation-banner-box {
+            background: rgba(245, 158, 11, 0.1) !important;
+            border-color: rgba(245, 158, 11, 0.3) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .impersonation-banner-box strong {
+            color: #fbbf24 !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .impersonation-banner-box i.fa-right-to-bracket {
+            color: #f59e0b !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .impersonation-db-code {
+            background: rgba(245, 158, 11, 0.18) !important;
+            color: #fde68a !important;
+            border: 1px solid rgba(245, 158, 11, 0.3) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .impersonation-leave-btn {
+            background: rgba(245, 158, 11, 0.12) !important;
+            color: #fbbf24 !important;
+            border-color: rgba(245, 158, 11, 0.35) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .impersonation-leave-btn:hover {
+            background: rgba(245, 158, 11, 0.25) !important;
+            border-color: #f59e0b !important;
+            color: #ffffff !important;
+        }
+    }
+
+    /* Dark Mode: Matrix Table & Feature Row Hover */
+    html[data-pms-theme="dark"] table.matrix-table,
+    html[data-theme="dark"] table.matrix-table,
+    html[data-bs-theme="dark"] table.matrix-table {
+        border-color: var(--border-subtle, rgba(238, 241, 251, 0.12));
+    }
+    html[data-pms-theme="dark"] table.matrix-table thead th,
+    html[data-theme="dark"] table.matrix-table thead th,
+    html[data-bs-theme="dark"] table.matrix-table thead th {
+        background: var(--bg-surface-subtle, #141B3D);
+        border-color: var(--border-subtle, rgba(238, 241, 251, 0.1));
+        color: var(--text-light, #9AA3C7);
+    }
+    html[data-pms-theme="dark"] .category-header-row td,
+    html[data-theme="dark"] .category-header-row td,
+    html[data-bs-theme="dark"] .category-header-row td {
+        background: var(--bg-surface-subtle, #141B3D);
+        border-color: var(--border-subtle, rgba(238, 241, 251, 0.1));
+        color: var(--text-main, #EEF1FB);
+    }
+    html[data-pms-theme="dark"] .feature-item-row td,
+    html[data-theme="dark"] .feature-item-row td,
+    html[data-bs-theme="dark"] .feature-item-row td,
+    html[data-pms-theme="dark"] .feature-item-row:nth-child(even) td,
+    html[data-theme="dark"] .feature-item-row:nth-child(even) td,
+    html[data-bs-theme="dark"] .feature-item-row:nth-child(even) td {
+        background: var(--bg-surface, #0F1530);
+        border-color: var(--border-subtle, rgba(238, 241, 251, 0.08));
+        color: var(--text-body, #CBD5E1);
+    }
+    html[data-pms-theme="dark"] .feature-item-row:hover td,
+    html[data-theme="dark"] .feature-item-row:hover td,
+    html[data-bs-theme="dark"] .feature-item-row:hover td,
+    html[data-pms-theme="dark"] table.matrix-table tr:hover td,
+    html[data-theme="dark"] table.matrix-table tr:hover td,
+    html[data-bs-theme="dark"] table.matrix-table tr:hover td {
+        background: var(--bg-surface-hover, #1A2247) !important;
+        color: var(--text-main, #EEF1FB);
+    }
+
+    @media (prefers-color-scheme: dark) {
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) table.matrix-table {
+            border-color: var(--border-subtle, rgba(238, 241, 251, 0.12));
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) table.matrix-table thead th {
+            background: var(--bg-surface-subtle, #141B3D);
+            border-color: var(--border-subtle, rgba(238, 241, 251, 0.1));
+            color: var(--text-light, #9AA3C7);
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .category-header-row td {
+            background: var(--bg-surface-subtle, #141B3D);
+            border-color: var(--border-subtle, rgba(238, 241, 251, 0.1));
+            color: var(--text-main, #EEF1FB);
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .feature-item-row td,
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .feature-item-row:nth-child(even) td {
+            background: var(--bg-surface, #0F1530);
+            border-color: var(--border-subtle, rgba(238, 241, 251, 0.08));
+            color: var(--text-body, #CBD5E1);
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .feature-item-row:hover td,
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) table.matrix-table tr:hover td {
+            background: var(--bg-surface-hover, #1A2247) !important;
+            color: var(--text-main, #EEF1FB);
+        }
+    }
+
+    /* ============================================================
+       COMPREHENSIVE DARK THEME ARCHITECTURE FOR SUBSCRIPTIONS & DRAWER & MODALS
+       ============================================================ */
+    html[data-pms-theme="dark"],
+    html[data-theme="dark"],
+    html[data-bs-theme="dark"],
+    .dark {
+        --bg-main: #070B1A;
+        --bg-surface: #0F1530;
+        --bg-subtle: #141B3D;
+        --bg-hover: #1A2247;
+        --border-color: rgba(238, 241, 251, 0.09);
+        --border-subtle: rgba(238, 241, 251, 0.06);
+        --text-main: #EEF1FB;
+        --text-muted: #CBD5E1;
+        --text-subtle: #9AA3C7;
+    }
+
+    /* KPI Cards */
+    html[data-pms-theme="dark"] .subs-kpi-grid .kpi-card,
+    html[data-theme="dark"] .subs-kpi-grid .kpi-card,
+    html[data-bs-theme="dark"] .subs-kpi-grid .kpi-card,
+    .dark .subs-kpi-grid .kpi-card {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+    }
+    html[data-pms-theme="dark"] .subs-kpi-grid .kpi-card .val,
+    html[data-theme="dark"] .subs-kpi-grid .kpi-card .val,
+    html[data-bs-theme="dark"] .subs-kpi-grid .kpi-card .val,
+    .dark .subs-kpi-grid .kpi-card .val {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .subs-kpi-grid .kpi-card .lbl,
+    html[data-theme="dark"] .subs-kpi-grid .kpi-card .lbl,
+    html[data-bs-theme="dark"] .subs-kpi-grid .kpi-card .lbl,
+    .dark .subs-kpi-grid .kpi-card .lbl {
+        color: #9AA3C7 !important;
+    }
+
+    /* Toolbar, Search & Filters */
+    html[data-pms-theme="dark"] #searchSubsInput,
+    html[data-theme="dark"] #searchSubsInput,
+    html[data-bs-theme="dark"] #searchSubsInput {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.14) !important;
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] #searchSubsInput:focus,
+    html[data-theme="dark"] #searchSubsInput:focus {
+        background: #1A2247 !important;
+        border-color: #2F6BFF !important;
+        box-shadow: 0 0 0 3px rgba(47, 107, 255, 0.25) !important;
+    }
+    html[data-pms-theme="dark"] .filter-select,
+    html[data-theme="dark"] .filter-select,
+    html[data-bs-theme="dark"] .filter-select {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.14) !important;
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .filter-select option,
+    html[data-theme="dark"] .filter-select option {
+        background: #0F1530 !important;
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .nav-tab-item,
+    html[data-theme="dark"] .nav-tab-item,
+    html[data-bs-theme="dark"] .nav-tab-item {
+        color: #9AA3C7 !important;
+    }
+    html[data-pms-theme="dark"] .nav-tab-item.active,
+    html[data-theme="dark"] .nav-tab-item.active {
+        color: #2F6BFF !important;
+        border-bottom-color: #2F6BFF !important;
+    }
+
+    /* Table Container & Rows */
+    html[data-pms-theme="dark"] .matrix-table,
+    html[data-theme="dark"] .matrix-table,
+    html[data-bs-theme="dark"] .matrix-table {
+        border-color: rgba(238, 241, 251, 0.08) !important;
+    }
+    html[data-pms-theme="dark"] .matrix-table th,
+    html[data-theme="dark"] .matrix-table th,
+    html[data-bs-theme="dark"] .matrix-table th {
+        background: #141B3D !important;
+        color: #9AA3C7 !important;
+        border-color: rgba(238, 241, 251, 0.08) !important;
+    }
+    html[data-pms-theme="dark"] .matrix-table td,
+    html[data-theme="dark"] .matrix-table td,
+    html[data-bs-theme="dark"] .matrix-table td {
+        border-color: rgba(238, 241, 251, 0.07) !important;
+        color: #CBD5E1 !important;
+    }
+    html[data-pms-theme="dark"] .matrix-table tr:hover td,
+    html[data-theme="dark"] .matrix-table tr:hover td,
+    html[data-bs-theme="dark"] .matrix-table tr:hover td {
+        background: #1A2247 !important;
+        color: #EEF1FB !important;
+    }
+
+    /* ============================================================
+       SUBSCRIPTION COMMAND DRAWER (IMAGE 3 FIX)
+       ============================================================ */
+    html[data-pms-theme="dark"] .drawer-panel-custom,
+    html[data-theme="dark"] .drawer-panel-custom,
+    html[data-bs-theme="dark"] .drawer-panel-custom,
+    .dark .drawer-panel-custom {
+        background: #0F1530 !important;
+        color: #EEF1FB !important;
+        border-left: 1px solid rgba(238, 241, 251, 0.1) !important;
+        box-shadow: -15px 0 50px rgba(0, 0, 0, 0.7) !important;
+    }
+    html[data-pms-theme="dark"] .drawer-header,
+    html[data-theme="dark"] .drawer-header,
+    html[data-bs-theme="dark"] .drawer-header,
+    .dark .drawer-header {
+        background: #141B3D !important;
+        border-bottom: 1px solid rgba(238, 241, 251, 0.1) !important;
+    }
+    html[data-pms-theme="dark"] #drawerCompanyName,
+    html[data-theme="dark"] #drawerCompanyName,
+    html[data-bs-theme="dark"] #drawerCompanyName {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] #closeDrawerBtn,
+    html[data-theme="dark"] #closeDrawerBtn,
+    html[data-bs-theme="dark"] #closeDrawerBtn {
+        background: #1A2247 !important;
+        color: #9AA3C7 !important;
+        border: 1px solid rgba(238, 241, 251, 0.1) !important;
+    }
+    html[data-pms-theme="dark"] #closeDrawerBtn:hover,
+    html[data-theme="dark"] #closeDrawerBtn:hover {
+        background: #2563eb !important;
+        color: #ffffff !important;
+    }
+    html[data-pms-theme="dark"] .drawer-card-box,
+    html[data-theme="dark"] .drawer-card-box,
+    html[data-bs-theme="dark"] .drawer-card-box,
+    .dark .drawer-card-box {
+        background: #141B3D !important;
+        border: 1px solid rgba(238, 241, 251, 0.09) !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
+    }
+    html[data-pms-theme="dark"] .drawer-card-box .box-title,
+    html[data-theme="dark"] .drawer-card-box .box-title,
+    html[data-bs-theme="dark"] .drawer-card-box .box-title,
+    .dark .drawer-card-box .box-title {
+        color: #EEF1FB !important;
+    }
+    /* Drawer Stat Grid Boxes (e.g. Monthly Auto-Renew, Paid, Prices) */
+    html[data-pms-theme="dark"] .drawer-card-box div[style*="background: #f8fafc"],
+    html[data-theme="dark"] .drawer-card-box div[style*="background: #f8fafc"],
+    html[data-bs-theme="dark"] .drawer-card-box div[style*="background: #f8fafc"] {
+        background: #1A2247 !important;
+        border-color: rgba(238, 241, 251, 0.08) !important;
+    }
+    html[data-pms-theme="dark"] .drawer-card-box div[style*="background: #f8fafc"] strong,
+    html[data-theme="dark"] .drawer-card-box div[style*="background: #f8fafc"] strong {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .drawer-card-box div[style*="background: #f8fafc"] div[style*="text-transform: uppercase"],
+    html[data-theme="dark"] .drawer-card-box div[style*="background: #f8fafc"] div[style*="text-transform: uppercase"] {
+        color: #9AA3C7 !important;
+    }
+    /* Capacity progress bar tracks in drawer */
+    html[data-pms-theme="dark"] .drawer-card-box div[style*="background: #e2e8f0"],
+    html[data-theme="dark"] .drawer-card-box div[style*="background: #e2e8f0"] {
+        background: rgba(238, 241, 251, 0.1) !important;
+    }
+    html[data-pms-theme="dark"] .drawer-card-box strong,
+    html[data-theme="dark"] .drawer-card-box strong {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .drawer-card-box span,
+    html[data-theme="dark"] .drawer-card-box span {
+        color: #CBD5E1 !important;
+    }
+    html[data-pms-theme="dark"] .drawer-card-box div[style*="border-bottom: 1px solid var(--border-subtle)"],
+    html[data-theme="dark"] .drawer-card-box div[style*="border-bottom: 1px solid var(--border-subtle)"] {
+        border-bottom-color: rgba(238, 241, 251, 0.08) !important;
+    }
+    html[data-pms-theme="dark"] .drawer-card-box div[style*="border-left: 2px solid var(--border-color)"],
+    html[data-theme="dark"] .drawer-card-box div[style*="border-left: 2px solid var(--border-color)"] {
+        border-left-color: rgba(238, 241, 251, 0.15) !important;
+    }
+
+    /* ============================================================
+       ASSIGN / CHANGE PLAN MODAL (IMAGE 4 FIX)
+       ============================================================ */
+    html[data-pms-theme="dark"] .modal-dialog-custom,
+    html[data-theme="dark"] .modal-dialog-custom,
+    html[data-bs-theme="dark"] .modal-dialog-custom,
+    .dark .modal-dialog-custom {
+        background: #0F1530 !important;
+        color: #EEF1FB !important;
+        border: 1px solid rgba(238, 241, 251, 0.12) !important;
+        box-shadow: 0 25px 60px -10px rgba(0, 0, 0, 0.8) !important;
+    }
+    html[data-pms-theme="dark"] #assignPlanModal h3,
+    html[data-theme="dark"] #assignPlanModal h3,
+    html[data-pms-theme="dark"] #suspendConfirmModal h3,
+    html[data-theme="dark"] #suspendConfirmModal h3 {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] #assignPlanModal p,
+    html[data-theme="dark"] #assignPlanModal p,
+    html[data-pms-theme="dark"] #suspendConfirmModal p,
+    html[data-theme="dark"] #suspendConfirmModal p {
+        color: #9AA3C7 !important;
+    }
+    html[data-pms-theme="dark"] #assignPlanModal label,
+    html[data-theme="dark"] #assignPlanModal label {
+        color: #9AA3C7 !important;
+    }
+    html[data-pms-theme="dark"] #modalCompanySelect,
+    html[data-theme="dark"] #modalCompanySelect {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.14) !important;
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] #modalCompanySelect option,
+    html[data-theme="dark"] #modalCompanySelect option {
+        background: #0F1530 !important;
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .plan-card-option,
+    html[data-theme="dark"] .plan-card-option,
+    html[data-bs-theme="dark"] .plan-card-option,
+    .dark .plan-card-option {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.12) !important;
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .plan-card-option:hover,
+    html[data-theme="dark"] .plan-card-option:hover {
+        background: #1A2247 !important;
+        border-color: #2F6BFF !important;
+    }
+    html[data-pms-theme="dark"] .plan-card-option strong,
+    html[data-theme="dark"] .plan-card-option strong {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] #downgradeWarningNotice,
+    html[data-theme="dark"] #downgradeWarningNotice {
+        background: rgba(239, 68, 68, 0.15) !important;
+        border-color: rgba(239, 68, 68, 0.3) !important;
+        color: #FCA5A5 !important;
+    }
+    html[data-pms-theme="dark"] #assignPlanModal div[style*="border-top: 1px solid var(--border-color)"],
+    html[data-theme="dark"] #assignPlanModal div[style*="border-top: 1px solid var(--border-color)"] {
+        border-top-color: rgba(238, 241, 251, 0.1) !important;
+    }
+
+    /* Enhanced Dark Mode: Matrix Container & Toolbar */
+    html[data-pms-theme="dark"] .matrix-card-container,
+    html[data-theme="dark"] .matrix-card-container,
+    html[data-bs-theme="dark"] .matrix-card-container,
+    .dark .matrix-card-container {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4) !important;
+    }
+    html[data-pms-theme="dark"] .matrix-toolbar,
+    html[data-theme="dark"] .matrix-toolbar,
+    html[data-bs-theme="dark"] .matrix-toolbar,
+    .dark .matrix-toolbar {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.08) !important;
+    }
+
+    /* Enhanced Dark Mode: Toggle Switch Sliders */
+    html[data-pms-theme="dark"] .toggle-slider,
+    html[data-theme="dark"] .toggle-slider,
+    html[data-bs-theme="dark"] .toggle-slider,
+    .dark .toggle-slider {
+        background: #334155 !important;
+    }
+    html[data-pms-theme="dark"] .toggle-switch-wrap input:checked + .toggle-slider,
+    html[data-theme="dark"] .toggle-switch-wrap input:checked + .toggle-slider,
+    html[data-bs-theme="dark"] .toggle-switch-wrap input:checked + .toggle-slider,
+    .dark .toggle-switch-wrap input:checked + .toggle-slider {
+        background: #16a34a !important;
+    }
+
+    /* Enhanced Dark Mode: Active Selection on Modal Plan Options */
+    .plan-card-option:has(input:checked) {
+        border-color: var(--primary) !important;
+        background: var(--primary-soft) !important;
+        box-shadow: 0 0 0 1px var(--primary);
+    }
+    html[data-pms-theme="dark"] .plan-card-option:has(input:checked),
+    html[data-theme="dark"] .plan-card-option:has(input:checked),
+    html[data-bs-theme="dark"] .plan-card-option:has(input:checked),
+    .dark .plan-card-option:has(input:checked) {
+        border-color: #2F6BFF !important;
+        background: rgba(47, 107, 255, 0.16) !important;
+        box-shadow: 0 0 0 1px #2F6BFF;
+    }
+
+    /* Enhanced Dark Mode: Plan Cards Details */
+    html[data-pms-theme="dark"] .theme-free .plan-icon-box,
+    html[data-theme="dark"] .theme-free .plan-icon-box { background: rgba(148, 163, 184, 0.12) !important; color: #94a3b8 !important; }
+    html[data-pms-theme="dark"] .theme-gold .plan-icon-box,
+    html[data-theme="dark"] .theme-gold .plan-icon-box { background: rgba(245, 158, 11, 0.15) !important; color: #fbbf24 !important; }
+    html[data-pms-theme="dark"] .theme-platinum .plan-icon-box,
+    html[data-theme="dark"] .theme-platinum .plan-icon-box { background: rgba(14, 165, 233, 0.15) !important; color: #38bdf8 !important; }
+    html[data-pms-theme="dark"] .theme-diamond .plan-icon-box,
+    html[data-theme="dark"] .theme-diamond .plan-icon-box { background: rgba(139, 92, 246, 0.15) !important; color: #c084fc !important; }
+
+    html[data-pms-theme="dark"] .plan-card-item.theme-free,
+    html[data-theme="dark"] .plan-card-item.theme-free { border-color: rgba(238, 241, 251, 0.12) !important; }
+    html[data-pms-theme="dark"] .plan-card-item.theme-gold,
+    html[data-theme="dark"] .plan-card-item.theme-gold { border-color: rgba(245, 158, 11, 0.35) !important; }
+    html[data-pms-theme="dark"] .plan-card-item.theme-platinum,
+    html[data-theme="dark"] .plan-card-item.theme-platinum { border-color: rgba(14, 165, 233, 0.35) !important; }
+    html[data-pms-theme="dark"] .plan-card-item.theme-diamond,
+    html[data-theme="dark"] .plan-card-item.theme-diamond { border-color: rgba(139, 92, 246, 0.35) !important; }
+
+    html[data-pms-theme="dark"] .plan-features-list li,
+    html[data-theme="dark"] .plan-features-list li { color: #cbd5e1 !important; }
+    html[data-pms-theme="dark"] .plan-desc-text,
+    html[data-theme="dark"] .plan-desc-text { color: #94a3b8 !important; }
+    html[data-pms-theme="dark"] .plan-stats-item strong,
+    html[data-theme="dark"] .plan-stats-item strong { color: #EEF1FB !important; }
+    html[data-pms-theme="dark"] .plan-stats-item span,
+    html[data-theme="dark"] .plan-stats-item span { color: #94a3b8 !important; }
+    html[data-pms-theme="dark"] .plan-price-amount,
+    html[data-theme="dark"] .plan-price-amount { color: #EEF1FB !important; }
+    html[data-pms-theme="dark"] .plan-price-cycle,
+    html[data-theme="dark"] .plan-price-cycle { color: #94a3b8 !important; }
+
+    /* Enhanced Dark Mode: Badges & Pills */
+    html[data-pms-theme="dark"] .plan-badge-cell.plan-free,
+    html[data-theme="dark"] .plan-badge-cell.plan-free,
+    html[data-bs-theme="dark"] .plan-badge-cell.plan-free {
+        background: rgba(148, 163, 184, 0.15) !important;
+        color: #cbd5e1 !important;
+        border-color: rgba(148, 163, 184, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .plan-badge-cell.plan-gold,
+    html[data-theme="dark"] .plan-badge-cell.plan-gold,
+    html[data-bs-theme="dark"] .plan-badge-cell.plan-gold {
+        background: rgba(245, 158, 11, 0.15) !important;
+        color: #fbbf24 !important;
+        border-color: rgba(245, 158, 11, 0.35) !important;
+    }
+    html[data-pms-theme="dark"] .plan-badge-cell.plan-platinum,
+    html[data-theme="dark"] .plan-badge-cell.plan-platinum,
+    html[data-bs-theme="dark"] .plan-badge-cell.plan-platinum {
+        background: rgba(14, 165, 233, 0.15) !important;
+        color: #38bdf8 !important;
+        border-color: rgba(14, 165, 233, 0.35) !important;
+    }
+    html[data-pms-theme="dark"] .plan-badge-cell.plan-diamond,
+    html[data-theme="dark"] .plan-badge-cell.plan-diamond,
+    html[data-bs-theme="dark"] .plan-badge-cell.plan-diamond {
+        background: rgba(139, 92, 246, 0.15) !important;
+        color: #c084fc !important;
+        border-color: rgba(139, 92, 246, 0.35) !important;
+    }
+
+    html[data-pms-theme="dark"] .status-pill.status-trial,
+    html[data-theme="dark"] .status-pill.status-trial {
+        background: rgba(14, 165, 233, 0.15) !important;
+        color: #38bdf8 !important;
+        border-color: rgba(14, 165, 233, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .status-pill.status-active,
+    html[data-theme="dark"] .status-pill.status-active {
+        background: rgba(16, 185, 129, 0.15) !important;
+        color: #34d399 !important;
+        border-color: rgba(16, 185, 129, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .status-pill.status-expiring,
+    html[data-theme="dark"] .status-pill.status-expiring {
+        background: rgba(245, 158, 11, 0.15) !important;
+        color: #fbbf24 !important;
+        border-color: rgba(245, 158, 11, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .status-pill.status-suspended,
+    html[data-theme="dark"] .status-pill.status-suspended,
+    html[data-pms-theme="dark"] .status-pill.status-expired,
+    html[data-theme="dark"] .status-pill.status-expired {
+        background: rgba(239, 68, 68, 0.15) !important;
+        color: #f87171 !important;
+        border-color: rgba(239, 68, 68, 0.3) !important;
+    }
+
+    /* Enhanced Dark Mode: Tab Navigation */
+    html[data-pms-theme="dark"] .nav-tabs-container,
+    html[data-theme="dark"] .nav-tabs-container {
+        border-bottom-color: rgba(238, 241, 251, 0.1) !important;
+    }
+    html[data-pms-theme="dark"] .nav-tab-item,
+    html[data-theme="dark"] .nav-tab-item {
+        color: #9AA3C7 !important;
+    }
+    html[data-pms-theme="dark"] .nav-tab-item:hover,
+    html[data-theme="dark"] .nav-tab-item:hover {
+        color: #60a5fa !important;
+        background: rgba(47, 107, 255, 0.1) !important;
+    }
+    html[data-pms-theme="dark"] .nav-tab-item.active,
+    html[data-theme="dark"] .nav-tab-item.active {
+        color: #2F6BFF !important;
+        border-bottom-color: #2F6BFF !important;
+    }
+    html[data-pms-theme="dark"] .nav-tab-item .badge-count,
+    html[data-theme="dark"] .nav-tab-item .badge-count {
+        background: rgba(47, 107, 255, 0.18) !important;
+        color: #60a5fa !important;
+    }
+
+    /* Enhanced Dark Mode: Matrix Table & Cells */
+    html[data-pms-theme="dark"] table.matrix-table tbody tr td,
+    html[data-theme="dark"] table.matrix-table tbody tr td,
+    html[data-bs-theme="dark"] table.matrix-table tbody tr td {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.08) !important;
+        color: #CBD5E1 !important;
+    }
+    html[data-pms-theme="dark"] table.matrix-table div[style*="background: #f1f5f9"],
+    html[data-theme="dark"] table.matrix-table div[style*="background: #f1f5f9"],
+    html[data-bs-theme="dark"] table.matrix-table div[style*="background: #f1f5f9"] {
+        background: rgba(238, 241, 251, 0.08) !important;
+        color: #60a5fa !important;
+    }
+    html[data-pms-theme="dark"] #subsCompanyTable code,
+    html[data-theme="dark"] #subsCompanyTable code,
+    html[data-bs-theme="dark"] #subsCompanyTable code {
+        background: rgba(2, 132, 199, 0.15) !important;
+        color: #38bdf8 !important;
+    }
+    html[data-pms-theme="dark"] div[style*="background: #e2e8f0"],
+    html[data-theme="dark"] div[style*="background: #e2e8f0"],
+    html[data-bs-theme="dark"] div[style*="background: #e2e8f0"] {
+        background: rgba(238, 241, 251, 0.12) !important;
+    }
+
+    /* Enhanced Dark Mode: Plan Comparison Tab */
+    html[data-pms-theme="dark"] #tab-comparison table.matrix-table td strong,
+    html[data-theme="dark"] #tab-comparison table.matrix-table td strong {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] #tab-comparison div[style*="border-bottom: 1px solid var(--border-color)"],
+    html[data-theme="dark"] #tab-comparison div[style*="border-bottom: 1px solid var(--border-color)"] {
+        border-bottom-color: rgba(238, 241, 251, 0.08) !important;
+    }
+
+    /* Enhanced Dark Mode: Company Feature Overrides Tab */
+    html[data-pms-theme="dark"] #tab-overrides div[style*="border-bottom: 1px solid var(--border-color)"],
+    html[data-theme="dark"] #tab-overrides div[style*="border-bottom: 1px solid var(--border-color)"] {
+        border-bottom-color: rgba(238, 241, 251, 0.08) !important;
+    }
+    html[data-pms-theme="dark"] #overrideCompanySelect,
+    html[data-theme="dark"] #overrideCompanySelect,
+    html[data-bs-theme="dark"] #overrideCompanySelect {
+        background: #141B3D !important;
+        color: #EEF1FB !important;
+        border-color: rgba(238, 241, 251, 0.14) !important;
+    }
+    html[data-pms-theme="dark"] #overrideCompanySelect option,
+    html[data-theme="dark"] #overrideCompanySelect option {
+        background: #0F1530 !important;
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] #overrideCompanyBanner,
+    html[data-theme="dark"] #overrideCompanyBanner,
+    html[data-bs-theme="dark"] #overrideCompanyBanner {
+        background: rgba(47, 107, 255, 0.15) !important;
+        color: #60A5FA !important;
+        border-color: rgba(47, 107, 255, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] #tab-overrides div[style*="background: #f8fafc"],
+    html[data-theme="dark"] #tab-overrides div[style*="background: #f8fafc"],
+    html[data-bs-theme="dark"] #tab-overrides div[style*="background: #f8fafc"] {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+        color: #CBD5E1 !important;
+    }
+    html[data-pms-theme="dark"] #tab-overrides .override-status-cell span,
+    html[data-theme="dark"] #tab-overrides .override-status-cell span,
+    html[data-bs-theme="dark"] #tab-overrides .override-status-cell span,
+    .dark #tab-overrides .override-status-cell span {
+        background: rgba(238, 241, 251, 0.08) !important;
+        color: #9AA3C7 !important;
+    }
+    html[data-pms-theme="dark"] #tab-overrides .override-category-badge,
+    html[data-theme="dark"] #tab-overrides .override-category-badge,
+    html[data-bs-theme="dark"] #tab-overrides .override-category-badge,
+    .dark #tab-overrides .override-category-badge,
+    html[data-pms-theme="dark"] #tab-overrides td:nth-child(2) span,
+    html[data-theme="dark"] #tab-overrides td:nth-child(2) span,
+    html[data-bs-theme="dark"] #tab-overrides td:nth-child(2) span,
+    .dark #tab-overrides td:nth-child(2) span {
+        background: rgba(238, 241, 251, 0.08) !important;
+        color: #EEF1FB !important;
+        border: 1px solid rgba(238, 241, 251, 0.14) !important;
+    }
+    @media (prefers-color-scheme: dark) {
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) #tab-overrides .override-category-badge,
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) #tab-overrides td:nth-child(2) span {
+            background: rgba(238, 241, 251, 0.08) !important;
+            color: #EEF1FB !important;
+            border: 1px solid rgba(238, 241, 251, 0.14) !important;
+        }
+    }
+    html[data-pms-theme="dark"] #tab-overrides tr.category-header-row,
+    html[data-theme="dark"] #tab-overrides tr.category-header-row,
+    html[data-bs-theme="dark"] #tab-overrides tr.category-header-row,
+    .dark #tab-overrides tr.category-header-row {
+        background: #141B3D !important;
+    }
+    html[data-pms-theme="dark"] #tab-overrides .override-module-row div[style*="background: #f1f5f9"],
+    html[data-theme="dark"] #tab-overrides .override-module-row div[style*="background: #f1f5f9"],
+    html[data-bs-theme="dark"] #tab-overrides .override-module-row div[style*="background: #f1f5f9"],
+    .dark #tab-overrides .override-module-row div[style*="background: #f1f5f9"] {
+        background: rgba(47, 107, 255, 0.15) !important;
+        color: #60A5FA !important;
+    }
+
+    /* Enhanced Dark Mode: Audit History Tab */
+    html[data-pms-theme="dark"] #tab-audit div[style*="border-bottom: 1px solid var(--border-subtle)"],
+    html[data-theme="dark"] #tab-audit div[style*="border-bottom: 1px solid var(--border-subtle)"] {
+        border-bottom-color: rgba(238, 241, 251, 0.08) !important;
+    }
+    html[data-pms-theme="dark"] #tab-audit div[style*="background: #eff6ff"],
+    html[data-theme="dark"] #tab-audit div[style*="background: #eff6ff"],
+    html[data-bs-theme="dark"] #tab-audit div[style*="background: #eff6ff"] {
+        background: rgba(47, 107, 255, 0.15) !important;
+        color: #60A5FA !important;
+    }
+
+    /* Enhanced Dark Mode: Subscriptions Tab Container */
+    html[data-pms-theme="dark"] #tab-companies > div[style*="background: var(--bg-surface)"],
+    html[data-theme="dark"] #tab-companies > div[style*="background: var(--bg-surface)"] {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+    }
 </style>
+
 
 <!-- PAGE CONTROL HEADER BAR -->
 <div class="subs-header-bar">
@@ -612,35 +1362,35 @@
         <p style="font-size: 13.5px; color: var(--text-muted); margin: 2px 0 0 0;">Manage tenant subscriptions, feature entitlements, billing status, usage limits, and access policies.</p>
     </div>
     <div class="header-actions">
-        <button class="btn-custom btn-outline-custom" id="refreshSubsBtn">
+        <button type="button" class="btn-custom btn-outline-custom" id="refreshSubsBtn">
             <i class="fas fa-rotate"></i> Refresh
         </button>
-        <button class="btn-custom btn-outline-custom" id="exportSubsBtn">
+        <button type="button" class="btn-custom btn-outline-custom" id="exportSubsBtn">
             <i class="fas fa-download"></i> Export
         </button>
         <a href="{{ route('super-admin.plans.index') }}" class="btn-custom btn-outline-custom">
             <i class="fas fa-layer-group"></i> Manage Plans
         </a>
-        <button class="btn-custom btn-primary-custom" id="openAssignModalBtn">
+        <button type="button" class="btn-custom btn-primary-custom" id="openAssignModalBtn">
             <i class="fas fa-plus"></i> Assign Subscription
         </button>
     </div>
 </div>
 
 @if($currentCompanyDb)
-<div style="background: var(--warning-bg); border: 1px solid var(--warning-border); border-radius: var(--radius-lg); padding: 14px 20px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between;">
+<div class="impersonation-banner-box" style="background: var(--warning-bg); border: 1px solid var(--warning-border); border-radius: var(--radius-lg); padding: 14px 20px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between;">
     <div style="display: flex; align-items: center; gap: 12px;">
         <i class="fas fa-right-to-bracket" style="font-size: 20px; color: var(--warning);"></i>
         <div>
             <strong style="color: var(--warning); font-size: 14px;">Active Tenant Impersonation Session</strong>
             <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">
-                Session Database: <code style="background: #fff; padding: 2px 6px; border-radius: 4px; font-family: monospace;">{{ $currentCompanyDb }}</code>
+                Session Database: <code class="impersonation-db-code" style="background: #fff; padding: 2px 6px; border-radius: 4px; font-family: monospace;">{{ $currentCompanyDb }}</code>
             </div>
         </div>
     </div>
     <form method="POST" action="{{ route('super-admin.leave-impersonation') }}" style="margin: 0;">
         @csrf
-        <button type="submit" class="btn-custom btn-outline-custom btn-xs-custom" style="color: var(--warning); border-color: var(--warning-border);">
+        <button type="submit" class="btn-custom btn-outline-custom btn-xs-custom impersonation-leave-btn" style="color: var(--warning); border-color: var(--warning-border);">
             <i class="fas fa-arrow-left"></i> Leave Impersonation
         </button>
     </form>
@@ -774,9 +1524,6 @@
     <button class="nav-tab-item" data-tab="tab-matrix">
         <i class="fas fa-table-cells"></i> Feature Access Matrix <span class="badge-count">Dynamic</span>
     </button>
-    <button class="nav-tab-item" data-tab="tab-roles">
-        <i class="fas fa-shield-quarter"></i> Role-Based Permissions
-    </button>
     <button class="nav-tab-item" data-tab="tab-comparison">
         <i class="fas fa-columns"></i> Plan Comparison
     </button>
@@ -796,11 +1543,11 @@
     <div style="background: var(--bg-surface); padding: 16px 20px; border-radius: var(--radius-lg); border: 1px solid var(--border-color); box-shadow: var(--shadow-xs); margin-bottom: 20px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px;">
         <div style="position: relative; flex: 1; min-width: 280px; max-width: 440px;">
             <i class="fas fa-search" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-subtle); font-size: 14px;"></i>
-            <input type="text" id="searchSubsInput" placeholder="Search company, domain, or tenant ID..." style="width: 100%; padding: 10px 14px 10px 40px; border-radius: 24px; border: 1px solid var(--border-color); font-size: 13px; background: #f8fafc; outline: none; font-family: inherit;" />
+            <input type="text" id="searchSubsInput" placeholder="Search company, domain, or tenant ID..." style="width: 100%; padding: 10px 14px 10px 40px; border-radius: 24px; border: 1px solid var(--border-color); font-size: 13px; background: var(--bg-subtle); color: var(--text-main); outline: none; font-family: inherit;" />
         </div>
 
         <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-            <select class="filter-select" id="filterStatus" style="padding: 8px 14px; border-radius: 10px; border: 1px solid var(--border-color); background: #fff; font-size: 13px; font-weight: 500; font-family: inherit;">
+            <select class="filter-select" id="filterStatus" style="padding: 8px 14px; border-radius: 10px; border: 1px solid var(--border-color); background: var(--bg-surface); color: var(--text-main); font-size: 13px; font-weight: 500; font-family: inherit;">
                 <option value="">All Statuses</option>
                 <option value="active">Active</option>
                 <option value="trial">Trial</option>
@@ -811,7 +1558,7 @@
                 <option value="suspended">Suspended</option>
             </select>
 
-            <select class="filter-select" id="filterPlan" style="padding: 8px 14px; border-radius: 10px; border: 1px solid var(--border-color); background: #fff; font-size: 13px; font-weight: 500; font-family: inherit;">
+            <select class="filter-select" id="filterPlan" style="padding: 8px 14px; border-radius: 10px; border: 1px solid var(--border-color); background: var(--bg-surface); color: var(--text-main); font-size: 13px; font-weight: 500; font-family: inherit;">
                 <option value="">All Plans</option>
                 <option value="free">FREE</option>
                 <option value="gold">GOLD</option>
@@ -866,9 +1613,9 @@
                         $endsAtObj = $sub?->ends_at ?? $company->trial_ends_at ?? ($startsAtObj ? \Carbon\Carbon::parse($startsAtObj)->addDays(30) : null);
                         $endsAtFmt = $endsAtObj ? \Carbon\Carbon::parse($endsAtObj)->format('M d, Y, h:i A') : 'N/A';
                         $daysLeftCalc = $endsAtObj ? (int) \Carbon\Carbon::now()->startOfDay()->diffInDays(\Carbon\Carbon::parse($endsAtObj)->startOfDay(), false) : 999;
-                        $isExpired = $endsAtObj ? \Carbon\Carbon::parse($endsAtObj)->isPast() : false;
                         $rawStatus = strtolower($company->status ?? 'active');
-                        $effStatus = ($rawStatus === 'suspended' || $isExpired) ? 'suspended' : $rawStatus;
+                        $effStatus = $rawStatus;
+                        $isExpired = ($effStatus === 'expired' || $daysLeftCalc < 0);
                     @endphp
                     <tr class="feature-item-row" data-status="{{ $effStatus }}" data-plan="{{ $pClass }}" data-daysleft="{{ $daysLeftCalc }}">
                         <td style="text-align: center;"><input type="checkbox" class="row-sub-cb" value="{{ $company->id }}" /></td>
@@ -907,10 +1654,11 @@
                                     'active' => 'status-active',
                                     'trial' => 'status-trial',
                                     'suspended' => 'status-suspended',
-                                    default => 'status-expiring',
+                                    'expired' => 'status-expired',
+                                    default => 'status-expired',
                                 };
                             @endphp
-                            <span class="status-pill {{ $stClass }}"><span class="dot"></span> {{ $isExpired && $rawStatus !== 'suspended' ? 'Expired (Suspended)' : ucfirst($company->status ?? 'Active') }}</span>
+                            <span class="status-pill {{ $stClass }}"><span class="dot"></span> {{ ucfirst($effStatus) }}</span>
                         </td>
                         <td style="text-align: left;"><span style="font-weight: 600; color: var(--text-muted);">{{ ucfirst($sub->billing_cycle ?? 'monthly') }}</span></td>
                         <td style="text-align: left;">
@@ -1138,73 +1886,7 @@
 </div>
 
 <!-- ============================================================ -->
-<!-- TAB 4: ROLE-BASED PERMISSIONS LAYER -->
-<!-- ============================================================ -->
-<div class="tab-pane-content" id="tab-roles">
-    <div class="matrix-card-container">
-        <div class="matrix-toolbar">
-            <div>
-                <strong style="font-size: 15px; color: var(--text-main);"><i class="fas fa-shield-quarter" style="color: var(--primary);"></i> Role-Based Module Permissions</strong>
-                <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">
-                    Subscription determines module inclusion. Roles control actions inside enabled modules.
-                </div>
-            </div>
-            <select id="roleSelector" style="padding: 8px 14px; border-radius: 10px; border: 1px solid var(--border-color); font-size: 13px; font-weight: 700; font-family: inherit;">
-                <option value="Admin">Role: Admin (Full Access)</option>
-                <option value="Manager">Role: Manager</option>
-                <option value="HR">Role: HR Specialist</option>
-                <option value="Employee" selected>Role: Employee (Standard)</option>
-            </select>
-        </div>
-
-        <div style="overflow-x: auto;">
-            <table class="matrix-table">
-                <thead>
-                    <tr>
-                        <th style="text-align: left;">MODULE NAME</th>
-                        <th>VIEW</th>
-                        <th>CREATE</th>
-                        <th>EDIT</th>
-                        <th>DELETE</th>
-                        <th>APPROVE</th>
-                        <th>EXPORT</th>
-                        <th>ASSIGN</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($modules->take(12) as $mod)
-                    @php
-                        $includedInPlan = !in_array($mod->slug, ['payroll', 'analytics', 'advanced-reports']);
-                    @endphp
-                    <tr class="feature-item-row">
-                        <td style="text-align: left;">
-                            <strong style="color: var(--text-main);">{{ $mod->name }}</strong>
-                            @if(!$includedInPlan)
-                                <span style="display: block; font-size: 10.5px; color: var(--danger); font-weight: 700;">● Not included in plan</span>
-                            @endif
-                        </td>
-                        @foreach(['VIEW', 'CREATE', 'EDIT', 'DELETE', 'APPROVE', 'EXPORT', 'ASSIGN'] as $actIdx => $act)
-                        <td>
-                            @if($includedInPlan)
-                                <label class="toggle-switch-wrap">
-                                    <input type="checkbox" {{ ($actIdx === 0 || ($actIdx < 3 && $mod->slug !== 'payroll')) ? 'checked' : '' }} />
-                                    <span class="toggle-slider"></span>
-                                </label>
-                            @else
-                                <span style="font-size: 11px; color: var(--text-subtle); font-weight: 600;">Disabled</span>
-                            @endif
-                        </td>
-                        @endforeach
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
-
-<!-- ============================================================ -->
-<!-- TAB 5: PLAN COMPARISON -->
+<!-- TAB 4: PLAN COMPARISON -->
 <!-- ============================================================ -->
 <div class="tab-pane-content" id="tab-comparison">
     <div class="matrix-card-container">
@@ -1304,7 +1986,7 @@
                                 </div>
                             </div>
                         </td>
-                        <td style="text-align: left;"><span style="font-size: 11px; font-weight: 600; color: var(--text-muted); background: #f1f5f9; padding: 2px 8px; border-radius: 4px;">{{ $mod->category ?? 'CORE' }}</span></td>
+                        <td style="text-align: left;"><span class="override-category-badge" style="font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 4px;">{{ $mod->category ?? 'CORE' }}</span></td>
                         <td style="text-align: left;" class="base-plan-status-cell">
                             <span class="plan-badge-cell plan-free">Plan Default</span>
                         </td>
@@ -1379,15 +2061,15 @@
 
         <div class="drawer-body">
             <!-- HEALTH & EXPIRATION COUNTDOWN BANNER (LUXURY EMERALD SLATE THEMING) -->
-            <div style="background: linear-gradient(135deg, #073a26 0%, #0f744c 100%); padding: 20px; border-radius: var(--radius-lg); color: #ffffff; box-shadow: 0 12px 32px rgba(15, 116, 76, 0.22); border: 1px solid rgba(255, 255, 255, 0.18);">
+            <div style="background: linear-gradient(135deg, #073a26 0%, #2F6BFF 100%); padding: 20px; border-radius: var(--radius-lg); color: #ffffff; box-shadow: 0 12px 32px rgba(47, 107, 255, 0.22); border: 1px solid rgba(255, 255, 255, 0.18);">
                 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
                     <div style="display: flex; align-items: center; gap: 8px;">
                         <span class="plan-badge-cell plan-gold" id="drawerPlanBadge" style="font-size: 12px; padding: 5px 12px; font-weight: 800;">GOLD</span>
                         <span class="status-pill status-active" id="drawerStatusPill"><span class="dot"></span> Active</span>
                     </div>
                     <div style="text-align: right;">
-                        <div style="font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.9px; color: #a7f3d0;">COUNTDOWN</div>
-                        <div style="font-size: 22px; font-weight: 900; color: #34d399; margin-top: 2px;" id="drawerCountdownText">29 DAYS LEFT</div>
+                        <div style="font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.9px; color: #C7D2FE;">COUNTDOWN</div>
+                        <div style="font-size: 22px; font-weight: 900; color: #60A5FA; margin-top: 2px;" id="drawerCountdownText">29 DAYS LEFT</div>
                     </div>
                 </div>
 
@@ -1421,19 +2103,19 @@
                     <span style="font-size: 11px; color: var(--success); font-weight: 700;"><i class="fas fa-shield-check"></i> Verified Status</span>
                 </div>
                 <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
-                    <div style="background: #f8fafc; padding: 12px; border-radius: 10px; border: 1px solid var(--border-subtle);">
+                    <div style="background: var(--bg-subtle); padding: 12px; border-radius: 10px; border: 1px solid var(--border-subtle);">
                         <div style="font-size: 10.5px; color: var(--text-subtle); font-weight: 700; text-transform: uppercase;">Billing Cycle</div>
                         <strong style="font-size: 13.5px; color: var(--text-main);" id="drawerCycleText">Monthly Auto-Renew</strong>
                     </div>
-                    <div style="background: #f8fafc; padding: 12px; border-radius: 10px; border: 1px solid var(--border-subtle);">
+                    <div style="background: var(--bg-subtle); padding: 12px; border-radius: 10px; border: 1px solid var(--border-subtle);">
                         <div style="font-size: 10.5px; color: var(--text-subtle); font-weight: 700; text-transform: uppercase;">Payment Status</div>
                         <strong style="font-size: 13.5px; color: var(--success);"><i class="fas fa-circle-check"></i> Paid &amp; Current</strong>
                     </div>
-                    <div style="background: #f8fafc; padding: 12px; border-radius: 10px; border: 1px solid var(--border-subtle);">
+                    <div style="background: var(--bg-subtle); padding: 12px; border-radius: 10px; border: 1px solid var(--border-subtle);">
                         <div style="font-size: 10.5px; color: var(--text-subtle); font-weight: 700; text-transform: uppercase;">Monthly Price</div>
                         <strong style="font-size: 15px; color: var(--text-main);" id="drawerPriceText">₹4,999 / mo</strong>
                     </div>
-                    <div style="background: #f8fafc; padding: 12px; border-radius: 10px; border: 1px solid var(--border-subtle);">
+                    <div style="background: var(--bg-subtle); padding: 12px; border-radius: 10px; border: 1px solid var(--border-subtle);">
                         <div style="font-size: 10.5px; color: var(--text-subtle); font-weight: 700; text-transform: uppercase;">Annual Price</div>
                         <strong style="font-size: 15px; color: var(--text-main);">₹49,990 / yr</strong>
                     </div>
@@ -1449,9 +2131,9 @@
                 <div style="margin-bottom: 14px;">
                     <div style="display: flex; justify-content: space-between; font-size: 12.5px; margin-bottom: 4px;">
                         <span style="font-weight: 600; color: var(--text-main);">User Accounts Allocation</span>
-                        <strong id="drawerUserUsageText">18 / 25 Users</strong>
+                        <strong id="drawerUserUsageText" style="color: var(--text-main);">18 / 25 Users</strong>
                     </div>
-                    <div style="height: 6px; background: #e2e8f0; border-radius: 4px; overflow: hidden;">
+                    <div style="height: 6px; background: var(--border-color); border-radius: 4px; overflow: hidden;">
                         <div style="height: 100%; width: 72%; background: var(--primary);"></div>
                     </div>
                 </div>
@@ -1459,9 +2141,9 @@
                 <div style="margin-bottom: 14px;">
                     <div style="display: flex; justify-content: space-between; font-size: 12.5px; margin-bottom: 4px;">
                         <span style="font-weight: 600; color: var(--text-main);">Tenant Storage Allocation</span>
-                        <strong id="drawerStorageUsageText">18 GB / 25 GB</strong>
+                        <strong id="drawerStorageUsageText" style="color: var(--text-main);">18 GB / 25 GB</strong>
                     </div>
-                    <div style="height: 6px; background: #e2e8f0; border-radius: 4px; overflow: hidden;">
+                    <div style="height: 6px; background: var(--border-color); border-radius: 4px; overflow: hidden;">
                         <div style="height: 100%; width: 72%; background: var(--success);"></div>
                     </div>
                 </div>
@@ -1469,9 +2151,9 @@
                 <div>
                     <div style="display: flex; justify-content: space-between; font-size: 12.5px; margin-bottom: 4px;">
                         <span style="font-weight: 600; color: var(--text-main);">Active Projects Allocation</span>
-                        <strong>18 / 50 Projects</strong>
+                        <strong style="color: var(--text-main);">18 / 50 Projects</strong>
                     </div>
-                    <div style="height: 6px; background: #e2e8f0; border-radius: 4px; overflow: hidden;">
+                    <div style="height: 6px; background: var(--border-color); border-radius: 4px; overflow: hidden;">
                         <div style="height: 100%; width: 36%; background: #0284c7;"></div>
                     </div>
                 </div>
@@ -1563,11 +2245,11 @@
         <h3 style="font-size: 20px; font-weight: 800; margin: 0 0 6px 0; color: var(--text-main);">Assign / Change Subscription Plan</h3>
         <p style="font-size: 13.5px; color: var(--text-muted); margin: 0 0 20px 0;">Select a target company and choose a subscription plan tier.</p>
 
-        <form id="assignPlanForm">
+        <form id="assignPlanForm" method="POST" action="{{ Route::has('super-admin.subscriptions.assign') ? route('super-admin.subscriptions.assign') : (Route::has('superadmin.subscriptions.assign') ? route('superadmin.subscriptions.assign') : url('/super-admin/subscriptions/assign')) }}">
             @csrf
             <div style="margin-bottom: 16px;">
                 <label style="font-size: 12px; font-weight: 700; color: var(--text-subtle); text-transform: uppercase;">Select Tenant Company:</label>
-                <select name="company_id" id="modalCompanySelect" style="width: 100%; padding: 10px 14px; border-radius: 10px; border: 1px solid var(--border-color); font-size: 14px; font-weight: 700; font-family: inherit; margin-top: 4px;">
+                <select name="company_id" id="modalCompanySelect" style="width: 100%; padding: 10px 14px; border-radius: 10px; border: 1px solid var(--border-color); font-size: 14px; font-weight: 700; font-family: inherit; margin-top: 4px; background: var(--bg-surface); color: var(--text-main);">
                     @foreach($companies as $c)
                         <option value="{{ $c->id }}">{{ $c->name }} (Current: {{ strtoupper($c->activeSubscription?->plan?->name ?? 'FREE') }})</option>
                     @endforeach
@@ -1584,12 +2266,12 @@
                         $pPrice = $planObj?->monthly_price ?? match($pName) { 'FREE' => 0, 'GOLD' => 4999, 'PLATINUM' => 9999, 'DIAMOND' => 19999 };
                         $pLevel = match($pName) { 'FREE' => 0, 'GOLD' => 1, 'PLATINUM' => 2, 'DIAMOND' => 3 };
                     @endphp
-                    <label style="padding: 14px; border: 2px solid var(--border-color); border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: space-between;" class="plan-card-option" data-planlevel="{{ $pLevel }}" data-planname="{{ $pName }}">
+                    <label style="padding: 14px; border: 2px solid var(--border-color); border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; background: var(--bg-surface); color: var(--text-main);" class="plan-card-option" data-planlevel="{{ $pLevel }}" data-planname="{{ $pName }}">
                         <div style="display: flex; align-items: center; gap: 8px;">
                             <input type="radio" name="plan_id" value="{{ $pId }}" data-planname="{{ $pName }}" data-planlevel="{{ $pLevel }}" {{ $pName === 'GOLD' ? 'checked' : '' }} />
                             <span class="plan-badge-cell plan-{{ strtolower($pName) }}">{{ $pName }}</span>
                         </div>
-                        <strong style="font-size: 13.5px;">₹{{ number_format($pPrice) }}/mo</strong>
+                        <strong style="font-size: 13.5px; color: var(--text-main);">₹{{ number_format($pPrice) }}/mo</strong>
                     </label>
                     @endforeach
                 </div>
@@ -1797,7 +2479,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     const daysLeft = Math.floor(diffMs / (1000 * 60 * 60 * 24));
                     const hoursLeft = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                     countdownEl.innerText = daysLeft + 'd ' + hoursLeft + 'h LEFT';
-                    countdownEl.style.color = daysLeft <= 5 ? '#f59e0b' : '#34d399';
+                    countdownEl.style.color = daysLeft <= 5 ? '#f59e0b' : '#60A5FA';
                 }
             }
 
@@ -1809,6 +2491,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (statusStr === 'suspended') {
                     drawerStatusPill.className = 'status-pill status-suspended';
                     drawerStatusPill.innerHTML = '<span class="dot"></span> Suspended';
+                } else if (statusStr === 'expired') {
+                    drawerStatusPill.className = 'status-pill status-expired';
+                    drawerStatusPill.innerHTML = '<span class="dot"></span> Expired';
                 } else if (statusStr === 'trial') {
                     drawerStatusPill.className = 'status-pill status-trial';
                     drawerStatusPill.innerHTML = '<span class="dot"></span> Trial';
@@ -2081,14 +2766,151 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // 6b. Export Subscriptions Data as CSV
+    const exportSubsBtn = document.getElementById('exportSubsBtn');
+    if (exportSubsBtn) {
+        exportSubsBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const rows = document.querySelectorAll('#subsCompanyTable tbody tr.feature-item-row');
+            if (!rows || rows.length === 0) {
+                showToast('No subscription records available to export.', 'warning');
+                return;
+            }
+
+            let csvRows = [];
+            // CSV Header
+            csvRows.push([
+                'Company Name',
+                'Tenant Domain',
+                'Tenant Code',
+                'Plan Tier',
+                'Status',
+                'Billing Cycle',
+                'Users Allocation',
+                'Storage Allocation',
+                'Renewal / Expiration Date',
+                'Monthly Recurring Revenue (MRR)'
+            ].map(col => `"${col.replace(/"/g, '""')}"`).join(','));
+
+            rows.forEach(row => {
+                // If search/status filter is active, only export visible rows
+                if (row.style.display === 'none') return;
+
+                const companyName = row.querySelector('td:nth-child(2) strong')?.innerText?.trim() || '';
+                const domain = row.querySelector('td:nth-child(2) div[style*="font-size: 11.5px"]')?.innerText?.trim() || '';
+                const tenantCode = row.querySelector('td:nth-child(3) code')?.innerText?.trim() || '';
+                const planTier = row.querySelector('td:nth-child(4) .plan-badge-cell')?.innerText?.trim() || '';
+                const status = row.querySelector('td:nth-child(5) .status-pill')?.innerText?.trim() || '';
+                const cycle = row.querySelector('td:nth-child(6) span')?.innerText?.trim() || '';
+                const users = row.querySelector('td:nth-child(7) div[style*="font-weight: 700"]')?.innerText?.trim() || '';
+                const storage = row.querySelector('td:nth-child(8) div[style*="font-weight: 700"]')?.innerText?.trim() || '';
+                const renewal = row.querySelector('td:nth-child(9) div[style*="font-weight: 700"]')?.innerText?.trim() || '';
+                const mrr = row.querySelector('td:nth-child(10) strong')?.innerText?.trim() || '';
+
+                const rowData = [
+                    companyName,
+                    domain,
+                    tenantCode,
+                    planTier,
+                    status,
+                    cycle,
+                    users,
+                    storage,
+                    renewal,
+                    mrr
+                ];
+
+                csvRows.push(rowData.map(val => `"${val.replace(/"/g, '""')}"`).join(','));
+            });
+
+            if (csvRows.length <= 1) {
+                showToast('No visible subscription records matching filter criteria to export.', 'warning');
+                return;
+            }
+
+            const csvString = "\uFEFF" + csvRows.join("\r\n"); // UTF-8 BOM for Excel compatibility
+            const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            const dateStr = new Date().toISOString().slice(0, 10);
+            a.href = url;
+            a.download = `tenant_subscriptions_${dateStr}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            showToast('Subscription data exported successfully as CSV.');
+        });
+    }
+
+    // Refresh Subscriptions Page
+    const refreshSubsBtn = document.getElementById('refreshSubsBtn');
+    if (refreshSubsBtn) {
+        refreshSubsBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const icon = this.querySelector('i');
+            if (icon) icon.classList.add('fa-spin');
+            window.location.reload();
+        });
+    }
+
     // 7. Assign / Change Plan Modal
     const modal = document.getElementById('assignPlanModal');
     const openModalBtn = document.getElementById('openAssignModalBtn');
     const closeModalBtn = document.getElementById('closeAssignModalBtn');
     const form = document.getElementById('assignPlanForm');
 
-    if (openModalBtn && modal) openModalBtn.addEventListener('click', () => modal.classList.add('open'));
-    if (closeModalBtn && modal) closeModalBtn.addEventListener('click', () => modal.classList.remove('open'));
+    if (openModalBtn && modal) {
+        openModalBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (modalCompSelect) {
+                updateModalPlanLock(modalCompSelect.value);
+            }
+            // Ensure a valid, non-disabled radio is checked
+            const checkedRadio = modal.querySelector('input[name="plan_id"]:checked:not(:disabled)');
+            if (!checkedRadio) {
+                const firstValidRadio = modal.querySelector('input[name="plan_id"]:not(:disabled)');
+                if (firstValidRadio) firstValidRadio.checked = true;
+            }
+            if (drawer) drawer.classList.remove('open');
+            modal.classList.add('open');
+        });
+    }
+
+    if (closeModalBtn && modal) {
+        closeModalBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            modal.classList.remove('open');
+        });
+    }
+
+    if (modal) {
+        modal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.remove('open');
+            }
+        });
+    }
+
+    // Clicking on plan card options selects corresponding radio button
+    document.querySelectorAll('.plan-card-option').forEach(card => {
+        card.addEventListener('click', function() {
+            const radio = this.querySelector('input[type="radio"]');
+            if (radio && !radio.disabled) {
+                radio.checked = true;
+            }
+        });
+    });
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            if (modal && modal.classList.contains('open')) modal.classList.remove('open');
+            if (drawer && drawer.classList.contains('open')) drawer.classList.remove('open');
+            const suspendModal = document.getElementById('suspendConfirmModal');
+            if (suspendModal && suspendModal.classList.contains('open')) suspendModal.classList.remove('open');
+        }
+    });
 
     function updateModalPlanLock(companyId) {
         const compData = window.companyOverridesMap ? window.companyOverridesMap[companyId] : null;
@@ -2149,6 +2971,45 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Pre-select matching plan radio button in modal if not disabled
             const targetRadio = document.querySelector(`input[name="plan_id"][data-planname="${currentPlan}"]:not(:disabled)`) 
+                || document.querySelector(`input[name="plan_id"]:not(:disabled)`);
+            if (targetRadio) {
+                targetRadio.checked = true;
+            }
+
+            if (drawer) drawer.classList.remove('open');
+            if (modal) modal.classList.add('open');
+        });
+    });
+
+    // 8. Handle "+ Assign" button on Plan Overview Cards
+    document.querySelectorAll('.open-assign-for-plan').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const planId = this.getAttribute('data-planid');
+            const planName = (this.getAttribute('data-planname') || 'GOLD').toUpperCase();
+
+            if (modalCompSelect) {
+                // If current selected company has this plan blocked, switch to a valid company
+                const planLvl = (planName === 'FREE' ? 0 : (planName === 'GOLD' ? 1 : (planName === 'PLATINUM' ? 2 : 3)));
+                const curCompData = window.companyOverridesMap ? window.companyOverridesMap[modalCompSelect.value] : null;
+                const curHighestLvl = curCompData ? (curCompData.highest_level || 0) : 0;
+
+                if (curHighestLvl > 0 && planLvl < curHighestLvl) {
+                    for (let i = 0; i < modalCompSelect.options.length; i++) {
+                        const optVal = modalCompSelect.options[i].value;
+                        const cData = window.companyOverridesMap ? window.companyOverridesMap[optVal] : null;
+                        const hLvl = cData ? (cData.highest_level || 0) : 0;
+                        if (planLvl >= hLvl) {
+                            modalCompSelect.value = optVal;
+                            break;
+                        }
+                    }
+                }
+                updateModalPlanLock(modalCompSelect.value);
+            }
+
+            // Pre-select matching plan radio button in modal
+            const targetRadio = document.querySelector(`input[name="plan_id"][data-planname="${planName}"]:not(:disabled)`) 
+                || document.querySelector(`input[name="plan_id"][value="${planId}"]:not(:disabled)`)
                 || document.querySelector(`input[name="plan_id"]:not(:disabled)`);
             if (targetRadio) {
                 targetRadio.checked = true;
@@ -2251,7 +3112,7 @@ document.addEventListener('DOMContentLoaded', function() {
             } else if (statusVal === 'expiring_1') {
                 matchesStatus = (daysLeft === 1 && rowStatus !== 'suspended');
             } else if (statusVal === 'expired') {
-                matchesStatus = (daysLeft <= 0 || rowStatus === 'suspended');
+                matchesStatus = (rowStatus === 'expired' || daysLeft <= 0);
             } else if (statusVal !== '') {
                 matchesStatus = (rowStatus === statusVal);
             }

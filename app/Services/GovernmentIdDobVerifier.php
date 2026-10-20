@@ -123,9 +123,9 @@ class GovernmentIdDobVerifier
         }
 
         $binary = (string) config('services.ocr.tesseract_binary', 'tesseract');
-        if ($this->looksLikePath($binary) && (! is_file($binary) || ! is_executable($binary))) {
-            $errors[] = "Tesseract binary is missing or not executable: {$binary}";
-            Log::warning('Government ID OCR skipped: tesseract binary missing', ['binary' => $binary]);
+        if (! $this->isBinaryAvailable($binary)) {
+            $errors[] = "Tesseract OCR binary is not installed or available on this server: {$binary}";
+            Log::info('Government ID OCR skipped: tesseract binary not available', ['binary' => $binary]);
             return ['text' => null, 'errors' => $errors];
         }
 
@@ -147,7 +147,7 @@ class GovernmentIdDobVerifier
                         '--psm',
                         (string) $pageSegmentationMode,
                     ]);
-                    $process->setTimeout(30);
+                    $process->setTimeout(5);
                     $process->run();
 
                     if ($process->isSuccessful() && trim($process->getOutput()) !== '') {
@@ -311,5 +311,23 @@ class GovernmentIdDobVerifier
     private function looksLikePath(string $binary): bool
     {
         return str_contains($binary, '/') || str_contains($binary, '\\');
+    }
+
+    private function isBinaryAvailable(string $binary): bool
+    {
+        if ($this->looksLikePath($binary)) {
+            return is_file($binary) && is_executable($binary);
+        }
+
+        try {
+            $isWindows = (DIRECTORY_SEPARATOR === '\\');
+            $command = $isWindows ? ['where', $binary] : ['which', $binary];
+            $process = new Process($command);
+            $process->setTimeout(2);
+            $process->run();
+            return $process->isSuccessful() && trim($process->getOutput()) !== '';
+        } catch (\Throwable $e) {
+            return false;
+        }
     }
 }

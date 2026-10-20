@@ -7,8 +7,8 @@
     .create-branch-page {
         min-height: calc(100vh - 100px);
         padding: 2rem 1.75rem;
-        background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 50%, #f4fbf7 100%);
-        color: #0a2e1f;
+        background: linear-gradient(135deg, #F8FAFC 0%, #EEF2FF 50%, #F8FAFC 100%);
+        color: #0F172A;
     }
 
     .create-branch-shell {
@@ -32,7 +32,7 @@
         right: -100px;
         width: 500px;
         height: 500px;
-        background: radial-gradient(circle, rgba(52, 211, 153, 0.12) 0%, transparent 70%);
+        background: radial-gradient(circle, rgba(79, 131, 255, 0.12) 0%, transparent 70%);
         animation: orbFloat 20s ease-in-out infinite;
     }
 
@@ -41,7 +41,7 @@
         left: -100px;
         width: 450px;
         height: 450px;
-        background: radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, transparent 70%);
+        background: radial-gradient(circle, rgba(47, 107, 255, 0.1) 0%, transparent 70%);
         animation: orbFloat 25s ease-in-out infinite reverse;
     }
 
@@ -68,13 +68,13 @@
     }
 
     .breadcrumb-custom a {
-        color: #059669;
+        color: #2F6BFF;
         text-decoration: none;
         transition: color 0.2s ease;
     }
 
     .breadcrumb-custom a:hover {
-        color: #047857;
+        color: #1E4FCC;
     }
 
     /* ===== HEADER CARD ===== */
@@ -84,8 +84,8 @@
         border-radius: 28px;
         padding: 1.75rem 2.25rem;
         margin-bottom: 2rem;
-        border: 1px solid rgba(16, 185, 129, 0.15);
-        box-shadow: 0 10px 30px -10px rgba(16, 185, 129, 0.08);
+        border: 1px solid rgba(47, 107, 255, 0.15);
+        box-shadow: 0 10px 30px -10px rgba(47, 107, 255, 0.08);
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -109,20 +109,20 @@
         width: 58px;
         height: 58px;
         border-radius: 20px;
-        background: linear-gradient(145deg, #34d399, #059669);
+        background: linear-gradient(145deg, #4F83FF, #2F6BFF);
         color: white;
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 1.6rem;
-        box-shadow: 0 8px 20px -4px rgba(5, 150, 105, 0.35);
+        box-shadow: 0 8px 20px -4px rgba(47, 107, 255, 0.35);
         flex-shrink: 0;
     }
 
     .header-title h1 {
         font-size: 1.95rem;
         font-weight: 800;
-        background: linear-gradient(135deg, #0a2e1f, #059669, #10b981);
+        background: linear-gradient(135deg, #0F172A, #2F6BFF, #10b981);
         -webkit-background-clip: text;
         background-clip: text;
         color: transparent;
@@ -139,8 +139,8 @@
 
     .btn-back-settings {
         background-color: #ffffff;
-        border: 1px solid rgba(16, 185, 129, 0.25);
-        color: #0f744c !important;
+        border: 1px solid rgba(47, 107, 255, 0.25);
+        color: #2F6BFF !important;
         font-weight: 700;
         font-size: 0.9rem;
         border-radius: 40px;
@@ -154,9 +154,9 @@
     }
 
     .btn-back-settings:hover {
-        background-color: #e6f3ec;
-        color: #059669 !important;
-        border-color: rgba(16, 185, 129, 0.4);
+        background-color: #EEF2FF;
+        color: #2F6BFF !important;
+        border-color: rgba(47, 107, 255, 0.4);
         transform: translateY(-2px);
     }
 
@@ -169,19 +169,132 @@
         display: inline-block;
     }
 
+    /* Dark Mode Support for Back to Branches Button */
+    html[data-pms-theme="dark"] .btn-back-settings,
+    html[data-bs-theme="dark"] .btn-back-settings,
+    body[data-pms-theme="dark"] .btn-back-settings,
+    [data-pms-theme="dark"] .btn-back-settings {
+        background-color: #141B3D !important;
+        border-color: rgba(79, 131, 255, 0.2) !important;
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
+    }
+
+    html[data-pms-theme="dark"] .btn-back-settings .back-arrow-icon,
+    html[data-bs-theme="dark"] .btn-back-settings .back-arrow-icon,
+    body[data-pms-theme="dark"] .btn-back-settings .back-arrow-icon,
+    [data-pms-theme="dark"] .btn-back-settings .back-arrow-icon {
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
+    }
+
+    html[data-pms-theme="dark"] .btn-back-settings:hover,
+    html[data-bs-theme="dark"] .btn-back-settings:hover,
+    body[data-pms-theme="dark"] .btn-back-settings:hover,
+    [data-pms-theme="dark"] .btn-back-settings:hover {
+        background-color: #2F6BFF !important;
+        border-color: #2F6BFF !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
+    html[data-pms-theme="dark"] .btn-back-settings:hover .back-arrow-icon,
+    html[data-bs-theme="dark"] .btn-back-settings:hover .back-arrow-icon,
+    body[data-pms-theme="dark"] .btn-back-settings:hover .back-arrow-icon,
+    [data-pms-theme="dark"] .btn-back-settings:hover .back-arrow-icon {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
+    /* Default Toggle Box & Cancel Button */
+    .default-toggle-box {
+        background: #f0fdf4;
+        border: 1px solid rgba(47, 107, 255, 0.25);
+        border-radius: 16px;
+        padding: 1rem 1.25rem;
+        transition: all 0.25s ease;
+    }
+
+    .default-toggle-box label {
+        color: #0F172A !important;
+        -webkit-text-fill-color: #0F172A !important;
+    }
+
+    .default-toggle-box .text-muted {
+        color: #4b5563 !important;
+        -webkit-text-fill-color: #4b5563 !important;
+    }
+
+    .btn-cancel-custom {
+        background: #f1f5f9;
+        color: #475569 !important;
+        -webkit-text-fill-color: #475569 !important;
+        border: 1px solid #cbd5e1;
+        transition: all 0.2s ease;
+    }
+
+    .btn-cancel-custom:hover {
+        background: #e2e8f0;
+        color: #1e293b !important;
+    }
+
+    /* Dark Mode Support for Default Toggle Box & Cancel Button */
+    html[data-pms-theme="dark"] .default-toggle-box,
+    html[data-bs-theme="dark"] .default-toggle-box,
+    body[data-pms-theme="dark"] .default-toggle-box,
+    [data-pms-theme="dark"] .default-toggle-box {
+        background: rgba(47, 107, 255, 0.12) !important;
+        border: 1px solid rgba(79, 131, 255, 0.3) !important;
+    }
+
+    html[data-pms-theme="dark"] .default-toggle-box label,
+    html[data-bs-theme="dark"] .default-toggle-box label,
+    body[data-pms-theme="dark"] .default-toggle-box label,
+    [data-pms-theme="dark"] .default-toggle-box label {
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+    }
+
+    html[data-pms-theme="dark"] .default-toggle-box .text-muted,
+    html[data-bs-theme="dark"] .default-toggle-box .text-muted,
+    body[data-pms-theme="dark"] .default-toggle-box .text-muted,
+    [data-pms-theme="dark"] .default-toggle-box .text-muted {
+        color: #94a3b8 !important;
+        -webkit-text-fill-color: #94a3b8 !important;
+    }
+
+    html[data-pms-theme="dark"] .btn-cancel-custom,
+    html[data-bs-theme="dark"] .btn-cancel-custom,
+    body[data-pms-theme="dark"] .btn-cancel-custom,
+    [data-pms-theme="dark"] .btn-cancel-custom {
+        background: #1e293b !important;
+        color: #cbd5e1 !important;
+        -webkit-text-fill-color: #cbd5e1 !important;
+        border: 1px solid rgba(238, 241, 251, 0.15) !important;
+    }
+
+    html[data-pms-theme="dark"] .btn-cancel-custom:hover,
+    html[data-bs-theme="dark"] .btn-cancel-custom:hover,
+    body[data-pms-theme="dark"] .btn-cancel-custom:hover,
+    [data-pms-theme="dark"] .btn-cancel-custom:hover {
+        background: #334155 !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
     /* ===== FORM CARD & INPUTS ===== */
     .address-card-elevated {
         background: rgba(255, 255, 255, 0.95);
         backdrop-filter: blur(20px);
         border-radius: 28px;
-        border: 1px solid rgba(16, 185, 129, 0.15);
-        box-shadow: 0 10px 30px -10px rgba(16, 185, 129, 0.08);
+        border: 1px solid rgba(47, 107, 255, 0.15);
+        box-shadow: 0 10px 30px -10px rgba(47, 107, 255, 0.08);
         overflow: hidden;
     }
 
     .card-header-custom {
         padding: 1.5rem 2.25rem;
-        border-bottom: 1px solid rgba(16, 185, 129, 0.12);
+        border-bottom: 1px solid rgba(47, 107, 255, 0.12);
         display: flex;
         align-items: center;
         gap: 1rem;
@@ -192,8 +305,8 @@
         width: 48px;
         height: 48px;
         border-radius: 16px;
-        background: linear-gradient(145deg, #d1fae5, #a7f3d0);
-        color: #059669;
+        background: linear-gradient(145deg, #EEF2FF, #E0E7FF);
+        color: #2F6BFF;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -207,19 +320,19 @@
         gap: 0.5rem;
         padding: 0.4rem 1rem;
         border-radius: 40px;
-        background: #ecfdf5;
-        color: #059669;
+        background: #EEF2FF;
+        color: #2F6BFF;
         font-weight: 800;
         font-size: 0.82rem;
         letter-spacing: 0.03em;
-        border: 1px solid rgba(5, 150, 105, 0.2);
+        border: 1px solid rgba(47, 107, 255, 0.2);
         margin-bottom: 1.25rem;
     }
 
     .form-label-custom {
         font-size: 0.88rem;
         font-weight: 700;
-        color: #0a2e1f;
+        color: #0F172A;
         margin-bottom: 8px;
         display: flex;
         align-items: center;
@@ -228,23 +341,23 @@
 
     .input-group-custom {
         border-radius: 16px;
-        border: 1px solid rgba(16, 185, 129, 0.2);
+        border: 1px solid rgba(47, 107, 255, 0.2);
         background-color: #fafefb;
         transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         overflow: hidden;
     }
 
     .input-group-custom:focus-within {
-        border-color: #34d399;
+        border-color: #60A5FA;
         background-color: #ffffff;
-        box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.15);
+        box-shadow: 0 0 0 4px rgba(79, 131, 255, 0.15);
         transform: translateY(-1px);
     }
 
     .input-group-custom .input-group-text {
         background-color: transparent;
         border: none;
-        color: #059669;
+        color: #2F6BFF;
         padding-left: 18px;
         padding-right: 12px;
         font-size: 1.1rem;
@@ -256,7 +369,7 @@
         background-color: transparent;
         font-size: 0.92rem;
         font-weight: 600;
-        color: #0a2e1f;
+        color: #0F172A;
         padding-right: 18px;
     }
 
@@ -270,8 +383,8 @@
     }
 
     .logo-upload-dropzone {
-        border: 2px dashed rgba(16, 185, 129, 0.35);
-        background-color: rgba(16, 185, 129, 0.02);
+        border: 2px dashed rgba(47, 107, 255, 0.35);
+        background-color: rgba(47, 107, 255, 0.02);
         border-radius: 20px;
         padding: 28px;
         text-align: center;
@@ -280,8 +393,8 @@
     }
 
     .logo-upload-dropzone:hover, .logo-upload-dropzone.dragover {
-        border-color: #059669;
-        background-color: rgba(16, 185, 129, 0.08);
+        border-color: #2F6BFF;
+        background-color: rgba(47, 107, 255, 0.08);
         transform: translateY(-2px);
     }
 
@@ -289,14 +402,14 @@
         width: 64px;
         height: 64px;
         border-radius: 20px;
-        background: linear-gradient(145deg, #d1fae5, #a7f3d0);
-        color: #059669;
+        background: linear-gradient(145deg, #EEF2FF, #E0E7FF);
+        color: #2F6BFF;
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 1.6rem;
         margin: 0 auto;
-        box-shadow: 0 6px 16px -4px rgba(16, 185, 129, 0.25);
+        box-shadow: 0 6px 16px -4px rgba(47, 107, 255, 0.25);
     }
 
     .btn-save-address {
@@ -305,22 +418,22 @@
         font-weight: 700;
         font-size: 0.95rem;
         padding: 0 32px;
-        background: linear-gradient(145deg, #34d399, #059669);
+        background: linear-gradient(145deg, #4F83FF, #2F6BFF);
         color: white !important;
         border: none;
-        box-shadow: 0 6px 20px -4px rgba(5, 150, 105, 0.35);
+        box-shadow: 0 6px 20px -4px rgba(47, 107, 255, 0.35);
         transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
         cursor: pointer;
     }
 
     .btn-save-address:hover {
         transform: translateY(-2px) scale(1.02);
-        box-shadow: 0 10px 28px -4px rgba(5, 150, 105, 0.45);
+        box-shadow: 0 10px 28px -4px rgba(47, 107, 255, 0.45);
         color: white !important;
     }
 
     .req-asterisk {
-        color: #059669;
+        color: #2F6BFF;
         font-weight: 800;
     }
 
@@ -333,7 +446,234 @@
             padding: 1.25rem 1.5rem;
         }
     }
+
+    /* ===== INTL-TEL-INPUT PHONE VALIDATION STYLES ===== */
+    .phone-input-container {
+        position: relative;
+        width: 100%;
+    }
+
+    .phone-input-shell {
+        position: relative;
+        display: flex;
+        align-items: center;
+        width: 100%;
+        min-height: 50px;
+        border-radius: 16px;
+        border: 1px solid rgba(47, 107, 255, 0.2);
+        background-color: #fafefb;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        padding: 2px 14px 2px 4px;
+    }
+
+    .phone-input-shell:focus-within {
+        border-color: #60A5FA;
+        background-color: #ffffff;
+        box-shadow: 0 0 0 4px rgba(79, 131, 255, 0.15);
+        transform: translateY(-1px);
+    }
+
+    .phone-input-shell.is-valid-phone {
+        border-color: #10b981 !important;
+        box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15) !important;
+        background-color: #f0fdf4 !important;
+    }
+
+    .phone-input-shell.is-invalid-phone {
+        border-color: #ef4444 !important;
+        box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.15) !important;
+        background-color: #fef2f2 !important;
+    }
+
+    .iti {
+        width: 100%;
+        display: flex !important;
+        align-items: center;
+    }
+
+    .iti__selected-country {
+        padding: 0 10px 0 12px !important;
+        height: 44px;
+        border-radius: 12px;
+        background: transparent;
+        transition: background 0.2s ease;
+        gap: 6px;
+    }
+
+    .iti__selected-country:hover {
+        background-color: rgba(47, 107, 255, 0.08) !important;
+    }
+
+    .iti__selected-dial-code {
+        font-size: 0.92rem;
+        font-weight: 700;
+        color: #2F6BFF !important;
+    }
+
+    .iti__tel-input {
+        border: none !important;
+        background: transparent !important;
+        height: 46px !important;
+        font-size: 0.92rem !important;
+        font-weight: 600 !important;
+        color: #0F172A !important;
+        padding-left: 8px !important;
+        padding-right: 32px !important;
+        box-shadow: none !important;
+        width: 100%;
+    }
+
+    .iti__tel-input:focus {
+        outline: none !important;
+        box-shadow: none !important;
+    }
+
+    .phone-status-icon {
+        position: absolute;
+        right: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 1.15rem;
+        pointer-events: none;
+        z-index: 5;
+    }
+
+    .phone-validation-feedback {
+        border-radius: 10px;
+        padding: 6px 12px;
+        transition: all 0.25s ease;
+        animation: fadeInPhoneFeedback 0.2s ease-in-out;
+    }
+
+    @keyframes fadeInPhoneFeedback {
+        from { opacity: 0; transform: translateY(-4px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes phoneShake {
+        0%, 100% { transform: translateX(0); }
+        20%, 60% { transform: translateX(-6px); }
+        40%, 80% { transform: translateX(6px); }
+    }
+
+    .phone-validation-feedback.valid-feedback-custom {
+        background: rgba(16, 185, 129, 0.1);
+        color: #065f46;
+        border: 1px solid rgba(16, 185, 129, 0.25);
+    }
+
+    .phone-validation-feedback.invalid-feedback-custom {
+        background: rgba(239, 68, 68, 0.1);
+        color: #991b1b;
+        border: 1px solid rgba(239, 68, 68, 0.25);
+    }
+
+    .iti__dropdown-content {
+        border-radius: 16px !important;
+        border: 1px solid rgba(47, 107, 255, 0.2) !important;
+        box-shadow: 0 12px 36px rgba(0, 0, 0, 0.15) !important;
+        background: #ffffff !important;
+        z-index: 1050 !important;
+        max-height: 280px;
+    }
+
+    .iti__search-input {
+        border-radius: 10px !important;
+        border: 1px solid #cbd5e1 !important;
+        padding: 8px 12px !important;
+        font-size: 0.88rem !important;
+        margin: 8px !important;
+        width: calc(100% - 16px) !important;
+    }
+
+    .iti__country {
+        padding: 8px 12px !important;
+        font-size: 0.88rem !important;
+        transition: background 0.15s ease;
+    }
+
+    .iti__country:hover, .iti__country.iti__highlight {
+        background-color: #EEF2FF !important;
+        color: #2F6BFF !important;
+    }
+
+    /* Dark Mode Overrides for Phone Input */
+    html[data-pms-theme="dark"] .phone-input-shell,
+    html[data-theme="dark"] .phone-input-shell,
+    html[data-bs-theme="dark"] .phone-input-shell,
+    [data-pms-theme="dark"] .phone-input-shell {
+        background-color: #141B3D !important;
+        border-color: rgba(79, 131, 255, 0.25) !important;
+    }
+
+    html[data-pms-theme="dark"] .phone-input-shell.is-valid-phone,
+    html[data-theme="dark"] .phone-input-shell.is-valid-phone,
+    [data-pms-theme="dark"] .phone-input-shell.is-valid-phone {
+        background-color: rgba(16, 185, 129, 0.15) !important;
+        border-color: #10b981 !important;
+    }
+
+    html[data-pms-theme="dark"] .phone-input-shell.is-invalid-phone,
+    html[data-theme="dark"] .phone-input-shell.is-invalid-phone,
+    [data-pms-theme="dark"] .phone-input-shell.is-invalid-phone {
+        background-color: rgba(239, 68, 68, 0.15) !important;
+        border-color: #ef4444 !important;
+    }
+
+    html[data-pms-theme="dark"] .iti__tel-input,
+    html[data-theme="dark"] .iti__tel-input,
+    [data-pms-theme="dark"] .iti__tel-input {
+        color: #EEF1FB !important;
+    }
+
+    html[data-pms-theme="dark"] .iti__selected-dial-code,
+    html[data-theme="dark"] .iti__selected-dial-code,
+    [data-pms-theme="dark"] .iti__selected-dial-code {
+        color: #60A5FA !important;
+    }
+
+    html[data-pms-theme="dark"] .iti__dropdown-content,
+    html[data-theme="dark"] .iti__dropdown-content,
+    [data-pms-theme="dark"] .iti__dropdown-content {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.15) !important;
+        color: #EEF1FB !important;
+        box-shadow: 0 12px 36px rgba(0, 0, 0, 0.5) !important;
+    }
+
+    html[data-pms-theme="dark"] .iti__search-input,
+    html[data-theme="dark"] .iti__search-input,
+    [data-pms-theme="dark"] .iti__search-input {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.2) !important;
+        color: #EEF1FB !important;
+    }
+
+    html[data-pms-theme="dark"] .iti__country,
+    html[data-theme="dark"] .iti__country,
+    [data-pms-theme="dark"] .iti__country {
+        color: #EEF1FB !important;
+    }
+
+    html[data-pms-theme="dark"] .iti__country:hover,
+    html[data-pms-theme="dark"] .iti__country.iti__highlight,
+    [data-pms-theme="dark"] .iti__country:hover,
+    [data-pms-theme="dark"] .iti__country.iti__highlight {
+        background-color: #1E2A52 !important;
+        color: #60A5FA !important;
+    }
+
+    html[data-pms-theme="dark"] .iti__country-name,
+    [data-pms-theme="dark"] .iti__country-name {
+        color: #EEF1FB !important;
+    }
+
+    html[data-pms-theme="dark"] .iti__dial-code,
+    [data-pms-theme="dark"] .iti__dial-code {
+        color: #9AA3C7 !important;
+    }
 </style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@23/build/css/intlTelInput.css">
 @endpush
 
 @section('content')
@@ -381,13 +721,13 @@
                                 <i class="fas fa-city"></i>
                             </div>
                             <div>
-                                <h5 class="mb-0 fw-bold fs-5" style="color: #0a2e1f;">Branch Information & Address Details</h5>
+                                <h5 class="mb-0 fw-bold fs-5" style="color: #0F172A;">Branch Information & Address Details</h5>
                                 <small class="text-muted">Fill out branch name, contact information, location, logo, and physical address</small>
                             </div>
                         </div>
 
                         <div class="p-4 p-md-5">
-                            <form method="POST" action="{{ route('admin.settings.business-address.store') }}" enctype="multipart/form-data">
+                            <form id="branchForm" method="POST" action="{{ route('admin.settings.business-address.store') }}" enctype="multipart/form-data">
                                 @csrf
 
                                 <!-- Section 1: Branch Information -->
@@ -448,16 +788,39 @@
 
                                     <!-- Branch Phone -->
                                     <div class="col-md-6">
-                                        <label for="phone" class="form-label-custom">
-                                            Branch Phone
-                                        </label>
-                                        <div class="input-group input-group-custom">
-                                            <span class="input-group-text"><i class="fas fa-phone-alt"></i></span>
-                                            <input type="text" class="form-control @error('phone') is-invalid @enderror"
-                                                   id="phone" name="phone"
-                                                   value="{{ old('phone') }}"
-                                                   placeholder="+91 98765 43210">
+                                        <div class="d-flex align-items-center justify-content-between mb-2">
+                                            <label for="phone_input" class="form-label-custom mb-0">
+                                                Branch Phone
+                                            </label>
+                                            <span class="badge rounded-pill px-2.5 py-1" id="countryBadge" style="background: rgba(47, 107, 255, 0.08); color: #2F6BFF; font-size: 0.75rem; font-weight: 700; border: 1px solid rgba(47, 107, 255, 0.2);">
+                                                🇮🇳 India (+91)
+                                            </span>
                                         </div>
+
+                                        {{-- Hidden input submitted to server with standardized international format --}}
+                                        <input type="hidden" name="phone" id="phone" value="{{ old('phone') }}">
+
+                                        <div class="phone-input-container">
+                                            <div class="phone-input-shell" id="phoneInputShell">
+                                                <input type="tel" 
+                                                       id="phone_input" 
+                                                       class="form-control phone-tel-field @error('phone') is-invalid @enderror"
+                                                       placeholder="98765 43210"
+                                                       autocomplete="tel"
+                                                       value="{{ old('phone') }}">
+                                                <div id="phoneStatusIcon" class="phone-status-icon" style="display: none;"></div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Live Validation Feedback Box -->
+                                        <div id="phoneValidationFeedback" class="phone-validation-feedback mt-1.5" style="display: none;"></div>
+
+                                        <!-- Digit format guide & live counter -->
+                                        <div class="d-flex align-items-center justify-content-between mt-1 text-muted" style="font-size: 0.75rem;">
+                                            <span id="phoneFormatHint"><i class="fas fa-info-circle me-1 text-primary"></i> <span id="phoneHintText">Format: 10 digits for India (e.g. 98765 43210)</span></span>
+                                            <span id="phoneDigitCounter" class="fw-bold" style="color: #64748b;">0 / 10 digits</span>
+                                        </div>
+
                                         @error('phone')
                                             <div class="text-danger small mt-1"><i class="fas fa-exclamation-circle me-1"></i>{{ $message }}</div>
                                         @enderror
@@ -478,11 +841,11 @@
                                                 <img id="logoPreviewImg" src="" alt="Branch Logo Preview" class="d-none rounded-circle" style="width: 54px; height: 54px; object-fit: cover;">
                                             </div>
                                             <div>
-                                                <h6 class="fw-bold mb-1" style="color: #0a2e1f;">Click to upload branch logo or drag & drop</h6>
+                                                <h6 class="fw-bold mb-1" style="color: #0F172A;">Click to upload branch logo or drag & drop</h6>
                                                 <p class="text-muted small mb-0">Supported formats: PNG, JPG, GIF, SVG, or WEBP (Max 3MB)</p>
                                             </div>
-                                            <div id="fileSelectedBadge" class="badge rounded-pill mt-2 d-none px-3 py-1.5" style="background: linear-gradient(145deg, #ecfdf5, #d1fae5); color: #065f46; border: 1px solid rgba(5, 150, 105, 0.25);">
-                                                <i class="fas fa-check me-1" style="color: #059669;"></i> <span id="fileNameText">Logo selected</span>
+                                            <div id="fileSelectedBadge" class="badge rounded-pill mt-2 d-none px-3 py-1.5" style="background: linear-gradient(145deg, #EEF2FF, #E0E7FF); color: #065f46; border: 1px solid rgba(47, 107, 255, 0.25);">
+                                                <i class="fas fa-check me-1" style="color: #2F6BFF;"></i> <span id="fileNameText">Logo selected</span>
                                             </div>
                                         </div>
                                     </label>
@@ -504,10 +867,34 @@
                                         <div class="input-group input-group-custom">
                                             <span class="input-group-text"><i class="fas fa-globe"></i></span>
                                             <input type="text" class="form-control @error('country') is-invalid @enderror"
-                                                   id="country" name="country"
-                                                   value="{{ old('country') }}"
+                                                   id="country" name="country" list="countryDatalist"
+                                                   value="{{ old('country', 'India') }}"
                                                    placeholder="e.g. India" required>
                                         </div>
+                                        <datalist id="countryDatalist">
+                                            <option value="India">
+                                            <option value="United States">
+                                            <option value="United Arab Emirates">
+                                            <option value="United Kingdom">
+                                            <option value="Saudi Arabia">
+                                            <option value="Singapore">
+                                            <option value="Canada">
+                                            <option value="Australia">
+                                            <option value="Germany">
+                                            <option value="France">
+                                            <option value="Bangladesh">
+                                            <option value="Qatar">
+                                            <option value="Kuwait">
+                                            <option value="Oman">
+                                            <option value="Bahrain">
+                                            <option value="Malaysia">
+                                            <option value="Nepal">
+                                            <option value="Sri Lanka">
+                                            <option value="Pakistan">
+                                            <option value="Japan">
+                                            <option value="South Africa">
+                                            <option value="New Zealand">
+                                        </datalist>
                                         @error('country')
                                             <div class="text-danger small mt-1"><i class="fas fa-exclamation-circle me-1"></i>{{ $message }}</div>
                                         @enderror
@@ -549,13 +936,13 @@
 
                                     <!-- Is Default Checkbox -->
                                     <div class="col-md-12">
-                                        <div class="p-3.5 rounded-4 d-flex align-items-center gap-3" style="background: #f0fdf4; border: 1px solid rgba(16, 185, 129, 0.25);">
+                                        <div class="default-toggle-box p-3.5 rounded-4 d-flex align-items-center gap-3">
                                             <div class="form-check form-switch mb-0">
                                                 <input class="form-check-input fs-5" type="checkbox"
                                                        id="is_default" name="is_default" value="1">
                                             </div>
                                             <div>
-                                                <label class="form-check-label fw-bold mb-0" for="is_default" style="color: #0a2e1f;">
+                                                <label class="form-check-label fw-bold mb-0" for="is_default">
                                                     Set as default primary branch address
                                                 </label>
                                                 <div class="text-muted small">If enabled, this location will be designated as the primary head office address.</div>
@@ -566,7 +953,7 @@
 
                                 <!-- Form Action Buttons -->
                                 <div class="mt-5 pt-4 border-top d-flex align-items-center justify-content-between flex-wrap gap-2">
-                                    <a href="{{ route('admin.settings.business-address.index') }}" class="btn rounded-pill px-4 fw-bold" style="background: #f1f5f9; color: #475569;">
+                                    <a href="{{ route('admin.settings.business-address.index') }}" class="btn btn-cancel-custom rounded-pill px-4 fw-bold">
                                         Cancel
                                     </a>
                                     <button type="submit" class="btn-save-address">
@@ -611,5 +998,287 @@
             reader.readAsDataURL(file);
         }
     }
+
+    /* ===== INTERNATIONAL PHONE VALIDATION WITH RESPECT TO COUNTRY ===== */
+    document.addEventListener('DOMContentLoaded', function () {
+        const phoneInput   = document.getElementById('phone_input');
+        const hiddenInput  = document.getElementById('phone');
+        const countryInput = document.getElementById('country');
+        const phoneShell   = document.getElementById('phoneInputShell');
+        const statusIcon   = document.getElementById('phoneStatusIcon');
+        const feedbackBox  = document.getElementById('phoneValidationFeedback');
+        const countryBadge = document.getElementById('countryBadge');
+        const hintText     = document.getElementById('phoneHintText');
+        const digitCounter = document.getElementById('phoneDigitCounter');
+        const branchForm   = document.getElementById('branchForm');
+
+        if (!phoneInput) return;
+
+        function getCountryFlagEmoji(iso2) {
+            if (!iso2 || iso2.length !== 2) return '🌐';
+            const codePoints = iso2.toUpperCase().split('').map(c => 127397 + c.charCodeAt(0));
+            return String.fromCodePoint(...codePoints);
+        }
+
+        function initPhoneValidation() {
+            if (!window.intlTelInput) return;
+
+            const utilsScript = 'https://cdn.jsdelivr.net/npm/intl-tel-input@23/build/js/utils.js';
+
+            const iti = window.intlTelInput(phoneInput, {
+                utilsScript: utilsScript,
+                initialCountry: 'in', // Default country code is India (+91)
+                separateDialCode: true,
+                strictMode: true,     // Restrict input to digits and limit to country maximum
+                preferredCountries: ['in', 'ae', 'us', 'gb', 'sa', 'sg', 'ca', 'au'],
+                placeholderNumberType: 'MOBILE',
+                autoPlaceholder: 'polite',
+                formatOnDisplay: true,
+            });
+
+            // Get country digits expectation
+            function getExpectedDigits(countryIso) {
+                if (window.intlTelInputUtils) {
+                    try {
+                        const example = window.intlTelInputUtils.getExampleNumber(
+                            countryIso, 
+                            false, 
+                            window.intlTelInputUtils.numberType.MOBILE
+                        );
+                        if (example) {
+                            const digits = example.replace(/\D/g, '');
+                            const countryData = iti.getSelectedCountryData();
+                            const dc = String(countryData.dialCode || '');
+                            if (digits.startsWith(dc)) {
+                                return digits.slice(dc.length).length || 10;
+                            }
+                            return digits.length || 10;
+                        }
+                    } catch (e) {}
+                }
+                // Standard fallbacks for popular countries
+                const standards = {
+                    'in': 10, 'us': 10, 'ca': 10, 'ae': 9, 'gb': 10, 
+                    'sa': 9, 'sg': 8, 'au': 9, 'de': 10, 'fr': 9, 'bd': 10, 'pk': 10
+                };
+                return standards[countryIso] || 10;
+            }
+
+            function updateCountryContext() {
+                const countryData = iti.getSelectedCountryData();
+                const countryName = countryData.name ? countryData.name.replace(/\s*\(.*?\)\s*/g, '').trim() : 'India';
+                const dialCode = countryData.dialCode ? `+${countryData.dialCode}` : '+91';
+                const expectedDigits = getExpectedDigits(countryData.iso2);
+
+                if (countryBadge) {
+                    countryBadge.innerHTML = `<span class="me-1">${getCountryFlagEmoji(countryData.iso2)}</span> ${countryName} (${dialCode})`;
+                }
+
+                if (hintText) {
+                    const placeholder = phoneInput.getAttribute('placeholder') || (countryData.iso2 === 'in' ? '98765 43210' : '');
+                    hintText.textContent = `Format: ${expectedDigits} digits for ${countryName}${placeholder ? ` (e.g. ${placeholder})` : ''}`;
+                }
+
+                return { countryName, dialCode, expectedDigits, iso2: countryData.iso2 };
+            }
+
+            function validatePhone() {
+                const rawVal = phoneInput.value.trim();
+                const { countryName, dialCode, expectedDigits, iso2 } = updateCountryContext();
+                
+                // Count entered digits
+                const digitsOnly = rawVal.replace(/\D/g, '');
+                const count = digitsOnly.length;
+
+                if (digitCounter) {
+                    digitCounter.textContent = `${count} / ${expectedDigits} digits`;
+                    if (count === expectedDigits) {
+                        digitCounter.style.color = '#10b981';
+                    } else if (count > expectedDigits) {
+                        digitCounter.style.color = '#ef4444';
+                    } else {
+                        digitCounter.style.color = '#64748b';
+                    }
+                }
+
+                // If blank (optional field)
+                if (rawVal === '') {
+                    phoneShell.classList.remove('is-valid-phone', 'is-invalid-phone');
+                    if (statusIcon) statusIcon.style.display = 'none';
+                    if (feedbackBox) {
+                        feedbackBox.style.display = 'none';
+                        feedbackBox.innerHTML = '';
+                    }
+                    if (hiddenInput) hiddenInput.value = '';
+                    return true;
+                }
+
+                const isValid = iti.isValidNumber();
+
+                if (isValid) {
+                    phoneShell.classList.add('is-valid-phone');
+                    phoneShell.classList.remove('is-invalid-phone');
+
+                    if (statusIcon) {
+                        statusIcon.style.display = 'block';
+                        statusIcon.innerHTML = '<i class="fas fa-check-circle" style="color: #10b981;"></i>';
+                    }
+
+                    const formatted = (window.intlTelInputUtils ? iti.getNumber(window.intlTelInputUtils.numberFormat.INTERNATIONAL) : null) || iti.getNumber();
+
+                    if (feedbackBox) {
+                        feedbackBox.style.display = 'block';
+                        feedbackBox.className = 'phone-validation-feedback valid-feedback-custom mt-1.5';
+                        feedbackBox.innerHTML = `
+                            <div class="feedback-content d-flex align-items-center gap-1.5 small fw-semibold">
+                                <i class="fas fa-check-circle text-success me-1"></i>
+                                <span>Valid ${countryName} phone number (${formatted})</span>
+                            </div>
+                        `;
+                    }
+
+                    if (hiddenInput) {
+                        hiddenInput.value = iti.getNumber(); // Valid E.164 number
+                    }
+                    return true;
+                } else {
+                    phoneShell.classList.add('is-invalid-phone');
+                    phoneShell.classList.remove('is-valid-phone');
+
+                    if (statusIcon) {
+                        statusIcon.style.display = 'block';
+                        statusIcon.innerHTML = '<i class="fas fa-exclamation-circle" style="color: #ef4444;"></i>';
+                    }
+
+                    let message = `Please enter a valid phone number for ${countryName}.`;
+                    const errorCode = iti.getValidationError();
+
+                    switch (errorCode) {
+                        case 1:
+                            message = `Invalid country code selected (${dialCode}).`;
+                            break;
+                        case 2:
+                            message = `Phone number is too short for ${countryName}. Required: ${expectedDigits} digits (entered ${count}).`;
+                            break;
+                        case 3:
+                            message = `Phone number is too long for ${countryName}. Maximum: ${expectedDigits} digits.`;
+                            break;
+                        case 5:
+                            message = `Invalid number of digits for ${countryName}. Required: ${expectedDigits} digits.`;
+                            break;
+                        default:
+                            if (count < expectedDigits) {
+                                message = `Phone number is too short for ${countryName}. Expected ${expectedDigits} digits (entered ${count}).`;
+                            } else if (count > expectedDigits) {
+                                message = `Phone number is too long for ${countryName}. Expected ${expectedDigits} digits.`;
+                            } else {
+                                message = `Invalid phone number digits for ${countryName}. Please verify.`;
+                            }
+                            break;
+                    }
+
+                    if (feedbackBox) {
+                        feedbackBox.style.display = 'block';
+                        feedbackBox.className = 'phone-validation-feedback invalid-feedback-custom mt-1.5';
+                        feedbackBox.innerHTML = `
+                            <div class="feedback-content d-flex align-items-center gap-1.5 small fw-semibold">
+                                <i class="fas fa-times-circle text-danger me-1"></i>
+                                <span>${message}</span>
+                            </div>
+                        `;
+                    }
+
+                    if (hiddenInput) {
+                        hiddenInput.value = '';
+                    }
+                    return false;
+                }
+            }
+
+            // Sync phone country to Country field
+            phoneInput.addEventListener('countrychange', function () {
+                const countryData = iti.getSelectedCountryData();
+                if (countryData && countryData.name && countryInput) {
+                    const cleanName = countryData.name.replace(/\s*\(.*?\)\s*/g, '').trim();
+                    if (!countryInput.value || countryInput.value === 'India' || countryInput.dataset.autoSynced === 'true') {
+                        countryInput.value = cleanName;
+                        countryInput.dataset.autoSynced = 'true';
+                    }
+                }
+                validatePhone();
+            });
+
+            // Sync Country field to phone dropdown country
+            if (countryInput) {
+                countryInput.addEventListener('change', function () {
+                    const val = countryInput.value.trim().toLowerCase();
+                    if (!val) return;
+                    const allCountries = window.intlTelInputGlobals ? window.intlTelInputGlobals.getCountryData() : [];
+                    const matched = allCountries.find(c => 
+                        c.name.toLowerCase() === val || 
+                        c.name.toLowerCase().startsWith(val) ||
+                        c.iso2.toLowerCase() === val
+                    );
+                    if (matched) {
+                        iti.setCountry(matched.iso2);
+                        validatePhone();
+                    }
+                });
+            }
+
+            phoneInput.addEventListener('input', validatePhone);
+            phoneInput.addEventListener('blur', function () {
+                if (phoneInput.value.trim() !== '') {
+                    validatePhone();
+                }
+            });
+
+            // Pre-fill existing value if available (edit or validation reload)
+            const existingValue = (hiddenInput && hiddenInput.value) ? hiddenInput.value.trim() : phoneInput.value.trim();
+            if (existingValue) {
+                iti.setNumber(existingValue);
+                setTimeout(validatePhone, 200);
+            } else {
+                iti.setCountry('in');
+                updateCountryContext();
+            }
+
+            // Form Submit Interceptor
+            if (branchForm) {
+                branchForm.addEventListener('submit', function (e) {
+                    const rawVal = phoneInput.value.trim();
+                    if (rawVal !== '') {
+                        const valid = validatePhone();
+                        if (!valid) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            phoneInput.focus();
+                            phoneShell.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            phoneShell.style.animation = 'phoneShake 0.4s ease';
+                            setTimeout(() => phoneShell.style.animation = '', 450);
+                            return false;
+                        }
+                        if (hiddenInput) {
+                            hiddenInput.value = iti.getNumber();
+                        }
+                    } else {
+                        if (hiddenInput) {
+                            hiddenInput.value = '';
+                        }
+                    }
+                }, true);
+            }
+        }
+
+        // Load intl-tel-input script dynamically
+        if (window.intlTelInput) {
+            initPhoneValidation();
+        } else {
+            const itiScript = document.createElement('script');
+            itiScript.src = 'https://cdn.jsdelivr.net/npm/intl-tel-input@23/build/js/intlTelInput.min.js';
+            itiScript.onload = initPhoneValidation;
+            document.head.appendChild(itiScript);
+        }
+    });
 </script>
 @endpush

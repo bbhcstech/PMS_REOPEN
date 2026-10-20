@@ -415,4 +415,24 @@ class ComplaintController extends Controller
 
         return response()->json(['count' => $count]);
     }
+
+    /**
+     * Download complaint attachment for Super Admin.
+     */
+    public function downloadAttachment($ticketId, $attachmentId): \Symfony\Component\HttpFoundation\BinaryFileResponse
+    {
+        $this->authorizeSuperAdmin();
+
+        $ticket = CompanyComplaint::on('central')->findOrFail($ticketId);
+        $attachment = \App\Models\Central\ComplaintAttachment::on('central')
+            ->where('complaint_id', $ticket->id)
+            ->findOrFail($attachmentId);
+
+        $filePath = public_path($attachment->file_path);
+        if (!file_exists($filePath)) {
+            abort(404, 'Attachment file not found.');
+        }
+
+        return response()->download($filePath, $attachment->original_name);
+    }
 }

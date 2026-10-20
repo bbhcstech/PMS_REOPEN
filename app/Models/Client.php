@@ -4,15 +4,20 @@ namespace App\Models;
 
 use App\Models\TenantModel;
 
+use App\Traits\BelongsToCompany;
 use Illuminate\Database\Eloquent\Model;
 
 class Client extends TenantModel
 {
+    use BelongsToCompany;
+
     protected $fillable = [
+        'company_id',
         'salutation',
         'name',
         'email',
         'company_name',
+        'company_country',
         'password',
         'country',
         'mobile',

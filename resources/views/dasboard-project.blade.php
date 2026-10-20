@@ -8,14 +8,14 @@
     $canSeeModule = fn (string $slug) => auth()->user()?->canViewModule($slug) ?? false;
     $statusTotal = max(array_sum($statusWiseCounts ?? []), 1);
     $managerFeatureLinks = [
-        ['slug' => 'projects', 'route' => 'projects.index', 'label' => 'Projects', 'hint' => 'Project workspace', 'icon' => 'bx-briefcase-alt-2', 'value' => $totalProjects ?? 0, 'color' => '#2563eb'],
-        ['slug' => 'tasks', 'route' => 'tasks.index', 'label' => 'Tasks', 'hint' => 'Team assignments', 'icon' => 'bx-task', 'value' => 'Open', 'color' => '#7c3aed'],
-        ['slug' => 'timelogs', 'route' => 'timelogs.index', 'label' => 'Timesheet', 'hint' => 'Logged work', 'icon' => 'bx-time-five', 'value' => 'Log', 'color' => '#10b981'],
-        ['slug' => 'tickets', 'route' => 'tickets.index', 'label' => 'Tickets', 'hint' => 'Project support', 'icon' => 'bx-support', 'value' => 'Queue', 'color' => '#ef4444'],
-        ['slug' => 'clients', 'route' => 'clients.index', 'label' => 'Clients', 'hint' => 'Client records', 'icon' => 'bx-user-circle', 'value' => 'CRM', 'color' => '#06b6d4'],
-        ['slug' => 'reports', 'route' => 'attendance.report', 'label' => 'Reports', 'hint' => 'Operational reports', 'icon' => 'bx-bar-chart-alt-2', 'value' => 'View', 'color' => '#64748b'],
-        ['slug' => 'organization', 'route' => 'organization.index', 'label' => 'Organization', 'hint' => 'Team directory', 'icon' => 'bx-sitemap', 'value' => 'Org', 'color' => '#14b8a6'],
-        ['slug' => 'leaves', 'route' => 'leaves.index', 'label' => 'Leaves', 'hint' => 'Team availability', 'icon' => 'bx-calendar-minus', 'value' => 'HR', 'color' => '#f59e0b'],
+        ['slug' => 'projects', 'route' => 'projects.index', 'label' => 'Projects', 'hint' => 'Project workspace', 'icon' => 'bx-briefcase-alt-2', 'value' => $totalProjects ?? 0, 'color' => '#2F6BFF'],
+        ['slug' => 'tasks', 'route' => 'tasks.index', 'label' => 'Tasks', 'hint' => 'Team assignments', 'icon' => 'bx-task', 'value' => 'Open', 'color' => '#8B5CF6'],
+        ['slug' => 'timelogs', 'route' => 'timelogs.index', 'label' => 'Timesheet', 'hint' => 'Logged work', 'icon' => 'bx-time-five', 'value' => 'Log', 'color' => '#10B981'],
+        ['slug' => 'tickets', 'route' => 'tickets.index', 'label' => 'Tickets', 'hint' => 'Project support', 'icon' => 'bx-support', 'value' => 'Queue', 'color' => '#EF4444'],
+        ['slug' => 'clients', 'route' => 'clients.index', 'label' => 'Clients', 'hint' => 'Client records', 'icon' => 'bx-user-circle', 'value' => 'CRM', 'color' => '#22D3EE'],
+        ['slug' => 'reports', 'route' => 'attendance.report', 'label' => 'Reports', 'hint' => 'Operational reports', 'icon' => 'bx-bar-chart-alt-2', 'value' => 'View', 'color' => '#64748B'],
+        ['slug' => 'organization', 'route' => 'organization.index', 'label' => 'Organization', 'hint' => 'Team directory', 'icon' => 'bx-sitemap', 'value' => 'Org', 'color' => '#06B6D4'],
+        ['slug' => 'leaves', 'route' => 'leaves.index', 'label' => 'Leaves', 'hint' => 'Team availability', 'icon' => 'bx-calendar-minus', 'value' => 'HR', 'color' => '#F59E0B'],
     ];
     $managerPieCharts = collect($statusWiseCounts ?? [])->map(function ($value, $label) use ($statusTotal) {
         return [
@@ -28,7 +28,8 @@
 
 <style>
     .manager-shell {
-        background: linear-gradient(135deg, #eef7ff, #ffffff 48%, #f1f5f9);
+        background: linear-gradient(135deg, rgba(47, 107, 255, 0.04), var(--bx-bg, #ffffff) 48%, rgba(139, 92, 246, 0.04));
+        border: 1px solid var(--bx-border, rgba(16, 20, 44, 0.08));
         border-radius: 28px;
         margin-bottom: 1.5rem;
         padding: clamp(1rem, 2vw, 1.5rem);
@@ -38,9 +39,9 @@
     .manager-stat,
     .manager-feature,
     .manager-pie {
-        background: rgba(255,255,255,.92);
-        border: 1px solid rgba(255,255,255,.78);
-        box-shadow: 0 22px 55px rgba(15,23,42,.1);
+        background: var(--bx-surface, rgba(255,255,255,.92));
+        border: 1px solid var(--bx-border, rgba(16, 20, 44, 0.08));
+        box-shadow: 0 12px 32px rgba(15,23,42,.05);
         backdrop-filter: blur(16px);
     }
     .manager-hero {
@@ -51,25 +52,26 @@
         padding: clamp(1.25rem, 3vw, 2.25rem);
     }
     .manager-hero h1 {
-        color: #111827;
+        color: var(--bx-ink, #10142C);
         font-size: clamp(1.8rem, 4vw, 3.35rem);
-        font-weight: 900;
-        letter-spacing: 0;
+        font-weight: 800;
+        letter-spacing: -0.02em;
         line-height: 1.04;
         margin-bottom: .75rem;
     }
     .manager-hero p {
-        color: #667085;
-        font-weight: 700;
+        color: var(--bx-ink-muted, #545D82);
+        font-weight: 600;
         max-width: 650px;
     }
     .manager-eyebrow {
-        background: rgba(37,99,235,.1);
+        background: rgba(47, 107, 255, .1);
+        border: 1px solid rgba(47, 107, 255, .2);
         border-radius: 999px;
-        color: #2563eb;
+        color: var(--bx-primary, #2F6BFF);
         display: inline-flex;
         font-size: .76rem;
-        font-weight: 900;
+        font-weight: 800;
         letter-spacing: .08em;
         margin-bottom: .85rem;
         padding: .42rem .72rem;
@@ -84,25 +86,36 @@
     .manager-btn {
         border-radius: 999px;
         display: inline-flex;
-        font-weight: 900;
+        font-weight: 800;
         gap: .45rem;
         min-height: 42px;
-        padding: .7rem 1rem;
+        padding: .7rem 1.1rem;
         text-decoration: none;
+        transition: all .2s ease;
     }
     .manager-btn-primary {
-        background: linear-gradient(135deg, #2563eb, #7c3aed);
-        color: #fff;
+        background: linear-gradient(135deg, #1E4FCC, #2F6BFF, #8B5CF6);
+        color: #fff !important;
+        box-shadow: 0 4px 14px rgba(47, 107, 255, 0.3);
+    }
+    .manager-btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(47, 107, 255, 0.4);
     }
     .manager-btn-light {
-        background: #fff;
-        border: 1px solid rgba(37,99,235,.16);
-        color: #1f2937;
+        background: var(--bx-surface, #fff);
+        border: 1px solid var(--bx-border, rgba(47,107,255,.16));
+        color: var(--bx-ink, #10142C);
+    }
+    .manager-btn-light:hover {
+        border-color: var(--bx-primary, #2F6BFF);
+        color: var(--bx-primary, #2F6BFF);
+        transform: translateY(-1px);
     }
     .manager-date-filter {
         align-items: center;
-        background: rgba(255,255,255,.76);
-        border: 1px solid rgba(37,99,235,.14);
+        background: var(--bx-surface-2, rgba(255,255,255,.76));
+        border: 1px solid var(--bx-border, rgba(47,107,255,.14));
         border-radius: 18px;
         display: flex;
         flex-wrap: wrap;
@@ -112,13 +125,15 @@
     }
     .manager-date-filter label,
     .manager-date-filter span {
-        color: #334155;
+        color: var(--bx-ink, #334155);
         font-size: .82rem;
-        font-weight: 900;
+        font-weight: 700;
         margin: 0;
     }
     .manager-date-filter .form-control {
-        border-color: rgba(37,99,235,.16);
+        background: var(--bx-surface, #fff);
+        border-color: var(--bx-border, rgba(47,107,255,.16));
+        color: var(--bx-ink, #10142C);
         border-radius: 12px;
         min-height: 38px;
         width: auto;
@@ -131,7 +146,7 @@
     }
     .manager-gauge {
         align-items: center;
-        background: conic-gradient(#ef4444 calc(var(--percent) * 1%), #e5e7eb 0);
+        background: conic-gradient(#EF4444 calc(var(--percent) * 1%), rgba(148, 163, 184, 0.2) 0);
         border-radius: 50%;
         display: flex;
         height: 150px;
@@ -141,16 +156,16 @@
         width: 150px;
     }
     .manager-gauge::after {
-        background: #fff;
+        background: var(--bx-surface, #fff);
         border-radius: 50%;
         content: "";
         inset: 18px;
         position: absolute;
     }
     .manager-gauge strong {
-        color: #111827;
+        color: var(--bx-ink, #10142C);
         font-size: 1.9rem;
-        font-weight: 900;
+        font-weight: 800;
         position: relative;
         z-index: 1;
     }
@@ -174,27 +189,27 @@
     .manager-stat span,
     .manager-pie p,
     .manager-feature small {
-        color: #667085;
+        color: var(--bx-ink-muted, #667085);
         font-size: .78rem;
-        font-weight: 800;
+        font-weight: 700;
     }
     .manager-stat strong {
-        color: #111827;
+        color: var(--bx-ink, #10142C);
         display: block;
         font-size: 2rem;
-        font-weight: 900;
+        font-weight: 800;
         margin-top: .35rem;
     }
     .manager-panel h3 {
-        color: #111827;
+        color: var(--bx-ink, #10142C);
         font-size: 1.05rem;
-        font-weight: 900;
+        font-weight: 800;
         margin-bottom: .25rem;
     }
     .manager-panel > p {
-        color: #667085;
+        color: var(--bx-ink-muted, #667085);
         font-size: .84rem;
-        font-weight: 700;
+        font-weight: 600;
         margin-bottom: 1rem;
     }
     .manager-pie-grid {
@@ -205,9 +220,9 @@
         text-align: center;
     }
     .manager-donut {
-        --accent: #2563eb;
+        --accent: #2F6BFF;
         align-items: center;
-        background: conic-gradient(var(--accent) calc(var(--percent) * 1%), #e5e7eb 0);
+        background: conic-gradient(var(--accent) calc(var(--percent) * 1%), rgba(148, 163, 184, 0.2) 0);
         border-radius: 50%;
         display: flex;
         height: 112px;
@@ -217,16 +232,16 @@
         width: 112px;
     }
     .manager-donut::after {
-        background: #fff;
+        background: var(--bx-surface, #fff);
         border-radius: 50%;
         content: "";
         inset: 14px;
         position: absolute;
     }
     .manager-donut strong {
-        color: #111827;
+        color: var(--bx-ink, #10142C);
         font-size: 1.2rem;
-        font-weight: 900;
+        font-weight: 800;
         position: relative;
         z-index: 1;
     }
@@ -235,7 +250,7 @@
     }
     .manager-feature {
         align-items: center;
-        color: #111827;
+        color: var(--bx-ink, #10142C);
         display: grid;
         gap: .75rem;
         grid-template-columns: 42px minmax(0, 1fr) auto;
@@ -245,14 +260,14 @@
     }
     .manager-feature:hover,
     .manager-pie:hover {
-        box-shadow: 0 26px 58px rgba(37,99,235,.14);
+        box-shadow: 0 20px 48px rgba(47, 107, 255, .12);
         transform: translateY(-4px);
     }
     .manager-feature i {
         align-items: center;
-        background: linear-gradient(135deg, rgba(37,99,235,.12), rgba(16,185,129,.12));
+        background: linear-gradient(135deg, rgba(47, 107, 255, .12), rgba(34, 211, 238, .12));
         border-radius: 14px;
-        color: #2563eb;
+        color: var(--bx-primary, #2F6BFF);
         display: inline-flex;
         font-size: 1.25rem;
         height: 42px;
@@ -268,15 +283,15 @@
     }
     .manager-feature strong {
         font-size: .88rem;
-        font-weight: 900;
+        font-weight: 800;
     }
     .manager-feature em {
-        background: rgba(37,99,235,.08);
+        background: rgba(47, 107, 255, .08);
         border-radius: 999px;
-        color: #2563eb;
+        color: var(--bx-primary, #2F6BFF);
         font-size: .76rem;
         font-style: normal;
-        font-weight: 900;
+        font-weight: 800;
         padding: .34rem .5rem;
     }
     .manager-table-card {
@@ -285,7 +300,7 @@
     }
     .manager-table-head {
         align-items: center;
-        border-bottom: 1px solid rgba(15,23,42,.08);
+        border-bottom: 1px solid var(--bx-border, rgba(15,23,42,.08));
         display: flex;
         gap: 1rem;
         justify-content: space-between;
@@ -305,9 +320,9 @@
     }
     .manager-empty {
         align-items: center;
-        color: #667085;
+        color: var(--bx-ink-muted, #667085);
         display: grid;
-        font-weight: 800;
+        font-weight: 700;
         min-height: 150px;
         place-items: center;
     }
@@ -338,6 +353,53 @@
             align-items: flex-start;
             flex-direction: column;
         }
+    }
+
+    /* Manager Workspace Dark Mode Overrides */
+    html[data-pms-theme="dark"] .manager-shell,
+    html[data-theme="dark"] .manager-shell {
+        background: linear-gradient(135deg, #070B1A 0%, #0F1530 52%, #141B3D 100%);
+        border-color: rgba(238, 241, 251, 0.09);
+    }
+    html[data-pms-theme="dark"] .manager-hero,
+    html[data-pms-theme="dark"] .manager-panel,
+    html[data-pms-theme="dark"] .manager-stat,
+    html[data-pms-theme="dark"] .manager-feature,
+    html[data-pms-theme="dark"] .manager-pie,
+    html[data-theme="dark"] .manager-hero,
+    html[data-theme="dark"] .manager-panel,
+    html[data-theme="dark"] .manager-stat,
+    html[data-theme="dark"] .manager-feature,
+    html[data-theme="dark"] .manager-pie {
+        background: var(--bx-surface, #0F1530);
+        border-color: rgba(238, 241, 251, 0.09);
+        box-shadow: 0 12px 32px rgba(0, 0, 0, .35);
+    }
+    html[data-pms-theme="dark"] .manager-btn-light,
+    html[data-theme="dark"] .manager-btn-light {
+        background: var(--bx-surface-2, #141B3D);
+        border-color: rgba(238, 241, 251, 0.12);
+        color: #EEF1FB;
+    }
+    html[data-pms-theme="dark"] .manager-btn-light:hover,
+    html[data-theme="dark"] .manager-btn-light:hover {
+        border-color: var(--bx-accent, #22D3EE);
+        color: var(--bx-accent, #22D3EE);
+    }
+    html[data-pms-theme="dark"] .manager-date-filter,
+    html[data-theme="dark"] .manager-date-filter {
+        background: var(--bx-surface-2, #141B3D);
+        border-color: rgba(238, 241, 251, 0.09);
+    }
+    html[data-pms-theme="dark"] .manager-date-filter .form-control,
+    html[data-theme="dark"] .manager-date-filter .form-control {
+        background: var(--bx-surface-3, #1A2247);
+        border-color: rgba(238, 241, 251, 0.12);
+        color: #EEF1FB;
+    }
+    html[data-pms-theme="dark"] .manager-table-head,
+    html[data-theme="dark"] .manager-table-head {
+        border-bottom-color: rgba(238, 241, 251, 0.09);
     }
 </style>
 

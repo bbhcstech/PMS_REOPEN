@@ -43,23 +43,23 @@
         <!-- Right side: Filters / Icon buttons -->
         <div class="d-flex align-items-center gap-3">
             @if(auth()->user()->role === 'admin')
-                <div class="btn-group align-items-center" role="group">
+                <div class="d-flex align-items-center gap-2">
                     <!-- Main bulk action -->
-                    <select id="bulkAction" class="form-select form-select-sm" disabled>
+                    <select id="bulkAction" class="form-select form-select-sm" disabled style="width: auto;">
                         <option value="">No Action</option>
                         <option value="status">Change Status</option>
                         <option value="delete">Delete</option>
                     </select>
 
                     <!-- Hidden status select -->
-                    <select id="statusSelect" class="form-select form-select-sm ms-2" style="display:none;">
+                    <select id="statusSelect" class="form-select form-select-sm" style="display:none; width: auto;">
                         <option value="">Select Status</option>
                         <option value="active">Active</option>
                         <option value="inactive">Inactive</option>
                     </select>
 
                     <!-- Apply button -->
-                    <button id="applyAction" class="btn btn-primary btn-sm ms-2" disabled>Apply</button>
+                    <button id="applyAction" class="btn btn-primary btn-sm text-nowrap" style="white-space: nowrap; flex-shrink: 0; min-width: max-content;" disabled>Apply</button>
                 </div>
             @endif
 

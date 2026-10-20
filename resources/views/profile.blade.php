@@ -757,21 +757,36 @@
                     <div class="row mb-3">
                       <label for="currentPassword" class="col-md-4 col-lg-3 col-form-label">Current Password</label>
                       <div class="col-md-8 col-lg-9">
-                        <input name="password" type="password" class="form-control" id="currentPassword">
+                        <div class="position-relative">
+                          <input name="password" type="password" class="form-control pe-5" id="currentPassword">
+                          <button type="button" class="btn btn-link btn-toggle-profile-pwd position-absolute end-0 top-50 translate-middle-y text-muted text-decoration-none border-0 pe-3" data-target="currentPassword" title="Show or hide password">
+                            <i class="bi bi-eye"></i>
+                          </button>
+                        </div>
                       </div>
                     </div>
 
                     <div class="row mb-3">
                       <label for="newPassword" class="col-md-4 col-lg-3 col-form-label">New Password</label>
                       <div class="col-md-8 col-lg-9">
-                        <input name="newpassword" type="password" class="form-control" id="newPassword">
+                        <div class="position-relative">
+                          <input name="newpassword" type="password" class="form-control pe-5" id="newPassword">
+                          <button type="button" class="btn btn-link btn-toggle-profile-pwd position-absolute end-0 top-50 translate-middle-y text-muted text-decoration-none border-0 pe-3" data-target="newPassword" title="Show or hide password">
+                            <i class="bi bi-eye"></i>
+                          </button>
+                        </div>
                       </div>
                     </div>
 
                     <div class="row mb-3">
                       <label for="renewPassword" class="col-md-4 col-lg-3 col-form-label">Re-enter New Password</label>
                       <div class="col-md-8 col-lg-9">
-                        <input name="renewpassword" type="password" class="form-control" id="renewPassword">
+                        <div class="position-relative">
+                          <input name="renewpassword" type="password" class="form-control pe-5" id="renewPassword">
+                          <button type="button" class="btn btn-link btn-toggle-profile-pwd position-absolute end-0 top-50 translate-middle-y text-muted text-decoration-none border-0 pe-3" data-target="renewPassword" title="Show or hide password">
+                            <i class="bi bi-eye"></i>
+                          </button>
+                        </div>
                       </div>
                     </div>
 
@@ -821,6 +836,35 @@
 
   <!-- Template Main JS File -->
   <script src="assets/js/main.js"></script>
+
+  <script>
+  document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.btn-toggle-profile-pwd').forEach(function (btn) {
+      btn.addEventListener('click', function (e) {
+        e.preventDefault();
+        var targetId = this.getAttribute('data-target');
+        var input = document.getElementById(targetId);
+        if (!input) return;
+        var icon = this.querySelector('i');
+        if (input.type === 'password') {
+          input.type = 'text';
+          if (icon) {
+            icon.classList.remove('bi-eye');
+            icon.classList.add('bi-eye-slash');
+          }
+          this.setAttribute('title', 'Hide password');
+        } else {
+          input.type = 'password';
+          if (icon) {
+            icon.classList.remove('bi-eye-slash');
+            icon.classList.add('bi-eye');
+          }
+          this.setAttribute('title', 'Show password');
+        }
+      });
+    });
+  });
+  </script>
 
 </body>
 

@@ -20,7 +20,7 @@
     <div class="col-md-6">
         <label>Task Category <span class="text-danger">*</span></label>
         <div class="d-flex">
-            <select name="category_id" class="form-select me-2" required>
+            <select name="category_id" class="form-select flex-grow-1 me-2" required>
                 <option value="">--</option>
                 @foreach($taskCategories as $category)
                     <option value="{{ $category->id }}" {{ (old('category_id', $task->category_id ?? '') == $category->id) ? 'selected' : '' }}>
@@ -28,8 +28,8 @@
                     </option>
                 @endforeach
             </select>
-            <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#taskCategoryModal">
-                Add
+            <button type="button" class="btn btn-outline-primary flex-shrink-0 text-nowrap px-3" data-bs-toggle="modal" data-bs-target="#taskCategoryModal" style="white-space: nowrap; min-width: 75px;">
+                <i class="fas fa-plus me-1"></i> Add
             </button>
         </div>
     </div>
@@ -110,8 +110,8 @@
                         
                         </div>
                             <div class="col-md-3 d-flex align-items-start">
-                                <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#employeeModal">
-                                    + Add Employee
+                                <button type="button" class="btn btn-outline-primary flex-shrink-0 text-nowrap px-3" data-bs-toggle="modal" data-bs-target="#employeeModal" style="white-space: nowrap; min-width: 125px;">
+                                    <i class="fas fa-user-plus me-1"></i> Add Employee
                                 </button>
                             </div>
                </div>
@@ -145,8 +145,8 @@
                 </option>
             @endforeach
             </select>
-            <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#taskLabelsModal">
-                Add
+            <button type="button" class="btn btn-outline-primary flex-shrink-0 text-nowrap px-3 ms-2" data-bs-toggle="modal" data-bs-target="#taskLabelsModal" style="white-space: nowrap; min-width: 75px;">
+                <i class="fas fa-plus me-1"></i> Add
             </button>
         </div>
     </div>
@@ -212,8 +212,18 @@
                        {{ old('is_private', $task->is_private ?? false) ? 'checked' : '' }}>
                 <label class="form-check-label" for="is_private">
                     Make Private
-                    <i class="fas fa-question-circle" data-toggle="popover"
-                       data-content="Private tasks are only visible to admin, assignor, and assignee."></i>
+                    <i class="fas fa-question-circle question-info-icon"
+                       data-bs-toggle="popover"
+                       data-bs-trigger="hover focus"
+                       data-bs-placement="top"
+                       data-bs-content="Private tasks are only visible to admin, assignor, and assignee."
+                       data-toggle="popover"
+                       data-trigger="hover focus"
+                       data-placement="top"
+                       data-content="Private tasks are only visible to admin, assignor, and assignee."
+                       tabindex="0"
+                       role="button"
+                       aria-label="Info"></i>
                 </label>
             </div>
         </div>
@@ -227,8 +237,18 @@
                        {{ old('billable', $task->billable ?? false) ? 'checked' : '' }}>
                 <label class="form-check-label" for="billable">
                     Billable
-                    <i class="fas fa-question-circle" data-toggle="popover"
-                       data-content="Invoice can be generated for this task's time log."></i>
+                    <i class="fas fa-question-circle question-info-icon"
+                       data-bs-toggle="popover"
+                       data-bs-trigger="hover focus"
+                       data-bs-placement="top"
+                       data-bs-content="Invoice can be generated for this task's time log."
+                       data-toggle="popover"
+                       data-trigger="hover focus"
+                       data-placement="top"
+                       data-content="Invoice can be generated for this task's time log."
+                       tabindex="0"
+                       role="button"
+                       aria-label="Info"></i>
                 </label>
             </div>
         </div>
@@ -435,8 +455,8 @@
                         @endforeach
                     </select>
                     
-                     <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#prtModal">
-                                Add
+                     <button type="button" class="btn btn-outline-secondary flex-shrink-0 text-nowrap px-3" data-bs-toggle="modal" data-bs-target="#prtModal" style="white-space: nowrap; min-width: 75px;">
+                                <i class="fas fa-plus me-1"></i> Add
                     </button>
                 </div>
             </div>
@@ -450,8 +470,8 @@
                             <option value="{{ $department->id }}">{{ $department->dpt_name }}</option>
                         @endforeach
                     </select>
-                    <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#dptModal">
-                                Add
+                    <button type="button" class="btn btn-outline-secondary flex-shrink-0 text-nowrap px-3" data-bs-toggle="modal" data-bs-target="#dptModal" style="white-space: nowrap; min-width: 75px;">
+                                <i class="fas fa-plus me-1"></i> Add
                     </button>
                 </div>
             </div>

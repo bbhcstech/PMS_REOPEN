@@ -163,11 +163,11 @@
     .employee-holiday-panel-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; margin-bottom: 16px; }
     .employee-holiday-panel-head h3 { margin: 0; font-weight: 900; } .employee-holiday-panel-head p { color: #667085; font-weight: 650; margin-bottom: 0; }
     .employee-selection-tools { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-    .employee-selection-tools span { display: inline-flex; align-items: center; min-height: 34px; padding: 6px 12px; border-radius: 999px; background: #ecfdf5; color: #047857; font-weight: 900; }
+    .employee-selection-tools span { display: inline-flex; align-items: center; min-height: 34px; padding: 6px 12px; border-radius: 999px; background: #EEF2FF; color: #2F6BFF; font-weight: 900; }
     .employee-day { display: inline-flex; padding: 7px 10px; border-radius: 999px; background: #eef2ff; color: #3730a3; font-weight: 800; }
     .employee-reason { font-weight: 900; }
     .employee-badge { display: inline-flex; padding: 7px 10px; border-radius: 999px; font-weight: 900; font-size: .8rem; }
-    .employee-badge.weekly { background: #d1fae5; color: #047857; } .employee-badge.special { background: #dbeafe; color: #1d4ed8; }
+    .employee-badge.weekly { background: #E0E7FF; color: #2F6BFF; } .employee-badge.special { background: #dbeafe; color: #1d4ed8; }
     /* Hide visible DataTables export toolbar because Export dropdown is in header */
     .employee-holiday-page .dataTables_wrapper .dt-buttons { display: none !important; }
     @keyframes holidayRise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }

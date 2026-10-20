@@ -11,7 +11,12 @@ class EnsureModuleAccess
 {
     public function handle(Request $request, Closure $next, string $permission = 'view'): Response
     {
-        if (\Illuminate\Support\Facades\Auth::guard('super_admin')->check()) {
+        if (
+            \Illuminate\Support\Facades\Auth::guard('super_admin')->check() ||
+            $request->is('super-admin*') ||
+            $request->is('superadmin*') ||
+            (auth()->check() && in_array(strtolower((string)(auth()->user()->role ?? '')), ['superadmin', 'super-admin', 'super_admin'], true))
+        ) {
             return $next($request);
         }
 
@@ -51,12 +56,12 @@ class EnsureModuleAccess
                     ->with('error', "Access Denied: The feature '{$moduleSlug}' is disabled for your organization.");
             }
 
-            // 2. Platform Admin / Tenant Admin has unrestricted role-based permissions on all ENABLED features
-            if (in_array(strtolower((string) $user->role), ['admin', 'administrator', 'superadmin'], true)) {
+            // 2. Platform Admin / Tenant Admin / Manager / HR has unrestricted role-based permissions on all ENABLED features
+            if (in_array(strtolower((string) $user->role), ['admin', 'administrator', 'superadmin', 'manager', 'hr'], true)) {
                 return $next($request);
             }
 
-            // 3. Granular Role-based permissions for other roles (HR, Manager, Employee, etc.)
+            // 3. Granular Role-based permissions for other roles (Employee, Client, etc.)
             if ($module && ! $user->hasModulePermission($module->slug, $permission)) {
                 if ($request->expectsJson()) {
                     return response()->json(['error' => 'You do not have permission to access this module.'], 403);
@@ -101,6 +106,13 @@ class EnsureModuleAccess
             'admin.settings.terms-policy' => 'terms-policy-settings',
             'settings.company' => 'company-profile-settings',
             'admin.settings.index' => 'settings-dashboard',
+            'admin.leave' => 'leaves',
+            'admin.leaves' => 'leaves',
+            'leaves' => 'leaves',
+            'admin.tickets' => 'tickets',
+            'tickets' => 'tickets',
+            'admin.employees' => 'employees',
+            'employees' => 'employees',
         ];
 
         foreach ($aliases as $prefix => $slug) {

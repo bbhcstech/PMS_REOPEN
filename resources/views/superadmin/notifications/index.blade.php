@@ -7,10 +7,10 @@
   @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
 
   :root {
-    --em:        #0f744c;
+    --em:        #2F6BFF;
     --em-dark:   #073a26;
     --em-light:  #10b981;
-    --em-soft:   #e4f3eb;
+    --em-soft:   #EEF2FF;
     --em-glow:   rgba(15,116,76,0.18);
     --sl-900:    #0f172a;
     --sl-700:    #334155;
@@ -36,7 +36,7 @@
 
   /* ── HEADER ── */
   .nc-header {
-    background: linear-gradient(135deg, #073a26 0%, #0f744c 60%, #10b981 100%);
+    background: linear-gradient(135deg, #073a26 0%, #2F6BFF 60%, #10b981 100%);
     border-radius: 18px;
     padding: 26px 30px;
     color: #fff;
@@ -196,7 +196,7 @@
     position: relative;
     transition: all 0.2s;
   }
-  .notif-card:hover { box-shadow: var(--shadow-md); border-color: #a7f3d0; transform: translateY(-1px); }
+  .notif-card:hover { box-shadow: var(--shadow-md); border-color: #C7D2FE; transform: translateY(-1px); }
   .notif-card.is-unread {
     border-left: 4px solid var(--em);
     background: linear-gradient(to right, rgba(228,243,235,0.5) 0%, #fff 28%);
@@ -226,11 +226,11 @@
   .si-critical { background: #fef2f2; color: #dc2626; }
   .si-warning  { background: #fffbeb; color: #d97706; }
   .si-info     { background: #eff6ff; color: #2563eb; }
-  .si-success  { background: #ecfdf5; color: #059669; }
+  .si-success  { background: #EEF2FF; color: #2F6BFF; }
   .si-CRITICAL { background: #f5f3ff; color: #7c3aed; animation: pulse-c 2s infinite; }
   .si-WARNING  { background: #fffbeb; color: #d97706; }
   .si-INFO     { background: #eff6ff; color: #2563eb; }
-  .si-SUCCESS  { background: #ecfdf5; color: #059669; }
+  .si-SUCCESS  { background: #EEF2FF; color: #2F6BFF; }
   .si-ERROR    { background: #fef2f2; color: #dc2626; }
   @keyframes pulse-c {
     0%,100% { box-shadow: 0 0 0 0 rgba(124,58,237,0.3); }
@@ -246,11 +246,11 @@
   .sb-critical { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
   .sb-warning  { background: #fffbeb; color: #d97706; border: 1px solid #fde68a; }
   .sb-info     { background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; }
-  .sb-success  { background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; }
+  .sb-success  { background: #EEF2FF; color: #2F6BFF; border: 1px solid #C7D2FE; }
   .sb-CRITICAL { background: #f5f3ff; color: #5b21b6; border: 1px solid #c4b5fd; }
   .sb-WARNING  { background: #fffbeb; color: #92400e; border: 1px solid #fcd34d; }
   .sb-INFO     { background: #eff6ff; color: #1d4ed8; border: 1px solid #93c5fd; }
-  .sb-SUCCESS  { background: #ecfdf5; color: #047857; border: 1px solid #6ee7b7; }
+  .sb-SUCCESS  { background: #EEF2FF; color: #047857; border: 1px solid #93C5FD; }
   .sb-ERROR    { background: #fef2f2; color: #991b1b; border: 1px solid #fca5a5; }
 
   .cat-pill {
@@ -317,16 +317,16 @@
   }
   .btn-mark-read:hover { background: var(--em-soft); border-color: var(--em); color: var(--em); }
   .btn-resolve {
-    background: var(--surface); color: #059669;
-    border: 1px solid #a7f3d0; padding: 4px 9px; border-radius: 7px;
+    background: var(--surface); color: #2F6BFF;
+    border: 1px solid #C7D2FE; padding: 4px 9px; border-radius: 7px;
     font-size: 11.5px; font-weight: 700; cursor: pointer; font-family: inherit;
     display: inline-flex; align-items: center; gap: 4px; transition: all 0.15s;
   }
-  .btn-resolve:hover { background: #ecfdf5; border-color: #059669; }
+  .btn-resolve:hover { background: #EEF2FF; border-color: #2F6BFF; }
   .resolved-label {
-    font-size: 11.5px; color: #059669; font-weight: 700;
+    font-size: 11.5px; color: #2F6BFF; font-weight: 700;
     display: inline-flex; align-items: center; gap: 4px;
-    padding: 4px 9px; background: #ecfdf5; border-radius: 7px; border: 1px solid #a7f3d0;
+    padding: 4px 9px; background: #EEF2FF; border-radius: 7px; border: 1px solid #C7D2FE;
   }
   .read-label {
     font-size: 11.5px; color: var(--sl-500); font-weight: 600;
@@ -524,9 +524,9 @@
       </div>
     </div>
     <div class="kpi-card" data-ft="status" data-fv="resolved">
-      <div class="kpi-icon" style="background:#ecfdf5;color:#059669;"><i class="bx bx-check-circle"></i></div>
+      <div class="kpi-icon" style="background:#EEF2FF;color:#2F6BFF;"><i class="bx bx-check-circle"></i></div>
       <div>
-        <div class="kpi-val" style="color:#059669;">{{ $kpis['resolved_today'] }}</div>
+        <div class="kpi-val" style="color:#2F6BFF;">{{ $kpis['resolved_today'] }}</div>
         <div class="kpi-label">Resolved Today</div>
       </div>
     </div>
@@ -787,7 +787,7 @@
         </div>
         <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
           <span style="color:var(--sl-500);">Database Health:</span>
-          <strong style="color:#059669;" id="drawerDbHealth">Healthy (21ms)</strong>
+          <strong style="color:#2F6BFF;" id="drawerDbHealth">Healthy (21ms)</strong>
         </div>
         <div style="display:flex;justify-content:space-between;">
           <span style="color:var(--sl-500);">Storage Usage:</span>

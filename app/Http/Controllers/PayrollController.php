@@ -598,9 +598,62 @@ class PayrollController extends Controller
         ]);
     }
 
+    public function viewPayslip(Payslip $payslip)
+    {
+        $this->authorizePayroll('payslips');
+        $payslip->load('user');
+
+        return view('admin.payroll.payslip-view', compact('payslip'));
+    }
+
+    public function printPayslip(Payslip $payslip)
+    {
+        $this->authorizePayroll('payslips');
+        $payslip->load('user');
+
+        return view('admin.payroll.payslip-print', compact('payslip'));
+    }
+
+    public function exportReport(Request $request)
+    {
+        $this->authorizePayroll('payroll-reports');
+        $companyId = $this->selectedCompanyId($request);
+
+        $payrolls = $this->companyQuery(Payroll::query(), $companyId)->latest()->get();
+        $fileName = 'Payroll_Report_' . date('Y_m_d') . '.csv';
+
+        $headers = [
+            'Content-Type'        => 'text/csv',
+            'Content-Disposition' => "attachment; filename=\"{$fileName}\"",
+            'Pragma'              => 'no-cache',
+            'Cache-Control'       => 'must-revalidate, post-check=0, pre-check=0',
+        ];
+
+        $callback = function () use ($payrolls) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, ['Period Start', 'Period End', 'Status', 'Gross Total', 'Deduction Total', 'Tax Total', 'Net Total', 'Generated At']);
+            foreach ($payrolls as $payroll) {
+                fputcsv($file, [
+                    $payroll->period_start,
+                    $payroll->period_end,
+                    $payroll->status,
+                    $payroll->gross_total,
+                    $payroll->deduction_total,
+                    $payroll->tax_total,
+                    $payroll->net_total,
+                    $payroll->created_at?->format('Y-m-d H:i'),
+                ]);
+            }
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
     public function policies()
     {
-        return $this->placeholder('policies');
+        // Delegate to PayrollPolicyController
+        return app(\App\Http\Controllers\PayrollPolicyController::class)->index(request());
     }
 
     public function settings()
@@ -608,39 +661,303 @@ class PayrollController extends Controller
         return $this->placeholder('settings');
     }
 
-    public function importExport()
+    public function importExport(Request $request)
     {
-        return $this->placeholder('import-export');
+        $this->authorizePayroll('payroll-import-export');
+        $companyId = $this->selectedCompanyId($request);
+
+        return view('admin.payroll.import-export', [
+            'importLogs' => \App\Models\PayrollImportLog::latest()->take(20)->get(),
+            'exportLogs' => \App\Models\PayrollExportLog::latest()->take(20)->get(),
+        ]);
     }
 
-    public function archive()
+    public function importPayroll(Request $request)
     {
-        return $this->placeholder('archive');
+        $this->authorizePayroll('payroll-import-export', 'create');
+
+        $request->validate([
+            'import_file' => 'required|file|mimes:csv,txt,xlsx|max:5120',
+        ]);
+
+        $file = $request->file('import_file');
+        $path = $file->store('payroll-imports', 'local');
+
+        $log = \App\Models\PayrollImportLog::create([
+            'file_name'    => $file->getClientOriginalName(),
+            'file_type'    => $file->getClientMimeType(),
+            'file_path'    => $path,
+            'status'       => 'pending',
+            'processed_by' => auth()->id(),
+        ]);
+
+        $this->audit('payroll_import_uploaded', $log, null, $log->toArray(), $request);
+
+        return back()->with('success', 'File "' . $file->getClientOriginalName() . '" uploaded. Processing will begin shortly.');
     }
 
-    public function formulaBuilder()
+    public function exportCsv(Request $request)
     {
-        return $this->placeholder('formula-builder');
+        $this->authorizePayroll('payroll-import-export');
+        $companyId = $this->selectedCompanyId($request);
+
+        $histories = $this->payrollHistoryQuery($companyId)->latest()->take(5000)->get();
+        $fileName  = 'Payroll_Full_Export_' . date('Y_m_d') . '.csv';
+
+        $headers = [
+            'Content-Type'        => 'text/csv',
+            'Content-Disposition' => "attachment; filename=\"{$fileName}\"",
+        ];
+
+        $callback = function () use ($histories) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, ['User ID', 'Period Start', 'Period End', 'Gross Salary', 'Total Deductions', 'Net Salary', 'Status']);
+            foreach ($histories as $h) {
+                fputcsv($file, [
+                    $h->user_id,
+                    $h->period_start,
+                    $h->period_end,
+                    $h->gross_salary,
+                    $h->total_deductions,
+                    $h->net_salary,
+                    $h->payroll_status,
+                ]);
+            }
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    public function downloadTemplate()
+    {
+        $this->authorizePayroll('payroll-import-export');
+
+        $headers = [
+            'Content-Type'        => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="payroll_import_template.csv"',
+        ];
+
+        $callback = function () {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, ['employee_id', 'basic_salary', 'hra', 'special_allowance', 'gross_salary', 'pf_deduction', 'esi_deduction', 'pt_deduction', 'net_salary', 'period_month', 'period_year', 'notes']);
+            fputcsv($file, ['EMP-001', '30000', '12000', '8000', '50000', '1800', '375', '200', '47625', '1', '2025', 'Sample row']);
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    public function archive(Request $request)
+    {
+        $this->authorizePayroll('payroll-archive');
+        $companyId = $this->selectedCompanyId($request);
+
+        return view('admin.payroll.archive', [
+            'archives'    => \App\Models\PayrollArchive::with('archiver')->latest()->paginate(25),
+            'payrolls'    => $this->companyQuery(Payroll::query(), $companyId)->where('status', 'finalized')->latest()->get(),
+        ]);
+    }
+
+    public function archivePayroll(Request $request, Payroll $payroll)
+    {
+        $this->authorizePayroll('payroll-archive', 'create');
+
+        $request->validate([
+            'reason' => 'nullable|string|max:500',
+        ]);
+
+        DB::transaction(function () use ($request, $payroll) {
+            \App\Models\PayrollArchive::create([
+                'archivable_type' => Payroll::class,
+                'archivable_id'   => $payroll->id,
+                'snapshot'        => $payroll->load('histories', 'payslips')->toArray(),
+                'archived_by'     => auth()->id(),
+                'archived_at'     => now(),
+                'reason'          => $request->input('reason', 'Manual archive'),
+            ]);
+            $payroll->update(['status' => 'archived']);
+            $this->audit('payroll_archived', $payroll, ['status' => $payroll->getOriginal('status')], ['status' => 'archived'], $request);
+        });
+
+        return back()->with('success', 'Payroll run #' . $payroll->id . ' archived successfully.');
+    }
+
+    public function formulaBuilder(Request $request)
+    {
+        $this->authorizePayroll('formula-builder');
+
+        return view('admin.payroll.formula-builder', [
+            'formulas'    => \App\Models\PayrollFormula::latest()->paginate(20),
+            'categories'  => ['earnings', 'deduction', 'tax', 'bonus', 'custom'],
+            'variables'   => [
+                'BASIC', 'HRA', 'SPECIAL', 'GROSS', 'NET',
+                'PF', 'ESI', 'PT', 'TDS', 'BONUS',
+                'OVERTIME', 'ATTENDANCE_DAYS', 'WORKING_DAYS',
+                'BASIC_PERCENTAGE', 'CTC', 'MONTH_DAYS',
+            ],
+        ]);
+    }
+
+    public function storeFormula(Request $request)
+    {
+        $this->authorizePayroll('formula-builder', 'create');
+
+        $data = $request->validate([
+            'name'     => 'required|string|max:255',
+            'category' => 'required|in:earnings,deduction,tax,bonus,custom',
+            'formula'  => 'required|string|max:2000',
+            'description' => 'nullable|string|max:1000',
+        ]);
+
+        // Extract variables used (uppercase tokens A-Z_)
+        preg_match_all('/\b([A-Z][A-Z_]+)\b/', strtoupper($data['formula']), $matches);
+        $variablesUsed = array_unique($matches[1] ?? []);
+
+        $formula = \App\Models\PayrollFormula::create([
+            'name'           => $data['name'],
+            'code'           => Str::slug($data['name']),
+            'category'       => $data['category'],
+            'description'    => $data['description'] ?? null,
+            'formula'        => $data['formula'],
+            'variables_used' => $variablesUsed,
+            'is_valid'       => false,
+            'is_active'      => true,
+            'company_id'     => auth()->user()?->company_id,
+            'created_by'     => auth()->id(),
+            'updated_by'     => auth()->id(),
+        ]);
+
+        $this->audit('formula_created', $formula, null, $formula->toArray(), $request);
+
+        return back()->with('success', 'Formula "' . $formula->name . '" saved successfully.');
+    }
+
+    public function validateFormula(Request $request)
+    {
+        $this->authorizePayroll('formula-builder', 'create');
+
+        $request->validate([
+            'formula' => 'required|string|max:2000',
+            'inputs'  => 'nullable|array',
+        ]);
+
+        $formula   = strtoupper($request->input('formula'));
+        $inputs    = $request->input('inputs', []);
+        $testVars  = array_map('floatval', $inputs);
+
+        $result = \App\Models\PayrollFormula::evaluate($formula, $testVars);
+
+        if ($result === false) {
+            return response()->json(['valid' => false, 'error' => 'Invalid formula syntax. Only numeric arithmetic expressions with uppercase variable names are allowed.']);
+        }
+
+        return response()->json(['valid' => true, 'result' => round($result, 2)]);
+    }
+
+    public function destroyFormula(Request $request, \App\Models\PayrollFormula $formula)
+    {
+        $this->authorizePayroll('formula-builder', 'delete');
+        $this->audit('formula_deleted', $formula, $formula->toArray(), null, $request);
+        $formula->delete();
+
+        return back()->with('success', 'Formula deleted.');
+    }
+
+    public function destroyArchitecture(Request $request, PayrollArchitecture $architecture)
+    {
+        $this->authorizePayroll('payroll-architectures', 'delete');
+        $this->audit('architecture_deleted', $architecture, $architecture->toArray(), null, $request);
+        $architecture->delete();
+
+        return back()->with('success', 'Architecture deleted.');
+    }
+
+    public function destroySalaryComponent(Request $request, SalaryComponent $component)
+    {
+        $this->authorizePayroll('salary-structures', 'delete');
+        $this->audit('salary_component_deleted', $component, $component->toArray(), null, $request);
+        $component->delete();
+
+        return back()->with('success', 'Salary component removed.');
+    }
+
+    public function destroyDeductionRule(Request $request, DeductionComponent $rule)
+    {
+        $this->authorizePayroll('deduction-rules', 'delete');
+        $this->audit('deduction_rule_deleted', $rule, $rule->toArray(), null, $request);
+        $rule->delete();
+
+        return back()->with('success', 'Deduction rule deleted.');
+    }
+
+    public function destroyBonusRule(Request $request, BonusRule $rule)
+    {
+        $this->authorizePayroll('bonus-rules', 'delete');
+        $this->audit('bonus_rule_deleted', $rule, $rule->toArray(), null, $request);
+        $rule->delete();
+
+        return back()->with('success', 'Bonus rule deleted.');
+    }
+
+    public function destroyTaxRule(Request $request, TaxRule $rule)
+    {
+        $this->authorizePayroll('tax-rules', 'delete');
+        $this->audit('tax_rule_deleted', $rule, $rule->toArray(), null, $request);
+        $rule->delete();
+
+        return back()->with('success', 'Tax rule deleted.');
+    }
+
+    public function destroyOvertimeRule(Request $request, OvertimeRule $rule)
+    {
+        $this->authorizePayroll('overtime-rules', 'delete');
+        $this->audit('overtime_rule_deleted', $rule, $rule->toArray(), null, $request);
+        $rule->delete();
+
+        return back()->with('success', 'Overtime rule deleted.');
+    }
+
+    public function updateCycleStatus(Request $request, PayrollCycle $cycle)
+    {
+        $this->authorizePayroll('payroll-cycles', 'create');
+
+        $request->validate(['status' => 'required|in:draft,open,processing,closed,cancelled']);
+        $old = $cycle->status;
+        $cycle->update(['status' => $request->status]);
+        $this->audit('cycle_status_updated', $cycle, ['status' => $old], ['status' => $request->status], $request);
+
+        return back()->with('success', 'Cycle status updated to ' . ucfirst($request->status) . '.');
+    }
+
+    public function destroyCycle(Request $request, PayrollCycle $cycle)
+    {
+        $this->authorizePayroll('payroll-cycles', 'delete');
+        $this->audit('cycle_deleted', $cycle, $cycle->toArray(), null, $request);
+        $cycle->delete();
+
+        return back()->with('success', 'Payroll cycle deleted.');
     }
 
     public function placeholder(string $module)
     {
         $slug = match ($module) {
-            'policies' => 'payroll-policies',
-            'settings' => 'payroll-settings',
+            'policies'      => 'payroll-policies',
+            'settings'      => 'payroll-settings',
             'import-export' => 'payroll-import-export',
-            'archive' => 'payroll-archive',
+            'archive'       => 'payroll-archive',
             'formula-builder' => 'formula-builder',
-            default => 'payroll',
+            default         => 'payroll',
         };
 
         $this->authorizePayroll($slug);
 
         return view('admin.payroll.placeholder', [
-            'title' => Str::headline($module),
+            'title'      => Str::headline($module),
             'moduleSlug' => $slug,
         ]);
     }
+
 
     private function authorizePayroll(string $moduleSlug, string $permission = 'view'): void
     {

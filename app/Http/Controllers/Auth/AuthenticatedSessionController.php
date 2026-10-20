@@ -16,8 +16,21 @@ class AuthenticatedSessionController extends Controller
     /**
      * Display the login view.
      */
-    public function create(Request $request): Response
+    public function create(Request $request): Response|RedirectResponse
     {
+        if (Auth::check()) {
+            $user = Auth::user();
+            if ($user && (
+                (method_exists($user, 'isDeveloper') && $user->isDeveloper()) ||
+                in_array(strtolower((string) ($user->role ?? '')), ['developer', 'dev'], true) ||
+                str_contains(strtolower((string) ($user->role ?? '')), 'developer') ||
+                str_contains(strtolower((string) ($user->designation ?? '')), 'developer') ||
+                str_contains(strtolower((string) ($user->designation ?? '')), 'engineer')
+            )) {
+                return redirect()->route('developer.dashboard');
+            }
+        }
+
         $request->session()->regenerateToken();
 
         return response()
@@ -32,37 +45,46 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(LoginRequest $request): RedirectResponse
     {
-        // LoginRequest handles all authentication including exit date checks
+        // LoginRequest::authenticate() resolves the correct company and writes
+        // current_company_id / current_company_db / current_company_name to session.
         $request->authenticate();
 
+        // regenerate() changes session ID but preserves all session data (including
+        // the company session keys written inside authenticate() above).
         $request->session()->regenerate();
 
-        // Multi-Tenant: Preserve and set active tenant company database name and company ID in session
+        // Multi-Tenant: Re-affirm the company session and lock the DB connection.
+        // We deliberately do NOT read user->company_id here because Auth::user() may
+        // have been loaded from the wrong DB connection before SetTenantConnection
+        // had a chance to switch it. The session is the single source of truth.
         $user = Auth::user();
-        if ($user) {
+        $isDeveloper = $user && (
+            (method_exists($user, 'isDeveloper') && $user->isDeveloper()) ||
+            in_array(strtolower((string) ($user->role ?? '')), ['developer', 'dev'], true) ||
+            str_contains(strtolower((string) ($user->role ?? '')), 'developer') ||
+            str_contains(strtolower((string) ($user->designation ?? '')), 'developer') ||
+            str_contains(strtolower((string) ($user->designation ?? '')), 'engineer')
+        );
+
+        if ($user && ! $isDeveloper) {
+            // Resolve company exclusively from session (set correctly by authenticate())
             $company = null;
-            if (!empty($user->company_id)) {
-                $company = \App\Models\Central\Company::on('central')->where('id', $user->company_id)->first();
-            }
-            if (!$company && !empty($user->email)) {
-                $company = \App\Models\Central\Company::on('central')->where('email', $user->email)->first();
-            }
-            if (!$company && session('current_company_db')) {
-                $company = \App\Models\Central\Company::on('central')->where('db_name', session('current_company_db'))->first();
+            if (session('current_company_id')) {
+                try {
+                    $company = \App\Models\Central\Company::on('central')->find(session('current_company_id'));
+                } catch (\Throwable $e) {}
             }
 
-            $dbName = $company?->db_name ?: (session('current_company_db') ?: config('database.connections.tenant.database'));
-            $companyId = $company?->id ?: session('current_company_id');
-            $companyName = $company?->name ?: session('current_company_name');
+            $dbName     = $company?->db_name     ?: (session('current_company_db')   ?: config('database.connections.tenant.database'));
+            $companyId   = $company?->id          ?: session('current_company_id');
+            $companyName = $company?->name        ?: session('current_company_name');
 
-            $request->session()->put('current_company_db', $dbName);
-            if ($companyId) {
-                $request->session()->put('current_company_id', $companyId);
-            }
-            if ($companyName) {
-                $request->session()->put('current_company_name', $companyName);
-            }
+            // Write final, authoritative company context to session
+            $request->session()->put('current_company_db',   $dbName);
+            $request->session()->put('current_company_id',   $companyId);
+            $request->session()->put('current_company_name', $companyName);
 
+            // Point both connections at the correct company DB
             config([
                 'database.connections.tenant.database' => $dbName,
                 'database.connections.mysql.database'  => $dbName,
@@ -80,8 +102,20 @@ class AuthenticatedSessionController extends Controller
             session()->forget('url.intended');
         }
 
-        $role = strtolower(Auth::user()?->role ?? '');
-        $designation = strtolower(Auth::user()?->designation ?? '');
+        $user = Auth::user();
+        $role = strtolower((string) ($user?->role ?? ''));
+        $designation = strtolower((string) ($user?->designation ?? ''));
+
+        // 1. Developer redirection (unconditional for any developer account)
+        if (
+            ($user && method_exists($user, 'isDeveloper') && $user->isDeveloper()) ||
+            in_array($role, ['developer', 'dev'], true) ||
+            str_contains($role, 'developer') ||
+            str_contains($designation, 'developer') ||
+            str_contains($designation, 'engineer')
+        ) {
+            return redirect()->route('developer.dashboard');
+        }
 
         if ($role === 'superadmin') {
             // If superadmin logged in via company credentials (tenant company session active), redirect to company dashboard
@@ -89,6 +123,10 @@ class AuthenticatedSessionController extends Controller
                 return redirect()->route('dashboard');
             }
             return redirect()->route('superadmin.dashboard');
+        }
+
+        if ($role === 'employee') {
+            return redirect()->route('dashboard');
         }
 
         if (in_array($role, ['developer', 'dev'], true) || str_contains($designation, 'developer') || str_contains($designation, 'engineer')) {
@@ -104,10 +142,28 @@ class AuthenticatedSessionController extends Controller
     public function destroy(Request $request): RedirectResponse
     {
         Auth::guard('web')->logout();
-        Session::forget('auth_id');
+        if (Auth::guard('super_admin')->check()) {
+            Auth::guard('super_admin')->logout();
+        }
+        Auth::logout();
+
+        $request->session()->forget(['current_company_id', 'current_company_db', 'current_company_name']);
+        $request->session()->flush();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect('/login');
+        $defaultDb = env('DB_DATABASE', 'pms_last');
+        config([
+            'database.connections.tenant.database' => $defaultDb,
+            'database.connections.mysql.database'  => $defaultDb,
+        ]);
+        \Illuminate\Support\Facades\DB::purge('tenant');
+        \Illuminate\Support\Facades\DB::purge('mysql');
+
+        if (app()->bound(\App\Services\CompanyContext::class)) {
+            app(\App\Services\CompanyContext::class)->reset();
+        }
+
+        return redirect()->route('login');
     }
 }

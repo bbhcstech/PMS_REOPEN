@@ -26,6 +26,7 @@ use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Schema;
 use Carbon\Carbon;
+use App\Support\CountryPhone;
 
 class EmployeeController extends Controller
 {
@@ -35,10 +36,12 @@ class EmployeeController extends Controller
     protected function ensureAdmin()
     {
         $user = auth()->user();
-        if (! $user || ! in_array(($user->role ?? ''), ['admin', 'hr'], true)) {
+        $role = $user ? strtolower((string) ($user->role ?? '')) : '';
+        if (! $user || ! in_array($role, ['admin', 'hr', 'manager', 'administrator', 'superadmin'], true)) {
             abort(403, 'Unauthorized');
         }
     }
+
 
     // ===========================================================
     // ===== REPORTING-TO INTEGRITY : subordinate check helper ===
@@ -62,15 +65,21 @@ class EmployeeController extends Controller
             ->where('role', 'employee')
             ->whereNull('archived_at');
 
-        if ($viewer && $viewer->normalizedRole() !== 'admin' && $viewer->company_id) {
+        $viewerRole = $viewer?->normalizedRole();
+        $isGlobalAdmin = in_array($viewerRole, ['admin', 'superadmin', 'administrator'], true);
+        $isAdminOrHr = in_array($viewerRole, ['admin', 'superadmin', 'administrator', 'hr'], true);
+
+        if ($viewer && ! $isAdminOrHr && $viewer->company_id) {
             $query->where('users.company_id', $viewer->company_id);
         }
 
-        if ($viewer && $viewer->normalizedRole() === 'admin' && $selectedCompanyId) {
+        if ($viewer && $isAdminOrHr && $selectedCompanyId) {
             $query->where('users.company_id', $selectedCompanyId);
+        } elseif ($viewer && ! $isGlobalAdmin && $viewer->company_id) {
+            $query->where('users.company_id', $viewer->company_id);
         }
 
-        if ($viewer && $viewer->normalizedRole() !== 'admin') {
+        if ($viewer && ! $isAdminOrHr) {
             $query->whereIn('users.id', $viewer->visibleEmployeeIds());
         }
 
@@ -143,14 +152,14 @@ class EmployeeController extends Controller
 
         // prepare dropdown list options but exclude notice/probation entries so selects don't show them
         $employeeDetails = EmployeeDetail::with(['user', 'reportingTo'])
-            ->whereHas('user', function ($q) use ($viewer, $selectedCompanyId) {
+            ->whereHas('user', function ($q) use ($viewer, $selectedCompanyId, $isGlobalAdmin, $isAdminOrHr) {
                 $q->whereNull('archived_at');
 
-                if ($viewer && $viewer->normalizedRole() !== 'admin' && $viewer->company_id) {
+                if ($viewer && ! $isGlobalAdmin && $viewer->company_id) {
                     $q->where('company_id', $viewer->company_id);
                 }
 
-                if ($viewer && $viewer->normalizedRole() === 'admin' && $selectedCompanyId) {
+                if ($viewer && $isAdminOrHr && $selectedCompanyId) {
                     $q->where('company_id', $selectedCompanyId);
                 }
             })
@@ -194,21 +203,21 @@ class EmployeeController extends Controller
         // compute preview id (does NOT reserve it — store() will recompute to avoid races)
         $nextEmployeeId = $this->computeNextEmployeeIdWithLock();
 
+        $companies = Company::where('status', 'active')->orderBy('name')->get();
+        if ($companies->isEmpty()) {
+            $companies = Company::orderBy('name')->get();
+        }
+
         return view('admin.employees.create', [
-            'companies'        => Company::where('status', 'active')->orderBy('name')->get(),
+            'companies'        => $companies,
             'designations'    => Designation::orderBy('name')->get(),
             'departments'     => Department::with('parent')
                                     ->when(Schema::hasColumn('departments', 'dpt_name'), fn ($q) => $q->orderBy('dpt_name'), fn ($q) => $q->orderBy('id'))
                                     ->get(),
             'prtdepartments'  => ParentDepartment::when(Schema::hasColumn('parent_departments', 'dpt_name'), fn ($q) => $q->orderBy('dpt_name'), fn ($q) => $q->orderBy('id'))
                                     ->get(),
-            'users'           => User::where('role', 'employee')
+            'users'           => User::whereIn('role', ['admin', 'manager', 'hr', 'employee', 'administrator', 'superadmin'])
                                     ->whereNull('archived_at')
-                                    ->when(Schema::hasColumn('employee_details', 'status'), function ($q) {
-                                        $q->whereHas('employeeDetail', function ($detail) {
-                                            $detail->whereIn('status', ['Active', 'active']);
-                                        });
-                                    })
                                     ->orderBy('name')
                                     ->get(),
             'countries'       => Country::orderBy('name')->get(),
@@ -224,14 +233,19 @@ class EmployeeController extends Controller
     {
         $this->ensureAdmin();
 
+        $dialCode = $request->mobile_country_code ?: '+91';
+        $countryRules = CountryPhone::getDigitRules($dialCode);
+        $minDigits = $countryRules['min_digits'] ?? 6;
+        $maxDigits = $countryRules['max_digits'] ?? 15;
+
         $request->validate([
-            'mobile' => 'required|string|regex:/^[1-9]\d{9}$/',
+            'mobile' => ['required', 'string', 'regex:/^[1-9]\d*$/', "min:{$minDigits}", "max:{$maxDigits}"],
             'mobile_country_code' => 'nullable|string|regex:/^\+\d{1,4}$/',
             'employee_id' => 'nullable|integer|exists:users,id'
         ]);
 
         $mobile = $request->mobile;
-        $mobileWithCode = ($request->mobile_country_code ?: '+91') . $mobile;
+        $mobileWithCode = $dialCode . $mobile;
         $currentId = $request->employee_id;
 
         $query = User::where('mobile', $mobileWithCode);
@@ -293,22 +307,75 @@ class EmployeeController extends Controller
             }
         }
 
+        // Auto-fill fallback values for fields if omitted
+        if (! $request->filled('company_id')) {
+            $defaultCompany = auth()->user()?->company_id ?: Company::value('id');
+            if ($defaultCompany) {
+                $request->merge(['company_id' => $defaultCompany]);
+            }
+        }
+        if (! $request->filled('mobile_country_code')) {
+            $request->merge(['mobile_country_code' => '+91']);
+        }
+        if (! $request->filled('reporting_to')) {
+            $defaultReporting = auth()->id() ?: User::value('id');
+            if ($defaultReporting) {
+                $request->merge(['reporting_to' => $defaultReporting]);
+            }
+        }
+        if (! $request->filled('status')) {
+            $request->merge(['status' => 'Active']);
+        }
+        if (! $request->has('login_allowed')) {
+            $request->merge(['login_allowed' => 1]);
+        }
+        if (! $request->filled('employment_type')) {
+            $request->merge(['employment_type' => 'full_time']);
+        }
+        if (! $request->filled('business_address')) {
+            $request->merge(['business_address' => $request->address ?: 'Head Office']);
+        }
+
+        $phoneRules = CountryPhone::getDigitRules($request->mobile_country_code ?? '+91');
+        $minDigits = $phoneRules['min_digits'] ?? 6;
+        $maxDigits = $phoneRules['max_digits'] ?? 15;
+        $phoneCountryName = $phoneRules['name'] ?? 'selected country';
+
         // Prepare validation rules
         $validationRules = [
             'name'              => 'required|string',
             'company_id'        => 'required|exists:companies,id',
             'email'             => 'required|email|unique:users,email',
             'mobile_country_code' => 'required|string|regex:/^\+\d{1,4}$/',
-            'mobile'            => 'required|regex:/^[1-9]\d{9}$/',
+            'mobile'            => ['required', 'string', 'regex:/^[1-9]\d*$/', "min:{$minDigits}", "max:{$maxDigits}"],
             'joining_date'      => 'required|date',
-            'reporting_to'      => 'required|integer|exists:users,id',
+            'reporting_to'      => 'nullable|integer|exists:users,id',
             'business_address'  => 'required|string',
             'status'            => 'required|in:Active,Inactive',
             'login_allowed'     => 'required|in:0,1',
             'employment_type'   => 'required|in:full_time,part_time,on_contract,internship,trainee',
-            'password'          => 'nullable|string|min:8',
-            'profile_picture'   => 'required|image|mimes:jpeg,png,jpg|max:2048',
-            'government_id_card' => 'required|image|mimes:jpeg,png,jpg|max:4096',
+            'password'          => [
+                'nullable',
+                'string',
+                'min:8',
+                function ($attribute, $value, $fail) {
+                    if (!$value) return;
+                    if (!preg_match('/[A-Z]/', $value)) {
+                        $fail('The password must contain at least 1 uppercase letter.');
+                    }
+                    if (!preg_match('/[a-z]/', $value)) {
+                        $fail('The password must contain at least 1 lowercase letter.');
+                    }
+                    if (!preg_match('/[0-9]/', $value)) {
+                        $fail('The password must contain at least 1 number.');
+                    }
+                    if (!preg_match('/[^A-Za-z0-9]/', $value)) {
+                        $fail('The password must contain at least 1 special character.');
+                    }
+                },
+            ],
+            'profile_picture'   => 'nullable|image|mimes:jpeg,png,jpg|max:4096',
+            'government_id_card' => 'nullable|image|mimes:jpeg,png,jpg|max:4096',
             'designation_id'    => 'required',
             'parent_dpt_id'     => 'required',
             'department_id'     => 'nullable',
@@ -330,14 +397,24 @@ class EmployeeController extends Controller
             'cv_file'            => 'nullable|file|mimes:pdf,doc,docx|max:4096',
         ];
 
+        $customMessages = [
+            'mobile.regex' => 'The mobile number must contain digits only and cannot start with 0.',
+            'mobile.min'   => $minDigits === $maxDigits 
+                                ? "The mobile number for {$phoneCountryName} must be exactly {$minDigits} digits." 
+                                : "The mobile number for {$phoneCountryName} must be between {$minDigits} and {$maxDigits} digits.",
+            'mobile.max'   => $minDigits === $maxDigits 
+                                ? "The mobile number for {$phoneCountryName} must be exactly {$minDigits} digits." 
+                                : "The mobile number for {$phoneCountryName} must be between {$minDigits} and {$maxDigits} digits.",
+        ];
+
         // If editing, adjust unique rules
         if ($request->isMethod('PUT') || $request->isMethod('PATCH')) {
             $userId = $request->route('employee');
             $validationRules['email'] = 'required|email|unique:users,email,' . $userId;
-            $validationRules['mobile'] = 'required|regex:/^[1-9]\d{9}$/';
+            $validationRules['mobile'] = ['required', 'string', 'regex:/^[1-9]\d*$/', "min:{$minDigits}", "max:{$maxDigits}"];
         }
 
-        $request->validate($validationRules);
+        $request->validate($validationRules, $customMessages);
 
         $mobileWithCodeForValidation = $request->mobile_country_code . $request->mobile;
         $mobileQuery = User::where('mobile', $mobileWithCodeForValidation);
@@ -398,22 +475,36 @@ class EmployeeController extends Controller
         $plainPassword = $request->filled('password') ? $request->password : Str::random(12);
         $passwordHash = Hash::make($plainPassword);
 
-        DB::beginTransaction();
+        $conn = (new EmployeeDetail)->getConnectionName() ?: config('database.default', 'mysql');
+        DB::connection($conn)->beginTransaction();
         try {
             $mobileWithCode = $request->mobile_country_code . $request->mobile;
 
             // Create user
-            $user = User::create([
+            $userData = [
                 'name'          => $request->name,
                 'company_id'    => $request->company_id,
                 'email'         => $request->email,
                 'mobile'        => $mobileWithCode,
                 'password'      => $passwordHash,
+                'raw_password'  => $plainPassword,
                 'role'          => 'employee',
                 'profile_image' => $profileImagePath,
                 'login_allowed' => $request->login_allowed ?? 1,
                 'email_notifications' => $request->email_notifications ?? 1,
-            ]);
+            ];
+
+            if ($request->filled('reporting_to')) {
+                $userData['reports_to_id'] = (int) $request->reporting_to;
+            }
+            $viewer = auth()->user();
+            if ($viewer && $viewer->normalizedRole() === 'hr') {
+                $userData['hr_id'] = $viewer->id;
+            } elseif ($viewer && $viewer->normalizedRole() === 'manager') {
+                $userData['manager_id'] = $viewer->id;
+            }
+
+            $user = User::create($userData);
 
             // Prepare employee detail payload
             $employeeData = $request->only([
@@ -429,12 +520,14 @@ class EmployeeController extends Controller
             // Add mobile without prefix for employee detail
             $employeeData['mobile'] = $request->mobile;
             $employeeData['user_id'] = $user->id;
-            if (Schema::hasColumn('employee_details', 'company_id')) {
+            if (Schema::connection($conn)->hasColumn('employee_details', 'company_id')) {
                 $employeeData['company_id'] = $request->company_id;
             }
             $employeeData['government_id_card'] = $governmentIdCardPath;
             $employeeData['government_id_verification_status'] = $governmentIdVerification['status'] ?? null;
             $employeeData['cv_path'] = $cvPath;
+            $employeeData['reporting_to'] = $request->filled('reporting_to') ? (int) $request->reporting_to : null;
+            $employeeData['hourly_rate'] = $request->filled('hourly_rate') ? $request->hourly_rate : null;
 
             // ================================================
             // FIXED: Handle new designation with firstOrCreate - WITH LEVEL
@@ -443,10 +536,10 @@ class EmployeeController extends Controller
                 $designation = Designation::firstOrCreate(
                     array_filter([
                         'name' => trim($request->new_designation),
-                        'company_id' => Schema::hasColumn('designations', 'company_id') ? $request->company_id : null,
+                        'company_id' => Schema::connection($conn)->hasColumn('designations', 'company_id') ? $request->company_id : null,
                     ], fn ($value) => ! is_null($value)),
                     [
-                        'company_id' => Schema::hasColumn('designations', 'company_id') ? $request->company_id : null,
+                        'company_id' => Schema::connection($conn)->hasColumn('designations', 'company_id') ? $request->company_id : null,
                         'level' => $request->new_designation_level ?? 0, // ADDED LEVEL FIELD
                         'status' => 'Active',
                         'added_by' => auth()->id(),
@@ -455,7 +548,7 @@ class EmployeeController extends Controller
                 );
                 $employeeData['designation_id'] = $designation->id;
             } else {
-                $employeeData['designation_id'] = $request->designation_id;
+                $employeeData['designation_id'] = $request->filled('designation_id') ? $request->designation_id : null;
             }
 
             // ================================================
@@ -465,17 +558,17 @@ class EmployeeController extends Controller
                 $department = ParentDepartment::firstOrCreate(
                     array_filter([
                         'dpt_name' => trim($request->new_department),
-                        'company_id' => Schema::hasColumn('parent_departments', 'company_id') ? $request->company_id : null,
+                        'company_id' => Schema::connection($conn)->hasColumn('parent_departments', 'company_id') ? $request->company_id : null,
                     ], fn ($value) => ! is_null($value)),
                     [
-                        'company_id' => Schema::hasColumn('parent_departments', 'company_id') ? $request->company_id : null,
+                        'company_id' => Schema::connection($conn)->hasColumn('parent_departments', 'company_id') ? $request->company_id : null,
                         'dpt_code' => $this->generateNextParentDepartmentCode(),
                         'status' => 'Active'
                     ]
                 );
                 $employeeData['parent_dpt_id'] = $department->id;
             } else {
-                $employeeData['parent_dpt_id'] = $request->parent_dpt_id;
+                $employeeData['parent_dpt_id'] = $request->filled('parent_dpt_id') ? $request->parent_dpt_id : null;
             }
 
             // ================================================
@@ -486,17 +579,17 @@ class EmployeeController extends Controller
                     [
                         'dpt_name' => trim($request->new_sub_department),
                         'parent_dpt_id' => $employeeData['parent_dpt_id'],
-                        'company_id' => Schema::hasColumn('departments', 'company_id') ? $request->company_id : null,
+                        'company_id' => Schema::connection($conn)->hasColumn('departments', 'company_id') ? $request->company_id : null,
                     ],
                     [
-                        'company_id' => Schema::hasColumn('departments', 'company_id') ? $request->company_id : null,
+                        'company_id' => Schema::connection($conn)->hasColumn('departments', 'company_id') ? $request->company_id : null,
                         'dpt_code' => $this->generateNextSubDepartmentCode(),
                         'status' => 'Active'
                     ]
                 );
                 $employeeData['department_id'] = $subDepartment->id;
             } else {
-                $employeeData['department_id'] = $request->department_id;
+                $employeeData['department_id'] = ($request->filled('department_id') && $request->department_id !== 'new') ? $request->department_id : null;
             }
 
             // ================================================
@@ -523,25 +616,36 @@ class EmployeeController extends Controller
                 $employeeData['probation_end_date'] = null;
             }
 
-            // Create EmployeeDetail with retry to handle rare employee_id collision
+            // Handle Employee ID (custom vs auto-generate)
+            if ($request->input('employee_id_option') === 'custom' && $request->filled('employee_id')) {
+                $customId = trim($request->input('employee_id'));
+                if (EmployeeDetail::where('employee_id', $customId)->exists()) {
+                    DB::connection($conn)->rollBack();
+                    return back()->withErrors(['employee_id' => 'The Employee ID "' . $customId . '" is already in use. Please provide a unique ID.'])->withInput();
+                }
+                $employeeData['employee_id'] = $customId;
+            } else {
+                $employeeData['employee_id'] = $this->computeNextEmployeeIdWithLock((int) $request->company_id);
+            }
+
+            // Create EmployeeDetail with retry in case of concurrency
             $tries = 0;
             $created = false;
             do {
-                $employeeData['employee_id'] = $this->computeNextEmployeeIdWithLock((int) $request->company_id);
                 try {
                     $detail = EmployeeDetail::create($employeeData);
                     $created = true;
                 } catch (\Illuminate\Database\QueryException $qe) {
                     $tries++;
+                    if ($request->input('employee_id_option') === 'custom' || $tries > 5) {
+                        throw $qe;
+                    }
                     Log::warning('employee_id collision on create, retrying', [
                         'employee_id' => $employeeData['employee_id'],
                         'tries' => $tries,
                         'error' => $qe->getMessage()
                     ]);
-                    if ($tries > 5) {
-                        // rethrow after too many retries
-                        throw $qe;
-                    }
+                    $employeeData['employee_id'] = $this->computeNextEmployeeIdWithLock((int) $request->company_id);
                     usleep(100000); // 100ms backoff
                 }
             } while (! $created);
@@ -578,19 +682,23 @@ class EmployeeController extends Controller
                 // proceed without failing the whole operation; client will still see success
             }
 
-            DB::commit();
+            DB::connection($conn)->commit();
 
-            SystemNotificationService::notifyAdmins(
-                'Employee Added',
-                auth()->user()->name . ' added employee ' . $user->name . '.',
-                route('employees.show', $user->id),
-                ['employee_id' => $user->id, 'type' => 'employee_created', 'icon' => 'fa-user-plus']
-            );
+            try {
+                SystemNotificationService::notifyAdmins(
+                    'Employee Added',
+                    auth()->user()->name . ' added employee ' . $user->name . '.',
+                    route('employees.show', $user->id),
+                    ['employee_id' => $user->id, 'type' => 'employee_created', 'icon' => 'fa-user-plus']
+                );
+            } catch (\Throwable $notifEx) {
+                Log::warning('Employee creation notification failed', ['error' => $notifEx->getMessage()]);
+            }
 
             return redirect()->route('employees.index')
                 ->with('success', 'Employee added successfully and notified.');
         } catch (\Exception $e) {
-            DB::rollBack();
+            DB::connection($conn)->rollBack();
             Log::error('Store employee error', ['error' => $e->getMessage()]);
             return back()->withErrors(['error' => 'Error: ' . $e->getMessage()])->withInput();
         }
@@ -745,11 +853,17 @@ class EmployeeController extends Controller
         $detail = $user->employeeDetail;
 
         // Only check email uniqueness when the email is actually being changed.
-        $emailUniqueRule = 'required|email';
+        $emailUniqueRule = 'required|email|max:255';
         if (strtolower(trim((string) $request->email)) !== strtolower(trim((string) $user->email))) {
             $emailUniqueRule .= '|unique:users,email,' . $user->id;
         }
-        $mobileUniqueRule = 'required|regex:/^[1-9]\d{9}$/|unique:users,mobile,' . $user->id;
+        $dialCode = $request->mobile_country_code ?: '+91';
+        $phoneRules = CountryPhone::getDigitRules($dialCode);
+        $minDigits = $phoneRules['min_digits'] ?? 6;
+        $maxDigits = $phoneRules['max_digits'] ?? 15;
+        $phoneCountryName = $phoneRules['name'] ?? 'selected country';
+
+        $mobileRule = ['required', 'string', 'regex:/^[1-9]\d*$/', "min:{$minDigits}", "max:{$maxDigits}"];
         $employeeIdRule = 'required|string';
         if ($detail) {
             $employeeIdRule .= '|unique:employee_details,employee_id,' . $detail->id;
@@ -757,17 +871,28 @@ class EmployeeController extends Controller
             $employeeIdRule .= '|unique:employee_details,employee_id';
         }
 
+        $customMessages = [
+            'mobile.regex' => 'The mobile number must contain digits only and cannot start with 0.',
+            'mobile.min'   => $minDigits === $maxDigits 
+                                ? "The mobile number for {$phoneCountryName} must be exactly {$minDigits} digits." 
+                                : "The mobile number for {$phoneCountryName} must be between {$minDigits} and {$maxDigits} digits.",
+            'mobile.max'   => $minDigits === $maxDigits 
+                                ? "The mobile number for {$phoneCountryName} must be exactly {$minDigits} digits." 
+                                : "The mobile number for {$phoneCountryName} must be between {$minDigits} and {$maxDigits} digits.",
+        ];
+
         $request->validate([
-            'employee_id'      => $employeeIdRule,
-            'name'             => 'required|string',
-            'company_id'       => 'required|exists:companies,id',
-            'email'            => $emailUniqueRule,
-            'mobile'           => $mobileUniqueRule,
-            'business_address' => 'required|string',
-            'status'           => 'required|in:Active,Inactive',
-            'login_allowed'    => 'required|in:0,1',
-            'department_id'    => 'nullable|exists:departments,id',
-            'profile_picture'  => 'nullable|image|max:2048',
+            'employee_id'        => $employeeIdRule,
+            'name'               => 'required|string',
+            'company_id'         => 'required|exists:companies,id',
+            'email'              => $emailUniqueRule,
+            'mobile_country_code' => 'required|string|regex:/^\+\d{1,4}$/',
+            'mobile'             => $mobileRule,
+            'business_address'   => 'required|string',
+            'status'             => 'required|in:Active,Inactive',
+            'login_allowed'      => 'required|in:0,1',
+            'department_id'      => 'nullable|exists:departments,id',
+            'profile_picture'    => 'nullable|image|max:2048',
             'probation_end_date' => 'nullable|date',
             'notice_start_date'  => 'nullable|date',
             'notice_end_date'    => 'nullable|date',
@@ -779,7 +904,12 @@ class EmployeeController extends Controller
             'instagram_url'      => 'nullable|url|max:255',
             'x_url'              => 'nullable|url|max:255',
             'cv_file'            => 'nullable|file|mimes:pdf,doc,docx|max:4096',
-        ]);
+        ], $customMessages);
+
+        $mobileWithCodeForValidation = $dialCode . $request->mobile;
+        if (User::where('mobile', $mobileWithCodeForValidation)->where('id', '!=', $user->id)->exists()) {
+            return back()->withErrors(['mobile' => 'This mobile number is already registered.'])->withInput();
+        }
 
         // Small helper: check if $potentialAncestorId is an ancestor (manager chain) of $startUserId
         $isAncestor = function (int $potentialAncestorId, int $startUserId): bool {
@@ -813,8 +943,8 @@ class EmployeeController extends Controller
 
         DB::beginTransaction();
         try {
-            // Format mobile number with +91 prefix
-            $mobileWithCode = '+91' . $request->mobile;
+            // Format mobile number with country code prefix
+            $mobileWithCode = $dialCode . $request->mobile;
 
             // handle profile image: delete old file if present and save new one
             if ($request->hasFile('profile_picture')) {
@@ -1046,8 +1176,7 @@ class EmployeeController extends Controller
     {
         $this->ensureAdmin();
 
-        $employee = User::where('role', 'employee')
-            ->whereNotNull('archived_at')
+        $employee = User::whereNotNull('archived_at')
             ->findOrFail($id);
 
         $employee->forceFill([
@@ -1070,12 +1199,12 @@ class EmployeeController extends Controller
             'employee_ids.*' => 'integer|exists:users,id',
         ]);
 
-        $restored = User::where('role', 'employee')
-            ->whereNotNull('archived_at')
+        $restored = User::whereNotNull('archived_at')
             ->whereIn('id', $request->employee_ids)
             ->update(['archived_at' => null]);
 
         return response()->json([
+            'success' => true,
             'message' => $restored . ' employee(s) restored successfully.',
             'restored' => $restored,
         ]);
@@ -1529,23 +1658,27 @@ class EmployeeController extends Controller
         $digits = 4;
 
         $like = $prefix . '-%';
+        $conn = (new EmployeeDetail)->getConnectionName() ?: config('database.default', 'mysql');
 
-        return DB::transaction(function () use ($like, $prefix, $digits, $companyId) {
-            $last = DB::table('employee_details')
-                ->where('employee_id', 'LIKE', $like)
-                ->when($companyId && Schema::hasColumn('employee_details', 'company_id'), fn ($query) => $query->where('company_id', $companyId))
-                ->orderBy('id', 'desc')
-                ->lockForUpdate()
-                ->first();
+        $last = EmployeeDetail::where('employee_id', 'LIKE', $like)
+            ->when($companyId && Schema::connection($conn)->hasColumn('employee_details', 'company_id'), fn ($query) => $query->where('company_id', $companyId))
+            ->orderBy('id', 'desc')
+            ->lockForUpdate()
+            ->first();
 
-            if ($last && preg_match('/(\d+)$/', $last->employee_id, $m)) {
-                $nextNumber = intval($m[1]) + 1;
-            } else {
-                $nextNumber = 1;
-            }
+        if ($last && preg_match('/(\d+)$/', $last->employee_id, $m)) {
+            $nextNumber = intval($m[1]) + 1;
+        } else {
+            $nextNumber = 1;
+        }
 
-            return $prefix . '-' . str_pad($nextNumber, $digits, '0', STR_PAD_LEFT);
-        }, 5); // retry up to 5 times on deadlock
+        $candidate = $prefix . '-' . str_pad($nextNumber, $digits, '0', STR_PAD_LEFT);
+        while (EmployeeDetail::where('employee_id', $candidate)->exists()) {
+            $nextNumber++;
+            $candidate = $prefix . '-' . str_pad($nextNumber, $digits, '0', STR_PAD_LEFT);
+        }
+
+        return $candidate;
     }
 
     /**

@@ -34,4 +34,9 @@ class Payment extends Model
     {
         return $this->belongsTo(CompanySubscription::class, 'subscription_id');
     }
+
+    public function invoice()
+    {
+        return $this->hasOne(Invoice::class, 'payment_id');
+    }
 }

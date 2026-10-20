@@ -82,7 +82,7 @@
         .meta-badge {
             display: inline-block;
             padding: 2px 12px;
-            background: #d1fae5;
+            background: #E0E7FF;
             color: #065f46;
             border-radius: 20px;
             font-size: 9px;
@@ -194,7 +194,7 @@
         }
 
         .status-badge.present {
-            background: #d1fae5;
+            background: #E0E7FF;
             color: #065f46;
         }
 
@@ -297,7 +297,7 @@
             display: inline-block;
             width: 14px;
             height: 14px;
-            background: #d1fae5;
+            background: #E0E7FF;
             border-radius: 50%;
             text-align: center;
             line-height: 14px;

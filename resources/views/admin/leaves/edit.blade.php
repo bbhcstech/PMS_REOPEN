@@ -180,6 +180,9 @@
                                            value="{{ $leave->duration == 'multiple' ? $leave->end_date : '' }}"
                                            {{ $leave->duration == 'multiple' ? 'required' : '' }}>
                                 </div>
+                                <div id="endDateError" class="end-date-error-msg mt-2" style="display:none;color:#ef4444;font-size:0.84rem;font-weight:700;padding:6px 10px;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.35);border-radius:8px;align-items:center;gap:6px;">
+                                    <i class="bi bi-exclamation-circle-fill text-danger me-1"></i> <span>End date can't be backdated. Please select a date on or after start date.</span>
+                                </div>
                                 @if($leave->duration == 'multiple')
                                 <small class="text-muted">Current: {{ \Carbon\Carbon::parse($leave->end_date)->format('d M, Y') }}</small>
                                 @endif
@@ -287,7 +290,7 @@
                         <button type="button" class="btn btn-outline-warning" onclick="resetForm()">
                             <i class="bi bi-arrow-clockwise me-2"></i>Reset Changes
                         </button>
-                        <button type="submit" class="btn btn-primary">
+                        <button type="submit" id="editLeaveSubmitBtn" class="btn btn-primary">
                             <i class="bi bi-save me-2"></i>Update Leave
                         </button>
                     </div>
@@ -408,66 +411,173 @@ function toggleDateFields(value) {
     }
 }
 
-// End date validation
+// End date validation & submit prevention
 document.addEventListener('DOMContentLoaded', function() {
     const startDateInput = document.getElementById('start_date');
     const endDateInput = document.getElementById('end_date');
+    const endDateError = document.getElementById('endDateError');
+    const form = document.getElementById('editLeaveForm');
+    const submitBtn = document.getElementById('editLeaveSubmitBtn') || (form ? form.querySelector('button[type="submit"]') : null);
 
-    if (startDateInput && endDateInput) {
-        startDateInput.addEventListener('change', function() {
-            if (this.value) {
-                endDateInput.min = this.value;
-                if (endDateInput.value && endDateInput.value < this.value) {
-                    endDateInput.value = this.value;
-                }
-            }
-        });
+    let isDateInvalid = false;
 
-        endDateInput.addEventListener('change', function() {
-            if (this.value && startDateInput.value && this.value < startDateInput.value) {
-                alert('End date cannot be earlier than start date.');
-                this.value = startDateInput.value;
-            }
+    function parseDate(val) {
+        if (!val || typeof val !== 'string') return null;
+        val = val.trim();
+        if (!val) return null;
+
+        const ymd = val.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+        if (ymd) {
+            return new Date(parseInt(ymd[1], 10), parseInt(ymd[2], 10) - 1, parseInt(ymd[3], 10));
+        }
+        const dmy = val.match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})$/);
+        if (dmy) {
+            return new Date(parseInt(dmy[3], 10), parseInt(dmy[2], 10) - 1, parseInt(dmy[1], 10));
+        }
+        const d = new Date(val);
+        return isNaN(d.getTime()) ? null : d;
+    }
+
+    function getDateFromInput(el) {
+        if (!el) return null;
+        if (el.valueAsDate && !isNaN(el.valueAsDate.getTime())) {
+            return new Date(el.valueAsDate.getUTCFullYear(), el.valueAsDate.getUTCMonth(), el.valueAsDate.getUTCDate());
+        }
+        return parseDate(el.value);
+    }
+
+    function showDateError(msg) {
+        isDateInvalid = true;
+        if (endDateError) {
+            const span = endDateError.querySelector('span');
+            if (span) span.textContent = msg;
+            else endDateError.textContent = msg;
+            endDateError.style.setProperty('display', 'flex', 'important');
+        }
+        if (endDateInput) {
+            endDateInput.classList.add('is-invalid');
+            endDateInput.style.setProperty('border-color', '#ef4444', 'important');
+            endDateInput.style.setProperty('box-shadow', '0 0 0 3px rgba(239, 68, 68, 0.25)', 'important');
+            endDateInput.setCustomValidity(msg);
+        }
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.style.setProperty('opacity', '0.5', 'important');
+            submitBtn.style.setProperty('cursor', 'not-allowed', 'important');
+            submitBtn.setAttribute('title', msg);
+        }
+    }
+
+    function clearDateError() {
+        isDateInvalid = false;
+        if (endDateError) {
+            endDateError.style.setProperty('display', 'none', 'important');
+        }
+        if (endDateInput) {
+            endDateInput.classList.remove('is-invalid');
+            endDateInput.style.removeProperty('border-color');
+            endDateInput.style.removeProperty('box-shadow');
+            endDateInput.setCustomValidity('');
+        }
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.style.removeProperty('opacity');
+            submitBtn.style.removeProperty('cursor');
+            submitBtn.removeAttribute('title');
+        }
+    }
+
+    function validateDates() {
+        const duration = document.getElementById('duration')?.value;
+        if (duration !== 'multiple') {
+            clearDateError();
+            return true;
+        }
+
+        const s = getDateFromInput(startDateInput);
+        const e = getDateFromInput(endDateInput);
+
+        if (!s || !e) {
+            clearDateError();
+            return false;
+        }
+
+        if (e.getTime() < s.getTime()) {
+            showDateError("End date can't be backdated. Please select a date on or after start date.");
+            return false;
+        }
+
+        clearDateError();
+        return true;
+    }
+
+    if (startDateInput) {
+        ['input', 'change', 'keyup', 'blur'].forEach(evt => {
+            startDateInput.addEventListener(evt, validateDates);
         });
     }
+
+    if (endDateInput) {
+        ['input', 'change', 'keyup', 'blur'].forEach(evt => {
+            endDateInput.addEventListener(evt, validateDates);
+        });
+    }
+
+    const durationSelect = document.getElementById('duration');
+    if (durationSelect) {
+        durationSelect.addEventListener('change', validateDates);
+    }
+
+    validateDates();
+
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const duration = document.getElementById('duration')?.value;
+            let isValid = true;
+            let errorMessage = '';
+
+            if (!duration) {
+                errorMessage = 'Please select a duration.';
+                isValid = false;
+            } else if (duration === 'multiple') {
+                const s = getDateFromInput(startDateInput);
+                const e = getDateFromInput(endDateInput);
+
+                if (!startDateInput?.value || !endDateInput?.value) {
+                    errorMessage = 'Please select both start and end dates for multiple days leave.';
+                    isValid = false;
+                } else if (s && e && e.getTime() < s.getTime()) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    e.stopImmediatePropagation();
+                    showDateError("End date can't be backdated. Please select a date on or after start date.");
+                    endDateInput.focus();
+                    return false;
+                }
+            } else {
+                const singleDate = document.getElementById('date')?.value;
+                if (!singleDate) {
+                    errorMessage = 'Please select a date for your leave.';
+                    isValid = false;
+                }
+            }
+
+            if (isDateInvalid) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                showDateError("End date can't be backdated. Please select a date on or after start date.");
+                if (endDateInput) endDateInput.focus();
+                return false;
+            }
+
+            if (!isValid) {
+                e.preventDefault();
+                showAlert(errorMessage, 'danger');
+            }
+        }, true);
+    }
 });
-
-// Form validation
-const form = document.getElementById('editLeaveForm');
-if (form) {
-    form.addEventListener('submit', function(e) {
-        const duration = document.getElementById('duration').value;
-        let isValid = true;
-        let errorMessage = '';
-
-        if (!duration) {
-            errorMessage = 'Please select a duration.';
-            isValid = false;
-        } else if (duration === 'multiple') {
-            const startDate = document.getElementById('start_date').value;
-            const endDate = document.getElementById('end_date').value;
-
-            if (!startDate || !endDate) {
-                errorMessage = 'Please select both start and end dates for multiple days leave.';
-                isValid = false;
-            } else if (startDate > endDate) {
-                errorMessage = 'End date cannot be earlier than start date.';
-                isValid = false;
-            }
-        } else {
-            const singleDate = document.getElementById('date').value;
-            if (!singleDate) {
-                errorMessage = 'Please select a date for your leave.';
-                isValid = false;
-            }
-        }
-
-        if (!isValid) {
-            e.preventDefault();
-            showAlert(errorMessage, 'danger');
-        }
-    });
-}
 
 function showAlert(message, type) {
     // Remove existing alerts

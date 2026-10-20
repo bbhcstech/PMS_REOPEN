@@ -1,10 +1,10 @@
 @php
     $toastMessages = [];
 
-    foreach (['success', 'error', 'danger', 'warning', 'info', 'status', 'message'] as $toastType) {
+    foreach (['success', 'error', 'danger', 'warning', 'info', 'status', 'message', 'alert', 'notification', 'resent', 'verified'] as $toastType) {
         if (session()->has($toastType)) {
             $toastMessages[] = [
-                'type' => in_array($toastType, ['status', 'message'], true) ? 'info' : ($toastType === 'danger' ? 'error' : $toastType),
+                'type' => in_array($toastType, ['status', 'message', 'resent', 'verified'], true) ? 'info' : ($toastType === 'danger' ? 'error' : $toastType),
                 'message' => session($toastType),
             ];
         }
@@ -18,21 +18,14 @@
             ];
         }
     }
-
-    $toastMeta = [
-        'success' => ['title' => 'Success', 'icon' => 'fa-check', 'class' => 'pms-toast-success'],
-        'error' => ['title' => 'Error', 'icon' => 'fa-triangle-exclamation', 'class' => 'pms-toast-error'],
-        'warning' => ['title' => 'Warning', 'icon' => 'fa-exclamation', 'class' => 'pms-toast-warning'],
-        'info' => ['title' => 'Info', 'icon' => 'fa-circle-info', 'class' => 'pms-toast-info'],
-    ];
 @endphp
 
 <style>
     .pms-toast-stack {
         position: fixed;
-        top: 1.25rem;
+        top: 0.75rem;
         right: 1.25rem;
-        z-index: 2147483640;
+        z-index: 2147483647 !important;
         display: flex;
         flex-direction: column;
         gap: 0.85rem;
@@ -45,10 +38,10 @@
         display: grid;
         grid-template-columns: 42px 1fr auto;
         gap: 0.85rem;
-        align-items: start;
-        padding: 1rem 1rem 0.95rem;
+        align-items: center;
+        padding: 0.85rem 1rem;
         border-radius: 16px;
-        background: rgba(255, 255, 255, 0.96);
+        background: rgba(255, 255, 255, 0.98);
         border: 1px solid rgba(15, 23, 42, 0.08);
         box-shadow: 0 22px 60px rgba(15, 23, 42, 0.18);
         overflow: hidden;
@@ -166,7 +159,7 @@
 
     @media (max-width: 576px) {
         .pms-toast-stack {
-            top: 0.85rem;
+            top: 0.75rem;
             right: 0.75rem;
             left: 0.75rem;
             width: auto;
@@ -187,12 +180,16 @@
             var stack = document.getElementById('pmsToastStack');
             if (!stack || !message) return;
 
+            type = (type || 'info').toLowerCase();
+            if (type === 'danger') type = 'error';
+            if (type === 'notice' || type === 'status' || type === 'message' || type === 'alert' || type === 'notification') type = 'info';
+
             var meta = {
                 success: { title: 'Success', icon: 'fa-check', className: 'pms-toast-success' },
                 error: { title: 'Error', icon: 'fa-triangle-exclamation', className: 'pms-toast-error' },
                 warning: { title: 'Warning', icon: 'fa-exclamation', className: 'pms-toast-warning' },
                 info: { title: 'Info', icon: 'fa-circle-info', className: 'pms-toast-info' }
-            }[type || 'info'];
+            }[type] || { title: 'Notification', icon: 'fa-circle-info', className: 'pms-toast-info' };
 
             var toast = document.createElement('div');
             toast.className = 'pms-toast ' + meta.className;
@@ -220,6 +217,24 @@
             setTimeout(closeToast, 5200);
         }
     };
+
+    window.showToast = function (message, type, title) {
+        if (typeof type === 'boolean') {
+            type = type ? 'success' : 'error';
+        }
+        if (window.PMSToast && window.PMSToast.show) {
+            window.PMSToast.show(message, type, title);
+        }
+    };
+
+    if (typeof window.toastr === 'undefined') {
+        window.toastr = {
+            success: function(msg, title) { window.showToast(msg, 'success', title); },
+            error: function(msg, title) { window.showToast(msg, 'error', title); },
+            warning: function(msg, title) { window.showToast(msg, 'warning', title); },
+            info: function(msg, title) { window.showToast(msg, 'info', title); }
+        };
+    }
 
     document.addEventListener('DOMContentLoaded', function () {
         var messages = @json($toastMessages);

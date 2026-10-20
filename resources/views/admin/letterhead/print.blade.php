@@ -58,7 +58,7 @@
         }
 
         .btn-print {
-            background: #0f744c;
+            background: #2F6BFF;
             color: #ffffff;
         }
 
@@ -106,7 +106,7 @@
             opacity: {{ $letterhead->watermark_opacity ?: 0.08 }};
             font-size: {{ $letterhead->watermark_size ?: 48 }}pt;
             font-weight: 900;
-            color: {{ $letterhead->primary_color ?: '#0f744c' }};
+            color: {{ $letterhead->primary_color ?: '#2F6BFF' }};
             text-transform: uppercase;
             letter-spacing: 6px;
             pointer-events: none;
@@ -148,7 +148,7 @@
         .subject-line {
             font-size: 10.5pt;
             font-weight: 800;
-            color: #0f744c;
+            color: #2F6BFF;
             text-decoration: underline;
             margin: 1rem 0 1rem;
         }

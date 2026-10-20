@@ -55,9 +55,9 @@
     }
 
     .back-button {
-        background: #f0f9f4;
-        color: #0f744c;
-        border: 1px solid rgba(16, 185, 129, 0.2);
+        background: #F8FAFC;
+        color: #2F6BFF;
+        border: 1px solid rgba(47, 107, 255, 0.2);
     }
 
     .search-button {
@@ -95,8 +95,8 @@
     }
 
     .total-badge {
-        background: #ecfdf5;
-        color: #059669;
+        background: #EEF2FF;
+        color: #2F6BFF;
         border-radius: 999px;
         padding: 0.5rem 0.9rem;
         font-weight: 800;
@@ -340,9 +340,9 @@
                                 <td>{{ $attendances->firstItem() + $index }}</td>
                                 <td>
                                     <div class="employee-cell">
-                                        <img src="{{ $attendance->user?->profile_image ? asset($attendance->user->profile_image) : asset('images/default-avatar.png') }}"
+                                        <img src="{{ (!empty($attendance->user?->profile_image) && file_exists(public_path($attendance->user->profile_image))) ? asset($attendance->user->profile_image) : asset('images/default-avatar.png') }}"
                                              alt="{{ $attendance->user?->name ?? 'Employee' }}"
-                                             onerror="this.onerror=null; this.src='{{ asset('admin/assets/img/avatars/1.png') }}';">
+                                             onerror="this.onerror=null; this.src='{{ asset('images/default-avatar.png') }}';">
                                         <div>
                                             <div class="employee-name">{{ $attendance->user?->name ?? '-' }}</div>
                                             <div class="employee-meta">{{ $attendance->user?->employeeDetail?->designation?->name ?? '-' }}</div>

@@ -133,7 +133,7 @@
 @push('css')
 <style>
     .dt-buttons .btn { border-radius: 50rem !important; padding: 0.35rem 0.9rem !important; font-size: 0.82rem !important; font-weight: 600 !important; margin-right: 0.35rem !important; background: #ffffff !important; border: 1px solid #e5e7eb !important; color: #374151 !important; }
-    .dt-buttons .btn:hover { background: #e4f3eb !important; color: #0f744c !important; }
+    .dt-buttons .btn:hover { background: #EEF2FF !important; color: #2F6BFF !important; }
     .dataTables_filter input { border-radius: 50rem !important; padding: 0.35rem 1rem !important; border: 1px solid #d1d5db !important; }
 </style>
 @endpush

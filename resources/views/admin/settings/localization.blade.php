@@ -4,11 +4,175 @@
 
 @push('styles')
 <style>
+    /* ==========================================================================
+       LOCALIZATION SETTINGS MASTER THEME (LIGHT & DARK MODE)
+       Scoped token design system ensuring 100% theme fidelity
+       ========================================================================== */
+
+    /* ----- LIGHT MODE DESIGN TOKENS ----- */
+    .localization-settings-page {
+        --loc-page-bg: linear-gradient(135deg, #F8FAFC 0%, #EEF2FF 50%, #F8FAFC 100%);
+        --loc-card-bg: rgba(255, 255, 255, 0.95);
+        --loc-card-border: rgba(47, 107, 255, 0.14);
+        --loc-card-shadow: 0 10px 30px -10px rgba(47, 107, 255, 0.08);
+        --loc-card-hover-shadow: 0 20px 35px -12px rgba(47, 107, 255, 0.15);
+
+        --loc-text-title: #0F172A;
+        --loc-text-body: #334155;
+        --loc-text-muted: #64748B;
+        --loc-heading-gradient: linear-gradient(135deg, #0F172A 0%, #2F6BFF 50%, #10B981 100%);
+
+        --loc-divider: rgba(47, 107, 255, 0.12);
+
+        /* Inputs & Form Controls */
+        --loc-input-bg: #FFFFFF;
+        --loc-input-border: rgba(47, 107, 255, 0.22);
+        --loc-input-color: #0F172A;
+        --loc-input-focus-border: #60A5FA;
+        --loc-input-focus-shadow: 0 0 0 4px rgba(79, 131, 255, 0.15);
+        --loc-input-icon: #2F6BFF;
+        --loc-input-readonly-bg: #F1F5F9;
+        --loc-input-readonly-color: #475569;
+        --loc-select-option-bg: #FFFFFF;
+        --loc-select-option-color: #0F172A;
+        --loc-select-arrow: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%232F6BFF' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+
+        /* Section Badges */
+        --loc-badge-bg: #EEF2FF;
+        --loc-badge-border: rgba(47, 107, 255, 0.2);
+        --loc-badge-color: #2F6BFF;
+
+        /* Executive Summary Stat Cards */
+        --loc-stat-bg: #FFFFFF;
+        --loc-stat-border: rgba(47, 107, 255, 0.14);
+        --loc-stat-title: #64748B;
+        --loc-stat-val: #0F172A;
+
+        /* Stat Icon Palette */
+        --loc-icon-curr-bg: linear-gradient(145deg, #EEF2FF, #E0E7FF);
+        --loc-icon-curr-color: #2F6BFF;
+        --loc-icon-tz-bg: linear-gradient(145deg, #E0F2FE, #BAE6FD);
+        --loc-icon-tz-color: #0284C7;
+        --loc-icon-lang-bg: linear-gradient(145deg, #FEF3C7, #FDE68A);
+        --loc-icon-lang-color: #D97706;
+        --loc-icon-format-bg: linear-gradient(145deg, #E0E7FF, #C7D2FE);
+        --loc-icon-format-color: #4F46E5;
+
+        /* Navigation Buttons */
+        --loc-btn-back-bg: #FFFFFF;
+        --loc-btn-back-border: rgba(47, 107, 255, 0.25);
+        --loc-btn-back-color: #2F6BFF;
+        --loc-btn-back-hover-bg: #EEF2FF;
+        --loc-btn-back-hover-color: #1E4FCC;
+
+        /* Alerts & Badges */
+        --loc-alert-viewonly-bg: linear-gradient(135deg, #EFF6FF, #DBEAFE);
+        --loc-alert-viewonly-border: #3B82F6;
+        --loc-alert-viewonly-title: #1E40AF;
+        --loc-alert-viewonly-text: #1E3A8A;
+        --loc-alert-viewonly-icon: #2563EB;
+
+        --loc-alert-success-bg: rgba(220, 252, 231, 0.95);
+        --loc-alert-success-border: #10B981;
+        --loc-alert-success-text: #065F46;
+
+        --loc-readonly-badge-bg: #F1F5F9;
+        --loc-readonly-badge-border: #CBD5E1;
+        --loc-readonly-badge-color: #64748B;
+    }
+
+    /* ----- DARK MODE DESIGN TOKENS ----- */
+    html[data-pms-theme="dark"] .localization-settings-page,
+    html[data-theme="dark"] .localization-settings-page,
+    html[data-bs-theme="dark"] .localization-settings-page,
+    body[data-pms-theme="dark"] .localization-settings-page,
+    body[data-theme="dark"] .localization-settings-page,
+    body[data-bs-theme="dark"] .localization-settings-page,
+    body.dark-mode .localization-settings-page,
+    .dark-mode .localization-settings-page,
+    [data-pms-theme="dark"] .localization-settings-page,
+    [data-theme="dark"] .localization-settings-page,
+    [data-bs-theme="dark"] .localization-settings-page {
+        --loc-page-bg: #070B1A;
+        --loc-card-bg: #0F1530;
+        --loc-card-border: rgba(238, 241, 251, 0.09);
+        --loc-card-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+        --loc-card-hover-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.7);
+
+        --loc-text-title: #EEF1FB;
+        --loc-text-body: #9AA3C7;
+        --loc-text-muted: #848CB0;
+        --loc-heading-gradient: linear-gradient(135deg, #60A5FA 0%, #22D3EE 50%, #34D399 100%);
+
+        --loc-divider: rgba(238, 241, 251, 0.08);
+
+        /* Inputs & Form Controls */
+        --loc-input-bg: #141B3D;
+        --loc-input-border: rgba(238, 241, 251, 0.14);
+        --loc-input-color: #EEF1FB;
+        --loc-input-focus-border: #4F83FF;
+        --loc-input-focus-shadow: 0 0 0 4px rgba(47, 107, 255, 0.28);
+        --loc-input-icon: #60A5FA;
+        --loc-input-readonly-bg: #0B1028;
+        --loc-input-readonly-color: #848CB0;
+        --loc-select-option-bg: #141B3D;
+        --loc-select-option-color: #EEF1FB;
+        --loc-select-arrow: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%2360A5FA' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+
+        /* Section Badges */
+        --loc-badge-bg: rgba(47, 107, 255, 0.16);
+        --loc-badge-border: rgba(96, 165, 250, 0.3);
+        --loc-badge-color: #60A5FA;
+
+        /* Executive Summary Stat Cards */
+        --loc-stat-bg: #141B3D;
+        --loc-stat-border: rgba(238, 241, 251, 0.10);
+        --loc-stat-title: #848CB0;
+        --loc-stat-val: #EEF1FB;
+
+        /* Stat Icon Palette */
+        --loc-icon-curr-bg: rgba(47, 107, 255, 0.22);
+        --loc-icon-curr-color: #60A5FA;
+        --loc-icon-tz-bg: rgba(2, 132, 199, 0.22);
+        --loc-icon-tz-color: #38BDF8;
+        --loc-icon-lang-bg: rgba(217, 119, 6, 0.22);
+        --loc-icon-lang-color: #FBBF24;
+        --loc-icon-format-bg: rgba(79, 70, 229, 0.22);
+        --loc-icon-format-color: #818CF8;
+
+        /* Navigation Buttons */
+        --loc-btn-back-bg: #141B3D;
+        --loc-btn-back-border: rgba(238, 241, 251, 0.14);
+        --loc-btn-back-color: #60A5FA;
+        --loc-btn-back-hover-bg: #1A2247;
+        --loc-btn-back-hover-color: #93C5FD;
+
+        /* Alerts & Badges */
+        --loc-alert-viewonly-bg: rgba(30, 58, 138, 0.25);
+        --loc-alert-viewonly-border: #3B82F6;
+        --loc-alert-viewonly-title: #93C5FD;
+        --loc-alert-viewonly-text: #BFDBFE;
+        --loc-alert-viewonly-icon: #60A5FA;
+
+        --loc-alert-success-bg: rgba(6, 95, 70, 0.25);
+        --loc-alert-success-border: #10B981;
+        --loc-alert-success-text: #A7F3D0;
+
+        --loc-readonly-badge-bg: #141B3D;
+        --loc-readonly-badge-border: rgba(238, 241, 251, 0.14);
+        --loc-readonly-badge-color: #94A3B8;
+    }
+
+    /* ==========================================================================
+       PAGE CONTAINER & AMBIENT EFFECTS
+       ========================================================================== */
     .localization-settings-page {
         min-height: calc(100vh - 100px);
         padding: 2rem 1.75rem;
-        background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 50%, #f4fbf7 100%);
-        color: #0a2e1f;
+        background: var(--loc-page-bg) !important;
+        color: var(--loc-text-title) !important;
+        position: relative;
+        transition: background 0.3s ease, color 0.3s ease;
     }
 
     .localization-settings-shell {
@@ -17,7 +181,6 @@
         margin: 0 auto;
     }
 
-    /* Ambient Orbs */
     .ambient-orb {
         position: absolute;
         border-radius: 50%;
@@ -25,6 +188,7 @@
         opacity: 0.35;
         pointer-events: none;
         z-index: 1;
+        transition: opacity 0.3s ease;
     }
 
     .orb-1 {
@@ -32,7 +196,7 @@
         right: -100px;
         width: 500px;
         height: 500px;
-        background: radial-gradient(circle, rgba(52, 211, 153, 0.12) 0%, transparent 70%);
+        background: radial-gradient(circle, rgba(79, 131, 255, 0.14) 0%, transparent 70%);
         animation: orbFloat 20s ease-in-out infinite;
     }
 
@@ -41,8 +205,17 @@
         left: -100px;
         width: 450px;
         height: 450px;
-        background: radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, transparent 70%);
+        background: radial-gradient(circle, rgba(47, 107, 255, 0.12) 0%, transparent 70%);
         animation: orbFloat 25s ease-in-out infinite reverse;
+    }
+
+    html[data-pms-theme="dark"] .ambient-orb,
+    html[data-theme="dark"] .ambient-orb,
+    html[data-bs-theme="dark"] .ambient-orb,
+    body[data-pms-theme="dark"] .ambient-orb,
+    body.dark-mode .ambient-orb,
+    .dark-mode .ambient-orb {
+        opacity: 0.15 !important;
     }
 
     @keyframes orbFloat {
@@ -56,41 +229,52 @@
         z-index: 10;
     }
 
-    /* ===== BREADCRUMB ===== */
-    .breadcrumb-custom {
+    /* ==========================================================================
+       BREADCRUMB
+       ========================================================================== */
+    .localization-settings-page .breadcrumb-custom {
         display: flex;
         align-items: center;
         gap: 8px;
         font-size: 0.85rem;
         font-weight: 600;
-        color: #64748b;
-        margin-bottom: 12px;
+        color: var(--loc-text-muted) !important;
+        margin-bottom: 14px;
     }
 
-    .breadcrumb-custom a {
-        color: #059669;
+    .localization-settings-page .breadcrumb-custom a {
+        color: var(--loc-badge-color) !important;
         text-decoration: none;
         transition: color 0.2s ease;
     }
 
-    .breadcrumb-custom a:hover {
-        color: #047857;
+    .localization-settings-page .breadcrumb-custom a:hover {
+        color: var(--loc-input-icon) !important;
+        text-decoration: underline;
     }
 
-    /* ===== HEADER CARD ===== */
-    .branches-header {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(20px);
-        border-radius: 28px;
-        padding: 1.75rem 2.25rem;
-        margin-bottom: 2rem;
-        border: 1px solid rgba(16, 185, 129, 0.15);
-        box-shadow: 0 10px 30px -10px rgba(16, 185, 129, 0.08);
+    .localization-settings-page .breadcrumb-custom span {
+        color: var(--loc-text-muted) !important;
+    }
+
+    /* ==========================================================================
+       HEADER CARD
+       ========================================================================== */
+    .localization-settings-page .branches-header,
+    .localization-settings-page .loc-header-card {
+        background: var(--loc-card-bg) !important;
+        backdrop-filter: blur(20px) !important;
+        border-radius: 28px !important;
+        padding: 1.75rem 2.25rem !important;
+        margin-bottom: 2rem !important;
+        border: 1px solid var(--loc-card-border) !important;
+        box-shadow: var(--loc-card-shadow) !important;
         display: flex;
         justify-content: space-between;
         align-items: center;
         flex-wrap: wrap;
-        gap: 1rem;
+        gap: 1.25rem;
+        transition: all 0.3s ease;
         animation: slideDown 0.5s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
@@ -105,62 +289,82 @@
         gap: 1.25rem;
     }
 
-    .header-icon-badge {
-        width: 58px;
-        height: 58px;
-        border-radius: 20px;
-        background: linear-gradient(145deg, #34d399, #059669);
-        color: white;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.6rem;
-        box-shadow: 0 8px 20px -4px rgba(5, 150, 105, 0.35);
-        flex-shrink: 0;
+    .localization-settings-page .header-icon-badge,
+    .localization-settings-page .loc-header-icon-badge {
+        width: 58px !important;
+        height: 58px !important;
+        border-radius: 20px !important;
+        background: linear-gradient(145deg, #4F83FF, #2F6BFF) !important;
+        color: #ffffff !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 1.6rem !important;
+        box-shadow: 0 8px 20px -4px rgba(47, 107, 255, 0.35) !important;
+        flex-shrink: 0 !important;
     }
 
-    .header-title h1 {
-        font-size: 1.95rem;
-        font-weight: 800;
-        background: linear-gradient(135deg, #0a2e1f, #059669, #10b981);
-        -webkit-background-clip: text;
-        background-clip: text;
-        color: transparent;
-        margin: 0 0 0.2rem 0;
-        letter-spacing: -0.03em;
+    .localization-settings-page .header-icon-badge i,
+    .localization-settings-page .header-icon-badge svg,
+    .localization-settings-page .loc-header-icon-badge i,
+    .localization-settings-page .loc-header-icon-badge svg {
+        color: #ffffff !important;
+        fill: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        background: transparent !important;
     }
 
-    .header-title p {
-        color: #64748b;
-        font-size: 0.9rem;
-        font-weight: 500;
-        margin: 0;
+    .localization-settings-page .header-title h1,
+    .localization-settings-page .loc-header-title h1 {
+        font-size: 1.95rem !important;
+        font-weight: 800 !important;
+        background: var(--loc-heading-gradient) !important;
+        -webkit-background-clip: text !important;
+        background-clip: text !important;
+        -webkit-text-fill-color: transparent !important;
+        color: transparent !important;
+        margin: 0 0 0.25rem 0 !important;
+        letter-spacing: -0.03em !important;
     }
 
-    .btn-back-settings {
-        background-color: #ffffff;
-        border: 1px solid rgba(16, 185, 129, 0.25);
-        color: #0f744c !important;
-        font-weight: 700;
-        font-size: 0.9rem;
-        border-radius: 40px;
-        padding: 0.65rem 1.4rem;
-        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        text-decoration: none;
+    .localization-settings-page .header-title p,
+    .localization-settings-page .loc-header-title p {
+        color: var(--loc-text-muted) !important;
+        -webkit-text-fill-color: var(--loc-text-muted) !important;
+        font-size: 0.92rem !important;
+        font-weight: 500 !important;
+        margin: 0 !important;
     }
 
-    .btn-back-settings:hover {
-        background-color: #e6f3ec;
-        color: #059669 !important;
-        border-color: rgba(16, 185, 129, 0.4);
-        transform: translateY(-2px);
+    .localization-settings-page .btn-back-settings,
+    .localization-settings-page .loc-btn-back {
+        background-color: var(--loc-btn-back-bg) !important;
+        border: 1px solid var(--loc-btn-back-border) !important;
+        color: var(--loc-btn-back-color) !important;
+        -webkit-text-fill-color: var(--loc-btn-back-color) !important;
+        font-weight: 700 !important;
+        font-size: 0.9rem !important;
+        border-radius: 40px !important;
+        padding: 0.65rem 1.4rem !important;
+        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04) !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        text-decoration: none !important;
     }
 
-    .btn-back-settings:hover .back-arrow-icon {
+    .localization-settings-page .btn-back-settings:hover,
+    .localization-settings-page .loc-btn-back:hover {
+        background-color: var(--loc-btn-back-hover-bg) !important;
+        color: var(--loc-btn-back-hover-color) !important;
+        -webkit-text-fill-color: var(--loc-btn-back-hover-color) !important;
+        border-color: rgba(47, 107, 255, 0.4) !important;
+        transform: translateY(-2px) !important;
+    }
+
+    .localization-settings-page .btn-back-settings:hover .back-arrow-icon,
+    .localization-settings-page .loc-btn-back:hover .back-arrow-icon {
         transform: translateX(-4px);
     }
 
@@ -169,271 +373,502 @@
         display: inline-block;
     }
 
-    /* ===== STATS GRID ===== */
-    .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 1.25rem;
-        margin-bottom: 2rem;
+    /* ==========================================================================
+       EXECUTIVE SUMMARY STATS GRID (LIGHT & DARK BULLETPROOF)
+       ========================================================================== */
+    .localization-settings-page .stats-grid,
+    .localization-settings-page .loc-stats-grid {
+        display: grid !important;
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 1.25rem !important;
+        margin-bottom: 2rem !important;
     }
 
-    .stat-card,
+    .localization-settings-page .stats-grid .loc-stat-card,
+    .localization-settings-page .stats-grid .stat-card,
+    .localization-settings-page .loc-stat-card,
     .localization-settings-page .stat-card,
-    .localization-settings-page .stat-card:first-of-type {
-        background: #ffffff !important;
-        backdrop-filter: blur(20px);
-        border-radius: 24px;
-        padding: 1.5rem;
-        border: 1px solid rgba(16, 185, 129, 0.14) !important;
-        box-shadow: 0 10px 30px -10px rgba(16, 185, 129, 0.08) !important;
-        display: flex;
-        align-items: center;
-        gap: 1.25rem;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        position: relative;
-        overflow: hidden;
-        color: #0a2e1f !important;
+    .localization-settings-page .stat-card:first-of-type,
+    .localization-settings-page .loc-stat-card:first-of-type {
+        background: var(--loc-stat-bg) !important;
+        backdrop-filter: blur(20px) !important;
+        border-radius: 24px !important;
+        padding: 1.5rem !important;
+        border: 1px solid var(--loc-stat-border) !important;
+        box-shadow: var(--loc-card-shadow) !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 1.25rem !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        position: relative !important;
+        overflow: hidden !important;
+        color: var(--loc-stat-val) !important;
     }
 
-    .localization-settings-page .stat-card:first-of-type *,
-    .localization-settings-page .stat-card * {
-        -webkit-text-fill-color: initial;
-    }
-
-    .localization-settings-page .stat-card h3,
-    .localization-settings-page .stat-card:first-of-type h3 {
-        color: #0a2e1f !important;
-        -webkit-text-fill-color: #0a2e1f !important;
-    }
-
-    .localization-settings-page .stat-card h6,
-    .localization-settings-page .stat-card span,
-    .localization-settings-page .stat-card:first-of-type span,
-    .localization-settings-page .stat-card:first-of-type h6 {
-        color: #64748b !important;
-        -webkit-text-fill-color: #64748b !important;
-    }
-
-    .stat-card::after {
+    .localization-settings-page .stats-grid .loc-stat-card::after,
+    .localization-settings-page .stats-grid .stat-card::after {
         content: '';
         position: absolute;
         bottom: 0;
         left: 0;
         right: 0;
         height: 3px;
-        background: linear-gradient(90deg, #34d399, #059669);
+        background: linear-gradient(90deg, #4F83FF, #2F6BFF);
         transform: scaleX(0);
         transition: transform 0.3s ease;
     }
 
-    .stat-card:hover::after {
+    .localization-settings-page .stats-grid .loc-stat-card:hover::after,
+    .localization-settings-page .stats-grid .stat-card:hover::after {
         transform: scaleX(1);
     }
 
-    .stat-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 20px 35px -12px rgba(16, 185, 129, 0.15) !important;
-        border-color: rgba(16, 185, 129, 0.25) !important;
+    .localization-settings-page .stats-grid .loc-stat-card:hover,
+    .localization-settings-page .stats-grid .stat-card:hover {
+        transform: translateY(-4px) !important;
+        box-shadow: var(--loc-card-hover-shadow) !important;
+        border-color: rgba(47, 107, 255, 0.3) !important;
     }
 
-    .stat-icon {
-        width: 56px;
-        height: 56px;
-        border-radius: 18px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.5rem;
-        flex-shrink: 0;
+    /* Stat Card Text Elements */
+    .localization-settings-page .stat-info,
+    .localization-settings-page .loc-stat-info {
+        flex: 1;
+        min-width: 0;
     }
 
-    .stat-icon.curr,
-    .localization-settings-page .stat-card:first-of-type .stat-icon.curr {
-        background: linear-gradient(145deg, #d1fae5, #a7f3d0) !important;
-        color: #059669 !important;
-        -webkit-text-fill-color: #059669 !important;
+    .localization-settings-page .stat-info h6,
+    .localization-settings-page .loc-stat-info h6,
+    .localization-settings-page .stat-card:first-of-type .stat-info h6,
+    .localization-settings-page .stat-card .stat-info h6 {
+        font-size: 0.72rem !important;
+        color: var(--loc-stat-title) !important;
+        -webkit-text-fill-color: var(--loc-stat-title) !important;
+        margin: 0 0 0.25rem 0 !important;
+        text-transform: uppercase !important;
+        font-weight: 700 !important;
+        letter-spacing: 0.05em !important;
     }
 
-    .stat-icon.tz,
-    .localization-settings-page .stat-card .stat-icon.tz {
-        background: linear-gradient(145deg, #e0f2fe, #bae6fd) !important;
-        color: #0284c7 !important;
-        -webkit-text-fill-color: #0284c7 !important;
-    }
-
-    .stat-icon.lang,
-    .localization-settings-page .stat-card .stat-icon.lang {
-        background: linear-gradient(145deg, #fef3c7, #fde68a) !important;
-        color: #d97706 !important;
-        -webkit-text-fill-color: #d97706 !important;
-    }
-
-    .stat-icon.format,
-    .localization-settings-page .stat-card .stat-icon.format {
-        background: linear-gradient(145deg, #e0e7ff, #c7d2fe) !important;
-        color: #4f46e5 !important;
-        -webkit-text-fill-color: #4f46e5 !important;
-    }
-
-    .stat-info h6 {
-        font-size: 0.72rem;
-        color: #64748b;
-        margin: 0 0 0.2rem 0;
-        text-transform: uppercase;
-        font-weight: 700;
-        letter-spacing: 0.05em;
-    }
-
-    .stat-info h3 {
-        font-size: 1.2rem;
-        font-weight: 800;
-        color: #0a2e1f;
-        margin: 0;
-        line-height: 1.2;
-    }
-
-    /* ===== FORM CARD & INPUTS ===== */
-    .address-card-elevated {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(20px);
-        border-radius: 28px;
-        border: 1px solid rgba(16, 185, 129, 0.15);
-        box-shadow: 0 10px 30px -10px rgba(16, 185, 129, 0.08);
+    .localization-settings-page .stat-info h3,
+    .localization-settings-page .loc-stat-info h3,
+    .localization-settings-page .stat-card:first-of-type .stat-info h3,
+    .localization-settings-page .stat-card .stat-info h3 {
+        font-size: 1.25rem !important;
+        font-weight: 800 !important;
+        color: var(--loc-stat-val) !important;
+        -webkit-text-fill-color: var(--loc-stat-val) !important;
+        margin: 0 !important;
+        line-height: 1.2 !important;
+        white-space: nowrap;
         overflow: hidden;
+        text-overflow: ellipsis;
     }
 
-    .card-header-custom {
-        padding: 1.5rem 2.25rem;
-        border-bottom: 1px solid rgba(16, 185, 129, 0.12);
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        background: transparent;
+    /* Stat Icons Core */
+    .localization-settings-page .stat-icon,
+    .localization-settings-page .loc-stat-icon {
+        width: 56px !important;
+        height: 56px !important;
+        border-radius: 18px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 1.5rem !important;
+        flex-shrink: 0 !important;
+        transition: transform 0.25s ease;
     }
 
-    .card-header-avatar {
-        width: 48px;
-        height: 48px;
-        border-radius: 16px;
-        background: linear-gradient(145deg, #d1fae5, #a7f3d0);
-        color: #059669;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.35rem;
-        flex-shrink: 0;
+    .localization-settings-page .stats-grid .loc-stat-card:hover .stat-icon,
+    .localization-settings-page .stats-grid .stat-card:hover .stat-icon {
+        transform: scale(1.08);
     }
 
-    .section-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.4rem 1rem;
-        border-radius: 40px;
-        background: #ecfdf5;
-        color: #059669;
-        font-weight: 800;
-        font-size: 0.82rem;
-        letter-spacing: 0.03em;
-        border: 1px solid rgba(5, 150, 105, 0.2);
-        margin-bottom: 1.25rem;
+    /* Currency Stat Icon */
+    .localization-settings-page .stat-icon.curr,
+    .localization-settings-page .loc-stat-icon.curr {
+        background: var(--loc-icon-curr-bg) !important;
+        color: var(--loc-icon-curr-color) !important;
+    }
+    .localization-settings-page .stat-icon.curr i,
+    .localization-settings-page .loc-stat-icon.curr i,
+    .localization-settings-page .stat-icon.curr svg,
+    .localization-settings-page .loc-stat-icon.curr svg {
+        color: var(--loc-icon-curr-color) !important;
+        fill: var(--loc-icon-curr-color) !important;
+        -webkit-text-fill-color: var(--loc-icon-curr-color) !important;
+        background: transparent !important;
     }
 
-    .form-label-custom {
-        font-size: 0.88rem;
-        font-weight: 700;
-        color: #0a2e1f;
-        margin-bottom: 8px;
-        display: flex;
-        align-items: center;
-        gap: 4px;
+    /* Timezone Stat Icon */
+    .localization-settings-page .stat-icon.tz,
+    .localization-settings-page .loc-stat-icon.tz {
+        background: var(--loc-icon-tz-bg) !important;
+        color: var(--loc-icon-tz-color) !important;
+    }
+    .localization-settings-page .stat-icon.tz i,
+    .localization-settings-page .loc-stat-icon.tz i,
+    .localization-settings-page .stat-icon.tz svg,
+    .localization-settings-page .loc-stat-icon.tz svg {
+        color: var(--loc-icon-tz-color) !important;
+        fill: var(--loc-icon-tz-color) !important;
+        -webkit-text-fill-color: var(--loc-icon-tz-color) !important;
+        background: transparent !important;
     }
 
-    .input-group-custom {
-        border-radius: 16px;
-        border: 1px solid rgba(16, 185, 129, 0.2);
-        background-color: #fafefb;
-        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-        overflow: hidden;
+    /* Language Stat Icon */
+    .localization-settings-page .stat-icon.lang,
+    .localization-settings-page .loc-stat-icon.lang {
+        background: var(--loc-icon-lang-bg) !important;
+        color: var(--loc-icon-lang-color) !important;
+    }
+    .localization-settings-page .stat-icon.lang i,
+    .localization-settings-page .loc-stat-icon.lang i,
+    .localization-settings-page .stat-icon.lang svg,
+    .localization-settings-page .loc-stat-icon.lang svg {
+        color: var(--loc-icon-lang-color) !important;
+        fill: var(--loc-icon-lang-color) !important;
+        -webkit-text-fill-color: var(--loc-icon-lang-color) !important;
+        background: transparent !important;
     }
 
-    .input-group-custom:focus-within {
-        border-color: #34d399;
-        background-color: #ffffff;
-        box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.15);
-        transform: translateY(-1px);
+    /* Format Stat Icon */
+    .localization-settings-page .stat-icon.format,
+    .localization-settings-page .loc-stat-icon.format {
+        background: var(--loc-icon-format-bg) !important;
+        color: var(--loc-icon-format-color) !important;
+    }
+    .localization-settings-page .stat-icon.format i,
+    .localization-settings-page .loc-stat-icon.format i,
+    .localization-settings-page .stat-icon.format svg,
+    .localization-settings-page .loc-stat-icon.format svg {
+        color: var(--loc-icon-format-color) !important;
+        fill: var(--loc-icon-format-color) !important;
+        -webkit-text-fill-color: var(--loc-icon-format-color) !important;
+        background: transparent !important;
     }
 
-    .input-group-custom .input-group-text {
-        background-color: transparent;
-        border: none;
-        color: #059669;
-        padding-left: 18px;
-        padding-right: 12px;
-        font-size: 1.1rem;
+    /* ==========================================================================
+       MAIN FORM CARD & HEADER
+       ========================================================================== */
+    .localization-settings-page .address-card-elevated,
+    .localization-settings-page .loc-form-card {
+        background: var(--loc-card-bg) !important;
+        backdrop-filter: blur(20px) !important;
+        border-radius: 28px !important;
+        border: 1px solid var(--loc-card-border) !important;
+        box-shadow: var(--loc-card-shadow) !important;
+        overflow: hidden !important;
+        transition: all 0.3s ease;
     }
 
-    .input-group-custom .form-control,
-    .input-group-custom .form-select {
-        border: none;
-        background-color: transparent;
-        font-size: 0.92rem;
-        font-weight: 600;
-        color: #0a2e1f;
-        padding-right: 18px;
-        height: 50px;
+    .localization-settings-page .card-header-custom {
+        padding: 1.5rem 2.25rem !important;
+        border-bottom: 1px solid var(--loc-divider) !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 1rem !important;
+        background: transparent !important;
     }
 
-    .input-group-custom .form-control[readonly] {
-        background-color: #f1f5f9;
-        cursor: not-allowed;
-        color: #475569;
+    .localization-settings-page .card-header-avatar {
+        width: 48px !important;
+        height: 48px !important;
+        border-radius: 16px !important;
+        background: var(--loc-badge-bg) !important;
+        color: var(--loc-badge-color) !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 1.35rem !important;
+        flex-shrink: 0 !important;
     }
 
-    .input-group-custom .form-control:focus,
-    .input-group-custom .form-select:focus {
-        box-shadow: none;
-        background-color: transparent;
+    .localization-settings-page .card-header-avatar i {
+        color: var(--loc-badge-color) !important;
+        -webkit-text-fill-color: var(--loc-badge-color) !important;
+        fill: var(--loc-badge-color) !important;
+        background: transparent !important;
     }
 
-    .btn-save-address {
-        height: 50px;
-        border-radius: 40px;
-        font-weight: 700;
-        font-size: 0.95rem;
-        padding: 0 32px;
-        background: linear-gradient(145deg, #34d399, #059669);
-        color: white !important;
-        border: none;
-        box-shadow: 0 6px 20px -4px rgba(5, 150, 105, 0.35);
-        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        cursor: pointer;
+    .localization-settings-page .card-header-custom h5 {
+        color: var(--loc-text-title) !important;
+        -webkit-text-fill-color: var(--loc-text-title) !important;
+        margin: 0 !important;
     }
 
-    .btn-save-address:hover {
-        transform: translateY(-2px) scale(1.02);
-        box-shadow: 0 10px 28px -4px rgba(5, 150, 105, 0.45);
-        color: white !important;
+    .localization-settings-page .card-header-custom .text-muted,
+    .localization-settings-page .card-header-custom small {
+        color: var(--loc-text-muted) !important;
+        -webkit-text-fill-color: var(--loc-text-muted) !important;
+    }
+
+    /* Section Badges */
+    .localization-settings-page .section-badge,
+    .localization-settings-page .loc-section-badge {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 0.5rem !important;
+        padding: 0.45rem 1.15rem !important;
+        border-radius: 40px !important;
+        background: var(--loc-badge-bg) !important;
+        color: var(--loc-badge-color) !important;
+        -webkit-text-fill-color: var(--loc-badge-color) !important;
+        font-weight: 800 !important;
+        font-size: 0.82rem !important;
+        letter-spacing: 0.03em !important;
+        border: 1px solid var(--loc-badge-border) !important;
+        margin-bottom: 1.25rem !important;
+    }
+
+    .localization-settings-page .section-badge i,
+    .localization-settings-page .loc-section-badge i {
+        color: var(--loc-badge-color) !important;
+        -webkit-text-fill-color: var(--loc-badge-color) !important;
+    }
+
+    /* Labels */
+    .localization-settings-page .form-label-custom,
+    .localization-settings-page .loc-form-label {
+        font-size: 0.88rem !important;
+        font-weight: 700 !important;
+        color: var(--loc-text-title) !important;
+        -webkit-text-fill-color: var(--loc-text-title) !important;
+        margin-bottom: 8px !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 4px !important;
     }
 
     .req-asterisk {
-        color: #059669;
+        color: #2F6BFF;
         font-weight: 800;
     }
 
+    html[data-pms-theme="dark"] .req-asterisk,
+    html[data-theme="dark"] .req-asterisk,
+    body[data-pms-theme="dark"] .req-asterisk,
+    body.dark-mode .req-asterisk,
+    .dark-mode .req-asterisk {
+        color: #60A5FA !important;
+    }
+
+    /* ==========================================================================
+       INPUT GROUPS, SELECTS & CONTROLS
+       ========================================================================== */
+    .localization-settings-page .input-group-custom,
+    .localization-settings-page .loc-input-group {
+        border-radius: 16px !important;
+        border: 1px solid var(--loc-input-border) !important;
+        background-color: var(--loc-input-bg) !important;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        overflow: hidden !important;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02) !important;
+    }
+
+    .localization-settings-page .input-group-custom:focus-within,
+    .localization-settings-page .loc-input-group:focus-within {
+        border-color: var(--loc-input-focus-border) !important;
+        background-color: var(--loc-input-bg) !important;
+        box-shadow: var(--loc-input-focus-shadow) !important;
+        transform: translateY(-1px) !important;
+    }
+
+    .localization-settings-page .input-group-custom .input-group-text,
+    .localization-settings-page .loc-input-group .input-group-text {
+        background-color: transparent !important;
+        border: none !important;
+        color: var(--loc-input-icon) !important;
+        padding-left: 18px !important;
+        padding-right: 12px !important;
+        font-size: 1.1rem !important;
+    }
+
+    .localization-settings-page .input-group-custom .form-control,
+    .localization-settings-page .loc-input-group .form-control,
+    .localization-settings-page .input-group-custom .form-select,
+    .localization-settings-page .loc-input-group .form-select {
+        border: none !important;
+        background-color: transparent !important;
+        font-size: 0.92rem !important;
+        font-weight: 600 !important;
+        color: var(--loc-input-color) !important;
+        -webkit-text-fill-color: var(--loc-input-color) !important;
+        padding-right: 2.25rem !important;
+        height: 50px !important;
+    }
+
+    .localization-settings-page .input-group-custom .form-select,
+    .localization-settings-page .loc-input-group .form-select {
+        background-image: var(--loc-select-arrow) !important;
+        background-repeat: no-repeat !important;
+        background-position: right 1rem center !important;
+        background-size: 16px 12px !important;
+        cursor: pointer !important;
+    }
+
+    .localization-settings-page .input-group-custom .form-select option,
+    .localization-settings-page .loc-input-group .form-select option {
+        background-color: var(--loc-select-option-bg) !important;
+        color: var(--loc-select-option-color) !important;
+        font-weight: 500 !important;
+        padding: 8px 12px !important;
+    }
+
+    .localization-settings-page .input-group-custom .form-control[readonly],
+    .localization-settings-page .loc-input-group .form-control[readonly] {
+        background-color: var(--loc-input-readonly-bg) !important;
+        color: var(--loc-input-readonly-color) !important;
+        -webkit-text-fill-color: var(--loc-input-readonly-color) !important;
+        cursor: not-allowed !important;
+    }
+
+    .localization-settings-page .input-group-custom .form-select:disabled,
+    .localization-settings-page .loc-input-group .form-select:disabled {
+        background-color: var(--loc-input-readonly-bg) !important;
+        color: var(--loc-input-readonly-color) !important;
+        -webkit-text-fill-color: var(--loc-input-readonly-color) !important;
+        cursor: not-allowed !important;
+        opacity: 0.9 !important;
+    }
+
+    .localization-settings-page .input-group-custom .form-control:focus,
+    .localization-settings-page .loc-input-group .form-control:focus,
+    .localization-settings-page .input-group-custom .form-select:focus,
+    .localization-settings-page .loc-input-group .form-select:focus {
+        box-shadow: none !important;
+        background-color: transparent !important;
+        color: var(--loc-input-color) !important;
+    }
+
+    .localization-settings-page small.text-muted,
+    .localization-settings-page .text-muted {
+        color: var(--loc-text-muted) !important;
+        -webkit-text-fill-color: var(--loc-text-muted) !important;
+    }
+
+    .localization-settings-page .loc-lock-icon {
+        color: var(--loc-badge-color) !important;
+    }
+
+    /* ==========================================================================
+       ALERTS & READONLY BADGES
+       ========================================================================== */
+    .localization-settings-page .loc-alert-success {
+        background: var(--loc-alert-success-bg) !important;
+        color: var(--loc-alert-success-text) !important;
+        border-left: 5px solid var(--loc-alert-success-border) !important;
+        border-top: none !important;
+        border-right: none !important;
+        border-bottom: none !important;
+        border-radius: 18px !important;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05) !important;
+    }
+
+    .localization-settings-page .loc-alert-success i {
+        color: var(--loc-alert-success-border) !important;
+    }
+
+    .localization-settings-page .loc-alert-viewonly {
+        background: var(--loc-alert-viewonly-bg) !important;
+        border-left: 4px solid var(--loc-alert-viewonly-border) !important;
+        border-top: none !important;
+        border-right: none !important;
+        border-bottom: none !important;
+        border-radius: 16px !important;
+        padding: 14px 18px !important;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05) !important;
+    }
+
+    .localization-settings-page .loc-alert-viewonly .loc-viewonly-icon {
+        color: var(--loc-alert-viewonly-icon) !important;
+    }
+
+    .localization-settings-page .loc-alert-viewonly .loc-viewonly-title {
+        color: var(--loc-alert-viewonly-title) !important;
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+    .localization-settings-page .loc-alert-viewonly .loc-viewonly-text {
+        color: var(--loc-alert-viewonly-text) !important;
+        font-size: 13px;
+    }
+
+    /* Card Footer & Action Buttons */
+    .localization-settings-page .border-top {
+        border-top: 1px solid var(--loc-divider) !important;
+    }
+
+    .localization-settings-page .btn-save-address {
+        height: 50px !important;
+        border-radius: 40px !important;
+        font-weight: 700 !important;
+        font-size: 0.95rem !important;
+        padding: 0 32px !important;
+        background: linear-gradient(145deg, #4F83FF, #2F6BFF) !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        border: none !important;
+        box-shadow: 0 6px 20px -4px rgba(47, 107, 255, 0.4) !important;
+        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+        cursor: pointer !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+    }
+
+    .localization-settings-page .btn-save-address:hover {
+        transform: translateY(-2px) scale(1.02) !important;
+        box-shadow: 0 10px 28px -4px rgba(47, 107, 255, 0.5) !important;
+        color: #ffffff !important;
+    }
+
+    .localization-settings-page .loc-readonly-badge {
+        background: var(--loc-readonly-badge-bg) !important;
+        border: 1px solid var(--loc-readonly-badge-border) !important;
+        color: var(--loc-readonly-badge-color) !important;
+        -webkit-text-fill-color: var(--loc-readonly-badge-color) !important;
+        font-size: 13px !important;
+        font-weight: 700 !important;
+        padding: 0.6rem 1.25rem !important;
+        border-radius: 999px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+    }
+
+    .localization-settings-page .loc-readonly-badge i {
+        color: var(--loc-readonly-badge-color) !important;
+    }
+
+    /* ==========================================================================
+       RESPONSIVE BREAKPOINTS
+       ========================================================================== */
     @media (max-width: 1200px) {
-        .stats-grid {
-            grid-template-columns: repeat(2, 1fr);
+        .localization-settings-page .stats-grid,
+        .localization-settings-page .loc-stats-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
         }
     }
 
     @media (max-width: 768px) {
         .localization-settings-page {
-            padding: 1.25rem 1rem;
+            padding: 1.25rem 1rem !important;
         }
 
-        .stats-grid {
-            grid-template-columns: 1fr;
+        .localization-settings-page .branches-header,
+        .localization-settings-page .loc-header-card {
+            padding: 1.25rem 1.5rem !important;
+        }
+
+        .localization-settings-page .card-header-custom {
+            padding: 1.25rem 1.5rem !important;
+        }
+
+        .localization-settings-page .stats-grid,
+        .localization-settings-page .loc-stats-grid {
+            grid-template-columns: 1fr !important;
         }
     }
 </style>
@@ -457,25 +892,25 @@
             </div>
 
             <!-- Page Header Card -->
-            <div class="branches-header">
+            <div class="branches-header loc-header-card">
                 <div class="header-left-box">
-                    <div class="header-icon-badge">
+                    <div class="header-icon-badge loc-header-icon-badge">
                         <i class="fas fa-globe"></i>
                     </div>
-                    <div class="header-title">
+                    <div class="header-title loc-header-title">
                         <h1>Regional & Localization Settings</h1>
                         <p>Configure currency, timezone, date & time display formats, and default system language preferences.</p>
                     </div>
                 </div>
 
-                <a href="{{ route('admin.settings.index') }}" class="btn-back-settings">
+                <a href="{{ route('admin.settings.index') }}" class="btn-back-settings loc-btn-back">
                     <i class="fas fa-arrow-left me-1 back-arrow-icon"></i> Back to Settings
                 </a>
             </div>
 
             <!-- Alert Notifications -->
             @if(session('success'))
-                <div class="alert alert-success alert-dismissible fade show d-flex align-items-center mb-4 shadow-sm rounded-4 border-0" style="background: rgba(220, 252, 231, 0.95); color: #065f46; border-left: 5px solid #10b981 !important;" role="alert">
+                <div class="alert loc-alert-success alert-dismissible fade show d-flex align-items-center mb-4" role="alert">
                     <i class="fas fa-check-circle fs-4 me-2"></i>
                     <div>{{ session('success') }}</div>
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -486,44 +921,44 @@
             @php
                 $currCode = $settings['currency'] ?? 'USD';
                 $currSym = $settings['currency_symbol'] ?? '$';
-                $tzVal = $settings['timezone'] ?? 'UTC';
+                $tzVal = $settings['timezone'] ?? config('app.timezone', 'Asia/Kolkata');
                 $langVal = strtoupper($settings['language'] ?? 'en');
                 $dateFormatVal = $settings['date_format'] ?? 'Y-m-d';
                 $timeFormatVal = ($settings['time_format'] ?? '') == 'H:i' ? '24-Hour' : '12-Hour';
             @endphp
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-icon curr">
+            <div class="stats-grid loc-stats-grid">
+                <div class="stat-card loc-stat-card">
+                    <div class="stat-icon loc-stat-icon curr">
                         <i class="fas fa-money-bill-wave"></i>
                     </div>
-                    <div class="stat-info">
+                    <div class="stat-info loc-stat-info">
                         <h6>Default Currency</h6>
                         <h3 id="statCurrencyDisplay">{{ $currCode }} ({{ $currSym }})</h3>
                     </div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-icon tz">
+                <div class="stat-card loc-stat-card">
+                    <div class="stat-icon loc-stat-icon tz">
                         <i class="fas fa-clock"></i>
                     </div>
-                    <div class="stat-info">
+                    <div class="stat-info loc-stat-info">
                         <h6>System Timezone</h6>
                         <h3>{{ $tzVal }}</h3>
                     </div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-icon lang">
+                <div class="stat-card loc-stat-card">
+                    <div class="stat-icon loc-stat-icon lang">
                         <i class="fas fa-language"></i>
                     </div>
-                    <div class="stat-info">
+                    <div class="stat-info loc-stat-info">
                         <h6>System Language</h6>
                         <h3>{{ $langVal }} Language</h3>
                     </div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-icon format">
+                <div class="stat-card loc-stat-card">
+                    <div class="stat-icon loc-stat-icon format">
                         <i class="fas fa-calendar-days"></i>
                     </div>
-                    <div class="stat-info">
+                    <div class="stat-info loc-stat-info">
                         <h6>Date / Time Format</h6>
                         <h3>{{ $dateFormatVal }} ({{ $timeFormatVal }})</h3>
                     </div>
@@ -531,24 +966,24 @@
             </div>
 
             <!-- Main Form Card -->
-            <div class="address-card-elevated">
+            <div class="address-card-elevated loc-form-card">
                 <div class="card-header-custom">
                     <div class="card-header-avatar shadow-sm">
                         <i class="fas fa-sliders"></i>
                     </div>
                     <div>
-                        <h5 class="mb-0 fw-bold fs-5" style="color: #0a2e1f;">Currency, Timezone & Regional Formats</h5>
+                        <h5 class="mb-0 fw-bold fs-5">Currency, Timezone & Regional Formats</h5>
                         <small class="text-muted">Set global default formatting preferences across financial reports, time logs, and employee portals</small>
                     </div>
                 </div>
 
                 <div class="p-4 p-md-5">
                     @if($isSettingsReadOnly)
-                        <div class="alert d-flex align-items-center mb-4 rounded-3 border-0 shadow-sm" style="background: linear-gradient(135deg, #eff6ff, #dbeafe); color: #1e40af; border-left: 4px solid #3b82f6 !important; padding: 14px 18px;">
-                            <i class="fas fa-eye me-3 fs-3 text-primary"></i>
+                        <div class="alert loc-alert-viewonly d-flex align-items-center mb-4" role="alert">
+                            <i class="fas fa-eye me-3 fs-3 loc-viewonly-icon"></i>
                             <div>
-                                <strong class="d-block text-primary fw-bold" style="font-size: 14px;">View-Only Mode</strong>
-                                <span style="font-size: 13px; color: #1e3a8a;">You are viewing localization and regional display settings in read-only mode. Only Administrators have permission to modify currency, timezone, and date/time formats.</span>
+                                <strong class="d-block loc-viewonly-title">View-Only Mode</strong>
+                                <span class="loc-viewonly-text">You are viewing localization and regional display settings in read-only mode. Only Administrators have permission to modify currency, timezone, and date/time formats.</span>
                             </div>
                         </div>
                     @endif
@@ -557,15 +992,15 @@
                         @csrf
 
                         <!-- Section 1: Currency & Financial Formatting -->
-                        <div class="section-badge">
+                        <div class="section-badge loc-section-badge">
                             <i class="fas fa-coins"></i> Currency & Financial Formatting
                         </div>
 
                         <div class="row g-4 mb-5">
                             <!-- Currency Code -->
                             <div class="col-md-4">
-                                <label class="form-label-custom">Default Currency Code <span class="req-asterisk">*</span></label>
-                                <div class="input-group input-group-custom">
+                                <label class="form-label-custom loc-form-label">Default Currency Code <span class="req-asterisk">*</span></label>
+                                <div class="input-group input-group-custom loc-input-group">
                                     <span class="input-group-text"><i class="fas fa-dollar-sign"></i></span>
                                     <select name="currency" class="form-select" {{ $isSettingsReadOnly ? 'disabled' : 'required' }}>
                                         <option value="USD" {{ ($settings['currency'] ?? '') == 'USD' ? 'selected' : '' }}>USD ($)</option>
@@ -581,20 +1016,20 @@
 
                             <!-- Currency Symbol (Readonly) -->
                             <div class="col-md-4">
-                                <label class="form-label-custom">Currency Symbol <span class="req-asterisk">*</span></label>
-                                <div class="input-group input-group-custom">
+                                <label class="form-label-custom loc-form-label">Currency Symbol <span class="req-asterisk">*</span></label>
+                                <div class="input-group input-group-custom loc-input-group">
                                     <span class="input-group-text"><i class="fas fa-tag"></i></span>
                                     <input type="text" name="currency_symbol" class="form-control"
                                         value="{{ old('currency_symbol', $settings['currency_symbol'] ?? '$') }}" readonly required
                                         title="Auto-filled based on selected Default Currency Code">
                                 </div>
-                                <small class="text-muted mt-1 d-block"><i class="fas fa-lock me-1" style="color: #059669;"></i>Auto-derived from selected Currency Code.</small>
+                                <small class="text-muted mt-1 d-block"><i class="fas fa-lock me-1 loc-lock-icon"></i>Auto-derived from selected Currency Code.</small>
                             </div>
 
                             <!-- Currency Symbol Position -->
                             <div class="col-md-4">
-                                <label class="form-label-custom">Symbol Position <span class="req-asterisk">*</span></label>
-                                <div class="input-group input-group-custom">
+                                <label class="form-label-custom loc-form-label">Symbol Position <span class="req-asterisk">*</span></label>
+                                <div class="input-group input-group-custom loc-input-group">
                                     <span class="input-group-text"><i class="fas fa-align-left"></i></span>
                                     <select name="currency_position" class="form-select" {{ $isSettingsReadOnly ? 'disabled' : 'required' }}>
                                         <option value="left" {{ ($settings['currency_position'] ?? '') == 'left' ? 'selected' : '' }}>Left ({{ $currSym }}100)</option>
@@ -605,15 +1040,15 @@
                         </div>
 
                         <!-- Section 2: Timezone & Language Preferences -->
-                        <div class="section-badge">
+                        <div class="section-badge loc-section-badge">
                             <i class="fas fa-earth-americas"></i> Timezone & Language Preferences
                         </div>
 
                         <div class="row g-4 mb-5">
                             <!-- Timezone -->
                             <div class="col-md-6">
-                                <label class="form-label-custom">System Timezone <span class="req-asterisk">*</span></label>
-                                <div class="input-group input-group-custom">
+                                <label class="form-label-custom loc-form-label">System Timezone <span class="req-asterisk">*</span></label>
+                                <div class="input-group input-group-custom loc-input-group">
                                     <span class="input-group-text"><i class="fas fa-globe-americas"></i></span>
                                     <select name="timezone" class="form-select" {{ $isSettingsReadOnly ? 'disabled' : 'required' }}>
                                         <option value="UTC" {{ ($settings['timezone'] ?? '') == 'UTC' ? 'selected' : '' }}>UTC (Coordinated Universal Time)</option>
@@ -627,8 +1062,8 @@
 
                             <!-- Default Language -->
                             <div class="col-md-6">
-                                <label class="form-label-custom">Default System Language <span class="req-asterisk">*</span></label>
-                                <div class="input-group input-group-custom">
+                                <label class="form-label-custom loc-form-label">Default System Language <span class="req-asterisk">*</span></label>
+                                <div class="input-group input-group-custom loc-input-group">
                                     <span class="input-group-text"><i class="fas fa-language"></i></span>
                                     <select name="language" class="form-select" {{ $isSettingsReadOnly ? 'disabled' : 'required' }}>
                                         <option value="en" {{ ($settings['language'] ?? '') == 'en' ? 'selected' : '' }}>English</option>
@@ -641,15 +1076,15 @@
                         </div>
 
                         <!-- Section 3: Date & Time Display Formats -->
-                        <div class="section-badge">
+                        <div class="section-badge loc-section-badge">
                             <i class="fas fa-calendar-days"></i> Date & Time Display Formats
                         </div>
 
                         <div class="row g-4">
                             <!-- Date Format -->
                             <div class="col-md-6">
-                                <label class="form-label-custom">Date Display Format <span class="req-asterisk">*</span></label>
-                                <div class="input-group input-group-custom">
+                                <label class="form-label-custom loc-form-label">Date Display Format <span class="req-asterisk">*</span></label>
+                                <div class="input-group input-group-custom loc-input-group">
                                     <span class="input-group-text"><i class="fas fa-calendar-day"></i></span>
                                     <select name="date_format" class="form-select" {{ $isSettingsReadOnly ? 'disabled' : 'required' }}>
                                         <option value="Y-m-d" {{ ($settings['date_format'] ?? '') == 'Y-m-d' ? 'selected' : '' }}>YYYY-MM-DD (2026-08-12)</option>
@@ -662,8 +1097,8 @@
 
                             <!-- Time Format -->
                             <div class="col-md-6">
-                                <label class="form-label-custom">Time Display Format <span class="req-asterisk">*</span></label>
-                                <div class="input-group input-group-custom">
+                                <label class="form-label-custom loc-form-label">Time Display Format <span class="req-asterisk">*</span></label>
+                                <div class="input-group input-group-custom loc-input-group">
                                     <span class="input-group-text"><i class="fas fa-clock"></i></span>
                                     <select name="time_format" class="form-select" {{ $isSettingsReadOnly ? 'disabled' : 'required' }}>
                                         <option value="h:i A" {{ ($settings['time_format'] ?? '') == 'h:i A' ? 'selected' : '' }}>12-Hour Format (02:30 PM)</option>
@@ -676,14 +1111,15 @@
                         <!-- Form Action Buttons -->
                         <div class="mt-5 pt-4 border-top d-flex justify-content-end">
                             @if($isSettingsReadOnly)
-                                <span class="badge rounded-pill px-3.5 py-2 fw-bold" style="background: #f1f5f9; color: #64748b; font-size: 13px; border: 1px solid #cbd5e1;">
-                                    <i class="fas fa-lock me-1.5 text-muted"></i> Read-Only (Admin Managed)
+                                <span class="badge rounded-pill loc-readonly-badge">
+                                    <i class="fas fa-lock me-1"></i> Read-Only (Admin Managed)
                                 </span>
                             @else
                                 <button type="submit" class="btn-save-address">
                                     <i class="fas fa-save me-1.5"></i> Save Localization Settings
                                 </button>
                             @endif
+                        </div>
                     </form>
                 </div>
             </div>

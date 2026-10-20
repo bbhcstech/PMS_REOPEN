@@ -152,7 +152,7 @@
         color: #374151 !important;
         box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
     }
-    .dt-buttons .btn:hover { background: #e4f3eb !important; color: #0f744c !important; }
+    .dt-buttons .btn:hover { background: #EEF2FF !important; color: #2F6BFF !important; }
     .dataTables_filter input { border-radius: 50rem !important; padding: 0.35rem 1rem !important; border: 1px solid #d1d5db !important; }
 </style>
 @endpush

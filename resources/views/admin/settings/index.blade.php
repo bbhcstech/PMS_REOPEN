@@ -74,9 +74,7 @@
                             <p class="card-text text-muted small mb-3" style="min-height: 40px;">{{ $group['description'] }}</p>
                             <div class="d-flex align-items-center justify-content-center gap-2">
                                 <span class="badge bg-label-{{ $group['color'] }} fs-tiny">{{ $group['category'] }}</span>
-                                <button type="button" class="btn btn-xs btn-outline-{{ $group['color'] }} rounded-pill px-3 dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                                    Manage <i class="bx bx-chevron-down fs-tiny ms-1"></i>
-                                </button>
+                                <span class="btn btn-xs btn-outline-{{ $group['color'] }} rounded-pill px-3" style="white-space: nowrap;">Manage <i class="bx bx-chevron-right fs-tiny me-0"></i></span>
                             </div>
                         </div>
                         <ul class="dropdown-menu dropdown-menu-center shadow-lg border-0 rounded-4 p-2 w-100 animate slideIn" style="min-width: 250px; margin-top: 5px; box-shadow: 0 10px 30px rgba(0,0,0,0.15) !important;">
@@ -175,6 +173,12 @@
 }
 .settings-hover-card:hover .setting-icon-box {
     transform: scale(1.08);
+}
+.setting-card-item .btn {
+    white-space: nowrap !important;
+}
+.setting-card-item .dropdown-toggle::after {
+    display: none !important;
 }
 .setting-icon-box {
     transition: transform 0.25s ease, box-shadow 0.25s ease;

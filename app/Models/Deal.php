@@ -69,6 +69,11 @@ class Deal extends TenantModel
         return $this->belongsTo(LeadContact::class, 'lead_id');
     }
 
+    public function leadContact()
+    {
+        return $this->belongsTo(LeadContact::class, 'lead_id');
+    }
+
     public function activities()
     {
         return $this->hasMany(CrmActivity::class, 'deal_id')->latest('activity_date');

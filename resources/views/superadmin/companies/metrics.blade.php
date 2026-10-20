@@ -135,6 +135,17 @@
         box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
         color: #ffffff;
     }
+    .btn-export.btn-export-cancel {
+        background: #ffffff;
+        color: var(--text-main);
+        border: 1px solid var(--border-color);
+        box-shadow: none;
+    }
+    .btn-export.btn-export-cancel:hover {
+        background: var(--border-subtle, #f1f5f9);
+        color: var(--text-main);
+        box-shadow: none;
+    }
 
     /* Executive KPI Grid */
     .executive-kpi-grid {
@@ -424,6 +435,540 @@
         padding: 24px;
         box-shadow: var(--shadow-md);
     }
+
+    /* Ledger Export Dropdown Styles */
+    .ledger-export-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--bg-surface, #ffffff);
+        color: var(--text-main);
+        border: 1px solid var(--border-color);
+        padding: 8px 14px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        box-shadow: var(--shadow-xs);
+        transition: all var(--transition-fast);
+    }
+    .ledger-export-btn:hover {
+        background: var(--border-subtle, #f1f5f9);
+    }
+    .ledger-export-menu {
+        display: none;
+        position: absolute;
+        right: 0;
+        top: 100%;
+        margin-top: 4px;
+        background: var(--bg-surface, #ffffff);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        box-shadow: var(--shadow-md);
+        padding: 6px;
+        z-index: 100;
+        min-width: 160px;
+    }
+    .ledger-export-menu a,
+    .ledger-export-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 12px;
+        color: var(--text-main);
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 600;
+        border-radius: 6px;
+        transition: background 0.15s ease, color 0.15s ease;
+        background: transparent;
+    }
+    .ledger-export-menu a:hover,
+    .ledger-export-menu a:focus,
+    .ledger-export-menu a:active,
+    .ledger-export-item:hover,
+    .ledger-export-item:focus,
+    .ledger-export-item:active {
+        background: #f1f5f9;
+        color: var(--text-main);
+    }
+    .platform-activity-view-all:hover {
+        color: var(--primary-hover, #1d4ed8) !important;
+        text-decoration: underline !important;
+    }
+
+    /* ============================================================
+       DARK MODE OVERRIDES (data-pms-theme="dark" / data-theme="dark")
+       ============================================================ */
+    html[data-pms-theme="dark"],
+    html[data-theme="dark"],
+    html[data-bs-theme="dark"] {
+        --navy-dark: #070b1a;
+        --navy-surface: #0f1530;
+        --bg-main: #070B1A;
+        --bg-surface: #0F1530;
+        --border-color: rgba(238, 241, 251, 0.12);
+        --border-subtle: rgba(238, 241, 251, 0.08);
+        --text-main: #EEF1FB;
+        --text-muted: #9AA3C7;
+        --text-subtle: #6B739A;
+        --primary-soft: rgba(47, 107, 255, 0.15);
+        --warning-bg: rgba(245, 158, 11, 0.1);
+        --warning-border: rgba(245, 158, 11, 0.3);
+    }
+
+    /* Dark Mode: Date Select Dropdown */
+    html[data-pms-theme="dark"] .date-select-btn,
+    html[data-theme="dark"] .date-select-btn,
+    html[data-bs-theme="dark"] .date-select-btn {
+        background: var(--bg-surface-subtle, #141B3D) !important;
+        border-color: var(--border-color) !important;
+        color: var(--text-main, #EEF1FB) !important;
+    }
+    html[data-pms-theme="dark"] .date-select-btn option,
+    html[data-theme="dark"] .date-select-btn option,
+    html[data-bs-theme="dark"] .date-select-btn option {
+        background: var(--bg-surface, #0F1530);
+        color: var(--text-main, #EEF1FB);
+    }
+
+    /* Dark Mode: Impersonation Banner */
+    html[data-pms-theme="dark"] .metrics-impersonation-banner,
+    html[data-theme="dark"] .metrics-impersonation-banner,
+    html[data-bs-theme="dark"] .metrics-impersonation-banner {
+        background: rgba(245, 158, 11, 0.1) !important;
+        border-color: rgba(245, 158, 11, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .metrics-impersonation-code,
+    html[data-theme="dark"] .metrics-impersonation-code,
+    html[data-bs-theme="dark"] .metrics-impersonation-code {
+        background: rgba(245, 158, 11, 0.18) !important;
+        color: #fde68a !important;
+        border: 1px solid rgba(245, 158, 11, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .metrics-impersonation-leave-btn,
+    html[data-theme="dark"] .metrics-impersonation-leave-btn,
+    html[data-bs-theme="dark"] .metrics-impersonation-leave-btn {
+        background: rgba(245, 158, 11, 0.12) !important;
+        color: var(--warning, #fbbf24) !important;
+        border-color: rgba(245, 158, 11, 0.35) !important;
+    }
+    html[data-pms-theme="dark"] .metrics-impersonation-leave-btn:hover,
+    html[data-theme="dark"] .metrics-impersonation-leave-btn:hover,
+    html[data-bs-theme="dark"] .metrics-impersonation-leave-btn:hover {
+        background: rgba(245, 158, 11, 0.25) !important;
+        border-color: #f59e0b !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 14px rgba(245, 158, 11, 0.25) !important;
+    }
+
+    /* Dark Mode: Chart Time Pills */
+    html[data-pms-theme="dark"] .chart-time-pills,
+    html[data-theme="dark"] .chart-time-pills,
+    html[data-bs-theme="dark"] .chart-time-pills {
+        background: var(--bg-surface-subtle, #141B3D) !important;
+        border: 1px solid var(--border-subtle, rgba(238, 241, 251, 0.1));
+    }
+    html[data-pms-theme="dark"] .chart-time-btn,
+    html[data-theme="dark"] .chart-time-btn,
+    html[data-bs-theme="dark"] .chart-time-btn {
+        color: var(--text-muted, #9AA3C7);
+    }
+    html[data-pms-theme="dark"] .chart-time-btn:hover,
+    html[data-theme="dark"] .chart-time-btn:hover,
+    html[data-bs-theme="dark"] .chart-time-btn:hover {
+        color: var(--text-main, #EEF1FB);
+    }
+    html[data-pms-theme="dark"] .chart-time-btn.active,
+    html[data-theme="dark"] .chart-time-btn.active,
+    html[data-bs-theme="dark"] .chart-time-btn.active {
+        background: var(--primary, #2F6BFF) !important;
+        color: #ffffff !important;
+        box-shadow: 0 2px 8px rgba(47, 107, 255, 0.35);
+    }
+
+    /* Dark Mode: Master Ledger Controls */
+    html[data-pms-theme="dark"] .ledger-export-btn,
+    html[data-theme="dark"] .ledger-export-btn,
+    html[data-bs-theme="dark"] .ledger-export-btn {
+        background: var(--bg-surface-subtle, #141B3D) !important;
+        color: var(--text-main, #EEF1FB) !important;
+        border-color: var(--border-color) !important;
+    }
+    html[data-pms-theme="dark"] .ledger-export-btn:hover,
+    html[data-theme="dark"] .ledger-export-btn:hover,
+    html[data-bs-theme="dark"] .ledger-export-btn:hover {
+        background: var(--bg-surface-hover, #1A2247) !important;
+        border-color: var(--primary, #2F6BFF) !important;
+        color: #ffffff !important;
+    }
+    html[data-pms-theme="dark"] .ledger-export-menu,
+    html[data-theme="dark"] .ledger-export-menu,
+    html[data-bs-theme="dark"] .ledger-export-menu {
+        background: var(--bg-surface, #0F1530) !important;
+        border-color: var(--border-color) !important;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55) !important;
+    }
+    html[data-pms-theme="dark"] .ledger-export-menu a,
+    html[data-theme="dark"] .ledger-export-menu a,
+    html[data-bs-theme="dark"] .ledger-export-menu a,
+    html[data-pms-theme="dark"] .ledger-export-item,
+    html[data-theme="dark"] .ledger-export-item,
+    html[data-bs-theme="dark"] .ledger-export-item {
+        color: var(--text-main, #EEF1FB) !important;
+        background: transparent !important;
+    }
+    html[data-pms-theme="dark"] .ledger-export-menu a:hover,
+    html[data-theme="dark"] .ledger-export-menu a:hover,
+    html[data-bs-theme="dark"] .ledger-export-menu a:hover,
+    html[data-pms-theme="dark"] .ledger-export-menu a:focus,
+    html[data-theme="dark"] .ledger-export-menu a:focus,
+    html[data-bs-theme="dark"] .ledger-export-menu a:focus,
+    html[data-pms-theme="dark"] .ledger-export-menu a:active,
+    html[data-theme="dark"] .ledger-export-menu a:active,
+    html[data-bs-theme="dark"] .ledger-export-menu a:active,
+    html[data-pms-theme="dark"] .ledger-export-item:hover,
+    html[data-theme="dark"] .ledger-export-item:hover,
+    html[data-bs-theme="dark"] .ledger-export-item:hover,
+    html[data-pms-theme="dark"] .ledger-export-item:focus,
+    html[data-theme="dark"] .ledger-export-item:focus,
+    html[data-bs-theme="dark"] .ledger-export-item:focus,
+    html[data-pms-theme="dark"] .ledger-export-item:active,
+    html[data-theme="dark"] .ledger-export-item:active,
+    html[data-bs-theme="dark"] .ledger-export-item:active {
+        background: var(--bg-surface-hover, #1A2247) !important;
+        color: #ffffff !important;
+    }
+    html[data-pms-theme="dark"] .ledger-entries-select,
+    html[data-theme="dark"] .ledger-entries-select,
+    html[data-bs-theme="dark"] .ledger-entries-select {
+        background: var(--bg-surface-subtle, #141B3D) !important;
+        color: var(--text-main, #EEF1FB) !important;
+        border-color: var(--border-color) !important;
+    }
+    html[data-pms-theme="dark"] .ledger-entries-select option,
+    html[data-theme="dark"] .ledger-entries-select option,
+    html[data-bs-theme="dark"] .ledger-entries-select option {
+        background: var(--bg-surface, #0F1530);
+        color: var(--text-main, #EEF1FB);
+    }
+    html[data-pms-theme="dark"] .ledger-search-input,
+    html[data-theme="dark"] .ledger-search-input,
+    html[data-bs-theme="dark"] .ledger-search-input {
+        background: var(--bg-surface-subtle, #141B3D) !important;
+        color: var(--text-main, #EEF1FB) !important;
+        border-color: var(--border-color) !important;
+    }
+    html[data-pms-theme="dark"] .ledger-search-input::placeholder,
+    html[data-theme="dark"] .ledger-search-input::placeholder,
+    html[data-bs-theme="dark"] .ledger-search-input::placeholder {
+        color: var(--text-subtle, #6B739A) !important;
+    }
+
+    /* Dark Mode: Master Ledger Table & Rows */
+    html[data-pms-theme="dark"] .ledger-table-wrap,
+    html[data-theme="dark"] .ledger-table-wrap,
+    html[data-bs-theme="dark"] .ledger-table-wrap {
+        background: var(--bg-surface, #0F1530) !important;
+        border-color: var(--border-color) !important;
+    }
+    html[data-pms-theme="dark"] .ledger-table thead tr,
+    html[data-theme="dark"] .ledger-table thead tr,
+    html[data-bs-theme="dark"] .ledger-table thead tr {
+        background: var(--bg-surface-subtle, #141B3D) !important;
+        border-bottom-color: var(--border-color) !important;
+    }
+    html[data-pms-theme="dark"] .ledger-table th,
+    html[data-theme="dark"] .ledger-table th,
+    html[data-bs-theme="dark"] .ledger-table th {
+        background: var(--bg-surface-subtle, #141B3D) !important;
+        border-color: var(--border-subtle) !important;
+        color: var(--text-muted, #9AA3C7) !important;
+    }
+    html[data-pms-theme="dark"] .ledger-table td,
+    html[data-theme="dark"] .ledger-table td,
+    html[data-bs-theme="dark"] .ledger-table td {
+        border-color: var(--border-subtle) !important;
+    }
+    html[data-pms-theme="dark"] .ledger-table .master-table-row,
+    html[data-theme="dark"] .ledger-table .master-table-row,
+    html[data-bs-theme="dark"] .ledger-table .master-table-row {
+        background: var(--bg-surface, #0F1530) !important;
+    }
+    html[data-pms-theme="dark"] .ledger-table .master-table-row:hover,
+    html[data-theme="dark"] .ledger-table .master-table-row:hover,
+    html[data-bs-theme="dark"] .ledger-table .master-table-row:hover {
+        background: var(--bg-surface-hover, #1A2247) !important;
+    }
+    html[data-pms-theme="dark"] .ledger-table .company-title,
+    html[data-theme="dark"] .ledger-table .company-title,
+    html[data-bs-theme="dark"] .ledger-table .company-title {
+        color: var(--text-main, #EEF1FB) !important;
+    }
+    html[data-pms-theme="dark"] .ledger-table .company-db,
+    html[data-theme="dark"] .ledger-table .company-db,
+    html[data-bs-theme="dark"] .ledger-table .company-db {
+        color: var(--text-muted, #9AA3C7) !important;
+    }
+    html[data-pms-theme="dark"] .ledger-action-btn,
+    html[data-theme="dark"] .ledger-action-btn,
+    html[data-bs-theme="dark"] .ledger-action-btn {
+        background: rgba(47, 107, 255, 0.15) !important;
+        color: #60a5fa !important;
+        border-color: rgba(47, 107, 255, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .ledger-action-btn:hover,
+    html[data-theme="dark"] .ledger-action-btn:hover,
+    html[data-bs-theme="dark"] .ledger-action-btn:hover {
+        background: var(--primary, #2F6BFF) !important;
+        color: #ffffff !important;
+    }
+
+    /* Dark Mode: Plan and Status Badges */
+    html[data-pms-theme="dark"] .plan-badge-item.badge-free,
+    html[data-theme="dark"] .plan-badge-item.badge-free {
+        background: rgba(148, 163, 184, 0.15) !important;
+        color: #94a3b8 !important;
+        border-color: rgba(148, 163, 184, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .plan-badge-item.badge-gold,
+    html[data-theme="dark"] .plan-badge-item.badge-gold {
+        background: rgba(245, 158, 11, 0.15) !important;
+        color: #fbbf24 !important;
+        border-color: rgba(245, 158, 11, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .plan-badge-item.badge-platinum,
+    html[data-theme="dark"] .plan-badge-item.badge-platinum {
+        background: rgba(2, 132, 199, 0.15) !important;
+        color: #38bdf8 !important;
+        border-color: rgba(2, 132, 199, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .plan-badge-item.badge-diamond,
+    html[data-theme="dark"] .plan-badge-item.badge-diamond {
+        background: rgba(124, 58, 237, 0.15) !important;
+        color: #a78bfa !important;
+        border-color: rgba(124, 58, 237, 0.3) !important;
+    }
+
+    html[data-pms-theme="dark"] .status-badge-item.status-active,
+    html[data-theme="dark"] .status-badge-item.status-active {
+        background: rgba(22, 163, 74, 0.15) !important;
+        color: #4ade80 !important;
+        border-color: rgba(22, 163, 74, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .status-badge-item.status-trial,
+    html[data-theme="dark"] .status-badge-item.status-trial {
+        background: rgba(217, 119, 6, 0.15) !important;
+        color: #fbbf24 !important;
+        border-color: rgba(217, 119, 6, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .status-badge-item.status-suspended,
+    html[data-theme="dark"] .status-badge-item.status-suspended {
+        background: rgba(220, 38, 38, 0.15) !important;
+        color: #f87171 !important;
+        border-color: rgba(220, 38, 38, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .status-badge-item.status-expired,
+    html[data-theme="dark"] .status-badge-item.status-expired {
+        background: rgba(220, 38, 38, 0.15) !important;
+        color: #f87171 !important;
+        border-color: rgba(220, 38, 38, 0.3) !important;
+    }
+
+    /* Dark Mode: Infrastructure Health Cards */
+    html[data-pms-theme="dark"] .infra-health-card,
+    html[data-theme="dark"] .infra-health-card,
+    html[data-bs-theme="dark"] .infra-health-card {
+        background: var(--bg-surface-subtle, #141B3D) !important;
+        border: 1px solid var(--border-subtle, rgba(238, 241, 251, 0.1)) !important;
+    }
+    html[data-pms-theme="dark"] .infra-health-card .health-label,
+    html[data-theme="dark"] .infra-health-card .health-label,
+    html[data-bs-theme="dark"] .infra-health-card .health-label {
+        color: var(--text-subtle, #6B739A) !important;
+    }
+
+    /* Dark Mode: Storage & Modals */
+    html[data-pms-theme="dark"] .modal-dialog-custom,
+    html[data-theme="dark"] .modal-dialog-custom,
+    html[data-bs-theme="dark"] .modal-dialog-custom {
+        background: var(--bg-surface, #0F1530) !important;
+        border: 1px solid var(--border-color) !important;
+        color: var(--text-main, #EEF1FB) !important;
+    }
+    html[data-pms-theme="dark"] .btn-export.btn-export-cancel,
+    html[data-theme="dark"] .btn-export.btn-export-cancel,
+    html[data-bs-theme="dark"] .btn-export.btn-export-cancel,
+    .dark .btn-export.btn-export-cancel,
+    html[data-pms-theme="dark"] #closeExportModalBtn,
+    html[data-theme="dark"] #closeExportModalBtn,
+    html[data-bs-theme="dark"] #closeExportModalBtn,
+    .dark #closeExportModalBtn {
+        background: var(--bg-surface-subtle, #141B3D) !important;
+        color: var(--text-main, #EEF1FB) !important;
+        border: 1px solid rgba(238, 241, 251, 0.18) !important;
+        box-shadow: none !important;
+    }
+    html[data-pms-theme="dark"] .btn-export.btn-export-cancel:hover,
+    html[data-theme="dark"] .btn-export.btn-export-cancel:hover,
+    html[data-bs-theme="dark"] .btn-export.btn-export-cancel:hover,
+    .dark .btn-export.btn-export-cancel:hover,
+    html[data-pms-theme="dark"] #closeExportModalBtn:hover,
+    html[data-theme="dark"] #closeExportModalBtn:hover,
+    html[data-bs-theme="dark"] #closeExportModalBtn:hover,
+    .dark #closeExportModalBtn:hover {
+        background: var(--bg-surface-hover, #1A2247) !important;
+        color: #ffffff !important;
+        border-color: rgba(238, 241, 251, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .storage-progress-track,
+    html[data-theme="dark"] .storage-progress-track,
+    html[data-bs-theme="dark"] .storage-progress-track {
+        background: rgba(238, 241, 251, 0.12) !important;
+    }
+    html[data-pms-theme="dark"] .ranking-table th,
+    html[data-theme="dark"] .ranking-table th {
+        background: var(--bg-surface-subtle, #141B3D) !important;
+        color: var(--text-muted) !important;
+    }
+    html[data-pms-theme="dark"] .ranking-table tr:hover,
+    html[data-theme="dark"] .ranking-table tr:hover {
+        background: var(--bg-surface-hover, #1A2247) !important;
+    }
+    html[data-pms-theme="dark"] .risk-alert-item,
+    html[data-theme="dark"] .risk-alert-item {
+        background: var(--bg-surface-subtle, #141B3D) !important;
+        border-color: var(--border-color) !important;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) {
+            --navy-dark: #070b1a;
+            --navy-surface: #0f1530;
+            --bg-main: #070B1A;
+            --bg-surface: #0F1530;
+            --border-color: rgba(238, 241, 251, 0.12);
+            --border-subtle: rgba(238, 241, 251, 0.08);
+            --text-main: #EEF1FB;
+            --text-muted: #9AA3C7;
+            --text-subtle: #6B739A;
+            --primary-soft: rgba(47, 107, 255, 0.15);
+            --warning-bg: rgba(245, 158, 11, 0.1);
+            --warning-border: rgba(245, 158, 11, 0.3);
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .date-select-btn {
+            background: var(--bg-surface-subtle, #141B3D) !important;
+            border-color: var(--border-color) !important;
+            color: var(--text-main, #EEF1FB) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .date-select-btn option {
+            background: var(--bg-surface, #0F1530);
+            color: var(--text-main, #EEF1FB);
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .metrics-impersonation-banner {
+            background: rgba(245, 158, 11, 0.1) !important;
+            border-color: rgba(245, 158, 11, 0.3) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .metrics-impersonation-code {
+            background: rgba(245, 158, 11, 0.18) !important;
+            color: #fde68a !important;
+            border: 1px solid rgba(245, 158, 11, 0.3) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .metrics-impersonation-leave-btn {
+            background: rgba(245, 158, 11, 0.12) !important;
+            color: var(--warning, #fbbf24) !important;
+            border-color: rgba(245, 158, 11, 0.35) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .chart-time-pills {
+            background: var(--bg-surface-subtle, #141B3D) !important;
+            border: 1px solid var(--border-subtle, rgba(238, 241, 251, 0.1));
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .chart-time-btn {
+            color: var(--text-muted, #9AA3C7);
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .chart-time-btn.active {
+            background: var(--primary, #2F6BFF) !important;
+            color: #ffffff !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .ledger-export-btn {
+            background: var(--bg-surface-subtle, #141B3D) !important;
+            color: var(--text-main, #EEF1FB) !important;
+            border-color: var(--border-color) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .ledger-export-menu {
+            background: var(--bg-surface, #0F1530) !important;
+            border-color: var(--border-color) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .ledger-export-menu a,
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .ledger-export-item {
+            color: var(--text-main, #EEF1FB) !important;
+            background: transparent !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .ledger-export-menu a:hover,
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .ledger-export-menu a:focus,
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .ledger-export-menu a:active,
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .ledger-export-item:hover,
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .ledger-export-item:focus,
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .ledger-export-item:active {
+            background: var(--bg-surface-hover, #1A2247) !important;
+            color: #ffffff !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .ledger-entries-select {
+            background: var(--bg-surface-subtle, #141B3D) !important;
+            color: var(--text-main, #EEF1FB) !important;
+            border-color: var(--border-color) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .ledger-entries-select option {
+            background: var(--bg-surface, #0F1530);
+            color: var(--text-main, #EEF1FB);
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .ledger-search-input {
+            background: var(--bg-surface-subtle, #141B3D) !important;
+            color: var(--text-main, #EEF1FB) !important;
+            border-color: var(--border-color) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .ledger-table-wrap {
+            background: var(--bg-surface, #0F1530) !important;
+            border-color: var(--border-color) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .ledger-table thead tr {
+            background: var(--bg-surface-subtle, #141B3D) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .ledger-table th {
+            background: var(--bg-surface-subtle, #141B3D) !important;
+            border-color: var(--border-subtle) !important;
+            color: var(--text-muted, #9AA3C7) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .ledger-table td {
+            border-color: var(--border-subtle) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .ledger-table .master-table-row {
+            background: var(--bg-surface, #0F1530) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .ledger-table .company-title {
+            color: var(--text-main, #EEF1FB) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .ledger-table .company-db {
+            color: var(--text-muted, #9AA3C7) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .infra-health-card {
+            background: var(--bg-surface-subtle, #141B3D) !important;
+            border: 1px solid var(--border-subtle, rgba(238, 241, 251, 0.1)) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .btn-export.btn-export-cancel,
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) #closeExportModalBtn {
+            background: var(--bg-surface-subtle, #141B3D) !important;
+            color: var(--text-main, #EEF1FB) !important;
+            border: 1px solid rgba(238, 241, 251, 0.18) !important;
+            box-shadow: none !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .btn-export.btn-export-cancel:hover,
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) #closeExportModalBtn:hover {
+            background: var(--bg-surface-hover, #1A2247) !important;
+            color: #ffffff !important;
+            border-color: rgba(238, 241, 251, 0.3) !important;
+        }
+    }
 </style>
 
 <!-- PAGE HEADER -->
@@ -453,19 +998,19 @@
 </div>
 
 @if($currentCompanyDb)
-<div style="background: var(--warning-bg); border: 1px solid var(--warning-border); border-radius: var(--radius-lg); padding: 14px 20px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between;">
+<div class="metrics-impersonation-banner" style="background: var(--warning-bg); border: 1px solid var(--warning-border); border-radius: var(--radius-lg); padding: 14px 20px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
     <div style="display: flex; align-items: center; gap: 12px;">
         <i class="fas fa-right-to-bracket" style="font-size: 20px; color: var(--warning);"></i>
         <div>
             <strong style="color: var(--warning); font-size: 14px;">Active Tenant Impersonation Session</strong>
             <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">
-                Session Database: <code style="background: #fff; padding: 2px 6px; border-radius: 4px; font-family: monospace;">{{ $currentCompanyDb }}</code>
+                Session Database: <code class="metrics-impersonation-code" style="background: #fff; padding: 2px 6px; border-radius: 4px; font-family: monospace;">{{ $currentCompanyDb }}</code>
             </div>
         </div>
     </div>
-    <form method="POST" action="{{ route('super-admin.leave-impersonation') }}" style="margin: 0;">
+    <form method="POST" action="{{ Route::has('superadmin.leave-impersonation') ? route('superadmin.leave-impersonation') : (Route::has('super-admin.leave-impersonation') ? route('super-admin.leave-impersonation') : url('/superadmin/leave-impersonation')) }}" style="margin: 0;">
         @csrf
-        <button type="submit" class="btn-export" style="background: #ffffff; color: var(--warning); border: 1px solid var(--warning-border); box-shadow: none;">
+        <button type="submit" class="btn-export metrics-impersonation-leave-btn" style="background: #ffffff; color: var(--warning); border: 1px solid var(--warning-border); box-shadow: none;">
             <i class="fas fa-arrow-left"></i> Leave Impersonation
         </button>
     </form>
@@ -671,10 +1216,11 @@
         <div style="height: 230px; position: relative;">
             <canvas id="statusChartCanvas"></canvas>
         </div>
-        <div style="display: flex; justify-content: space-around; font-size: 12px; margin-top: 12px;">
+        <div style="display: flex; justify-content: space-around; font-size: 12px; margin-top: 12px; flex-wrap: wrap; gap: 8px;">
             <div><span style="color: #16a34a; font-weight: 700;">● Active</span>: {{ $companies->where('status', 'active')->count() }}</div>
             <div><span style="color: #d97706; font-weight: 700;">● Trial</span>: {{ $companies->where('status', 'trial')->count() }}</div>
             <div><span style="color: #dc2626; font-weight: 700;">● Suspended</span>: {{ $companies->where('status', 'suspended')->count() }}</div>
+            <div><span style="color: #f43f5e; font-weight: 700;">● Expired</span>: {{ $companies->where('status', 'expired')->count() }}</div>
         </div>
     </div>
 </div>
@@ -701,7 +1247,7 @@
                 <div class="analytics-card-title"><i class="fas fa-clock-rotate-left" style="color: #d97706;"></i> Platform Activity</div>
                 <div class="analytics-card-subtitle">Live events across tenant databases</div>
             </div>
-            <a href="#" class="analytics-card-subtitle" style="color: var(--primary); font-weight: 600; text-decoration: none;">View All →</a>
+            <a href="{{ Route::has('super-admin.tenant-audit.index') ? route('super-admin.tenant-audit.index') : (Route::has('super-admin.activity-logs.index') ? route('super-admin.activity-logs.index') : url('/super-admin/tenant-audit')) }}" class="analytics-card-subtitle platform-activity-view-all" style="color: var(--primary); font-weight: 600; text-decoration: none; cursor: pointer; transition: color var(--transition-fast);">View All →</a>
         </div>
         <div class="activity-timeline">
             @forelse($companies->take(4) as $comp)
@@ -787,20 +1333,20 @@
             </div>
         </div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 12.5px;">
-            <div style="background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid var(--border-subtle);">
-                <div style="font-size: 10.5px; color: var(--text-subtle); font-weight: 700;">DB CLUSTER</div>
+            <div class="infra-health-card" style="background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid var(--border-subtle);">
+                <div class="health-label" style="font-size: 10.5px; color: var(--text-subtle); font-weight: 700;">DB CLUSTER</div>
                 <div style="color: var(--success); font-weight: 700; margin-top: 2px;">● Healthy (42ms)</div>
             </div>
-            <div style="background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid var(--border-subtle);">
-                <div style="font-size: 10.5px; color: var(--text-subtle); font-weight: 700;">BACKUP SERVICE</div>
+            <div class="infra-health-card" style="background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid var(--border-subtle);">
+                <div class="health-label" style="font-size: 10.5px; color: var(--text-subtle); font-weight: 700;">BACKUP SERVICE</div>
                 <div style="color: var(--success); font-weight: 700; margin-top: 2px;">● Verified</div>
             </div>
-            <div style="background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid var(--border-subtle);">
-                <div style="font-size: 10.5px; color: var(--text-subtle); font-weight: 700;">MIGRATIONS</div>
+            <div class="infra-health-card" style="background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid var(--border-subtle);">
+                <div class="health-label" style="font-size: 10.5px; color: var(--text-subtle); font-weight: 700;">MIGRATIONS</div>
                 <div style="color: var(--success); font-weight: 700; margin-top: 2px;">● Up to date</div>
             </div>
-            <div style="background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid var(--border-subtle);">
-                <div style="font-size: 10.5px; color: var(--text-subtle); font-weight: 700;">TENANTS</div>
+            <div class="infra-health-card" style="background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid var(--border-subtle);">
+                <div class="health-label" style="font-size: 10.5px; color: var(--text-subtle); font-weight: 700;">TENANTS</div>
                 <div style="color: var(--success); font-weight: 700; margin-top: 2px;">● {{ $companies->count() }}/{{ $companies->count() }} Connected</div>
             </div>
         </div>
@@ -823,14 +1369,14 @@
 
                 <!-- EXPORT DROPDOWN BUTTON -->
                 <div class="custom-export-dropdown" style="position: relative; display: inline-block;">
-                    <button type="button" id="exportDropdownBtn" style="display: inline-flex; align-items: center; gap: 8px; background: #ffffff; color: var(--text-main); border: 1px solid var(--border-color); padding: 8px 14px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; box-shadow: var(--shadow-xs);">
+                    <button type="button" id="exportDropdownBtn" class="ledger-export-btn">
                         <i class="fas fa-download" style="color: var(--primary);"></i> Export <i class="fas fa-chevron-down" style="font-size: 10px; margin-left: 2px;"></i>
                     </button>
-                    <div id="exportMenuOptions" style="display: none; position: absolute; right: 0; top: 100%; margin-top: 4px; background: #ffffff; border: 1px solid var(--border-color); border-radius: 10px; box-shadow: var(--shadow-md); padding: 6px; z-index: 100; min-width: 160px;">
-                        <a href="#" id="exportCsvBtn" style="display: flex; align-items: center; gap: 10px; padding: 8px 12px; color: var(--text-main); text-decoration: none; font-size: 13px; font-weight: 600; border-radius: 6px; transition: background 0.15s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'">
+                    <div id="exportMenuOptions" class="ledger-export-menu">
+                        <a href="#" id="exportCsvBtn" class="ledger-export-item">
                             <i class="fas fa-file-csv" style="color: #16a34a; font-size: 16px;"></i> Export as CSV
                         </a>
-                        <a href="#" id="exportPdfBtn" style="display: flex; align-items: center; gap: 10px; padding: 8px 12px; color: var(--text-main); text-decoration: none; font-size: 13px; font-weight: 600; border-radius: 6px; transition: background 0.15s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'">
+                        <a href="#" id="exportPdfBtn" class="ledger-export-item">
                             <i class="fas fa-file-pdf" style="color: #dc2626; font-size: 16px;"></i> Export as PDF
                         </a>
                     </div>
@@ -842,7 +1388,7 @@
         <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding-top: 12px; border-top: 1px solid var(--border-subtle);">
             <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-muted); font-weight: 500;">
                 <span>Show</span>
-                <select id="tableEntriesSelect" style="padding: 6px 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 13px; font-weight: 600; color: var(--text-main); outline: none; background: #ffffff; cursor: pointer;">
+                <select id="tableEntriesSelect" class="ledger-entries-select" style="padding: 6px 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 13px; font-weight: 600; color: var(--text-main); outline: none; background: #ffffff; cursor: pointer;">
                     <option value="10" selected>10</option>
                     <option value="25">25</option>
                     <option value="50">50</option>
@@ -854,13 +1400,13 @@
 
             <div style="position: relative;">
                 <i class="fas fa-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-subtle); font-size: 13px;"></i>
-                <input type="text" id="companyMetricsSearchInput" placeholder="Search company or DB..." style="padding: 8px 12px 8px 34px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 13px; outline: none; width: 250px; background: #ffffff; box-shadow: var(--shadow-xs);">
+                <input type="text" id="companyMetricsSearchInput" class="ledger-search-input" placeholder="Search company or DB..." style="padding: 8px 12px 8px 34px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 13px; outline: none; width: 250px; background: #ffffff; box-shadow: var(--shadow-xs);">
             </div>
         </div>
     </div>
 
-    <div style="overflow-x: auto; border: 1px solid var(--border-color); border-radius: 12px; background: #ffffff; box-shadow: var(--shadow-xs);">
-        <table style="width: 100%; border-collapse: collapse; font-size: 13px; min-width: 980px;">
+    <div class="ledger-table-wrap" style="overflow-x: auto; border: 1px solid var(--border-color); border-radius: 12px; background: #ffffff; box-shadow: var(--shadow-xs);">
+        <table class="ledger-table" style="width: 100%; border-collapse: collapse; font-size: 13px; min-width: 980px;">
             <thead>
                 <tr style="background: #f8fafc; border-bottom: 2px solid #e2e8f0;">
                     <th style="border: 1px solid #e2e8f0; padding: 12px 10px; text-align: center; width: 40px;">
@@ -894,18 +1440,18 @@
                             <input type="checkbox" class="company-row-checkbox" value="{{ $comp->id }}" data-name="{{ $comp->name }}" data-db="{{ $comp->db_name }}" data-plan="{{ $planName }}" data-cycle="{{ $cycle }}" data-price="₹{{ number_format($price) }}" data-starts="{{ $startsAt }}" data-ends="{{ $endsAt }}" data-status="{{ ucfirst($status) }}" style="cursor: pointer; width: 16px; height: 16px; accent-color: #2563eb;">
                         </td>
                         <td style="border: 1px solid #e2e8f0; padding: 12px 14px; white-space: nowrap;">
-                            <div style="font-weight: 700; color: var(--text-main); font-size: 13.5px;">{{ $comp->name }}</div>
-                            <div style="font-size: 11.5px; color: var(--text-subtle); font-family: monospace; margin-top: 2px;">{{ $comp->db_name }}</div>
+                            <div class="company-title" style="font-weight: 700; color: var(--text-main); font-size: 13.5px;">{{ $comp->name }}</div>
+                            <div class="company-db" style="font-size: 11.5px; color: var(--text-subtle); font-family: monospace; margin-top: 2px;">{{ $comp->db_name }}</div>
                         </td>
                         <td style="border: 1px solid #e2e8f0; padding: 12px 14px; text-align: center; white-space: nowrap;">
                             @if($planName === 'FREE')
-                                <span style="background: #f1f5f9; color: #475569; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 11px; border: 1px solid #cbd5e1; display: inline-block;">FREE</span>
+                                <span class="plan-badge-item badge-free" style="background: #f1f5f9; color: #475569; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 11px; border: 1px solid #cbd5e1; display: inline-block;">FREE</span>
                             @elseif($planName === 'GOLD')
-                                <span style="background: #fffbeb; color: #d97706; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 11px; border: 1px solid #fde68a; display: inline-block;">GOLD</span>
+                                <span class="plan-badge-item badge-gold" style="background: #fffbeb; color: #d97706; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 11px; border: 1px solid #fde68a; display: inline-block;">GOLD</span>
                             @elseif($planName === 'PLATINUM')
-                                <span style="background: #f0f9ff; color: #0284c7; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 11px; border: 1px solid #bae6fd; display: inline-block;">PLATINUM</span>
+                                <span class="plan-badge-item badge-platinum" style="background: #f0f9ff; color: #0284c7; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 11px; border: 1px solid #bae6fd; display: inline-block;">PLATINUM</span>
                             @else
-                                <span style="background: #f5f3ff; color: #7c3aed; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 11px; border: 1px solid #ddd6fe; display: inline-block;">DIAMOND</span>
+                                <span class="plan-badge-item badge-diamond" style="background: #f5f3ff; color: #7c3aed; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 11px; border: 1px solid #ddd6fe; display: inline-block;">DIAMOND</span>
                             @endif
                         </td>
                         <td style="border: 1px solid #e2e8f0; padding: 12px 14px; font-weight: 600; color: var(--text-main); white-space: nowrap;">
@@ -925,21 +1471,24 @@
                         </td>
                         <td style="border: 1px solid #e2e8f0; padding: 12px 14px; text-align: center; white-space: nowrap;">
                             @if($status === 'active')
-                                <span style="background: #f0fdf4; color: #16a34a; padding: 4px 10px; border-radius: 20px; font-size: 11.5px; font-weight: 700; border: 1px solid #bbf7d0; display: inline-flex; align-items: center; gap: 5px;">
+                                <span class="status-badge-item status-active" style="background: #f0fdf4; color: #16a34a; padding: 4px 10px; border-radius: 20px; font-size: 11.5px; font-weight: 700; border: 1px solid #bbf7d0; display: inline-flex; align-items: center; gap: 5px;">
                                     <span style="width: 6px; height: 6px; border-radius: 50%; background: #16a34a;"></span> Active
                                 </span>
                             @elseif($status === 'trial')
-                                <span style="background: #fffbeb; color: #d97706; padding: 4px 10px; border-radius: 20px; font-size: 11.5px; font-weight: 700; border: 1px solid #fde68a; display: inline-flex; align-items: center; gap: 5px;">
+                                <span class="status-badge-item status-trial" style="background: #fffbeb; color: #d97706; padding: 4px 10px; border-radius: 20px; font-size: 11.5px; font-weight: 700; border: 1px solid #fde68a; display: inline-flex; align-items: center; gap: 5px;">
                                     <span style="width: 6px; height: 6px; border-radius: 50%; background: #d97706;"></span> Trial
                                 </span>
-                            @else
-                                <span style="background: #fef2f2; color: #dc2626; padding: 4px 10px; border-radius: 20px; font-size: 11.5px; font-weight: 700; border: 1px solid #fecaca; display: inline-flex; align-items: center; gap: 5px;">
+                            @elseif($status === 'suspended')
+                                <span class="status-badge-item status-suspended" style="background: #fef2f2; color: #dc2626; padding: 4px 10px; border-radius: 20px; font-size: 11.5px; font-weight: 700; border: 1px solid #fecaca; display: inline-flex; align-items: center; gap: 5px;">
                                     <span style="width: 6px; height: 6px; border-radius: 50%; background: #dc2626;"></span> Suspended
                                 </span>
+                            @else
+                                <span class="status-badge-item status-expired" style="background: #fef2f2; color: #dc2626; padding: 4px 10px; border-radius: 20px; font-size: 11.5px; font-weight: 700; border: 1px solid #fecaca; display: inline-flex; align-items: center; gap: 5px;">
+                                    <span style="width: 6px; height: 6px; border-radius: 50%; background: #dc2626;"></span> Expired
+                                </span>
                             @endif
-                        </td>
                         <td style="border: 1px solid #e2e8f0; padding: 12px 14px; text-align: right; white-space: nowrap;">
-                            <a href="{{ route('super-admin.companies.show', $comp->id) }}" style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; background: #eff6ff; color: #2563eb; border-radius: 8px; font-weight: 600; font-size: 12.5px; text-decoration: none; border: 1px solid #bfdbfe; transition: all 0.2s;">
+                            <a href="{{ Route::has('super-admin.companies.show') ? route('super-admin.companies.show', $comp->id) : (Route::has('superadmin.companies.show') ? route('superadmin.companies.show', $comp->id) : url('/superadmin/companies/'.$comp->id)) }}" class="ledger-action-btn" style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; background: #eff6ff; color: #2563eb; border-radius: 8px; font-weight: 600; font-size: 12.5px; text-decoration: none; border: 1px solid #bfdbfe; transition: all 0.2s;">
                                 Workspace <i class="fas fa-arrow-right" style="font-size: 10px;"></i>
                             </a>
                         </td>
@@ -996,20 +1545,20 @@
             </div>
         </div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 13px;">
-            <div style="background: #f8fafc; padding: 12px; border-radius: 8px;">
-                <div style="font-size: 11px; color: var(--text-subtle); font-weight: 700;">DATABASE CLUSTER</div>
+            <div class="infra-health-card" style="background: #f8fafc; padding: 12px; border-radius: 8px;">
+                <div class="health-label" style="font-size: 11px; color: var(--text-subtle); font-weight: 700;">DATABASE CLUSTER</div>
                 <div style="color: var(--success); font-weight: 700; margin-top: 2px;">● Healthy (42ms)</div>
             </div>
-            <div style="background: #f8fafc; padding: 12px; border-radius: 8px;">
-                <div style="font-size: 11px; color: var(--text-subtle); font-weight: 700;">BACKUP SERVICE</div>
+            <div class="infra-health-card" style="background: #f8fafc; padding: 12px; border-radius: 8px;">
+                <div class="health-label" style="font-size: 11px; color: var(--text-subtle); font-weight: 700;">BACKUP SERVICE</div>
                 <div style="color: var(--success); font-weight: 700; margin-top: 2px;">● Verified</div>
             </div>
-            <div style="background: #f8fafc; padding: 12px; border-radius: 8px;">
-                <div style="font-size: 11px; color: var(--text-subtle); font-weight: 700;">MIGRATION STATUS</div>
+            <div class="infra-health-card" style="background: #f8fafc; padding: 12px; border-radius: 8px;">
+                <div class="health-label" style="font-size: 11px; color: var(--text-subtle); font-weight: 700;">MIGRATION STATUS</div>
                 <div style="color: var(--success); font-weight: 700; margin-top: 2px;">● Up to date</div>
             </div>
-            <div style="background: #f8fafc; padding: 12px; border-radius: 8px;">
-                <div style="font-size: 11px; color: var(--text-subtle); font-weight: 700;">TENANT CONNECTIONS</div>
+            <div class="infra-health-card" style="background: #f8fafc; padding: 12px; border-radius: 8px;">
+                <div class="health-label" style="font-size: 11px; color: var(--text-subtle); font-weight: 700;">TENANT CONNECTIONS</div>
                 <div style="color: var(--success); font-weight: 700; margin-top: 2px;">● {{ $companies->count() }}/{{ $companies->count() }} Connected</div>
             </div>
         </div>
@@ -1033,8 +1582,8 @@
             </label>
         </div>
         <div style="display: flex; justify-content: flex-end; gap: 10px;">
-            <button class="btn-export" id="closeExportModalBtn" style="background: #ffffff; color: var(--text-main); border: 1px solid var(--border-color); box-shadow: none;">Cancel</button>
-            <button class="btn-export" id="confirmExportBtn">Download Report</button>
+            <button type="button" class="btn-export btn-export-cancel" id="closeExportModalBtn">Cancel</button>
+            <button type="button" class="btn-export" id="confirmExportBtn">Download Report</button>
         </div>
     </div>
 </div>
@@ -1154,14 +1703,15 @@ document.addEventListener('DOMContentLoaded', function() {
         new Chart(statusCtx, {
             type: 'doughnut',
             data: {
-                labels: ['Active', 'Trial', 'Suspended'],
+                labels: ['Active', 'Trial', 'Suspended', 'Expired'],
                 datasets: [{
                     data: [
-                        {{ max(1, $companies->where('status', 'active')->count()) }},
+                        {{ max(0, $companies->where('status', 'active')->count()) }},
                         {{ $companies->where('status', 'trial')->count() }},
-                        {{ $companies->where('status', 'suspended')->count() }}
+                        {{ $companies->where('status', 'suspended')->count() }},
+                        {{ $companies->where('status', 'expired')->count() }}
                     ],
-                    backgroundColor: ['#16a34a', '#d97706', '#dc2626'],
+                    backgroundColor: ['#16a34a', '#d97706', '#dc2626', '#f43f5e'],
                     borderWidth: 2
                 }]
             },
@@ -1213,6 +1763,39 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Selection Counter & Row Checkboxes
+    const selectAllCheckbox = document.getElementById('selectAllCompaniesCheckbox');
+    const rowCheckboxes = document.querySelectorAll('.company-row-checkbox');
+    const selectedCountBadge = document.getElementById('selectedCountBadge');
+    const selectedCountText = document.getElementById('selectedCountText');
+
+    function updateSelectedCount() {
+        const checked = document.querySelectorAll('.company-row-checkbox:checked');
+        if (selectedCountText) selectedCountText.textContent = checked.length;
+        if (selectedCountBadge) {
+            selectedCountBadge.style.display = checked.length > 0 ? 'inline-flex' : 'none';
+        }
+        if (selectAllCheckbox) {
+            selectAllCheckbox.checked = checked.length > 0 && checked.length === rowCheckboxes.length;
+        }
+    }
+
+    if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener('change', function() {
+            rowCheckboxes.forEach(cb => {
+                const row = cb.closest('tr');
+                if (!row || row.style.display !== 'none') {
+                    cb.checked = selectAllCheckbox.checked;
+                }
+            });
+            updateSelectedCount();
+        });
+    }
+
+    rowCheckboxes.forEach(cb => {
+        cb.addEventListener('change', updateSelectedCount);
+    });
+
     // Custom Export Dropdown Menu Toggle Handler
     const exportDropdownBtn = document.getElementById('exportDropdownBtn');
     const exportMenuOptions = document.getElementById('exportMenuOptions');
@@ -1223,6 +1806,192 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         document.addEventListener('click', function() {
             exportMenuOptions.style.display = 'none';
+        });
+    }
+
+    // Helper functions for report exports
+    function escapeHtml(str) {
+        if (str === null || str === undefined) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    function triggerDownload(blob, filename) {
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    function getExportRows() {
+        const checkedBoxes = Array.from(document.querySelectorAll('.company-row-checkbox:checked'));
+        let targetRows = [];
+        
+        if (checkedBoxes.length > 0) {
+            targetRows = checkedBoxes.map(cb => cb.closest('tr')).filter(Boolean);
+        } else {
+            targetRows = Array.from(document.querySelectorAll('.master-table-row'))
+                .filter(r => r.style.display !== 'none');
+        }
+
+        const headers = [
+            'Company Name',
+            'Database Name',
+            'Assigned Plan',
+            'Billing Cycle',
+            'Monthly Revenue',
+            'Active Users',
+            'Start Date & Time',
+            'Expiration Date',
+            'Status'
+        ];
+
+        const data = targetRows.map(row => {
+            const cb = row.querySelector('.company-row-checkbox');
+            const companyName = cb?.dataset.name || row.querySelector('.company-title')?.innerText?.trim() || '';
+            const dbName = cb?.dataset.db || row.querySelector('.company-db')?.innerText?.trim() || '';
+            const plan = cb?.dataset.plan || row.querySelector('.plan-badge-item')?.innerText?.trim() || '';
+            const cycle = cb?.dataset.cycle || row.querySelector('td:nth-child(4)')?.innerText?.trim() || '';
+            const revenue = cb?.dataset.price || row.querySelector('td:nth-child(5)')?.innerText?.trim() || '';
+            const users = row.querySelector('td:nth-child(6)')?.innerText?.trim() || '';
+            const starts = cb?.dataset.starts || row.querySelector('td:nth-child(7)')?.innerText?.trim() || '';
+            const ends = cb?.dataset.ends || row.querySelector('td:nth-child(8)')?.innerText?.trim() || '';
+            const status = cb?.dataset.status || row.querySelector('.status-badge-item')?.innerText?.trim() || '';
+
+            return [
+                companyName,
+                dbName,
+                plan,
+                cycle,
+                revenue,
+                users,
+                starts,
+                ends,
+                status
+            ];
+        });
+
+        return { headers, data };
+    }
+
+    function downloadCsv(headers, rows, filename) {
+        const csvLines = [];
+        csvLines.push(headers.map(h => `"${String(h).replace(/"/g, '""')}"`).join(','));
+        rows.forEach(row => {
+            csvLines.push(row.map(c => `"${String(c).replace(/"/g, '""')}"`).join(','));
+        });
+        const csvContent = "\uFEFF" + csvLines.join("\r\n");
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        triggerDownload(blob, filename);
+    }
+
+    function downloadExcel(headers, rows, filename) {
+        let excelContent = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">' +
+            '<head><meta charset="utf-8">' +
+            '<style>' +
+            'th { background-color: #2563eb; color: #ffffff; font-weight: bold; padding: 10px 14px; border: 1px solid #cbd5e1; font-family: sans-serif; font-size: 12px; }' +
+            'td { padding: 8px 12px; border: 1px solid #e2e8f0; font-family: sans-serif; font-size: 12px; }' +
+            'tr:nth-child(even) { background-color: #f8fafc; }' +
+            '</style></head>' +
+            '<body><table>' +
+            '<thead><tr>' + headers.map(h => '<th>' + escapeHtml(h) + '</th>').join('') + '</tr></thead>' +
+            '<tbody>' + rows.map(row => '<tr>' + row.map(cell => '<td>' + escapeHtml(cell) + '</td>').join('') + '</tr>').join('') + '</tbody>' +
+            '</table></body></html>';
+
+        const blob = new Blob([excelContent], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+        triggerDownload(blob, filename);
+    }
+
+    function downloadPdf(headers, rows) {
+        const printWindow = window.open('', '_blank');
+        if (!printWindow) {
+            alert('Please allow popups in your browser to view and print/save the PDF report.');
+            return;
+        }
+        const dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+        const tableHeaderHtml = headers.map(h => `<th>${escapeHtml(h)}</th>`).join('');
+        const tableRowsHtml = rows.map(r => `<tr>${r.map(c => `<td>${escapeHtml(c)}</td>`).join('')}</tr>`).join('');
+
+        printWindow.document.write(`<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Company Metrics Analytics Report - ${dateStr}</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 24px; color: #0f172a; font-size: 12px; }
+  .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; border-bottom: 2px solid #2563eb; padding-bottom: 12px; }
+  h1 { font-size: 20px; font-weight: 800; margin: 0 0 4px 0; color: #1e293b; }
+  p { font-size: 12px; color: #64748b; margin: 0; }
+  .timestamp { font-size: 11px; color: #64748b; text-align: right; }
+  table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11.5px; }
+  th { background: #f1f5f9; color: #1e293b; font-weight: 700; text-align: left; padding: 9px 8px; border: 1px solid #cbd5e1; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.4px; }
+  td { padding: 8px; border: 1px solid #e2e8f0; color: #1e293b; }
+  tr:nth-child(even) { background: #f8fafc; }
+  @media print {
+    body { margin: 12px; }
+    @page { size: landscape; margin: 12mm; }
+  }
+</style>
+</head>
+<body>
+  <div class="header">
+    <div>
+      <h1>Company Metrics Analytics Report</h1>
+      <p>Platform-wide performance insights across all tenant companies</p>
+    </div>
+    <div class="timestamp">
+      <strong>Generated:</strong> ${dateStr}<br>
+      <strong>Total Records:</strong> ${rows.length}
+    </div>
+  </div>
+  <table>
+    <thead><tr>${tableHeaderHtml}</tr></thead>
+    <tbody>${tableRowsHtml}</tbody>
+  </table>
+</body>
+</html>`);
+        printWindow.document.close();
+        printWindow.focus();
+        setTimeout(() => {
+            printWindow.print();
+        }, 350);
+    }
+
+    // Dropdown direct CSV & PDF exports
+    const exportCsvBtn = document.getElementById('exportCsvBtn');
+    if (exportCsvBtn) {
+        exportCsvBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const { headers, data } = getExportRows();
+            if (data.length === 0) {
+                alert('No company records available to export.');
+                return;
+            }
+            const dateStr = new Date().toISOString().slice(0, 10);
+            downloadCsv(headers, data, `company_metrics_${dateStr}.csv`);
+            if (exportMenuOptions) exportMenuOptions.style.display = 'none';
+        });
+    }
+
+    const exportPdfBtn = document.getElementById('exportPdfBtn');
+    if (exportPdfBtn) {
+        exportPdfBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const { headers, data } = getExportRows();
+            if (data.length === 0) {
+                alert('No company records available to export.');
+                return;
+            }
+            downloadPdf(headers, data);
+            if (exportMenuOptions) exportMenuOptions.style.display = 'none';
         });
     }
 
@@ -1239,12 +2008,46 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     if (closeExportBtn && exportModal) {
-        closeExportBtn.addEventListener('click', function() {
+        closeExportBtn.addEventListener('click', function(e) {
+            e.preventDefault();
             exportModal.classList.remove('open');
         });
     }
+    if (exportModal) {
+        exportModal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.remove('open');
+            }
+        });
+    }
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && exportModal && exportModal.classList.contains('open')) {
+            exportModal.classList.remove('open');
+        }
+    });
+
     if (confirmExportBtn && exportModal) {
-        confirmExportBtn.addEventListener('click', function() {
+        confirmExportBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const formatInput = document.querySelector('input[name="exportFormat"]:checked');
+            const format = formatInput ? formatInput.value : 'csv';
+            
+            const { headers, data } = getExportRows();
+            if (data.length === 0) {
+                alert('No company records available to export.');
+                exportModal.classList.remove('open');
+                return;
+            }
+
+            const dateStr = new Date().toISOString().slice(0, 10);
+            if (format === 'csv') {
+                downloadCsv(headers, data, `company_metrics_${dateStr}.csv`);
+            } else if (format === 'excel') {
+                downloadExcel(headers, data, `company_metrics_${dateStr}.xls`);
+            } else if (format === 'pdf') {
+                downloadPdf(headers, data);
+            }
+
             exportModal.classList.remove('open');
         });
     }
