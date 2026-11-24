@@ -11,7 +11,11 @@ use App\Models\CrmActivity;
 use App\Models\CrmFollowUp;
 use App\Models\User;
 use App\Models\Country;
+<<<<<<< HEAD
 use Illuminate\Validation\ValidationException;
+=======
+use App\Support\LeadContactValidation;
+>>>>>>> 33292739fd3e6d83b3f333e88dce1a9c65300c5f
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\LeadsExport;
 use App\Imports\LeadsImport;
@@ -335,6 +339,7 @@ class LeadContactController extends Controller
     {
         $this->authorizeLeadAccess('create');
 
+<<<<<<< HEAD
         // Pre-normalize email
         if ($request->filled('email')) {
             $request->merge(['email' => strtolower(trim((string) $request->email))]);
@@ -373,17 +378,26 @@ class LeadContactController extends Controller
             $finalWa = $this->validateAndFormatPhoneWithCountry($request, $country, 'whatsapp', false);
             $request->merge(['whatsapp' => $finalWa]);
         }
+=======
+        $request->merge(LeadContactValidation::prepare($request->all()));
+>>>>>>> 33292739fd3e6d83b3f333e88dce1a9c65300c5f
 
         $data = $request->validate([
             // Section: Basic Information
             'salutation' => 'nullable|string|max:20',
             'contact_name' => 'required|string|max:255',
             'job_title' => 'nullable|string|max:255',
+<<<<<<< HEAD
             'email' => ['required', 'string', 'email', 'max:255', 'regex:/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/'],
             'phone' => ['required', 'string', 'max:30'],
             'mobile' => ['nullable', 'string', 'max:30'],
             'alternate_phone' => ['nullable', 'string', 'max:30'],
             'whatsapp' => ['nullable', 'string', 'max:30'],
+=======
+            ...LeadContactValidation::rules(),
+            'alternate_phone' => 'nullable|string|max:30',
+            'whatsapp' => 'nullable|string|max:30',
+>>>>>>> 33292739fd3e6d83b3f333e88dce1a9c65300c5f
             'company_name' => 'nullable|string|max:255',
             'website' => 'nullable|url|max:255',
 
@@ -425,6 +439,7 @@ class LeadContactController extends Controller
             'phone.required' => 'Primary phone number is required.',
         ]);
 
+        unset($data['phone_country_code'], $data['mobile_country_code']);
         $data['create_deal'] = $request->has('create_deal');
         $data['added_by'] = auth()->id();
         $data['status'] = $data['status'] ?? 'new';
@@ -539,6 +554,8 @@ class LeadContactController extends Controller
     {
         $this->authorizeLeadAccess('edit');
 
+        $request->merge(LeadContactValidation::prepare($request->all()));
+
         $lead = LeadContact::findOrFail($id);
         $oldStatus = $lead->status;
         $oldPriority = $lead->priority;
@@ -587,11 +604,17 @@ class LeadContactController extends Controller
             'salutation' => 'nullable|string|max:20',
             'contact_name' => 'required|string|max:255',
             'job_title' => 'nullable|string|max:255',
+<<<<<<< HEAD
             'email' => ['required', 'string', 'email', 'max:255', 'regex:/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/'],
             'phone' => ['required', 'string', 'max:30'],
             'mobile' => ['nullable', 'string', 'max:30'],
             'alternate_phone' => ['nullable', 'string', 'max:30'],
             'whatsapp' => ['nullable', 'string', 'max:30'],
+=======
+            ...LeadContactValidation::rules(),
+            'alternate_phone' => 'nullable|string|max:30',
+            'whatsapp' => 'nullable|string|max:30',
+>>>>>>> 33292739fd3e6d83b3f333e88dce1a9c65300c5f
             'company_name' => 'nullable|string|max:255',
             'website' => 'nullable|url|max:255',
 
@@ -622,6 +645,7 @@ class LeadContactController extends Controller
             'phone.required' => 'Primary phone number is required.',
         ]);
 
+        unset($data['phone_country_code'], $data['mobile_country_code']);
         if ($request->has('products') && is_array($request->products)) {
             $data['products'] = json_encode($request->products);
         }

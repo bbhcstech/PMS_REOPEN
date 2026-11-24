@@ -2135,15 +2135,12 @@
               }
           @endphp
           <div style="display: flex;">
-            <select id="modal_company_country_code" class="country-code-select" style="width: 100px; flex-shrink: 0; padding: 10px 8px; border: 1px solid var(--border-subtle, #cbd5e1); border-right: 0; border-top-left-radius: 8px; border-bottom-left-radius: 8px; font-size: 13px; outline: none;">
-                <option value="+91" {{ $countryCode == '+91' ? 'selected' : '' }}>+91 (IN)</option>
-                <option value="+1" {{ $countryCode == '+1' ? 'selected' : '' }}>+1 (US)</option>
-                <option value="+44" {{ $countryCode == '+44' ? 'selected' : '' }}>+44 (UK)</option>
-                <option value="+61" {{ $countryCode == '+61' ? 'selected' : '' }}>+61 (AU)</option>
-                <option value="+971" {{ $countryCode == '+971' ? 'selected' : '' }}>+971 (AE)</option>
-                <option value="+81" {{ $countryCode == '+81' ? 'selected' : '' }}>+81 (JP)</option>
-                <option value="+49" {{ $countryCode == '+49' ? 'selected' : '' }}>+49 (DE)</option>
-                <option value="+33" {{ $countryCode == '+33' ? 'selected' : '' }}>+33 (FR)</option>
+            <select id="modal_company_country_code" class="country-code-select" style="width: 110px; flex-shrink: 0; padding: 10px 8px; border: 1px solid var(--border-subtle, #cbd5e1); border-right: 0; border-top-left-radius: 8px; border-bottom-left-radius: 8px; font-size: 13px; outline: none;">
+                @foreach(\App\Models\Country::getAllWithPhoneCodes() as $c)
+                    <option value="{{ $c->phone_code }}" {{ $countryCode == $c->phone_code ? 'selected' : '' }}>
+                        {{ $c->iso_code ? $c->iso_code . ' ' : '' }}({{ $c->phone_code }})
+                    </option>
+                @endforeach
             </select>
             <input type="text" id="modal_company_phone_display" value="{{ $phoneNum }}" placeholder="555 0199" style="border-top-left-radius: 0; border-bottom-left-radius: 0; width: 100%;" />
             <input type="hidden" name="phone" id="modal_company_phone_hidden" value="{{ $fullPhone }}">

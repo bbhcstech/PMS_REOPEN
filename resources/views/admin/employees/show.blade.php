@@ -1061,12 +1061,15 @@
                             </div>
                         </div>
 
-                        @if($detail?->skills)
+                        @php
+                            $skillsList = $detail?->clean_skills_array ?? [];
+                        @endphp
+                        @if(!empty($skillsList))
                         <div class="resident-info-section" style="margin-top: 1.5rem;">
                             <div class="section-label"><i class="fas fa-code"></i> Skills & Expertise</div>
                             <div class="d-flex flex-wrap gap-2 mt-2">
-                                @foreach(explode(',', $detail->skills) as $skill)
-                                    <span class="skill-tag">{{ trim($skill) }}</span>
+                                @foreach($skillsList as $skill)
+                                    <span class="skill-tag">{{ $skill }}</span>
                                 @endforeach
                             </div>
                         </div>

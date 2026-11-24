@@ -1,158 +1,260 @@
 @extends('admin.layout.app')
 
-@section('title', 'Payslip — ' . ($payslip->user?->name ?? 'Employee'))
+@section('title', 'Payslip Document — Admin Workspace')
 
 @section('content')
-<div class="container-xxl flex-grow-1 container-p-y">
+<div class="content-wrapper">
+    <div class="container-xxl flex-grow-1 container-p-y">
+        @include('admin.payroll.partials.styles')
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <a href="{{ route('payroll.payslips.index') }}" class="btn btn-sm btn-outline-secondary fw-semibold mb-2">
-                <i class="bx bx-arrow-back me-1"></i> Back to Payslips
-            </a>
-            <h4 class="fw-bold mb-0"><i class="bx bx-receipt text-primary me-2"></i>Payslip Detail</h4>
+        <div class="topbar-crumb mb-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div>
+                <h4 class="fw-bold py-1 mb-1"><span class="text-muted fw-light">Admin Workspace / Payroll /</span> Payslip Document</h4>
+                <div class="crumb text-muted small">Official payroll statement for employee</div>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="{{ route('payroll.payslips.index') }}" class="btn btn-outline-secondary btn-sm">
+                    ← Back to Payslips
+                </a>
+                <a href="{{ route('payroll.payslip.print', $history->id) }}" target="_blank" class="btn btn-outline-dark btn-sm">
+                    🖨 Print
+                </a>
+                <a href="{{ route('payroll.payslip.pdf', $history->id) }}" class="btn btn-primary btn-sm">
+                    📥 Download PDF
+                </a>
+            </div>
         </div>
-        <div class="d-flex gap-2">
-            <a href="{{ route('payroll.payslips.print', $payslip) }}" target="_blank" class="btn btn-outline-primary fw-semibold">
-                <i class="bx bx-printer me-1"></i> Print
-            </a>
-            <form method="POST" action="{{ route('payroll.payslips.send', $payslip) }}" class="d-inline">
-                @csrf
-                <button type="submit" class="btn btn-success fw-semibold"
-                    onclick="return confirm('Send payslip to {{ $payslip->user?->email }}?')">
-                    <i class="bx bx-envelope me-1"></i> Send Email
-                </button>
-            </form>
+
+        @php
+            $historyObj = $history ?? ($payslip->payrollHistory ?? \App\Models\PayrollHistory::where('payroll_id', $payslip->payroll_id ?? 0)->where('user_id', $payslip->user_id ?? 0)->first());
+            $u = $user ?? ($payslip->user ?? ($historyObj->user ?? null));
+            $emp = $u?->employeeDetail ?? $u?->employeeDetails ?? null;
+            $payroll = $payslip->payroll ?? ($historyObj->payroll ?? null);
+            
+            $monthNum = (int)($payroll->metadata['month'] ?? ($historyObj->month ?? ($payroll->month ?? (int)date('n', strtotime($payroll->period_start ?? 'now')))));
+            $yearNum = (int)($payroll->metadata['year'] ?? ($historyObj->year ?? ($payroll->year ?? (int)date('Y', strtotime($payroll->period_start ?? 'now')))));
+            $monthName = date('F', mktime(0, 0, 0, $monthNum, 1));
+            $pStatus = strtolower($payroll->status ?? 'approved');
+
+            // Snapshot breakdown
+            $snap = $snap ?? ($payslip->employee_snapshot ?? ($historyObj->snapshot ?? []));
+            $b = is_array($snap) ? $snap : (is_string($snap) ? json_decode($snap, true) : []);
+
+            $companyName = $company->name ?? config('app.name', 'PMS Company');
+            $companyAddress = $company->address ?? 'Corporate Headquarters';
+            $branchName = $emp?->branch?->name ?? 'HQ';
+            $activeId = $payslip->id ?? ($historyObj->id ?? 1);
+        @endphp
+
+        <div class="payslip shadow-sm my-3">
+            <div class="payslip-head">
+                <div class="logo">
+                    {{ strtoupper(substr($companyName, 0, 1)) }}
+                </div>
+                <h1>{{ $companyName }}</h1>
+                <p>{{ $companyAddress }}</p>
+                <p>Branch: {{ $branchName }}</p>
+                <div class="pay-month">PAYSLIP — {{ $monthName }} {{ $yearNum }}</div>
+            </div>
+
+            <div class="grid2">
+                <div>
+                    <h4 style="font-size:11.5px;color:var(--muted);text-transform:uppercase;margin-bottom:8px">Employee Details</h4>
+                    <div class="info-row"><span class="k">Name</span><span class="v">{{ $u->name ?? 'N/A' }}</span></div>
+                    <div class="info-row"><span class="k">Employee ID</span><span class="v">{{ $emp->employee_id ?? 'EMP'.$u->id }}</span></div>
+                    <div class="info-row"><span class="k">Designation</span><span class="v">{{ $emp->designation->name ?? '—' }}</span></div>
+                    <div class="info-row"><span class="k">Department</span><span class="v">{{ $emp->department->name ?? '—' }}</span></div>
+                    <div class="info-row"><span class="k">Branch</span><span class="v">{{ $branchName }}</span></div>
+                    <div class="info-row"><span class="k">Grade</span><span class="v">{{ $emp->grade ?? ($b['grade'] ?? '—') }}</span></div>
+                    <div class="info-row"><span class="k">Joining Date</span><span class="v">{{ $emp->joining_date ? date('d M Y', strtotime($emp->joining_date)) : '—' }}</span></div>
+                </div>
+                <div>
+                    <h4 style="font-size:11.5px;color:var(--muted);text-transform:uppercase;margin-bottom:8px">Payroll Details</h4>
+                    <div class="info-row"><span class="k">Payroll Month</span><span class="v">{{ $monthName }} {{ $yearNum }}</span></div>
+                    <div class="info-row"><span class="k">Pay Date</span><span class="v">{{ $history->payroll->finalized_at ? date('d M Y', strtotime($history->payroll->finalized_at)) : date('t M Y', mktime(0, 0, 0, $monthNum, 1, $yearNum)) }}</span></div>
+                    <div class="info-row"><span class="k">Payroll ID</span><span class="v">PAY-{{ $yearNum }}-{{ str_pad($monthNum, 2, '0', STR_PAD_LEFT) }}-{{ str_pad($history->id, 3, '0', STR_PAD_LEFT) }}</span></div>
+                    <div class="info-row"><span class="k">Status</span><span class="v">
+                        @if($pStatus == 'finalized')
+                            <span class="pill finalized">🔒 Finalized</span>
+                        @elseif($pStatus == 'approved')
+                            <span class="pill approved">✅ Approved</span>
+                        @elseif($pStatus == 'reviewed')
+                            <span class="pill reviewed">👁 Reviewed</span>
+                        @else
+                            <span class="pill draft">🟡 Draft</span>
+                        @endif
+                    </span></div>
+                </div>
+            </div>
+
+            <table class="ps">
+                <thead>
+                    <tr><th colspan="4">Attendance Summary</th></tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Working Days: <b>{{ $b['working_days'] ?? ($historyObj->total_working_days ?? 0) }}</b></td>
+                        <td>Present: <b>{{ $b['presents'] ?? ($historyObj->present_days ?? 0) }}</b></td>
+                        <td>Leave: <b>{{ $b['total_leave'] ?? ($historyObj->leave_days ?? 0) }}</b></td>
+                        <td>Absent: <b>{{ $b['total_absent'] ?? ($historyObj->absent_days ?? 0) }}</b></td>
+                    </tr>
+                    <tr>
+                        <td>Half Day: <b>{{ $b['half_days'] ?? ($historyObj->half_days ?? 0) }}</b></td>
+                        <td>WFH: <b>{{ $b['wfh_days'] ?? ($historyObj->wfh_days ?? 0) }}</b></td>
+                        <td>Working Hours: <b>{{ $b['actual_working_hours'] ?? ($historyObj->actual_working_hours ?? 0) }}</b></td>
+                        <td>Overtime: <b>{{ $b['overtime_hours'] ?? ($historyObj->overtime_hours ?? 0) }} h</b></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="grid2">
+                <table class="ps">
+                    <thead>
+                        <tr>
+                            <th>Earnings</th>
+                            <th style="text-align:right">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Basic Salary</td>
+                            <td style="text-align:right">₹{{ number_format((float)($b['standard_basic'] ?? $b['basic'] ?? $historyObj->basic_salary ?? 0), 2) }}</td>
+                        </tr>
+                        <tr>
+                            <td>Current Basic</td>
+                            <td style="text-align:right">₹{{ number_format((float)($b['current_basic'] ?? $b['ac_basic'] ?? $historyObj->basic_salary ?? 0), 2) }}</td>
+                        </tr>
+                        <tr>
+                            <td>HRA</td>
+                            <td style="text-align:right">₹{{ number_format((float)($b['current_hra'] ?? $b['ac_hra'] ?? $historyObj->hra ?? 0), 2) }}</td>
+                        </tr>
+                        <tr>
+                            <td>Special Allowance</td>
+                            <td style="text-align:right">₹{{ number_format((float)($b['current_special'] ?? $b['ac_special'] ?? $historyObj->special_allowance ?? 0), 2) }}</td>
+                        </tr>
+                        <tr>
+                            <td>Other Allowances</td>
+                            <td style="text-align:right">₹{{ number_format((float)($b['other_allowances'] ?? $historyObj->allowances ?? 0), 2) }}</td>
+                        </tr>
+                        <tr style="background:#f8fafc">
+                            <td><b>Gross Salary</b></td>
+                            <td style="text-align:right"><b>₹{{ number_format((float)($b['gross_salary'] ?? $b['ac_gross'] ?? $historyObj->gross_salary ?? 0), 2) }}</b></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <table class="ps">
+                    <thead>
+                        <tr>
+                            <th>Deductions</th>
+                            <th style="text-align:right">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>PF (Employee 12%)</td>
+                            <td style="text-align:right">₹{{ number_format((float)($b['pf'] ?? $historyObj->pf_employee ?? 0), 2) }}</td>
+                        </tr>
+                        <tr>
+                            <td>ESI (Employee 0.75%)</td>
+                            <td style="text-align:right">₹{{ number_format((float)($b['esi'] ?? $historyObj->esi_employee ?? 0), 2) }}</td>
+                        </tr>
+                        <tr>
+                            <td>Other Deductions / TDS</td>
+                            <td style="text-align:right">₹{{ number_format((float)(($b['other_deductions'] ?? 0) + ($b['tds'] ?? 0) + ($b['pt'] ?? 0) ?: ($historyObj->deductions ?? 0)), 2) }}</td>
+                        </tr>
+                        <tr style="background:#f8fafc">
+                            <td><b>Total Deductions</b></td>
+                            <td style="text-align:right"><b>₹{{ number_format((float)($b['total_deductions'] ?? $historyObj->total_deductions ?? 0), 2) }}</b></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <table class="ps">
+                <thead>
+                    <tr><th colspan="2">Additional Earnings</th></tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Attendance Bonus</td>
+                        <td style="text-align:right">₹{{ number_format((float)($b['attendance_bonus'] ?? $historyObj->attendance_bonus ?? 0), 2) }}</td>
+                    </tr>
+                    <tr>
+                        <td>Best Employee Bonus</td>
+                        <td style="text-align:right">₹{{ number_format((float)($b['best_employee_bonus'] ?? $historyObj->best_employee_bonus ?? 0), 2) }}</td>
+                    </tr>
+                    <tr>
+                        <td>Travel Allowance (TA)</td>
+                        <td style="text-align:right">₹{{ number_format((float)($b['ta'] ?? $historyObj->ta ?? 0), 2) }}</td>
+                    </tr>
+                    <tr>
+                        <td>Overtime ({{ $b['overtime_hours'] ?? ($historyObj->overtime_hours ?? 0) }}h)</td>
+                        <td style="text-align:right">₹{{ number_format((float)($b['overtime'] ?? $historyObj->overtime_amount ?? 0), 2) }}</td>
+                    </tr>
+                    <tr>
+                        <td>Commission</td>
+                        <td style="text-align:right">₹{{ number_format((float)($b['commission'] ?? $historyObj->commission ?? 0), 2) }}</td>
+                    </tr>
+                    <tr>
+                        <td>Adjustments (+ / -)</td>
+                        <td style="text-align:right">₹{{ number_format((float)($b['adjustment'] ?? $historyObj->adjustment ?? 0), 2) }}</td>
+                    </tr>
+                    <tr style="background:#f8fafc">
+                        <td><b>Total Additional Earnings</b></td>
+                        <td style="text-align:right"><b>₹{{ number_format((float)($b['additional_earnings'] ?? $historyObj->additional_earnings ?? 0), 2) }}</b></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="final-strip">
+                <div class="box">
+                    <div class="lbl">Net Pay (Gross − Deductions)</div>
+                    <div class="val">₹{{ number_format((float)($b['net_pay'] ?? $historyObj->net_salary ?? 0), 2) }}</div>
+                </div>
+                <div class="box">
+                    <div class="lbl">Total In Hand (Net + Addl)</div>
+                    <div class="val">₹{{ number_format((float)($b['total_in_hand'] ?? $historyObj->total_in_hand ?? 0), 2) }}</div>
+                </div>
+            </div>
+
+            <table class="ps">
+                <thead>
+                    <tr><th colspan="2">Employer Contributions</th></tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Employer PF (12%)</td>
+                        <td style="text-align:right">₹{{ number_format((float)($b['employer_pf'] ?? $historyObj->pf_employer ?? 0), 2) }}</td>
+                    </tr>
+                    <tr>
+                        <td>Employer ESI (3.25%)</td>
+                        <td style="text-align:right">₹{{ number_format((float)($b['employer_esi'] ?? $historyObj->esi_employer ?? 0), 2) }}</td>
+                    </tr>
+                    <tr>
+                        <td>EDLI (0.5%)</td>
+                        <td style="text-align:right">₹{{ number_format((float)($b['edli'] ?? $historyObj->edli ?? 0), 2) }}</td>
+                    </tr>
+                    <tr style="background:#f8fafc">
+                        <td><b>Total CTC (Cost to Company)</b></td>
+                        <td style="text-align:right"><b>₹{{ number_format((float)($b['ctc'] ?? $historyObj->ctc ?? 0), 2) }}</b></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="footer-note">
+                This is a computer-generated payslip. No signature required. Generated on {{ date('d M Y, h:i A') }}
+            </div>
+
+            <div class="d-flex gap-2 justify-content-center mt-4">
+                <a href="{{ route('payroll.payslips.print', $activeId) }}" target="_blank" class="btn btn-outline-secondary">
+                    🖨 Print Payslip
+                </a>
+                <a href="{{ route('payroll.payslips.pdf', $activeId) }}" class="btn btn-primary">
+                    📥 Download PDF
+                </a>
+            </div>
         </div>
     </div>
-
-    {{-- Payslip Card --}}
-    <div class="card border-0 shadow" style="border-radius:16px;max-width:860px;margin:auto;">
-        {{-- Company Header --}}
-        <div class="card-body p-0">
-            <div class="p-5 pb-4" style="background:linear-gradient(135deg,#4f46e5 0%,#7c3aed 100%);border-radius:16px 16px 0 0;">
-                <div class="row align-items-center">
-                    <div class="col-md-8">
-                        <h3 class="text-white fw-bold mb-1">PAYSLIP</h3>
-                        <p class="text-white opacity-75 mb-0">
-                            @php
-                                if ($payslip->pay_period_start) {
-                                    echo \Carbon\Carbon::parse($payslip->pay_period_start)->format('F Y');
-                                } elseif (isset($payslip->period_month)) {
-                                    echo date('F', mktime(0,0,0,$payslip->period_month,1)) . ' ' . $payslip->period_year;
-                                } else {
-                                    echo $payslip->created_at?->format('F Y') ?? now()->format('F Y');
-                                }
-                            @endphp
-                        </p>
-                    </div>
-                    <div class="col-md-4 text-md-end">
-                        <div class="text-white fw-bold">{{ config('app.name') }}</div>
-                        <div class="text-white opacity-75 small">Payslip #{{ $payslip->id }}</div>
-                        <div class="text-white opacity-75 small">Generated: {{ $payslip->created_at?->format('d M Y') }}</div>
-                    </div>
-                </div>
-            </div>
-
-            {{-- Employee Info --}}
-            <div class="px-5 py-4 border-bottom" style="background:#f8fafc;">
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <div class="small text-muted mb-1 fw-semibold text-uppercase" style="letter-spacing:.05em;">Employee</div>
-                        <div class="fw-bold fs-5">{{ $payslip->user?->name ?? 'Employee #'.$payslip->user_id }}</div>
-                        <div class="text-muted small">{{ $payslip->user?->email ?? '' }}</div>
-                        <div class="text-muted small">Employee ID: {{ $payslip->user?->employee_id ?? $payslip->user_id }}</div>
-                    </div>
-                    <div class="col-md-6 text-md-end">
-                        <div class="small text-muted mb-1 fw-semibold text-uppercase" style="letter-spacing:.05em;">Department</div>
-                        <div class="fw-semibold">{{ $payslip->user?->department ?? '—' }}</div>
-                        <div class="text-muted small">{{ $payslip->user?->designation ?? $payslip->user?->job_title ?? '—' }}</div>
-                        <div class="mt-1">
-                            @php $sc = match($payslip->status ?? 'generated') { 'sent'=>'success','viewed'=>'info','failed'=>'danger', default=>'warning' }; @endphp
-                            <span class="badge bg-{{ $sc }}">{{ ucfirst($payslip->status ?? 'Generated') }}</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {{-- Earnings & Deductions --}}
-            <div class="px-5 py-4">
-                @php
-                    $data = is_array($payslip->data) ? $payslip->data : (json_decode($payslip->data ?? '{}', true) ?: []);
-                    $earnings = $data['earnings'] ?? [
-                        'Basic Salary'       => $payslip->basic_salary ?? 0,
-                        'HRA'                => $payslip->hra ?? 0,
-                        'Special Allowance'  => $payslip->special_allowance ?? 0,
-                        'Bonus'              => $payslip->bonus_amount ?? 0,
-                    ];
-                    $deductions = $data['deductions'] ?? [
-                        'Provident Fund (PF)' => $payslip->pf_deduction ?? $payslip->pf ?? 0,
-                        'ESI'                 => $payslip->esi ?? 0,
-                        'Professional Tax'    => $payslip->pt ?? 0,
-                        'TDS'                 => $payslip->tds ?? 0,
-                    ];
-                    $gross  = $payslip->gross_salary ?? array_sum(array_values($earnings));
-                    $totalDed = $payslip->total_deductions ?? array_sum(array_values($deductions));
-                    $netPay = $payslip->net_salary ?? $payslip->net_pay ?? ($gross - $totalDed);
-                @endphp
-
-                <div class="row g-4">
-                    {{-- Earnings --}}
-                    <div class="col-md-6">
-                        <h6 class="fw-bold text-success mb-3"><i class="bx bx-plus-circle me-1"></i>Earnings</h6>
-                        <table class="table table-sm mb-0">
-                            @foreach($earnings as $label => $amount)
-                                @if((float)$amount > 0)
-                                    <tr>
-                                        <td class="ps-0 text-muted small border-0">{{ $label }}</td>
-                                        <td class="text-end fw-semibold border-0">₹{{ number_format((float)$amount, 2) }}</td>
-                                    </tr>
-                                @endif
-                            @endforeach
-                            <tr class="border-top">
-                                <td class="ps-0 fw-bold text-success border-0 pt-2">Gross Earnings</td>
-                                <td class="text-end fw-bold text-success border-0 pt-2">₹{{ number_format($gross, 2) }}</td>
-                            </tr>
-                        </table>
-                    </div>
-
-                    {{-- Deductions --}}
-                    <div class="col-md-6">
-                        <h6 class="fw-bold text-danger mb-3"><i class="bx bx-minus-circle me-1"></i>Deductions</h6>
-                        <table class="table table-sm mb-0">
-                            @foreach($deductions as $label => $amount)
-                                @if((float)$amount > 0)
-                                    <tr>
-                                        <td class="ps-0 text-muted small border-0">{{ $label }}</td>
-                                        <td class="text-end fw-semibold border-0 text-danger">₹{{ number_format((float)$amount, 2) }}</td>
-                                    </tr>
-                                @endif
-                            @endforeach
-                            <tr class="border-top">
-                                <td class="ps-0 fw-bold text-danger border-0 pt-2">Total Deductions</td>
-                                <td class="text-end fw-bold text-danger border-0 pt-2">₹{{ number_format($totalDed, 2) }}</td>
-                            </tr>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            {{-- Net Pay Banner --}}
-            <div class="mx-5 mb-5 p-4 rounded-3 text-center" style="background:linear-gradient(135deg,#EEF2FF,#E0E7FF);border:2px solid #10b981;">
-                <div class="text-muted small fw-bold text-uppercase mb-1" style="letter-spacing:.1em;">Net Pay</div>
-                <div class="display-5 fw-bold text-success">₹{{ number_format($netPay, 2) }}</div>
-                <div class="text-muted small mt-1">For the period</div>
-            </div>
-
-            @if($payslip->notes)
-            <div class="px-5 pb-5">
-                <div class="alert alert-light border fw-semibold small">
-                    <i class="bx bx-info-circle me-1"></i> Note: {{ $payslip->notes }}
-                </div>
-            </div>
-            @endif
-        </div>
-    </div>
-
 </div>
 @endsection

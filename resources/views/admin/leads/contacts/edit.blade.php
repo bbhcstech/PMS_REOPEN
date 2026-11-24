@@ -366,7 +366,36 @@ html[data-pms-theme="dark"] .select2-search--dropdown .select2-search__field {
                         </div>
                     </div>
 
+                    @php
+                        $leadPCode = '+91';
+                        $leadPNum = old('phone', $lead->phone);
+                        if ($leadPNum && str_starts_with($leadPNum, '+')) {
+                            foreach($countries ?? [] as $c) {
+                                if (str_starts_with($leadPNum, $c->phone_code)) {
+                                    $leadPCode = $c->phone_code;
+                                    $leadPNum = trim(substr($leadPNum, strlen($c->phone_code)));
+                                    break;
+                                }
+                            }
+                        }
+                        $selPCode = old('phone_country_code', $leadPCode);
+
+                        $leadMCode = '+91';
+                        $leadMNum = old('mobile', $lead->mobile);
+                        if ($leadMNum && str_starts_with($leadMNum, '+')) {
+                            foreach($countries ?? [] as $c) {
+                                if (str_starts_with($leadMNum, $c->phone_code)) {
+                                    $leadMCode = $c->phone_code;
+                                    $leadMNum = trim(substr($leadMNum, strlen($c->phone_code)));
+                                    break;
+                                }
+                            }
+                        }
+                        $selMCode = old('mobile_country_code', $leadMCode);
+                    @endphp
+
                     <div class="col-md-4">
+<<<<<<< HEAD
                         <label class="form-label-modern" for="inputPhone">Primary Phone <span class="text-danger">*</span></label>
                         <div class="input-group-modern">
                             <span class="input-group-text-modern"><i class="fas fa-phone-alt"></i></span>
@@ -392,6 +421,37 @@ html[data-pms-theme="dark"] .select2-search--dropdown .select2-search__field {
                         <small class="validation-hint" id="mobile_format_hint">
                             <i class="fas fa-info-circle"></i> <span id="mobile_format_hint_text">Optional mobile number</span>
                         </small>
+=======
+                        <label class="form-label-modern">Primary Phone</label>
+                        <div class="input-group">
+                            <select name="phone_country_code" class="form-select form-control-modern" style="max-width: 115px; flex-shrink: 0;">
+                                @foreach($countries ?? [] as $c)
+                                    <option value="{{ $c->phone_code }}" {{ $selPCode === $c->phone_code ? 'selected' : '' }}>
+                                        {{ $c->iso_code ? $c->iso_code . ' ' : '' }}({{ $c->phone_code }})
+                                    </option>
+                                @endforeach
+                            </select>
+                            <input type="tel" name="phone" class="form-control form-control-modern @error('phone') is-invalid @enderror" value="{{ $leadPNum }}" placeholder="Phone number" maxlength="30">
+                        </div>
+                        @error('phone')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                        @error('phone_country_code')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label-modern">Mobile / Cell</label>
+                        <div class="input-group">
+                            <select name="mobile_country_code" class="form-select form-control-modern" style="max-width: 115px; flex-shrink: 0;">
+                                @foreach($countries ?? [] as $c)
+                                    <option value="{{ $c->phone_code }}" {{ $selMCode === $c->phone_code ? 'selected' : '' }}>
+                                        {{ $c->iso_code ? $c->iso_code . ' ' : '' }}({{ $c->phone_code }})
+                                    </option>
+                                @endforeach
+                            </select>
+                            <input type="tel" name="mobile" class="form-control form-control-modern @error('mobile') is-invalid @enderror" value="{{ $leadMNum }}" placeholder="Mobile number" maxlength="30">
+                        </div>
+                        @error('mobile')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                        @error('mobile_country_code')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+>>>>>>> 33292739fd3e6d83b3f333e88dce1a9c65300c5f
                     </div>
 
                     <div class="col-md-4">

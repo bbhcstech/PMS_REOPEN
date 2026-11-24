@@ -15,6 +15,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class LeaveService
 {
@@ -279,7 +280,6 @@ class LeaveService
                 'paid_days' => $paidPlan['paid_days'],
                 'unpaid_days' => $paidPlan['unpaid_days'],
                 'reason' => $data['reason'] ?? null,
-                'files' => $data['attachment'] ?? null,
                 'attachment' => $data['attachment'] ?? null,
                 'apology_note' => $data['apology_note'] ?? null,
                 'emergency_flag' => (bool) ($data['emergency_flag'] ?? false),
@@ -289,7 +289,6 @@ class LeaveService
                 'approval_status' => $status,
                 'is_paid' => ! $isUnpaid,
                 'is_unpaid' => $isUnpaid,
-                'paid' => ! $isUnpaid,
                 'payroll_deduction_flag' => $isUnpaid,
                 'leave_year' => $year['label'],
             ]);
@@ -319,7 +318,6 @@ class LeaveService
                     'type' => 'leave-without-pay',
                     'is_paid' => false,
                     'is_unpaid' => true,
-                    'paid' => false,
                     'paid_days' => 0,
                     'unpaid_days' => (float) ($leave->total_days ?: 1),
                     'payroll_deduction_flag' => true,
@@ -367,7 +365,6 @@ class LeaveService
                 'approved_at' => null,
                 'is_unpaid' => false,
                 'is_paid' => false,
-                'paid' => false,
                 'paid_days' => 0,
                 'unpaid_days' => 0,
                 'payroll_deduction_flag' => false,
@@ -472,26 +469,42 @@ class LeaveService
             : (((float) ($leave->paid_days ?? 0)) <= 0 ? 'unpaid_leave' : 'leave');
 
         foreach (CarbonPeriod::create($startDate, $endDate) as $date) {
+            $payload = [
+                'status' => $attendanceStatus,
+            ];
+            if (Schema::hasColumn('attendances', 'company_id')) {
+                $payload['company_id'] = $employee->company_id;
+            }
+            if (Schema::hasColumn('attendances', 'location')) {
+                $payload['location'] = $leave->is_unpaid ? 'Unpaid Leave' : 'Leave';
+            }
+            if (Schema::hasColumn('attendances', 'working_from')) {
+                $payload['working_from'] = $leave->is_unpaid ? 'Unpaid Leave' : 'Leave';
+            }
+
             try {
                 Attendance::updateOrCreate(
                     ['user_id' => $employee->id, 'date' => $date->toDateString()],
-                    [
-                        'company_id' => $employee->company_id,
-                        'status' => $attendanceStatus,
-                        'location' => $leave->is_unpaid ? 'Unpaid Leave' : 'Leave',
-                        'working_from' => $leave->is_unpaid ? 'Unpaid Leave' : 'Leave',
-                    ]
+                    $payload
                 );
             } catch (\Throwable $e) {
                 if ($attendanceStatus === 'unpaid_leave') {
+                    $fallbackPayload = [
+                        'status' => 'leave',
+                    ];
+                    if (Schema::hasColumn('attendances', 'company_id')) {
+                        $fallbackPayload['company_id'] = $employee->company_id;
+                    }
+                    if (Schema::hasColumn('attendances', 'location')) {
+                        $fallbackPayload['location'] = 'Unpaid Leave';
+                    }
+                    if (Schema::hasColumn('attendances', 'working_from')) {
+                        $fallbackPayload['working_from'] = 'Unpaid Leave';
+                    }
+
                     Attendance::updateOrCreate(
                         ['user_id' => $employee->id, 'date' => $date->toDateString()],
-                        [
-                            'company_id' => $employee->company_id,
-                            'status' => 'leave',
-                            'location' => 'Unpaid Leave',
-                            'working_from' => 'Unpaid Leave',
-                        ]
+                        $fallbackPayload
                     );
                 } else {
                     throw $e;
@@ -700,7 +713,6 @@ class LeaveService
                 'unpaid_days' => $unpaidDays,
                 'is_paid' => $isFullyPaid,
                 'is_unpaid' => $hasUnpaidDays,
-                'paid' => $isFullyPaid,
                 'payroll_deduction_flag' => $hasUnpaidDays,
             ]);
 

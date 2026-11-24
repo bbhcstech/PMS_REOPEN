@@ -3,461 +3,244 @@
 @section('title', 'Payroll Dashboard')
 
 @section('content')
-<style>
-/* Payroll Dashboard Custom Styling for Light & Dark Mode */
-.btn-payroll-processing {
-    background-color: #ffffff !important;
-    color: #4f46e5 !important;
-    border: 1.5px solid #cbd5e1 !important;
-    font-weight: 700 !important;
-    transition: all 0.2s ease;
-}
-.btn-payroll-processing i {
-    color: #4f46e5 !important;
-}
-.btn-payroll-processing:hover {
-    background-color: #f8fafc !important;
-    color: #3730a3 !important;
-    border-color: #94a3b8 !important;
-}
+@include('admin.payroll.partials.styles')
 
-:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-theme="dark"], body[data-bs-theme="dark"], body.dark, [data-bs-theme="dark"]) .btn-payroll-processing {
-    background-color: #1e1b4b !important;
-    color: #ffffff !important;
-    border: 1.5px solid #6366f1 !important;
-}
-:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-theme="dark"], body[data-bs-theme="dark"], body.dark, [data-bs-theme="dark"]) .btn-payroll-processing i {
-    color: #a5b4fc !important;
-}
-:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-theme="dark"], body[data-bs-theme="dark"], body.dark, [data-bs-theme="dark"]) .btn-payroll-processing:hover {
-    background-color: #312e81 !important;
-    color: #ffffff !important;
-    border-color: #818cf8 !important;
-}
+<div class="payroll-container">
+    @include('admin.payroll.partials.tabs')
 
-.btn-payroll-cycles {
-    background-color: #4f46e5 !important;
-    color: #ffffff !important;
-    border: 1.5px solid #4338ca !important;
-    font-weight: 700 !important;
-    transition: all 0.2s ease;
-}
-.btn-payroll-cycles i {
-    color: #ffffff !important;
-}
-.btn-payroll-cycles:hover {
-    background-color: #4338ca !important;
-    color: #ffffff !important;
-    border-color: #3730a3 !important;
-}
-
-:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-theme="dark"], body[data-bs-theme="dark"], body.dark, [data-bs-theme="dark"]) .btn-payroll-cycles {
-    background-color: #6366f1 !important;
-    color: #ffffff !important;
-    border: 1.5px solid #818cf8 !important;
-}
-:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-theme="dark"], body[data-bs-theme="dark"], body.dark, [data-bs-theme="dark"]) .btn-payroll-cycles i {
-    color: #ffffff !important;
-}
-:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-theme="dark"], body[data-bs-theme="dark"], body.dark, [data-bs-theme="dark"]) .btn-payroll-cycles:hover {
-    background-color: #4f46e5 !important;
-    color: #ffffff !important;
-    border-color: #a5b4fc !important;
-}
-
-.payroll-kpi-val {
-    color: #0f172a;
-}
-:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-theme="dark"], body[data-bs-theme="dark"], body.dark, [data-bs-theme="dark"]) .payroll-kpi-val {
-    color: #f8fafc !important;
-}
-
-/* Overview Summary Cards */
-.payroll-summary-card {
-    padding: 0.875rem 1rem;
-    border-radius: 0.75rem;
-    text-align: center;
-    transition: all 0.2s ease;
-}
-
-/* Gross Box */
-.payroll-summary-gross {
-    background-color: #f8fafc;
-    border: 1px solid #e2e8f0;
-}
-.payroll-summary-gross .summary-label {
-    color: #64748b;
-    font-size: 0.8125rem;
-    font-weight: 600;
-}
-.payroll-summary-gross .summary-val {
-    color: #0f172a;
-    font-weight: 700;
-}
-:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-theme="dark"], body[data-bs-theme="dark"], body.dark, [data-bs-theme="dark"]) .payroll-summary-gross {
-    background-color: rgba(255, 255, 255, 0.05);
-    border-color: rgba(255, 255, 255, 0.12);
-}
-:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-theme="dark"], body[data-bs-theme="dark"], body.dark, [data-bs-theme="dark"]) .payroll-summary-gross .summary-label {
-    color: #94a3b8 !important;
-}
-:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-theme="dark"], body[data-bs-theme="dark"], body.dark, [data-bs-theme="dark"]) .payroll-summary-gross .summary-val {
-    color: #f8fafc !important;
-}
-
-/* Deductions Box */
-.payroll-summary-deductions {
-    background-color: #fef9ee;
-    border: 1px solid #fef3c7;
-}
-.payroll-summary-deductions .summary-label {
-    color: #b45309;
-    font-size: 0.8125rem;
-    font-weight: 600;
-}
-.payroll-summary-deductions .summary-val {
-    color: #d97706;
-    font-weight: 700;
-}
-:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-theme="dark"], body[data-bs-theme="dark"], body.dark, [data-bs-theme="dark"]) .payroll-summary-deductions {
-    background-color: rgba(245, 158, 11, 0.15);
-    border-color: rgba(245, 158, 11, 0.3);
-}
-:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-theme="dark"], body[data-bs-theme="dark"], body.dark, [data-bs-theme="dark"]) .payroll-summary-deductions .summary-label {
-    color: #fcd34d !important;
-}
-:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-theme="dark"], body[data-bs-theme="dark"], body.dark, [data-bs-theme="dark"]) .payroll-summary-deductions .summary-val {
-    color: #fbbf24 !important;
-}
-
-/* Net Box */
-.payroll-summary-net {
-    background-color: #f0fdf4;
-    border: 1px solid #dcfce7;
-}
-.payroll-summary-net .summary-label {
-    color: #15803d;
-    font-size: 0.8125rem;
-    font-weight: 600;
-}
-.payroll-summary-net .summary-val {
-    color: #16a34a;
-    font-weight: 700;
-}
-:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-theme="dark"], body[data-bs-theme="dark"], body.dark, [data-bs-theme="dark"]) .payroll-summary-net {
-    background-color: rgba(47, 107, 255, 0.15);
-    border-color: rgba(47, 107, 255, 0.3);
-}
-:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-theme="dark"], body[data-bs-theme="dark"], body.dark, [data-bs-theme="dark"]) .payroll-summary-net .summary-label {
-    color: #93C5FD !important;
-}
-:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-theme="dark"], body[data-bs-theme="dark"], body.dark, [data-bs-theme="dark"]) .payroll-summary-net .summary-val {
-    color: #60A5FA !important;
-}
-
-/* Table Head Overrides */
-.payroll-table-head {
-    background-color: #f8fafc;
-}
-:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-theme="dark"], body[data-bs-theme="dark"], body.dark, [data-bs-theme="dark"]) .payroll-table-head {
-    background-color: rgba(255, 255, 255, 0.04) !important;
-}
-</style>
-<div class="container-xxl flex-grow-1 container-p-y">
-
-    @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm mb-4" role="alert">
-            <div class="d-flex align-items-center gap-2"><i class="bx bx-check-circle fs-5"></i> {{ session('success') }}</div>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    <!-- Top Action & Filter Row -->
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <div>
+            <h4 class="fw-bold mb-1" style="color: var(--pr-text);">💰 Payroll Dashboard</h4>
+            <p class="text-muted small mb-0">Admin Workspace · Real-time salary and statutory overview</p>
         </div>
-    @endif
-    @if(session('error'))
-        <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm mb-4" role="alert">
-            <div class="d-flex align-items-center gap-2"><i class="bx bx-error-circle fs-5"></i> {{ session('error') }}</div>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    @endif
+        <form method="GET" action="{{ route('payroll.index') }}" class="d-flex gap-2 align-items-center">
+            <select name="month" class="form-select form-select-sm" style="min-width: 130px; background: var(--pr-surface); color: var(--pr-text); border-color: var(--pr-border);" onchange="this.form.submit()">
+                @for($m = 1; $m <= 12; $m++)
+                    <option value="{{ $m }}" {{ $kpis['selected_month'] == $m ? 'selected' : '' }}>
+                        {{ date('F', mktime(0, 0, 0, $m, 1)) }}
+                    </option>
+                @endfor
+            </select>
+            <select name="year" class="form-select form-select-sm" style="min-width: 100px; background: var(--pr-surface); color: var(--pr-text); border-color: var(--pr-border);" onchange="this.form.submit()">
+                @for($y = date('Y') + 1; $y >= 2022; $y--)
+                    <option value="{{ $y }}" {{ $kpis['selected_year'] == $y ? 'selected' : '' }}>{{ $y }}</option>
+                @endfor
+            </select>
+            <a href="{{ route('payroll.processing', ['year' => $kpis['selected_year'], 'month' => $kpis['selected_month']]) }}" class="pr-btn pr-btn-primary">
+                ⚙️ Process {{ $kpis['month_name'] }}
+            </a>
+        </form>
+    </div>
 
-    {{-- ── Page Header ──────────────────────────────────────────────────── --}}
-    <div class="card border-0 shadow-sm mb-4" style="background:linear-gradient(135deg,#4f46e5 0%,#7c3aed 100%);border-radius:16px;">
-        <div class="card-body p-4">
-            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
-                <div class="text-white">
-                    <div class="d-flex align-items-center gap-2 mb-1">
-                        <div class="avatar avatar-md rounded-3 d-flex align-items-center justify-content-center" style="background:rgba(255,255,255,.18);">
-                            <i class="bx bx-wallet fs-4 text-white"></i>
-                        </div>
-                        <div>
-                            <h4 class="fw-bold mb-0 text-white">Payroll Management</h4>
-                            <small class="opacity-75">Enterprise payroll engine — {{ now()->format('F Y') }}</small>
-                        </div>
-                    </div>
-                </div>
-                <div class="d-flex gap-2 flex-wrap">
-                    <a href="{{ route('payroll.processing') }}" class="btn btn-payroll-processing shadow-sm">
-                        <i class="bx bx-calculator me-1"></i> Open Processing
-                    </a>
-                    <a href="{{ route('payroll.cycles.index') }}" class="btn btn-payroll-cycles shadow-sm">
-                        <i class="bx bx-refresh me-1"></i> Payroll Cycles
-                    </a>
-                </div>
-            </div>
+    <!-- 8 KPI Cards Matching ui.html -->
+    <div class="kpi-grid">
+        <div class="kpi">
+            <div class="label">👥 Total Employees</div>
+            <div class="value">{{ number_format($kpis['total_employees']) }}</div>
+            <div class="sub">Active in payroll</div>
+        </div>
+        <div class="kpi green">
+            <div class="label">✅ Payroll Processed</div>
+            <div class="value">{{ number_format($kpis['payroll_processed']) }}</div>
+            <div class="sub">{{ $kpis['month_name'] }} {{ $kpis['selected_year'] }}</div>
+        </div>
+        <div class="kpi amber">
+            <div class="label">⏳ Payroll Pending</div>
+            <div class="value">{{ number_format($kpis['payroll_pending']) }}</div>
+            <div class="sub">Awaiting processing</div>
+        </div>
+        <div class="kpi cyan">
+            <div class="label">💵 Total Gross</div>
+            <div class="value">₹{{ number_format($kpis['total_gross'], 2) }}</div>
+            <div class="sub">Earned gross total</div>
+        </div>
+        <div class="kpi red">
+            <div class="label">📉 Total Deductions</div>
+            <div class="value">₹{{ number_format($kpis['total_deductions'], 2) }}</div>
+            <div class="sub">PF + ESI + PT + Tax</div>
+        </div>
+        <div class="kpi green">
+            <div class="label">💰 Total Net Pay</div>
+            <div class="value">₹{{ number_format($kpis['total_net_pay'], 2) }}</div>
+            <div class="sub">After deductions</div>
+        </div>
+        <div class="kpi purple">
+            <div class="label">🏦 Employer Contribution</div>
+            <div class="value">₹{{ number_format($kpis['total_employer_contribution'], 2) }}</div>
+            <div class="sub">Employer PF + ESI + EDLI</div>
+        </div>
+        <div class="kpi">
+            <div class="label">📊 Total CTC</div>
+            <div class="value">₹{{ number_format($kpis['total_ctc'], 2) }}</div>
+            <div class="sub">Full cost to company</div>
         </div>
     </div>
 
-    {{-- ── KPI Summary Cards ─────────────────────────────────────────────── --}}
-    <div class="row g-3 mb-4">
-        {{-- Active Architecture --}}
-        <div class="col-xl-3 col-md-6">
-            <div class="card border-0 shadow-sm h-100" style="border-radius:14px;border-left:4px solid #4f46e5 !important;">
-                <div class="card-body p-3">
-                    <div class="d-flex align-items-center justify-content-between mb-2">
-                        <span class="text-muted small fw-bold text-uppercase" style="letter-spacing:.05em;">Architecture</span>
-                        <div class="avatar avatar-sm rounded-3 d-flex align-items-center justify-content-center" style="background:rgba(79,70,229,0.15);">
-                            <i class="bx bx-building fs-5 text-primary"></i>
-                        </div>
-                    </div>
-                    <h5 class="fw-bold mb-0 payroll-kpi-val">{{ $activeArchitecture?->name ?? 'Not Set' }}</h5>
-                    <small class="text-muted">{{ $activeArchitecture ? 'v'.$activeArchitecture->version.' — Active' : 'Configure in Architectures' }}</small>
+    <!-- Status Breakdown & Quick Links -->
+    <div class="row g-3">
+        <!-- Status Breakdown Card -->
+        <div class="col-lg-6">
+            <div class="pr-card h-100">
+                <div class="pr-card-head">
+                    <h2>📊 Payroll Status Breakdown</h2>
+                    <div class="spacer"></div>
+                    <span class="badge bg-label-primary">{{ $kpis['month_name'] }} {{ $kpis['selected_year'] }}</span>
                 </div>
-            </div>
-        </div>
-
-        {{-- Recent Cycles --}}
-        <div class="col-xl-3 col-md-6">
-            <div class="card border-0 shadow-sm h-100" style="border-radius:14px;border-left:4px solid #10b981 !important;">
-                <div class="card-body p-3">
-                    <div class="d-flex align-items-center justify-content-between mb-2">
-                        <span class="text-muted small fw-bold text-uppercase" style="letter-spacing:.05em;">Payroll Cycles</span>
-                        <div class="avatar avatar-sm rounded-3 d-flex align-items-center justify-content-center" style="background:rgba(16,185,129,0.15);">
-                            <i class="bx bx-calendar-check fs-5 text-success"></i>
-                        </div>
-                    </div>
-                    <h3 class="fw-bold mb-0 payroll-kpi-val">{{ $cycles->count() }}</h3>
-                    <small class="text-muted">Recent payroll cycles</small>
-                </div>
-            </div>
-        </div>
-
-        {{-- Payslips --}}
-        <div class="col-xl-3 col-md-6">
-            <div class="card border-0 shadow-sm h-100" style="border-radius:14px;border-left:4px solid #f59e0b !important;">
-                <div class="card-body p-3">
-                    <div class="d-flex align-items-center justify-content-between mb-2">
-                        <span class="text-muted small fw-bold text-uppercase" style="letter-spacing:.05em;">Payslips</span>
-                        <div class="avatar avatar-sm rounded-3 d-flex align-items-center justify-content-center" style="background:rgba(245,158,11,0.15);">
-                            <i class="bx bx-receipt fs-5 text-warning"></i>
-                        </div>
-                    </div>
-                    <h3 class="fw-bold mb-0 payroll-kpi-val">{{ number_format($payslipCount) }}</h3>
-                    <small class="text-muted">Total payslips generated</small>
-                </div>
-            </div>
-        </div>
-
-        {{-- History Records --}}
-        <div class="col-xl-3 col-md-6">
-            <div class="card border-0 shadow-sm h-100" style="border-radius:14px;border-left:4px solid #ef4444 !important;">
-                <div class="card-body p-3">
-                    <div class="d-flex align-items-center justify-content-between mb-2">
-                        <span class="text-muted small fw-bold text-uppercase" style="letter-spacing:.05em;">History Records</span>
-                        <div class="avatar avatar-sm rounded-3 d-flex align-items-center justify-content-center" style="background:rgba(239,68,68,0.15);">
-                            <i class="bx bx-history fs-5 text-danger"></i>
-                        </div>
-                    </div>
-                    <h3 class="fw-bold mb-0 payroll-kpi-val">{{ number_format($historyCount) }}</h3>
-                    <small class="text-muted">Employee payroll records</small>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    {{-- ── Payroll Summary & Quick Actions ──────────────────────────────── --}}
-    <div class="row g-4 mb-4">
-        {{-- Payroll Summary Stats --}}
-        <div class="col-lg-8">
-            <div class="card border-0 shadow-sm h-100" style="border-radius:14px;">
-                <div class="card-header bg-transparent border-0 pt-4 px-4 pb-2">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0 fw-bold"><i class="bx bx-bar-chart-alt-2 text-primary me-2"></i>Payroll Runs Overview</h5>
-                        <a href="{{ route('payroll.reports.index') }}" class="btn btn-sm btn-outline-primary fw-semibold">View Reports</a>
-                    </div>
-                </div>
-                <div class="card-body px-4">
+                <div class="pr-card-body breakdown">
                     @php
-                        $statusGroups = $payrolls->groupBy('status');
-                        $grossTotal = $payrolls->sum('gross_total');
-                        $netTotal = $payrolls->sum('net_total');
-                        $deductionTotal = $payrolls->sum('deduction_total');
+                        $tot = max(1, $statusBreakdown['total']);
+                        $finPct = round(($statusBreakdown['finalized'] / $tot) * 100);
+                        $appPct = round(($statusBreakdown['approved'] / $tot) * 100);
+                        $revPct = round(($statusBreakdown['reviewed'] / $tot) * 100);
+                        $calcPct = round(($statusBreakdown['calculated'] / $tot) * 100);
                     @endphp
-
-                    {{-- Summary Row --}}
-                    <div class="row g-3 mb-4">
-                        <div class="col-4">
-                            <div class="payroll-summary-card payroll-summary-gross">
-                                <div class="summary-label mb-1">Total Gross</div>
-                                <div class="summary-val fs-6">₹{{ number_format($grossTotal, 0) }}</div>
-                            </div>
+                    <div class="bd-row">
+                        <div class="name">Finalized</div>
+                        <div class="bd-bar">
+                            <div class="bd-fill" style="width: {{ $finPct }}%; background: #64748b;"></div>
                         </div>
-                        <div class="col-4">
-                            <div class="payroll-summary-card payroll-summary-deductions">
-                                <div class="summary-label mb-1">Total Deductions</div>
-                                <div class="summary-val fs-6">₹{{ number_format($deductionTotal, 0) }}</div>
-                            </div>
-                        </div>
-                        <div class="col-4">
-                            <div class="payroll-summary-card payroll-summary-net">
-                                <div class="summary-label mb-1">Total Net Pay</div>
-                                <div class="summary-val fs-6">₹{{ number_format($netTotal, 0) }}</div>
-                            </div>
-                        </div>
+                        <div class="count">{{ $statusBreakdown['finalized'] }}</div>
                     </div>
-
-                    {{-- Payroll Status Breakdown --}}
-                    @php
-                        $statusColors = ['draft'=>'secondary','calculated'=>'info','review_required'=>'warning','finalized'=>'success','archived'=>'dark'];
-                    @endphp
-                    @if($payrolls->isNotEmpty())
-                        <div class="table-responsive">
-                            <table class="table table-sm table-hover align-middle">
-                                <thead>
-                                    <tr class="text-muted" style="font-size:12px;">
-                                        <th class="fw-semibold text-uppercase">Cycle / Period</th>
-                                        <th class="fw-semibold text-uppercase">Status</th>
-                                        <th class="fw-semibold text-uppercase text-end">Gross</th>
-                                        <th class="fw-semibold text-uppercase text-end">Deductions</th>
-                                        <th class="fw-semibold text-uppercase text-end">Net</th>
-                                        <th></th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach($payrolls->take(8) as $payroll)
-                                        @php $sc = $statusColors[$payroll->status] ?? 'secondary'; @endphp
-                                        <tr>
-                                            <td>
-                                                <div class="fw-semibold small">{{ $payroll->cycle?->name ?? 'Manual Run #'.$payroll->id }}</div>
-                                                <div class="text-muted" style="font-size:11px;">
-                                                    {{ optional($payroll->period_start)->format('d M') }} – {{ optional($payroll->period_end)->format('d M Y') }}
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <span class="badge bg-label-{{ $sc }}" style="font-size:11px;">
-                                                    {{ ucfirst(str_replace('_',' ',$payroll->status)) }}
-                                                </span>
-                                            </td>
-                                            <td class="text-end fw-semibold small">₹{{ number_format($payroll->gross_total, 0) }}</td>
-                                            <td class="text-end small text-danger">₹{{ number_format($payroll->deduction_total, 0) }}</td>
-                                            <td class="text-end fw-bold small text-success">₹{{ number_format($payroll->net_total, 0) }}</td>
-                                            <td class="text-end">
-                                                <a href="{{ route('payroll.processing', ['year'=>optional($payroll->period_start)->year, 'month'=>optional($payroll->period_start)->month]) }}" class="btn btn-xs btn-outline-primary" style="font-size:11px;padding:2px 8px;">View</a>
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
+                    <div class="bd-row">
+                        <div class="name">Approved</div>
+                        <div class="bd-bar">
+                            <div class="bd-fill" style="width: {{ $appPct }}%; background: #10b981;"></div>
                         </div>
-                    @else
-                        <div class="text-center py-5 text-muted">
-                            <i class="bx bx-data fs-1 d-block mb-2 opacity-50"></i>
-                            <p class="mb-3">No payroll runs yet. Start by processing payroll.</p>
-                            <a href="{{ route('payroll.processing') }}" class="btn btn-primary fw-bold">
-                                <i class="bx bx-calculator me-1"></i> Process First Payroll
-                            </a>
+                        <div class="count">{{ $statusBreakdown['approved'] }}</div>
+                    </div>
+                    <div class="bd-row">
+                        <div class="name">Reviewed</div>
+                        <div class="bd-bar">
+                            <div class="bd-fill" style="width: {{ $revPct }}%; background: #8b5cf6;"></div>
                         </div>
-                    @endif
+                        <div class="count">{{ $statusBreakdown['reviewed'] }}</div>
+                    </div>
+                    <div class="bd-row">
+                        <div class="name">Calculated</div>
+                        <div class="bd-bar">
+                            <div class="bd-fill" style="width: {{ $calcPct }}%; background: #2563eb;"></div>
+                        </div>
+                        <div class="count">{{ $statusBreakdown['calculated'] }}</div>
+                    </div>
+                    <div class="bd-row">
+                        <div class="name">Draft / Other</div>
+                        <div class="bd-bar">
+                            <div class="bd-fill" style="width: {{ 100 - ($finPct + $appPct + $revPct + $calcPct) }}%; background: #f59e0b;"></div>
+                        </div>
+                        <div class="count">{{ $statusBreakdown['draft'] }}</div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        {{-- Quick Actions Panel --}}
-        <div class="col-lg-4">
-            <div class="card border-0 shadow-sm h-100" style="border-radius:14px;">
-                <div class="card-header bg-transparent border-0 pt-4 px-4 pb-2">
-                    <h5 class="mb-0 fw-bold"><i class="bx bx-grid-alt text-primary me-2"></i>Quick Actions</h5>
+        <!-- Quick Modules & Actions -->
+        <div class="col-lg-6">
+            <div class="pr-card h-100">
+                <div class="pr-card-head">
+                    <h2>⚡ Quick Actions</h2>
                 </div>
-                <div class="card-body px-4">
-                    <div class="d-grid gap-2">
-                        <a href="{{ route('payroll.processing') }}" class="btn btn-primary fw-semibold d-flex align-items-center gap-2">
-                            <i class="bx bx-calculator"></i> Run Payroll Processing
+                <div class="pr-card-body">
+                    <div class="d-flex flex-wrap gap-2 mb-4">
+                        <a href="{{ route('payroll.processing') }}" class="pr-btn pr-btn-primary">
+                            <span>⚙️</span> Process Payroll
                         </a>
-                        <a href="{{ route('payroll.cycles.index') }}" class="btn btn-outline-secondary fw-semibold d-flex align-items-center gap-2">
-                            <i class="bx bx-calendar-plus"></i> Manage Cycles
+                        <a href="{{ route('payroll.salary-structures.index') }}" class="pr-btn">
+                            <span>🏗️</span> New Salary Structure
                         </a>
-                        <a href="{{ route('payroll.payslips.index') }}" class="btn btn-outline-secondary fw-semibold d-flex align-items-center gap-2">
-                            <i class="bx bx-receipt"></i> View Payslips
+                        <a href="{{ route('payroll.employee-salary.index') }}" class="pr-btn">
+                            <span>👤</span> Assign Employee Salary
                         </a>
-                        <a href="{{ route('payroll.policies.index') }}" class="btn btn-outline-secondary fw-semibold d-flex align-items-center gap-2">
-                            <i class="bx bx-shield-quarter"></i> Policy Engine
+                        <a href="{{ route('payroll.history') }}" class="pr-btn">
+                            <span>📚</span> View History
                         </a>
-                        <a href="{{ route('payroll.salary-structures.index') }}" class="btn btn-outline-secondary fw-semibold d-flex align-items-center gap-2">
-                            <i class="bx bx-layer"></i> Salary Structures
+                        <a href="{{ route('payroll.payslips.index') }}" class="pr-btn">
+                            <span>🧾</span> View Payslips
                         </a>
-                        <a href="{{ route('payroll.reports.index') }}" class="btn btn-outline-secondary fw-semibold d-flex align-items-center gap-2">
-                            <i class="bx bx-bar-chart-alt"></i> Payroll Reports
-                        </a>
-                        <a href="{{ route('payroll.import-export.index') }}" class="btn btn-outline-secondary fw-semibold d-flex align-items-center gap-2">
-                            <i class="bx bx-import"></i> Import / Export
-                        </a>
-                        <a href="{{ route('payroll.audit-logs.index') }}" class="btn btn-outline-secondary fw-semibold d-flex align-items-center gap-2">
-                            <i class="bx bx-list-check"></i> Audit Logs
-                        </a>
+                    </div>
+
+                    <h6 class="fw-bold mb-2 text-uppercase small text-muted">System Counts</h6>
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <div class="info-box py-2">
+                                <div class="small text-muted">Salary Structures</div>
+                                <div class="fs-5 fw-bold" style="color: var(--pr-text);">{{ $structuresCount }} Active</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="info-box py-2">
+                                <div class="small text-muted">Salary Assignments</div>
+                                <div class="fs-5 fw-bold" style="color: var(--pr-text);">{{ $assignmentsCount }} Assigned</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="info-box py-2">
+                                <div class="small text-muted">Generated Payslips</div>
+                                <div class="fs-5 fw-bold" style="color: var(--pr-text);">{{ $payslipCount }} Total</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="info-box py-2">
+                                <div class="small text-muted">Active Workspaces</div>
+                                <div class="fs-5 fw-bold text-success">Admin Only</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    {{-- ── Recent Cycles ─────────────────────────────────────────────────── --}}
-    @if($cycles->isNotEmpty())
-    <div class="card border-0 shadow-sm" style="border-radius:14px;">
-        <div class="card-header bg-transparent border-0 pt-4 px-4 pb-2">
-            <div class="d-flex justify-content-between align-items-center">
-                <h5 class="mb-0 fw-bold"><i class="bx bx-calendar text-primary me-2"></i>Recent Payroll Cycles</h5>
-                <a href="{{ route('payroll.cycles.index') }}" class="btn btn-sm btn-outline-primary fw-semibold">All Cycles</a>
-            </div>
+    <!-- Recent Runs -->
+    @if($recentPayrolls->count() > 0)
+    <div class="pr-card mt-3">
+        <div class="pr-card-head">
+            <h2>🕒 Recent Payroll Runs</h2>
+            <div class="spacer"></div>
+            <a href="{{ route('payroll.history') }}" class="small fw-bold text-decoration-none">View All Runs →</a>
         </div>
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="payroll-table-head" style="font-size:12px;">
-                    <tr class="text-muted">
-                        <th class="px-4 fw-semibold text-uppercase">Name</th>
-                        <th class="fw-semibold text-uppercase">Type</th>
-                        <th class="fw-semibold text-uppercase">Period</th>
-                        <th class="fw-semibold text-uppercase">Pay Date</th>
-                        <th class="fw-semibold text-uppercase">Status</th>
-                        <th class="fw-semibold text-uppercase text-end pe-4">Actions</th>
+        <div class="table-wrap">
+            <table class="pr-table">
+                <thead>
+                    <tr>
+                        <th>Period</th>
+                        <th>Pay Date</th>
+                        <th>Status</th>
+                        <th class="text-end">Gross Total</th>
+                        <th class="text-end">Deductions</th>
+                        <th class="text-end">In Hand Total</th>
+                        <th class="text-end">CTC</th>
+                        <th class="text-center">Action</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($cycles as $cycle)
-                        @php
-                            $cycleStatus = $cycle->status ?? 'draft';
-                            $csc = match($cycleStatus) { 'open'=>'success','processing'=>'info','closed'=>'secondary','cancelled'=>'danger', default=>'warning' };
-                        @endphp
-                        <tr>
-                            <td class="px-4 fw-semibold">{{ $cycle->name }}</td>
-                            <td><span class="badge bg-label-primary">{{ Str::headline($cycle->cycle_type) }}</span></td>
-                            <td class="small text-muted">
-                                {{ optional($cycle->start_date)->format('d M Y') }} — {{ optional($cycle->end_date)->format('d M Y') }}
-                            </td>
-                            <td class="small">{{ optional($cycle->pay_date)->format('d M Y') ?? '—' }}</td>
-                            <td><span class="badge bg-label-{{ $csc }}">{{ ucfirst($cycleStatus) }}</span></td>
-                            <td class="text-end pe-4">
-                                <form method="POST" action="{{ route('payroll.cycles.process', $cycle) }}" class="d-inline">
-                                    @csrf
-                                    <button type="submit" class="btn btn-xs btn-primary" style="font-size:11px;padding:3px 10px;"
-                                        onclick="return confirm('Process payroll for cycle: {{ $cycle->name }}?')">
-                                        <i class="bx bx-play-circle me-1"></i>Process
-                                    </button>
-                                </form>
-                            </td>
-                        </tr>
+                    @foreach($recentPayrolls as $run)
+                    <tr>
+                        <td>
+                            <b>{{ Carbon\Carbon::parse($run->period_start)->format('M Y') }}</b>
+                            <div class="small text-muted">{{ $run->period_start }} to {{ $run->period_end }}</div>
+                        </td>
+                        <td>{{ $run->pay_date ?: '-' }}</td>
+                        <td>
+                            <span class="pr-pill {{ strtolower($run->status) }}">
+                                {{ ucfirst($run->status) }}
+                            </span>
+                        </td>
+                        <td class="num">₹{{ number_format($run->gross_total, 2) }}</td>
+                        <td class="num text-danger">₹{{ number_format($run->deduction_total, 2) }}</td>
+                        <td class="num text-success fw-bold">₹{{ number_format($run->total_in_hand ?? $run->net_total, 2) }}</td>
+                        <td class="num text-purple fw-bold">₹{{ number_format($run->total_ctc ?? $run->gross_total, 2) }}</td>
+                        <td class="text-center">
+                            <a href="{{ route('payroll.processing', ['year' => date('Y', strtotime($run->period_start)), 'month' => date('n', strtotime($run->period_start))]) }}" class="pr-btn pr-btn-sm">
+                                👁️ View Run
+                            </a>
+                        </td>
+                    </tr>
                     @endforeach
                 </tbody>
             </table>
         </div>
     </div>
     @endif
-
 </div>
 @endsection

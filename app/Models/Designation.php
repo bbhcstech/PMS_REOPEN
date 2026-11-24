@@ -32,9 +32,9 @@ class Designation extends TenantModel
     {
         parent::boot();
 
-        // Automatically generate unique_code after creation
+        // Automatically generate unique_code after creation if column exists
         static::created(function ($model) {
-            if (empty($model->unique_code)) {
+            if (\Illuminate\Support\Facades\Schema::hasColumn('designations', 'unique_code') && empty($model->unique_code)) {
                 $model->unique_code = 'DGN-' . str_pad($model->id, 4, '0', STR_PAD_LEFT);
                 $model->saveQuietly();
             }

@@ -2766,8 +2766,20 @@ html[data-pms-theme="dark"] .bootstrap-select .dropdown-menu li.selected a {
 /* --------------------------------------------------------------------------
    19. COMPANY NOTIFICATION CENTER & NATIVE FORM CONTROLS
    -------------------------------------------------------------------------- */
+html[data-pms-theme="dark"] select,
+html[data-pms-theme="dark"] .form-select,
+[data-pms-theme="dark"] select,
+[data-pms-theme="dark"] .form-select {
+  color-scheme: dark !important;
+  background-color: #141B3D !important;
+  color: #EEF1FB !important;
+}
+
 html[data-pms-theme="dark"] select option,
-html[data-pms-theme="dark"] .form-select option {
+html[data-pms-theme="dark"] .form-select option,
+[data-pms-theme="dark"] select option,
+[data-pms-theme="dark"] .form-select option {
+  color-scheme: dark !important;
   background-color: #141B3D !important;
   color: #EEF1FB !important;
 }
@@ -2818,6 +2830,15 @@ html[data-pms-theme="dark"] .notif-btn-resolve {
 html[data-pms-theme="dark"] .user-docs-page {
   background: #070B1A !important;
   color: #CBD5E1 !important;
+}
+
+.header-card-elevated .avatar-badge i,
+.header-card-elevated .header-icon-badge i,
+.header-card-elevated .avatar-badge [class*="fa"],
+.header-card-elevated .header-icon-badge [class*="fa"] {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  opacity: 1 !important;
 }
 
 html[data-pms-theme="dark"] .header-card-elevated {
@@ -4052,7 +4073,10 @@ html[data-theme="dark"] input[type="file"]::file-selector-button {
   border: 1px solid rgba(238, 241, 251, 0.25) !important;
   border-radius: 8px !important;
   padding: 5px 14px !important;
-  margin-right: 12px !important;
+  margin: 0 !important;
+  margin-inline-end: 12px !important;
+  align-self: center !important;
+  vertical-align: middle !important;
   font-weight: 600 !important;
   font-size: 0.82rem !important;
   cursor: pointer !important;
@@ -4071,7 +4095,10 @@ html[data-theme="dark"] input[type="file"]::-webkit-file-upload-button {
   border: 1px solid rgba(238, 241, 251, 0.25) !important;
   border-radius: 8px !important;
   padding: 5px 14px !important;
-  margin-right: 12px !important;
+  margin: 0 !important;
+  margin-inline-end: 12px !important;
+  align-self: center !important;
+  vertical-align: middle !important;
   font-weight: 600 !important;
   font-size: 0.82rem !important;
   cursor: pointer !important;

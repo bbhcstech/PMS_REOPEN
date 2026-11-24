@@ -96,14 +96,6 @@ class SettingController extends Controller
                 'route' => 'attendance.settings',
                 'category' => 'HR'
             ],
-            'payroll-settings' => [
-                'name' => 'Payroll Settings',
-                'description' => 'Salary structure, pay cycle, deductions, allowances',
-                'icon' => 'bx bx-wallet',
-                'color' => 'primary',
-                'route' => 'payroll.settings.index',
-                'category' => 'Finance'
-            ],
             'recruitment-settings' => [
                 'name' => 'Recruitment Settings',
                 'description' => 'Job categories, recruitment stages, hiring configuration',
@@ -174,6 +166,14 @@ class SettingController extends Controller
                 'icon' => 'bx bx-globe',
                 'color' => 'warning',
                 'route' => 'admin.settings.localization',
+                'category' => 'System'
+            ],
+            'country-codes' => [
+                'name' => 'Country Codes',
+                'description' => 'Country phone calling codes, dial prefixes, and mobile digit rules',
+                'icon' => 'bx bx-phone-call',
+                'color' => 'primary',
+                'route' => 'admin.settings.country-codes.index',
                 'category' => 'System'
             ],
         ];

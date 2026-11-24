@@ -303,7 +303,7 @@ class Company extends Model
                 'tasks' => ['tasks'],
                 'timelogs', 'timesheets' => ['timesheets', 'timelogs'],
                 'work' => ['work'],
-                'payroll', 'payslips', 'salary-structures', 'payroll-architectures', 'payroll-settings', 'payroll-policies', 'payroll-cycles', 'payroll-reports', 'bonus-rules', 'deduction-rules', 'overtime-rules', 'tax-rules', 'formula-builder' => ['payroll', 'payslips', 'salary-structures', 'payroll-architectures', 'payroll-settings', 'payroll-policies', 'payroll-cycles', 'payroll-reports', 'bonus-rules', 'deduction-rules', 'overtime-rules', 'tax-rules', 'formula-builder'],
+                'payroll', 'payslips', 'salary-structures', 'employee-salary' => ['payroll'],
                 'expenses' => ['expenses'],
                 'billing' => ['billing', 'expenses'],
                 'clients', 'client' => ['clients', 'client', 'leads-contacts'],

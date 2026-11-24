@@ -1814,144 +1814,254 @@
 
 
 
-            <!-- Layouts -->
-            @if($canAnyModule(['employees', 'designations', 'departments', 'attendance', 'leaves', 'holidays', 'awards', 'recruitment', 'appraisal']))
-            <li class="menu-item {{ request()->routeIs('employees.*') ||
-                      request()->routeIs('designations.*') ||
-                      (request()->routeIs('attendance.*') && !request()->routeIs('attendance.report')) ||
-                      request()->routeIs('leaves.*') ||
-                      request()->routeIs('holidays.*') ||
-                      request()->routeIs('awards.*') ||
-                      request()->routeIs('employee.awards') ||
-                      request()->routeIs('recruitment.*') ||
-                      request()->routeIs('appraisal.*')
-                      ? 'active open' : '' }}">
+            @php
+                $isHrSidebarUser = strtolower((string)(auth()->user()?->role ?? '')) === 'hr';
+            @endphp
 
-              <a href="javascript:void(0);" class="menu-link menu-toggle" data-sidebar-key="hr">
-                <i class="menu-icon tf-icons bx bx-layout"></i>
-                <div class="text-truncate" data-i18n="Layouts">HR</div>
-              </a>
-
-
-
-              <ul class="menu-sub">
-                    @if($canSeeModule('employees'))
-                        <li class="menu-item {{ request()->routeIs('employees.*') ? 'active' : '' }}">
-                            <a href="{{ route('employees.index') }}" class="menu-link" data-sidebar-key="employees">
-                                <div class="text-truncate" data-i18n="Without menu">Employee</div>
-                            </a>
-                        </li>
-                    @endif
-
-                    @if($canSeeModule('recruitment'))
-                        <li class="menu-item {{ request()->routeIs('recruitment.*') ? 'active' : '' }}">
-                            <a href="{{ route('recruitment.index') }}" class="menu-link" data-sidebar-key="recruitment">
-                                <div class="text-truncate" data-i18n="Recruitment">Recruitment</div>
-                            </a>
-                        </li>
-                    @endif
-
-                    @if($canSeeModule('appraisal'))
-                        <li class="menu-item {{ request()->routeIs('appraisal.*') ? 'active' : '' }}">
-                            <a href="{{ route('appraisal.index') }}" class="menu-link" data-sidebar-key="appraisal">
-                                <div class="text-truncate" data-i18n="Appraisal">Appraisal</div>
-                            </a>
-                        </li>
-                    @endif
-
-                    @if($canSeeModule('designations'))
-                        <li class="menu-item {{ request()->routeIs('designations.*') ? 'active' : '' }}">
-                            <a href="{{ route('designations.index') }}" class="menu-link">
-                                <div class="text-truncate" data-i18n="Without menu">Designation</div>
-                            </a>
-                        </li>
-                    @endif
-
- <!-- Department with Submenu -->
-                  @if($canSeeModule('departments'))
-                  <li class="menu-item {{ request()->routeIs('parent-departments.*') || request()->routeIs('departments.*') ? 'active open' : '' }}">
-                    <a href="javascript:void(0);" class="menu-link menu-toggle">
-                      <div class="text-truncate">Department</div>
-                    </a>
-                    <ul class="menu-sub">
-                      <li class="menu-item {{ request()->routeIs('parent-departments.*') ? 'active' : '' }}">
-                        <a href="{{ route('parent-departments.index') }}" class="menu-link">
-                          <div class="text-truncate">Parent Department</div>
+            @if($isHrSidebarUser)
+                {{-- HR Role: Show all HR features directly as top-level sidebar items without outer HR dropdown wrapper --}}
+                @if($canSeeModule('employees'))
+                    <li class="menu-item {{ request()->routeIs('employees.*') ? 'active' : '' }}">
+                        <a href="{{ route('employees.index') }}" class="menu-link" data-sidebar-key="employees">
+                            <i class="menu-icon tf-icons bx bx-user"></i>
+                            <div class="text-truncate" data-i18n="Without menu">Employee</div>
                         </a>
-                      </li>
-                      <li class="menu-item {{ request()->routeIs('departments.*') ? 'active' : '' }}">
-                        <a href="{{ route('departments.index') }}" class="menu-link">
-                          <div class="text-truncate">Sub Department</div>
-                        </a>
-                      </li>
-                    </ul>
-                  </li>
-                  @endif
-
-
-                     @if($canSeeModule('attendance'))
-                    <li class="menu-item {{ (request()->routeIs('attendance.*') && !request()->routeIs('attendance.report')) ? 'active' : '' }}">
-                          <a href="{{ route('attendance.index') }}" class="menu-link" data-sidebar-key="attendance">
-                            <div class="text-truncate" data-i18n="Without menu">
-                              {{ in_array(strtolower((string)(auth()->user()->role ?? '')), ['admin', 'superadmin', 'administrator'], true) ? 'Attendance' : 'My Attendance' }}
-                            </div>
-                          </a>
                     </li>
-                    @endif
+                @endif
 
+                @if($canSeeModule('recruitment'))
+                    <li class="menu-item {{ request()->routeIs('recruitment.*') ? 'active' : '' }}">
+                        <a href="{{ route('recruitment.index') }}" class="menu-link" data-sidebar-key="recruitment">
+                            <i class="menu-icon tf-icons bx bx-user-plus"></i>
+                            <div class="text-truncate" data-i18n="Recruitment">Recruitment</div>
+                        </a>
+                    </li>
+                @endif
+
+                @if($canSeeModule('appraisal'))
+                    <li class="menu-item {{ request()->routeIs('appraisal.*') ? 'active' : '' }}">
+                        <a href="{{ route('appraisal.index') }}" class="menu-link" data-sidebar-key="appraisal">
+                            <i class="menu-icon tf-icons bx bx-trending-up"></i>
+                            <div class="text-truncate" data-i18n="Appraisal">Appraisal</div>
+                        </a>
+                    </li>
+                @endif
+
+                @if($canSeeModule('designations'))
+                    <li class="menu-item {{ request()->routeIs('designations.*') ? 'active' : '' }}">
+                        <a href="{{ route('designations.index') }}" class="menu-link" data-sidebar-key="designations">
+                            <i class="menu-icon tf-icons bx bx-id-card"></i>
+                            <div class="text-truncate" data-i18n="Without menu">Designation</div>
+                        </a>
+                    </li>
+                @endif
+
+                @if($canSeeModule('departments'))
+                    <li class="menu-item {{ request()->routeIs('parent-departments.*') || request()->routeIs('departments.*') ? 'active open' : '' }}">
+                        <a href="javascript:void(0);" class="menu-link menu-toggle" data-sidebar-key="departments">
+                            <i class="menu-icon tf-icons bx bx-buildings"></i>
+                            <div class="text-truncate">Department</div>
+                        </a>
+                        <ul class="menu-sub">
+                            <li class="menu-item {{ request()->routeIs('parent-departments.*') ? 'active' : '' }}">
+                                <a href="{{ route('parent-departments.index') }}" class="menu-link">
+                                    <div class="text-truncate">Parent Department</div>
+                                </a>
+                            </li>
+                            <li class="menu-item {{ request()->routeIs('departments.*') ? 'active' : '' }}">
+                                <a href="{{ route('departments.index') }}" class="menu-link">
+                                    <div class="text-truncate">Sub Department</div>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                @endif
+
+                @if($canSeeModule('attendance'))
+                    <li class="menu-item {{ (request()->routeIs('attendance.*') && !request()->routeIs('attendance.report')) ? 'active' : '' }}">
+                        <a href="{{ route('attendance.index') }}" class="menu-link" data-sidebar-key="attendance">
+                            <i class="menu-icon tf-icons bx bx-calendar-check"></i>
+                            <div class="text-truncate" data-i18n="Without menu">Attendance</div>
+                        </a>
+                    </li>
+                @endif
 
                 @if($canSeeModule('leaves'))
-                <li class="menu-item {{ (request()->routeIs('leaves.index') || request()->routeIs('leaves.show') || request()->routeIs('leaves.calendar') || request()->routeIs('leaves.archive') || request()->routeIs('leaves.apology-letters.*')) ? 'active' : '' }}">
-                <a href="{{ route('leaves.index') }}" class="menu-link" data-sidebar-key="leaves">
-                    <div class="text-truncate" data-i18n="Without navbar">My Leaves</div>
-                </a>
-                </li>
-                <li class="menu-item {{ request()->routeIs('leaves.create') ? 'active' : '' }}">
-                <a href="{{ route('leaves.create') }}" class="menu-link" data-sidebar-key="leaves-apply">
-                    <div class="text-truncate">Apply Leave</div>
-                </a>
-                </li>
+                    <li class="menu-item {{ (request()->routeIs('leaves.index') || request()->routeIs('leaves.show') || request()->routeIs('leaves.calendar') || request()->routeIs('leaves.archive') || request()->routeIs('leaves.apology-letters.*')) ? 'active' : '' }}">
+                        <a href="{{ route('leaves.index') }}" class="menu-link" data-sidebar-key="leaves">
+                            <i class="menu-icon tf-icons bx bx-calendar-x"></i>
+                            <div class="text-truncate" data-i18n="Without navbar">My Leaves</div>
+                        </a>
+                    </li>
+                    <li class="menu-item {{ request()->routeIs('leaves.create') ? 'active' : '' }}">
+                        <a href="{{ route('leaves.create') }}" class="menu-link" data-sidebar-key="leaves-apply">
+                            <i class="menu-icon tf-icons bx bx-calendar-plus"></i>
+                            <div class="text-truncate">Apply Leave</div>
+                        </a>
+                    </li>
                 @endif
 
-
-                {{-- Employee Holiday View --}}
                 @if($canSeeModule('holidays'))
-                <li class="menu-item {{ request()->routeIs('holidays.*') ? 'active' : '' }}">
-                <a href="{{ route('holidays.calendar') }}" class="menu-link" data-sidebar-key="holidays">
-                    <div class="text-truncate">Holiday List</div>
-                </a>
-                </li>
+                    <li class="menu-item {{ request()->routeIs('holidays.*') ? 'active' : '' }}">
+                        <a href="{{ route('holidays.calendar') }}" class="menu-link" data-sidebar-key="holidays">
+                            <i class="menu-icon tf-icons bx bx-sun"></i>
+                            <div class="text-truncate">Holiday List</div>
+                        </a>
+                    </li>
                 @endif
 
-
-                    @if($canSeeModule('awards') && auth()->user()->role === 'admin')
-                    <!-- Admin sees Appreciation menu -->
-                    <li class="menu-item {{ request()->routeIs('awards.*') ? 'active' : '' }}">
-                        <a href="{{ route('awards.index') }}" class="menu-link">
+                @if($canSeeModule('awards'))
+                    <li class="menu-item {{ request()->routeIs('awards.*') || request()->routeIs('employee.awards') ? 'active' : '' }}">
+                        <a href="{{ route('awards.index') }}" class="menu-link" data-sidebar-key="awards">
+                            <i class="menu-icon tf-icons bx bx-award"></i>
                             <div class="text-truncate" data-i18n="Container">Recognition</div>
                         </a>
                     </li>
                     <li class="menu-item {{ request()->routeIs('letterhead.*') || request()->routeIs('admin.letterhead.*') ? 'active' : '' }}">
-                        <a href="{{ route('letterhead.index') }}" class="menu-link">
-                            <div class="text-truncate" data-i18n="Letter Head">Letter Head</div>
-                        </a>
-                    </li>
-                    @elseif($canSeeModule('awards') && auth()->user()->role === 'employee')
-                    <!-- Employee also sees Recognition menu but goes to filtered view -->
-                    <li class="menu-item {{ request()->routeIs('awards.*') || request()->routeIs('employee.awards') ? 'active' : '' }}">
-                        <a href="{{ route('awards.index') }}" class="menu-link">
-                            <div class="text-truncate" data-i18n="Container">My Awards</div>
-                        </a>
-                    </li>
-                    <li class="menu-item {{ request()->routeIs('letterhead.*') || request()->routeIs('admin.letterhead.*') ? 'active' : '' }}">
-                        <a href="{{ route('letterhead.index') }}" class="menu-link">
+                        <a href="{{ route('letterhead.index') }}" class="menu-link" data-sidebar-key="letterhead">
+                            <i class="menu-icon tf-icons bx bx-file-blank"></i>
                             <div class="text-truncate" data-i18n="Letter Head">Letter Head</div>
                         </a>
                     </li>
                 @endif
+            @else
+                <!-- Layouts (Collapsible HR Menu for Admin, Manager, etc.) -->
+                @if($canAnyModule(['employees', 'designations', 'departments', 'attendance', 'leaves', 'holidays', 'awards', 'recruitment', 'appraisal']))
+                <li class="menu-item {{ request()->routeIs('employees.*') ||
+                          request()->routeIs('designations.*') ||
+                          (request()->routeIs('attendance.*') && !request()->routeIs('attendance.report')) ||
+                          request()->routeIs('leaves.*') ||
+                          request()->routeIs('holidays.*') ||
+                          request()->routeIs('awards.*') ||
+                          request()->routeIs('employee.awards') ||
+                          request()->routeIs('recruitment.*') ||
+                          request()->routeIs('appraisal.*')
+                          ? 'active open' : '' }}">
 
-              </ul>
-            </li>
+                  <a href="javascript:void(0);" class="menu-link menu-toggle" data-sidebar-key="hr">
+                    <i class="menu-icon tf-icons bx bx-layout"></i>
+                    <div class="text-truncate" data-i18n="Layouts">HR</div>
+                  </a>
+
+                  <ul class="menu-sub">
+                        @if($canSeeModule('employees'))
+                            <li class="menu-item {{ request()->routeIs('employees.*') ? 'active' : '' }}">
+                                <a href="{{ route('employees.index') }}" class="menu-link" data-sidebar-key="employees">
+                                    <div class="text-truncate" data-i18n="Without menu">Employee</div>
+                                </a>
+                            </li>
+                        @endif
+
+                        @if($canSeeModule('recruitment'))
+                            <li class="menu-item {{ request()->routeIs('recruitment.*') ? 'active' : '' }}">
+                                <a href="{{ route('recruitment.index') }}" class="menu-link" data-sidebar-key="recruitment">
+                                    <div class="text-truncate" data-i18n="Recruitment">Recruitment</div>
+                                </a>
+                            </li>
+                        @endif
+
+                        @if($canSeeModule('appraisal'))
+                            <li class="menu-item {{ request()->routeIs('appraisal.*') ? 'active' : '' }}">
+                                <a href="{{ route('appraisal.index') }}" class="menu-link" data-sidebar-key="appraisal">
+                                    <div class="text-truncate" data-i18n="Appraisal">Appraisal</div>
+                                </a>
+                            </li>
+                        @endif
+
+                        @if($canSeeModule('designations'))
+                            <li class="menu-item {{ request()->routeIs('designations.*') ? 'active' : '' }}">
+                                <a href="{{ route('designations.index') }}" class="menu-link">
+                                    <div class="text-truncate" data-i18n="Without menu">Designation</div>
+                                </a>
+                            </li>
+                        @endif
+
+     <!-- Department with Submenu -->
+                      @if($canSeeModule('departments'))
+                      <li class="menu-item {{ request()->routeIs('parent-departments.*') || request()->routeIs('departments.*') ? 'active open' : '' }}">
+                        <a href="javascript:void(0);" class="menu-link menu-toggle">
+                          <div class="text-truncate">Department</div>
+                        </a>
+                        <ul class="menu-sub">
+                          <li class="menu-item {{ request()->routeIs('parent-departments.*') ? 'active' : '' }}">
+                            <a href="{{ route('parent-departments.index') }}" class="menu-link">
+                              <div class="text-truncate">Parent Department</div>
+                            </a>
+                          </li>
+                          <li class="menu-item {{ request()->routeIs('departments.*') ? 'active' : '' }}">
+                            <a href="{{ route('departments.index') }}" class="menu-link">
+                              <div class="text-truncate">Sub Department</div>
+                            </a>
+                          </li>
+                        </ul>
+                      </li>
+                      @endif
+
+
+                         @if($canSeeModule('attendance'))
+                        <li class="menu-item {{ (request()->routeIs('attendance.*') && !request()->routeIs('attendance.report')) ? 'active' : '' }}">
+                              <a href="{{ route('attendance.index') }}" class="menu-link" data-sidebar-key="attendance">
+                                <div class="text-truncate" data-i18n="Without menu">
+                                  {{ in_array(strtolower((string)(auth()->user()->role ?? '')), ['admin', 'superadmin', 'administrator'], true) ? 'Attendance' : 'My Attendance' }}
+                                </div>
+                              </a>
+                        </li>
+                        @endif
+
+
+                    @if($canSeeModule('leaves'))
+                    <li class="menu-item {{ (request()->routeIs('leaves.index') || request()->routeIs('leaves.show') || request()->routeIs('leaves.calendar') || request()->routeIs('leaves.archive') || request()->routeIs('leaves.apology-letters.*')) ? 'active' : '' }}">
+                    <a href="{{ route('leaves.index') }}" class="menu-link" data-sidebar-key="leaves">
+                        <div class="text-truncate" data-i18n="Without navbar">My Leaves</div>
+                    </a>
+                    </li>
+                    <li class="menu-item {{ request()->routeIs('leaves.create') ? 'active' : '' }}">
+                    <a href="{{ route('leaves.create') }}" class="menu-link" data-sidebar-key="leaves-apply">
+                        <div class="text-truncate">Apply Leave</div>
+                    </a>
+                    </li>
+                    @endif
+
+
+                    {{-- Employee Holiday View --}}
+                    @if($canSeeModule('holidays'))
+                    <li class="menu-item {{ request()->routeIs('holidays.*') ? 'active' : '' }}">
+                    <a href="{{ route('holidays.calendar') }}" class="menu-link" data-sidebar-key="holidays">
+                        <div class="text-truncate">Holiday List</div>
+                    </a>
+                    </li>
+                    @endif
+
+
+                        @if($canSeeModule('awards') && auth()->user()->role === 'admin')
+                        <!-- Admin sees Appreciation menu -->
+                        <li class="menu-item {{ request()->routeIs('awards.*') ? 'active' : '' }}">
+                            <a href="{{ route('awards.index') }}" class="menu-link">
+                                <div class="text-truncate" data-i18n="Container">Recognition</div>
+                            </a>
+                        </li>
+                        <li class="menu-item {{ request()->routeIs('letterhead.*') || request()->routeIs('admin.letterhead.*') ? 'active' : '' }}">
+                            <a href="{{ route('letterhead.index') }}" class="menu-link">
+                                <div class="text-truncate" data-i18n="Letter Head">Letter Head</div>
+                            </a>
+                        </li>
+                        @elseif($canSeeModule('awards') && auth()->user()->role === 'employee')
+                        <!-- Employee also sees Recognition menu but goes to filtered view -->
+                        <li class="menu-item {{ request()->routeIs('awards.*') || request()->routeIs('employee.awards') ? 'active' : '' }}">
+                            <a href="{{ route('awards.index') }}" class="menu-link">
+                                <div class="text-truncate" data-i18n="Container">My Awards</div>
+                            </a>
+                        </li>
+                        <li class="menu-item {{ request()->routeIs('letterhead.*') || request()->routeIs('admin.letterhead.*') ? 'active' : '' }}">
+                            <a href="{{ route('letterhead.index') }}" class="menu-link">
+                            <div class="text-truncate" data-i18n="Letter Head">Letter Head</div>
+                            </a>
+                        </li>
+                    @endif
+
+                  </ul>
+                </li>
+                @endif
             @endif
 
 
@@ -2082,115 +2192,6 @@
             </li>
             @endif
 
-            @if($canSeeModule('payroll') && $canAnyModule(['payroll', 'payroll-architectures', 'payslips', 'salary-structures', 'payroll-policies', 'payroll-cycles', 'tax-rules', 'bonus-rules', 'deduction-rules', 'overtime-rules', 'payroll-reports', 'payroll-audit-logs', 'payroll-settings', 'payroll-import-export', 'payroll-archive', 'formula-builder']))
-            <li class="menu-item {{ request()->routeIs('payroll.*') ? 'active open' : '' }}">
-                <a href="javascript:void(0);" class="menu-link menu-toggle" data-sidebar-key="payroll">
-                    <i class="menu-icon tf-icons bx bx-wallet"></i>
-                    <div class="text-truncate">Payroll</div>
-                </a>
-
-                <ul class="menu-sub">
-                    @if($canSeeModule('payroll'))
-                        <li class="menu-item {{ request()->routeIs('payroll.index') ? 'active' : '' }}">
-                            <a href="{{ \Illuminate\Support\Facades\Route::has('payroll.index') ? route('payroll.index') : url('/payroll') }}" class="menu-link"><div>Dashboard</div></a>
-                        </li>
-                    @endif
-                    @if($canSeeModule('payroll'))
-                        <li class="menu-item {{ request()->routeIs('payroll.processing') ? 'active' : '' }}">
-                            <a href="{{ \Illuminate\Support\Facades\Route::has('payroll.processing') ? route('payroll.processing') : url('/payroll/processing') }}" class="menu-link"><div>Processing</div></a>
-                        </li>
-                    @endif
-                    @if($canSeeModule('payroll-architectures'))
-                        <li class="menu-item {{ request()->routeIs('payroll.architectures.*') ? 'active' : '' }}">
-                            <a href="{{ route('payroll.architectures.index') }}" class="menu-link"><div>Architectures</div></a>
-                        </li>
-                    @endif
-                    @if($canSeeModule('salary-structures'))
-                        <li class="menu-item {{ request()->routeIs('payroll.salary-structures.*') ? 'active' : '' }}">
-                            <a href="{{ route('payroll.salary-structures.index') }}" class="menu-link"><div>Salary Structures</div></a>
-                        </li>
-                    @endif
-                    @if($canSeeModule('payroll-cycles'))
-                        <li class="menu-item {{ request()->routeIs('payroll.cycles.*') ? 'active' : '' }}">
-                            <a href="{{ route('payroll.cycles.index') }}" class="menu-link"><div>Payroll Cycles</div></a>
-                        </li>
-                    @endif
-                    @if($canSeeModule('payslips'))
-                        <li class="menu-item {{ request()->routeIs('payroll.payslips.*') ? 'active' : '' }}">
-                            <a href="{{ route('payroll.payslips.index') }}" class="menu-link"><div>Payslips</div></a>
-                        </li>
-                    @endif
-
-                    {{-- ── Payroll Policies Nested Group ────────────────────── --}}
-                    @if($canAnyModule(['payroll-policies', 'deduction-rules', 'bonus-rules', 'tax-rules', 'overtime-rules', 'formula-builder', 'payroll-reports', 'payroll-import-export', 'payroll-archive', 'payroll-audit-logs']))
-                        <li class="menu-item {{ request()->routeIs('payroll.policies.*') || request()->routeIs('payroll.deduction-rules.*') || request()->routeIs('payroll.bonus-rules.*') || request()->routeIs('payroll.tax-rules.*') || request()->routeIs('payroll.overtime-rules.*') || request()->routeIs('payroll.formula-builder.*') || request()->routeIs('payroll.reports.*') || request()->routeIs('payroll.import-export.*') || request()->routeIs('payroll.archive.*') || request()->routeIs('payroll.audit-logs.*') ? 'active open' : '' }}">
-                            <a href="javascript:void(0);" class="menu-link menu-toggle">
-                                <i class="menu-icon tf-icons bx bx-shield-quarter" style="margin-left:4px;font-size:13px;"></i>
-                                <div class="text-truncate">Payroll Policies</div>
-                            </a>
-                            <ul class="menu-sub">
-                                @if($canSeeModule('payroll-policies'))
-                                    <li class="menu-item {{ request()->routeIs('payroll.policies.*') ? 'active' : '' }}">
-                                        <a href="{{ route('payroll.policies.index') }}" class="menu-link"><div>Policy Engine</div></a>
-                                    </li>
-                                @endif
-                                @if($canSeeModule('deduction-rules'))
-                                    <li class="menu-item {{ request()->routeIs('payroll.deduction-rules.*') ? 'active' : '' }}">
-                                        <a href="{{ route('payroll.deduction-rules.index') }}" class="menu-link"><div>Deduction Rules</div></a>
-                                    </li>
-                                @endif
-                                @if($canSeeModule('bonus-rules'))
-                                    <li class="menu-item {{ request()->routeIs('payroll.bonus-rules.*') ? 'active' : '' }}">
-                                        <a href="{{ route('payroll.bonus-rules.index') }}" class="menu-link"><div>Bonus Rules</div></a>
-                                    </li>
-                                @endif
-                                @if($canSeeModule('tax-rules'))
-                                    <li class="menu-item {{ request()->routeIs('payroll.tax-rules.*') ? 'active' : '' }}">
-                                        <a href="{{ route('payroll.tax-rules.index') }}" class="menu-link"><div>Tax Rules</div></a>
-                                    </li>
-                                @endif
-                                @if($canSeeModule('overtime-rules'))
-                                    <li class="menu-item {{ request()->routeIs('payroll.overtime-rules.*') ? 'active' : '' }}">
-                                        <a href="{{ route('payroll.overtime-rules.index') }}" class="menu-link"><div>Overtime Rules</div></a>
-                                    </li>
-                                @endif
-                                @if($canSeeModule('formula-builder'))
-                                    <li class="menu-item {{ request()->routeIs('payroll.formula-builder.*') ? 'active' : '' }}">
-                                        <a href="{{ route('payroll.formula-builder.index') }}" class="menu-link"><div>Formula Builder</div></a>
-                                    </li>
-                                @endif
-                                @if($canSeeModule('payroll-reports'))
-                                    <li class="menu-item {{ request()->routeIs('payroll.reports.*') ? 'active' : '' }}">
-                                        <a href="{{ route('payroll.reports.index') }}" class="menu-link"><div>Reports</div></a>
-                                    </li>
-                                @endif
-                                @if($canSeeModule('payroll-import-export'))
-                                    <li class="menu-item {{ request()->routeIs('payroll.import-export.*') ? 'active' : '' }}">
-                                        <a href="{{ route('payroll.import-export.index') }}" class="menu-link"><div>Import / Export</div></a>
-                                    </li>
-                                @endif
-                                @if($canSeeModule('payroll-archive'))
-                                    <li class="menu-item {{ request()->routeIs('payroll.archive.*') ? 'active' : '' }}">
-                                        <a href="{{ route('payroll.archive.index') }}" class="menu-link"><div>Archive</div></a>
-                                    </li>
-                                @endif
-                                @if($canSeeModule('payroll-audit-logs'))
-                                    <li class="menu-item {{ request()->routeIs('payroll.audit-logs.*') ? 'active' : '' }}">
-                                        <a href="{{ route('payroll.audit-logs.index') }}" class="menu-link"><div>Audit Logs</div></a>
-                                    </li>
-                                @endif
-                            </ul>
-                        </li>
-                    @endif
-
-                    @if($canSeeModule('payroll-settings'))
-                        <li class="menu-item {{ request()->routeIs('payroll.settings.*') ? 'active' : '' }}">
-                            <a href="{{ route('payroll.settings.index') }}" class="menu-link"><div>Settings</div></a>
-                        </li>
-                    @endif
-                </ul>
-            </li>
-            @endif
 
 <!--    //leads section -->
 
@@ -2259,6 +2260,19 @@
                 </a>
             </li>
 
+            {{-- Payroll Module (ADMIN WORKSPACE ONLY) --}}
+            @php
+                $isAdminWorkspaceUser = in_array(strtolower((string)(auth()->user()->role ?? '')), ['admin', 'superadmin', 'administrator'], true);
+            @endphp
+            @if($isAdminWorkspaceUser && $canSeeModule('payroll'))
+            <li class="menu-item {{ request()->routeIs('payroll.*') ? 'active' : '' }}">
+                <a href="{{ route('payroll.index') }}" class="menu-link">
+                    <i class="menu-icon tf-icons bx bx-money"></i>
+                    <div class="text-truncate" data-i18n="Payroll">Payroll</div>
+                </a>
+            </li>
+            @endif
+
             @if($canSeeModule('settings'))
                 <li class="menu-item {{ request()->routeIs('settings.*') || request()->routeIs('admin.settings.*') || request()->routeIs('admin.modules.*') || request()->routeIs('admin.role-permissions.*') || request()->routeIs('admin.role-accounts.*') ? 'active open' : '' }}">
                     <a href="javascript:void(0);" class="menu-link menu-toggle">
@@ -2312,9 +2326,7 @@
                         @if($canSeeModule('attendance-settings'))
                         <li class="menu-item {{ request()->routeIs('attendance.settings*') ? 'active' : '' }}"><a href="{{ route('attendance.settings') }}" class="menu-link"><div>Attendance Settings</div></a></li>
                         @endif
-                        @if($canSeeModule('payroll-settings'))
-                        <li class="menu-item {{ request()->routeIs('payroll.settings*') ? 'active' : '' }}"><a href="{{ route('payroll.settings.index') }}" class="menu-link"><div>Payroll Settings</div></a></li>
-                        @endif
+
                         @if($canSeeModule('recruitment-settings'))
                         <li class="menu-item {{ request()->routeIs('admin.settings.recruitment*') ? 'active' : '' }}"><a href="{{ route('admin.settings.recruitment') }}" class="menu-link"><div>Recruitment Settings</div></a></li>
                         @endif
@@ -2341,6 +2353,9 @@
                         @endif
                         @if($canSeeModule('localization-settings'))
                         <li class="menu-item {{ request()->routeIs('admin.settings.localization*') ? 'active' : '' }}"><a href="{{ route('admin.settings.localization') }}" class="menu-link"><div>Localization</div></a></li>
+                        @endif
+                        @if($canSeeModule('localization-settings') || $canSeeModule('country-codes-settings') || in_array(strtolower((string)(auth()->user()?->role ?? '')), ['admin', 'superadmin'], true))
+                        <li class="menu-item {{ request()->routeIs('admin.settings.country-codes*') ? 'active' : '' }}"><a href="{{ route('admin.settings.country-codes.index') }}" class="menu-link"><div>Country Codes</div></a></li>
                         @endif
                         @if($canSeeModule('terms-policy-settings'))
                         <li class="menu-item {{ request()->routeIs('admin.settings.terms-policy*') ? 'active' : '' }}"><a href="{{ route('admin.settings.terms-policy') }}" class="menu-link"><div>Terms &amp; Policy</div></a></li>

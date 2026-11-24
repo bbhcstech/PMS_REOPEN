@@ -149,8 +149,15 @@
                         <div class="col-md-4 mb-3">
                             <label class="form-label">Mobile <span class="text-danger">*</span></label>
                             <div class="input-group">
-                                <input type="text" name="mobile_country_code" class="form-control" value="+91" style="max-width: 90px;" required>
-                                <input type="text" name="mobile" class="form-control" pattern="[1-9][0-9]{9}" required>
+                                <select name="mobile_country_code" class="form-select" style="max-width: 110px;" required>
+                                    @php $modalCountries = isset($countries) && count($countries) ? $countries : \App\Models\Country::getAllWithPhoneCodes(); @endphp
+                                    @foreach($modalCountries as $c)
+                                        <option value="{{ $c->phone_code }}" {{ (old('mobile_country_code', '+91') == $c->phone_code) ? 'selected' : '' }}>
+                                            {{ $c->iso_code ? $c->iso_code . ' ' : '' }}({{ $c->phone_code }})
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <input type="text" name="mobile" class="form-control" placeholder="Mobile number" required>
                             </div>
                         </div>
                         <div class="col-md-4 mb-3">
@@ -166,12 +173,8 @@
                             <input type="file" name="profile_picture" class="form-control" accept="image/jpeg,image/png,image/jpg" required>
                         </div>
                         <div class="col-md-4 mb-3">
-                            <label class="form-label">Government ID Card <span class="text-danger">*</span></label>
-                            <input type="file" name="government_id_card" class="form-control" accept="image/jpeg,image/png,image/jpg" required>
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label">Business Address <span class="text-danger">*</span></label>
-                            <textarea name="business_address" class="form-control" required>Kolkata</textarea>
+                            <label class="form-label">Business Address</label>
+                            <textarea name="business_address" class="form-control">Kolkata</textarea>
                         </div>
                         <div class="col-md-4 mb-3">
                             <label class="form-label">Status <span class="text-danger">*</span></label>

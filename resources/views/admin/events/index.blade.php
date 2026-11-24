@@ -231,6 +231,35 @@
         box-shadow: 0 4px 20px rgba(0,0,0,0.04);
     }
 
+    /* Banner previews are confined to events in the month calendar. */
+    #eventCalendar .event-calendar-has-banner {
+        display: block;
+        white-space: normal;
+        overflow: hidden;
+    }
+    #eventCalendar .event-calendar-banner-content {
+        width: 100%;
+        min-width: 0;
+        padding: 3px;
+        box-sizing: border-box;
+    }
+    #eventCalendar .event-calendar-banner {
+        display: block;
+        width: 100%;
+        height: 56px;
+        object-fit: cover;
+        border-radius: 4px;
+        margin-bottom: 4px;
+    }
+    #eventCalendar .event-calendar-banner-label {
+        display: block;
+        font-size: 0.75rem;
+        line-height: 1.3;
+        font-weight: 600;
+        overflow-wrap: anywhere;
+        color: inherit;
+    }
+
     /* Filter Bar Improvements */
     .events-filter-card {
         border-radius: 16px;
@@ -794,10 +823,11 @@
         border-color: rgba(248, 113, 113, 0.25) !important;
     }
 </style>
+@include('admin.events.dark-theme')
 @endpush
 
 @section('content')
-<div class="container-xxl flex-grow-1 container-p-y">
+<div class="container-xxl flex-grow-1 container-p-y events-section">
 
     {{-- HEADER BLOCK --}}
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
@@ -1225,7 +1255,7 @@
 {{-- ========================================================================= --}}
 {{-- CREATE / EDIT EVENT MODAL (PREMIUM DESIGN) --}}
 {{-- ========================================================================= --}}
-<div class="modal fade" id="eventModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade events-section" id="eventModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content border-0" style="border-radius: 20px; overflow: hidden; box-shadow: 0 15px 50px rgba(0,0,0,0.18);">
             <div class="modal-header py-3.5 px-4 text-white" style="background: linear-gradient(135deg, #4F83FF 0%, #2F6BFF 100%);">
@@ -1374,7 +1404,7 @@
 {{-- ========================================================================= --}}
 {{-- EVENT DETAILS & EVENT MEMORIES MODAL --}}
 {{-- ========================================================================= --}}
-<div class="modal fade" id="eventDetailsModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade events-section" id="eventDetailsModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content border-0" style="border-radius: 18px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.15);">
             <div class="modal-header bg-light py-3 border-bottom">
@@ -1399,7 +1429,7 @@
 {{-- ========================================================================= --}}
 {{-- MULTI-PHOTO UPLOADER MODAL (FACEBOOK-LIKE DRAG & DROP) --}}
 {{-- ========================================================================= --}}
-<div class="modal fade" id="photoUploadModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade events-section" id="photoUploadModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content border-0" style="border-radius: 20px; overflow: hidden; box-shadow: 0 15px 50px rgba(0,0,0,0.2);">
             <div class="modal-header text-white" style="background: linear-gradient(135deg, #4F83FF 0%, #2F6BFF 100%);">
@@ -1470,7 +1500,7 @@
 {{-- ========================================================================= --}}
 {{-- FULLSCREEN PHOTO LIGHTBOX MODAL --}}
 {{-- ========================================================================= --}}
-<div class="modal fade" id="photoLightboxModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade events-section" id="photoLightboxModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content lightbox-modal-content">
             <div class="modal-header border-bottom py-3 px-4 bg-light">
@@ -1498,7 +1528,7 @@
                 </div>
 
                 {{-- Photo Meta & Caption --}}
-                <div class="mt-3 px-3 py-2.5 rounded-3" style="background: #f8fafc; border: 1px solid #e2e8f0;">
+                <div class="lightbox-photo-meta mt-3 px-3 py-2.5 rounded-3" style="background: #f8fafc; border: 1px solid #e2e8f0;">
                     <p class="text-dark fw-bold small mb-1.5 fs-6" id="lightboxCaption"></p>
                     <div class="d-flex align-items-center justify-content-between text-muted small">
                         <span id="lightboxUploader" class="fw-semibold text-dark"><i class="bx bx-user text-primary me-1"></i> Uploaded by Admin</span>
@@ -1573,6 +1603,29 @@
         }
     }
 
+    function renderCalendarEventContent(info) {
+        const bannerUrl = info.event.extendedProps.banner_url;
+        if (info.view.type !== 'dayGridMonth' || !bannerUrl) return true;
+
+        const content = document.createElement('div');
+        content.className = 'event-calendar-banner-content';
+
+        const banner = document.createElement('img');
+        banner.className = 'event-calendar-banner';
+        banner.src = bannerUrl;
+        banner.alt = info.event.title;
+        banner.loading = 'lazy';
+        banner.addEventListener('error', function() { banner.remove(); }, { once: true });
+        content.appendChild(banner);
+
+        const label = document.createElement('span');
+        label.className = 'event-calendar-banner-label';
+        label.textContent = (info.timeText ? info.timeText + ' ' : '') + info.event.title;
+        content.appendChild(label);
+
+        return { domNodes: [content] };
+    }
+
     function initCalendar() {
         const calendarEl = document.getElementById('eventCalendar');
         if (!calendarEl) return;
@@ -1586,6 +1639,11 @@
                 right: 'dayGridMonth,timeGridWeek,listMonth'
             },
             events: '{{ route("events.calendar-data") }}',
+            eventContent: renderCalendarEventContent,
+            eventClassNames: function(info) {
+                return info.view.type === 'dayGridMonth' && info.event.extendedProps.banner_url
+                    ? ['event-calendar-has-banner'] : [];
+            },
             eventClick: function(info) {
                 info.jsEvent.preventDefault();
                 showEventDetails(info.event.id);

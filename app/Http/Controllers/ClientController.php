@@ -132,10 +132,14 @@ class ClientController extends Controller
         $fyString = substr($fyStart, -2) . '-' . substr($fyEnd, -2);
         $prefix   = 'bit' . $fyString . '/';
 
-        $last = DB::table('projects')
-            ->where('project_code', 'like', $prefix.'%')
-            ->orderBy('id', 'desc')
-            ->value('project_code');
+        $last = null;
+        $projectConn = (new Project)->getConnection();
+        if ($projectConn->getSchemaBuilder()->hasTable('projects') && $projectConn->getSchemaBuilder()->hasColumn('projects', 'project_code')) {
+            $last = $projectConn->table('projects')
+                ->where('project_code', 'like', $prefix.'%')
+                ->orderBy('id', 'desc')
+                ->value('project_code');
+        }
 
         $lastNum = 0;
         if ($last && preg_match('/\/(\d{4})$/', $last, $m)) {
@@ -169,9 +173,10 @@ class ClientController extends Controller
     protected function getPhoneRulesAndNormalize(Request $request): array
     {
         // 1. Mobile Phone (Personal / Step 1)
+        $mobileCountryCode = $request->input('mobile_country_code');
         $mobileCountryName = $request->input('country', 'India');
-        $mobilePhoneMeta   = CountryPhone::getDigitRules($mobileCountryName);
-        $mobileDialCode    = $mobilePhoneMeta['dial_code'];
+        $mobilePhoneMeta   = CountryPhone::getDigitRules($mobileCountryCode ?: $mobileCountryName);
+        $mobileDialCode    = $mobileCountryCode ?: $mobilePhoneMeta['dial_code'];
         $mobileMinDigits   = $mobilePhoneMeta['min_digits'];
         $mobileMaxDigits   = $mobilePhoneMeta['max_digits'];
 
@@ -195,9 +200,10 @@ class ClientController extends Controller
         }
 
         // 2. Office Phone (Company / Step 2) - uses company_country or falls back to country
+        $officeCountryCode  = $request->input('office_country_code');
         $companyCountryName = $request->input('company_country') ?: $request->input('country', 'India');
-        $officePhoneMeta    = CountryPhone::getDigitRules($companyCountryName);
-        $officeDialCode     = $officePhoneMeta['dial_code'];
+        $officePhoneMeta    = CountryPhone::getDigitRules($officeCountryCode ?: $companyCountryName);
+        $officeDialCode     = $officeCountryCode ?: $officePhoneMeta['dial_code'];
         $officeMinDigits    = $officePhoneMeta['min_digits'];
         $officeMaxDigits    = $officePhoneMeta['max_digits'];
 

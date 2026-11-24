@@ -6,6 +6,7 @@
 @php
     $canManageEmployees = in_array(auth()->user()?->role, ['admin', 'hr'], true);
     $userRole = auth()->user()?->role ?? 'employee';
+    $activeView = in_array(request('view'), ['grid', 'tree', 'table'], true) ? request('view') : 'table';
 @endphp
 
 <div class="org-page">
@@ -38,7 +39,7 @@
                 <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-xl">
                     @if($canManageEmployees)
                         <li>
-                            <a class="dropdown-item py-2 px-3 fw-bold text-slate-700" href="{{ route('employees.create') }}">
+                            <a class="dropdown-item py-2 px-3 fw-bold text-slate-700" href="{{ route('employees.create', ['return_url' => route('organization.index', array_merge(request()->query(), ['view' => $activeView]))]) }}">
                                 <i class="fas fa-user-plus text-emerald-600 me-2"></i> Add New Employee
                             </a>
                         </li>
@@ -76,7 +77,7 @@
 
             <!-- Add Employee Button -->
             @if($canManageEmployees)
-                <a href="{{ route('employees.create') }}" class="org-btn org-btn-primary">
+                <a href="{{ route('employees.create', ['return_url' => route('organization.index', array_merge(request()->query(), ['view' => $activeView]))]) }}" class="org-btn org-btn-primary">
                     <i class="fas fa-plus"></i> Add Employee
                 </a>
             @endif
@@ -206,20 +207,22 @@
             </button>
 
             @if(request()->anyFilled(['search', 'company_id', 'department_id', 'designation_id', 'status', 'reporting_to']))
-                <a href="{{ route('organization.index') }}" class="org-btn org-btn-outline">
+                <a href="{{ route('organization.index', ['view' => $activeView]) }}" class="org-btn org-btn-outline">
                     <i class="fas fa-rotate-left"></i> Reset
                 </a>
             @endif
 
+            <input type="hidden" name="view" id="activeViewInput" value="{{ $activeView }}">
+
             <!-- View Mode Switcher -->
             <div class="org-view-toggle">
-                <button type="button" class="org-view-btn active" id="btnTableView" onclick="switchView('table')">
+                <button type="button" class="org-view-btn {{ $activeView === 'table' ? 'active' : '' }}" id="btnTableView" onclick="switchView('table')">
                     <i class="fas fa-list"></i> Table
                 </button>
-                <button type="button" class="org-view-btn" id="btnGridView" onclick="switchView('grid')">
+                <button type="button" class="org-view-btn {{ $activeView === 'grid' ? 'active' : '' }}" id="btnGridView" onclick="switchView('grid')">
                     <i class="fas fa-th-large"></i> Grid
                 </button>
-                <button type="button" class="org-view-btn" id="btnTreeView" onclick="switchView('tree')">
+                <button type="button" class="org-view-btn {{ $activeView === 'tree' ? 'active' : '' }}" id="btnTreeView" onclick="switchView('tree')">
                     <i class="fas fa-sitemap"></i> Structure
                 </button>
             </div>
@@ -227,7 +230,7 @@
     </div>
 
     <!-- View Container 1: Enterprise Data Table View -->
-    <div id="tableViewSection" class="org-view-section">
+    <div id="tableViewSection" class="org-view-section" style="{{ $activeView === 'table' ? '' : 'display: none;' }}">
         @if($employees->count() > 0)
             <!-- Show Entries Controls Bar -->
             <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2 px-1">
@@ -301,10 +304,10 @@
                                                 'status' => $status,
                                                 'joining_date' => $detail?->joining_date?->format('d M Y') ?? 'N/A',
                                                 'dob' => $detail?->dob?->format('d M Y') ?? 'N/A',
-                                                'skills' => $detail?->skills ?? 'Not specified',
+                                                'skills' => !empty($detail?->clean_skills_array) ? implode(', ', $detail->clean_skills_array) : 'Not specified',
                                                 'about' => $detail?->directory_about ?: ($detail?->about ?: 'No bio available.'),
-                                                'show_url' => route('organization.show', $employee),
-                                                'edit_url' => route('employees.edit', $employee->id),
+                                                'show_url' => route('organization.show', ['employee' => $employee, 'from_view' => $activeView]),
+                                                'edit_url' => route('employees.edit', ['employee' => $employee->id, 'return_url' => route('organization.index', array_merge(request()->query(), ['view' => $activeView]))]),
                                             ]) }})" class="org-emp-name">{{ $employee->name }}</a>
                                             <div class="org-emp-role">{{ $designationName }}</div>
                                         </div>
@@ -341,13 +344,13 @@
                                 <td style="text-align: right;">
                                     <div class="d-inline-flex gap-1">
                                         <!-- View Action Button -->
-                                        <a href="{{ route('organization.show', $employee) }}" class="org-btn org-btn-secondary org-btn-icon" title="View Directory Profile">
+                                        <a href="{{ route('organization.show', ['employee' => $employee, 'from_view' => 'table']) }}" class="org-btn org-btn-secondary org-btn-icon" title="View Directory Profile">
                                             <i class="fas fa-eye text-emerald-600"></i>
                                         </a>
 
                                         <!-- Edit Action Button (Protected by RBAC) -->
                                         @if($canManageEmployees)
-                                            <a href="{{ route('employees.edit', $employee->id) }}" class="org-btn org-btn-secondary org-btn-icon" title="Edit Employee Details">
+                                            <a href="{{ route('employees.edit', ['employee' => $employee->id, 'return_url' => route('organization.index', array_merge(request()->query(), ['view' => 'table']))]) }}" class="org-btn org-btn-secondary org-btn-icon" title="Edit Employee Details">
                                                 <i class="fas fa-pen-to-square text-blue-600"></i>
                                             </a>
                                         @endif
@@ -359,13 +362,13 @@
                                             </button>
                                             <ul class="dropdown-menu dropdown-menu-end shadow-md border-0 rounded-lg">
                                                 <li>
-                                                    <a class="dropdown-item fw-semibold text-slate-700" href="{{ route('organization.show', $employee) }}">
+                                                    <a class="dropdown-item fw-semibold text-slate-700" href="{{ route('organization.show', ['employee' => $employee, 'from_view' => 'table']) }}">
                                                         <i class="fas fa-id-card text-emerald-600 me-2"></i> Full Profile
                                                     </a>
                                                 </li>
                                                 @if($canManageEmployees)
                                                     <li>
-                                                        <a class="dropdown-item fw-semibold text-slate-700" href="{{ route('employees.edit', $employee->id) }}">
+                                                        <a class="dropdown-item fw-semibold text-slate-700" href="{{ route('employees.edit', ['employee' => $employee->id, 'return_url' => route('organization.index', array_merge(request()->query(), ['view' => 'table']))]) }}">
                                                             <i class="fas fa-user-pen text-blue-600 me-2"></i> HR Edit Record
                                                         </a>
                                                     </li>
@@ -392,7 +395,7 @@
                 <h3>No Employees Found</h3>
                 <p>No active employees match your current search or filter criteria. Try clearing filters or creating a new employee profile.</p>
                 @if($canManageEmployees)
-                    <a href="{{ route('employees.create') }}" class="org-btn org-btn-primary">
+                    <a href="{{ route('employees.create', ['return_url' => route('organization.index', array_merge(request()->query(), ['view' => $activeView]))]) }}" class="org-btn org-btn-primary">
                         <i class="fas fa-user-plus"></i> Add Employee
                     </a>
                 @endif
@@ -401,7 +404,7 @@
     </div>
 
     <!-- View Container 2: Grid Cards View -->
-    <div id="gridViewSection" class="org-view-section" style="display: none;">
+    <div id="gridViewSection" class="org-view-section" style="{{ $activeView === 'grid' ? '' : 'display: none;' }}">
         @if($employees->count() > 0)
             <div class="org-cards-grid">
                 @foreach($employees as $employee)
@@ -425,7 +428,7 @@
                                     <div class="org-emp-avatar">{{ $initials }}</div>
                                 @endif
                                 <div>
-                                    <a href="{{ route('organization.show', $employee) }}" class="org-emp-name">{{ $employee->name }}</a>
+                                    <a href="{{ route('organization.show', ['employee' => $employee, 'from_view' => 'grid']) }}" class="org-emp-name">{{ $employee->name }}</a>
                                     <div class="org-emp-role">{{ $designationName }}</div>
                                     <span class="org-status-pill {{ $status }}">
                                         <span class="org-status-dot"></span> {{ ucfirst($status) }}
@@ -458,11 +461,11 @@
                                 <i class="fas fa-envelope"></i> Email
                             </a>
                             <div class="org-card-actions">
-                                <a href="{{ route('organization.show', $employee) }}" class="org-action-icon-btn" title="View Profile">
+                                <a href="{{ route('organization.show', ['employee' => $employee, 'from_view' => 'grid']) }}" class="org-action-icon-btn" title="View Profile">
                                     <i class="fas fa-eye"></i>
                                 </a>
                                 @if($canManageEmployees)
-                                    <a href="{{ route('employees.edit', $employee->id) }}" class="org-action-icon-btn" title="Edit Employee">
+                                    <a href="{{ route('employees.edit', ['employee' => $employee->id, 'return_url' => route('organization.index', array_merge(request()->query(), ['view' => 'grid']))]) }}" class="org-action-icon-btn" title="Edit Employee">
                                         <i class="fas fa-pen-to-square"></i>
                                     </a>
                                 @endif
@@ -476,7 +479,7 @@
     </div>
 
     <!-- View Container 3: Organization Structure Tree View -->
-    <div id="treeViewSection" class="org-view-section" style="display: none;">
+    <div id="treeViewSection" class="org-view-section" style="{{ $activeView === 'tree' ? '' : 'display: none;' }}">
         <div class="org-tree-container">
             @forelse($departmentGroups as $dept)
                 @php
@@ -516,7 +519,7 @@
                                         <div class="org-tree-avatar-initials">{{ $uInitials }}</div>
                                     @endif
                                     <div class="org-tree-member-details">
-                                        <a href="{{ route('organization.show', $u) }}" class="org-tree-member-name">{{ $u->name }}</a>
+                                        <a href="{{ route('organization.show', ['employee' => $u, 'from_view' => 'tree']) }}" class="org-tree-member-name">{{ $u->name }}</a>
                                         <div class="org-tree-member-role">{{ $uDesignation }}</div>
                                         <div class="org-tree-member-meta">
                                             <span class="org-id-badge text-xs">{{ $uEmpCode }}</span>
@@ -527,7 +530,7 @@
                                     </div>
                                 </div>
                                 <div class="org-tree-member-actions">
-                                    <a href="{{ route('organization.show', $u) }}" class="org-action-icon-btn" title="View Directory Profile">
+                                    <a href="{{ route('organization.show', ['employee' => $u, 'from_view' => 'tree']) }}" class="org-action-icon-btn" title="View Directory Profile">
                                         <i class="fas fa-eye"></i>
                                     </a>
                                 </div>
@@ -674,7 +677,28 @@
         document.getElementById('btnTableView').classList.toggle('active', mode === 'table');
         document.getElementById('btnGridView').classList.toggle('active', mode === 'grid');
         document.getElementById('btnTreeView').classList.toggle('active', mode === 'tree');
+
+        const activeInput = document.getElementById('activeViewInput');
+        if (activeInput) activeInput.value = mode;
+
+        try {
+            localStorage.setItem('org_directory_view', mode);
+            const url = new URL(window.location.href);
+            url.searchParams.set('view', mode);
+            window.history.replaceState({}, '', url.toString());
+        } catch (e) {}
     }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        let requestedView = urlParams.get('view');
+        if (!requestedView) {
+            const savedView = localStorage.getItem('org_directory_view');
+            if (savedView && ['table', 'grid', 'tree'].includes(savedView) && savedView !== '{{ $activeView }}') {
+                switchView(savedView);
+            }
+        }
+    });
 
     // Select All Checkboxes
     function toggleSelectAll(master) {

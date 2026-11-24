@@ -20,6 +20,33 @@ class SetTenantConnection
      */
     public function handle(Request $request, Closure $next): Response
     {
+        $defaultDb = config('database.connections.mysql.database') ?: env('DB_DATABASE', 'pms_last');
+
+        // Restore the login database before any guard retrieves its user.
+        $sessionDb = $request->session()->get('current_company_db');
+        if ($sessionDb) {
+            try {
+                if (config("database.connections.tenant.database") !== $sessionDb || config("database.connections.mysql.database") !== $sessionDb) {
+                    config([
+                        "database.connections.tenant.database" => $sessionDb,
+                        "database.connections.mysql.database"  => $sessionDb,
+                    ]);
+                    DB::purge('tenant');
+                    DB::purge('mysql');
+                    DB::connection('tenant')->getPdo();
+                }
+            } catch (\Throwable $e) {
+                // If session DB is invalid/inaccessible (e.g. pms_last on production server), revert to default
+                config([
+                    "database.connections.tenant.database" => $defaultDb,
+                    "database.connections.mysql.database"  => $defaultDb,
+                ]);
+                DB::purge('tenant');
+                DB::purge('mysql');
+                $request->session()->put('current_company_db', $defaultDb);
+            }
+        }
+
         // 1. Bypass tenant DB switching for SuperAdmin & Developer routes
         if (
             $request->is('super-admin*') ||
@@ -28,8 +55,6 @@ class SetTenantConnection
         ) {
             return $next($request);
         }
-
-        $defaultDb = env('DB_DATABASE', 'pms_last');
         $isSuperAdmin = \Illuminate\Support\Facades\Auth::guard('super_admin')->check() ||
             (auth()->check() && in_array(strtolower((string)(auth()->user()->role ?? '')), ['superadmin', 'super-admin', 'super_admin'], true));
 
@@ -113,6 +138,7 @@ class SetTenantConnection
                 ]);
                 DB::purge('tenant');
                 DB::purge('mysql');
+                $request->session()->put('current_company_db', $defaultDb);
             }
         }
 

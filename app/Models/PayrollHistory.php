@@ -20,4 +20,15 @@ class PayrollHistory extends TenantModel
     {
         return $this->belongsTo(User::class);
     }
+
+    public function payroll()
+    {
+        return $this->belongsTo(Payroll::class, 'payroll_id');
+    }
+
+    public function payslip()
+    {
+        return $this->hasOne(Payslip::class, 'payroll_history_id');
+    }
 }
+

@@ -98,12 +98,12 @@ i[class*=" bx"],
   text-shadow: 0 0 0 currentColor;
 }
 
-.content-wrapper i[class^="bx"]:not(.btn *):not(.badge *):not(.industry-btn *):not(.menu-link *):not(.nav-link.active *):not(.avatar *):not(.avatar-initial *):not([class*="bg-label-"] *):not([class*="setting-icon-"] *),
-.content-wrapper i[class*=" bx"]:not(.btn *):not(.badge *):not(.industry-btn *):not(.menu-link *):not(.nav-link.active *):not(.avatar *):not(.avatar-initial *):not([class*="bg-label-"] *):not([class*="setting-icon-"] *),
-.content-wrapper .fa:not(.btn *):not(.badge *):not(.industry-btn *):not(.avatar *):not(.avatar-initial *):not([class*="bg-label-"] *):not([class*="setting-icon-"] *),
-.content-wrapper .fas:not(.btn *):not(.badge *):not(.industry-btn *):not(.avatar *):not(.avatar-initial *):not([class*="bg-label-"] *):not([class*="setting-icon-"] *),
-.content-wrapper .far:not(.btn *):not(.badge *):not(.industry-btn *):not(.avatar *):not(.avatar-initial *):not([class*="bg-label-"] *):not([class*="setting-icon-"] *),
-.content-wrapper .bi:not(.btn *):not(.badge *):not(.industry-btn *):not(.avatar *):not(.avatar-initial *):not([class*="bg-label-"] *):not([class*="setting-icon-"] *) {
+.content-wrapper i[class^="bx"]:not(.btn *):not(.badge *):not(.industry-btn *):not(.menu-link *):not(.nav-link.active *):not(.avatar *):not(.avatar-initial *):not(.avatar-badge *):not(.header-icon-badge *):not([class*="bg-label-"] *):not([class*="setting-icon-"] *),
+.content-wrapper i[class*=" bx"]:not(.btn *):not(.badge *):not(.industry-btn *):not(.menu-link *):not(.nav-link.active *):not(.avatar *):not(.avatar-initial *):not(.avatar-badge *):not(.header-icon-badge *):not([class*="bg-label-"] *):not([class*="setting-icon-"] *),
+.content-wrapper .fa:not(.btn *):not(.badge *):not(.industry-btn *):not(.avatar *):not(.avatar-initial *):not(.avatar-badge *):not(.header-icon-badge *):not([class*="bg-label-"] *):not([class*="setting-icon-"] *),
+.content-wrapper .fas:not(.btn *):not(.badge *):not(.industry-btn *):not(.avatar *):not(.avatar-initial *):not(.avatar-badge *):not(.header-icon-badge *):not([class*="bg-label-"] *):not([class*="setting-icon-"] *),
+.content-wrapper .far:not(.btn *):not(.badge *):not(.industry-btn *):not(.avatar *):not(.avatar-initial *):not(.avatar-badge *):not(.header-icon-badge *):not([class*="bg-label-"] *):not([class*="setting-icon-"] *),
+.content-wrapper .bi:not(.btn *):not(.badge *):not(.industry-btn *):not(.avatar *):not(.avatar-initial *):not(.avatar-badge *):not(.header-icon-badge *):not([class*="bg-label-"] *):not([class*="setting-icon-"] *) {
   color: var(--pms-primary) !important;
 }
 
@@ -124,6 +124,8 @@ i[class*=" bx"],
 .stat-icon i,
 .avatar i,
 .avatar-initial i,
+.avatar-badge i,
+.header-icon-badge i,
 .card-title i,
 .industry-metric-card.is-primary i {
   color: inherit !important;

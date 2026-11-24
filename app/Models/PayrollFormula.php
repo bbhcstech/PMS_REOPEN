@@ -24,6 +24,9 @@ class PayrollFormula extends Model
         'is_valid',
         'is_active',
         'last_validated_at',
+        'effective_from',
+        'effective_to',
+        'version',
         'company_id',
         'created_by',
         'updated_by',
@@ -36,6 +39,9 @@ class PayrollFormula extends Model
         'is_valid'         => 'boolean',
         'is_active'        => 'boolean',
         'last_validated_at'=> 'datetime',
+        'effective_from'   => 'date',
+        'effective_to'     => 'date',
+        'version'          => 'integer',
     ];
 
     public function creator()
@@ -50,18 +56,39 @@ class PayrollFormula extends Model
 
     /**
      * Evaluate a formula with provided variable bindings.
-     * Only numeric operations with whitelisted variables are allowed.
+     * Supports arithmetic (+, -, *, /), comparisons (>, <, >=, <=, ==, !=),
+     * ternary conditionals (A ? B : C), and automatically handles trailing
+     * semicolons and nested unparenthesized ternaries in PHP 8.
      */
     public static function evaluate(string $formula, array $variables = []): float|false
     {
-        // Replace variable names with their values
-        $expr = $formula;
-        foreach ($variables as $key => $value) {
-            $expr = str_replace(strtoupper($key), (float) $value, $expr);
+        $expr = trim($formula);
+        // 1. Strip trailing semicolons, commas, and whitespace
+        $expr = rtrim($expr, ";, \t\n\r\0\x0B");
+
+        if ($expr === '') {
+            return false;
         }
 
-        // Allow only safe arithmetic: digits, decimals, operators, parentheses, whitespace
-        if (!preg_match('/^[\d\s\+\-\*\/\.\(\)]+$/', $expr)) {
+        // 2. Sort variables by descending key length to prevent substring collisions (e.g. BASIC vs CURRENT_BASIC)
+        uksort($variables, fn($a, $b) => strlen((string)$b) <=> strlen((string)$a));
+
+        foreach ($variables as $key => $value) {
+            $val = is_numeric($value) ? (float) $value : 0.0;
+            // Use word boundary to replace exact variable token case-insensitively
+            $expr = preg_replace('/\b' . preg_quote(strtoupper((string)$key), '/') . '\b/i', (string) $val, $expr);
+        }
+
+        // 3. Fix unparenthesized nested ternaries for PHP 8:
+        // E.g. "A ? B : C ? D : E" -> "A ? B : (C ? D : E)"
+        $count = 0;
+        while (preg_match('/:\s*([^:\(\?]+)\s*\?\s*([^:]+)\s*:\s*(.+)$/', $expr) && $count < 10) {
+            $expr = preg_replace('/:\s*([^:\(\?]+)\s*\?\s*([^:]+)\s*:\s*(.+)$/', ': ($1 ? $2 : $3)', $expr, 1);
+            $count++;
+        }
+
+        // 4. Allow only safe arithmetic and conditional operations: digits, decimals, operators, comparisons, ternary, parentheses, whitespace
+        if (!preg_match('/^[\d\s\+\-\*\/\.\(\)\?\:\>\<\=\!]+$/', $expr)) {
             return false;
         }
 

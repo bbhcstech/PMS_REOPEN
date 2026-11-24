@@ -1,4 +1,4 @@
-﻿@php
+@php
     $employeeDetail = $user->employeeDetail;
     $isEmployeeProfile = ($user->role ?? '') === 'employee';
 
@@ -87,7 +87,31 @@
 
         <div class="col-md-6">
             <label for="mobile" class="form-label">Mobile</label>
-            <input type="text" name="mobile" id="mobile" class="form-control @error('mobile') is-invalid @enderror" value="{{ $fieldValue('mobile') }}" maxlength="20">
+            @php
+                $profCountries = \App\Models\Country::getAllWithPhoneCodes();
+                $profMob = $fieldValue('mobile');
+                $profCode = '+91';
+                if ($profMob && str_starts_with($profMob, '+')) {
+                    foreach($profCountries as $c) {
+                        if (str_starts_with($profMob, $c->phone_code)) {
+                            $profCode = $c->phone_code;
+                            $profMob = trim(substr($profMob, strlen($c->phone_code)));
+                            break;
+                        }
+                    }
+                }
+                $selProfCode = old('mobile_country_code', $profCode);
+            @endphp
+            <div class="input-group">
+                <select name="mobile_country_code" id="mobile_country_code" class="form-select" style="max-width: 110px;">
+                    @foreach($profCountries as $c)
+                        <option value="{{ $c->phone_code }}" {{ $selProfCode == $c->phone_code ? 'selected' : '' }}>
+                            {{ $c->iso_code ? $c->iso_code . ' ' : '' }}({{ $c->phone_code }})
+                        </option>
+                    @endforeach
+                </select>
+                <input type="text" name="mobile" id="mobile" class="form-control @error('mobile') is-invalid @enderror" value="{{ old('mobile', $profMob) }}" maxlength="20" placeholder="Mobile number">
+            </div>
             @error('mobile')
                 <div class="invalid-feedback">{{ $message }}</div>
             @enderror

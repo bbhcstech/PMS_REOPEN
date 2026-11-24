@@ -89,7 +89,7 @@ class CollaboratingCompanyController extends Controller
     public function update(Request $request, CollaboratingCompany $collaboratingCompany)
     {
         $this->ensureAdmin();
-        $data = $this->validatedData($request);
+        $data = $this->validatedData($request, $collaboratingCompany);
         $imagePath = $this->storeCompanyImage($request, $collaboratingCompany->image_path);
 
         if ($imagePath) {
@@ -112,27 +112,37 @@ class CollaboratingCompanyController extends Controller
             ->with('success', 'Collaborating company removed successfully.');
     }
 
-    private function validatedData(Request $request): array
+    private function validatedData(Request $request, ?CollaboratingCompany $company = null): array
     {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'company_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
-            'industry' => ['nullable', 'string', 'max:255'],
-            'collaboration_type' => ['nullable', 'string', 'max:255'],
-            'description' => ['nullable', 'string', 'max:3000'],
-            'services' => ['nullable', 'string', 'max:3000'],
-            'contact_person' => ['nullable', 'string', 'max:255'],
-            'contact_email' => ['nullable', 'email', 'max:255'],
-            'contact_phone' => ['nullable', 'string', 'max:30'],
-            'website' => ['nullable', 'url', 'max:255'],
+            'industry' => ['required', 'string', 'max:255'],
+            'collaboration_type' => ['required', 'string', 'max:255'],
+            'description' => ['required', 'string', 'max:3000'],
+            'services' => ['required', 'string', 'max:3000'],
+            'contact_person' => ['required', 'string', 'max:255'],
+            'contact_email' => [
+                'required',
+                'string',
+                'email:filter',
+                'max:255',
+                'regex:/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/',
+            ],
+            'contact_phone' => ['required', 'string', 'max:30'],
+            'website' => ['required', 'url', 'max:255'],
             'status' => ['required', 'in:active,inactive'],
-            'started_on' => ['nullable', 'date'],
+            'started_on' => ['required', 'date'],
             'notes' => ['nullable', 'string', 'max:3000'],
             'social_links.linkedin' => ['nullable', 'url', 'max:255'],
             'social_links.facebook' => ['nullable', 'url', 'max:255'],
             'social_links.instagram' => ['nullable', 'url', 'max:255'],
             'social_links.x' => ['nullable', 'url', 'max:255'],
             'social_links.youtube' => ['nullable', 'url', 'max:255'],
+        ], [
+            'contact_email.required' => 'The contact email is required.',
+            'contact_email.email' => 'Please provide a valid email address with an @ symbol and a domain.',
+            'contact_email.regex' => 'The contact email must contain an @ symbol and a valid domain (e.g. name@company.com).',
         ]);
 
         unset($data['company_image']);

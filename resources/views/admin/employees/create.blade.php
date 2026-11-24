@@ -1150,6 +1150,10 @@
         <div class="orb orb-2"></div>
     </div>
 
+    @php
+        $returnUrl = request('return_url') ?: old('return_url', route('employees.index'));
+    @endphp
+
     <div class="container-fluid">
         <div class="page-header-enterprise fade-up-stagger">
             <div class="header-title">
@@ -1157,7 +1161,7 @@
                 <p style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; font-weight: 800 !important;">Create employee profile and configuration settings</p>
             </div>
             <div>
-                <a href="{{ route('employees.index') }}" class="btn-header-enterprise">
+                <a href="{{ $returnUrl }}" class="btn-header-enterprise">
                     <i class="fas fa-arrow-left"></i>
                     BACK TO DIRECTORY
                 </a>
@@ -1202,6 +1206,8 @@
                 <form id="employeeForm" action="{{ route('employees.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
 
+                    <input type="hidden" name="return_url" value="{{ $returnUrl }}">
+
                     <!-- Hidden fields for new designation/department -->
                     <input type="hidden" name="new_designation" id="new_designation" value="{{ old('new_designation') }}">
                     <input type="hidden" name="new_designation_level" id="new_designation_level" value="{{ old('new_designation_level') }}">
@@ -1240,24 +1246,8 @@
                             @enderror
                         </div>
 
-                        <div class="col-md-4">
-                            <label class="form-label-premium">
-                                <span><i class="fas fa-building"></i> Company</span>
-                                <span class="mandatory-badge">Required</span>
-                            </label>
-                            @php $selectedCompany = old('company_id') ?? auth()->user()?->company_id; @endphp
-                            <select name="company_id" id="company_id" class="form-select-premium" required>
-                                <option value="">Select Company</option>
-                                @foreach($companies as $company)
-                                    <option value="{{ $company->id }}" {{ (string) $selectedCompany === (string) $company->id ? 'selected' : '' }}>
-                                        {{ $company->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('company_id')
-                                <div class="invalid-feedback d-block">{{ $message }}</div>
-                            @enderror
-                        </div>
+                        @php $selectedCompany = old('company_id') ?? (auth()->user()?->company_id ?: ($companies->first()?->id ?? 1)); @endphp
+                        <input type="hidden" name="company_id" id="company_id" value="{{ $selectedCompany }}">
 
                         <div class="col-md-4">
                             <label class="form-label-premium">
@@ -1499,17 +1489,6 @@
                             @enderror
                         </div>
 
-                        <div class="col-md-4">
-                            <label class="form-label-premium">
-                                <span><i class="fas fa-id-card"></i> Government ID Card</span>
-                                <span class="mandatory-badge">Required</span>
-                            </label>
-                            <input type="file" name="government_id_card" class="form-control-premium" id="government_id_card" accept=".jpeg,.jpg,.png,image/jpeg,image/png" required>
-                            <small class="text-muted d-block mt-1" style="font-size: 0.7rem;">Upload a clear, straight, full-frame government ID photo without glare or shadows. Supported formats: JPEG, PNG, JPG. DOB on the ID must match the DOB above.</small>
-                            @error('government_id_card')
-                                <div class="invalid-feedback d-block">{{ $message }}</div>
-                            @enderror
-                        </div>
 
                         <div class="col-md-4">
                             <label class="form-label-premium">
@@ -1588,7 +1567,7 @@
                                 <span><i class="fas fa-code"></i> Skills</span>
                                 <span class="optional-badge">Optional</span>
                             </label>
-                            <textarea name="skills" class="form-control-premium" rows="2" placeholder="Comma separated skills (e.g., Laravel, Vue.js, React)">{{ old('skills') ?? ($ed->skills ?? $employee?->skills ?? '') }}</textarea>
+                            <textarea name="skills" class="form-control-premium" rows="2" placeholder="Comma separated skills (e.g., Laravel, Vue.js, React)">{{ old('skills') }}</textarea>
                         </div>
 
                         <div class="col-12">
@@ -1682,9 +1661,9 @@
                         <div class="col-md-4">
                             <label class="form-label-premium">
                                 <span><i class="fas fa-building"></i> Business Address</span>
-                                <span class="mandatory-badge">Required</span>
+                                <span class="optional-badge">Optional</span>
                             </label>
-                            <textarea name="business_address" class="form-control-premium" required rows="2">{{ old('business_address') ?? ($ed->business_address ?? $employee?->business_address ?? 'Kolkata') }}</textarea>
+                            <textarea name="business_address" class="form-control-premium" rows="2">{{ old('business_address') ?? ($ed->business_address ?? $employee?->business_address ?? 'Kolkata') }}</textarea>
                             @error('business_address')
                                 <div class="invalid-feedback d-block">{{ $message }}</div>
                             @enderror
@@ -1718,7 +1697,7 @@
                     </div>
 
                     <div class="action-buttons">
-                        <a href="{{ route('employees.index') }}" class="btn-cancel">
+                        <a href="{{ $returnUrl }}" class="btn-cancel">
                             <i class="fas fa-times"></i> Discard
                         </a>
                         <button type="submit" class="btn-submit" id="submitBtn">

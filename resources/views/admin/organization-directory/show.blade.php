@@ -89,14 +89,17 @@
 
             <div class="d-flex align-items-center gap-2 flex-wrap">
                 @if($canManageDirectory)
-                    <a href="{{ route('employees.edit', $employee) }}" class="org-btn org-banner-btn-primary" style="background: #ffffff !important; color: #2F6BFF !important; -webkit-text-fill-color: #2F6BFF !important; border: 1px solid #ffffff !important; font-weight: 800 !important;">
+                    <a href="{{ route('employees.edit', ['employee' => $employee, 'return_url' => url()->full()]) }}" class="org-btn org-banner-btn-primary" style="background: #ffffff !important; color: #2F6BFF !important; -webkit-text-fill-color: #2F6BFF !important; border: 1px solid #ffffff !important; font-weight: 800 !important;">
                         <i class="fas fa-user-pen" style="color: #2F6BFF !important; -webkit-text-fill-color: #2F6BFF !important;"></i> Full HR Edit
                     </a>
                     <a href="#directory-editor" class="org-btn org-banner-btn-secondary" style="background: rgba(255, 255, 255, 0.2) !important; color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; border: 1px solid rgba(255, 255, 255, 0.4) !important; font-weight: 700 !important;">
                         <i class="fas fa-pen-to-square" style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important;"></i> Edit Public Info
                     </a>
                 @endif
-                <a href="{{ route('organization.index') }}" class="org-btn org-banner-btn-outline" style="background: transparent !important; color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; border: 1px solid rgba(255, 255, 255, 0.45) !important; font-weight: 700 !important;">
+                @php
+                    $backToDirUrl = request('from_view') ? route('organization.index', ['view' => request('from_view')]) : route('organization.index');
+                @endphp
+                <a href="{{ $backToDirUrl }}" class="org-btn org-banner-btn-outline" style="background: transparent !important; color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; border: 1px solid rgba(255, 255, 255, 0.45) !important; font-weight: 700 !important;">
                     <i class="fas fa-arrow-left" style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important;"></i> Back to Directory
                 </a>
             </div>
@@ -274,11 +277,14 @@
                 <div class="org-card-title">
                     <i class="fas fa-award text-amber-600 me-2"></i> Skills & Expertise
                 </div>
-                @if($detail?->skills)
+                @php
+                    $skillsList = $detail?->clean_skills_array ?? [];
+                @endphp
+                @if(!empty($skillsList))
                     <div class="d-flex flex-wrap gap-2">
-                        @foreach(array_filter(array_map('trim', explode(',', $detail->skills))) as $skill)
-                            <span class="badge bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-pill px-3 py-2 font-semibold text-xs">
-                                <i class="fas fa-check-circle me-1 text-emerald-500"></i> {{ $skill }}
+                        @foreach($skillsList as $skill)
+                            <span class="org-skill-badge">
+                                <i class="fas fa-check-circle" style="color: #10B981 !important;"></i> {{ $skill }}
                             </span>
                         @endforeach
                     </div>
@@ -311,7 +317,7 @@
 
                         <div class="org-form-group">
                             <label class="org-form-label">Skills (Comma Separated)</label>
-                            <input type="text" name="skills" class="org-form-control" style="padding: 12px 18px !important;" value="{{ old('skills', $detail?->skills) }}" placeholder="e.g. Laravel, React, Operations Management, CRM">
+                            <input type="text" name="skills" class="org-form-control" style="padding: 12px 18px !important;" value="{{ old('skills', !empty($skillsList) ? implode(', ', $skillsList) : '') }}" placeholder="e.g. Laravel, React, Operations Management, CRM">
                             @error('skills')<small class="text-danger font-semibold mt-1">{{ $message }}</small>@enderror
                         </div>
 

@@ -350,7 +350,7 @@ class EmployeeController extends Controller
             'mobile'            => ['required', 'string', 'regex:/^[1-9]\d*$/', "min:{$minDigits}", "max:{$maxDigits}"],
             'joining_date'      => 'required|date',
             'reporting_to'      => 'nullable|integer|exists:users,id',
-            'business_address'  => 'required|string',
+            'business_address'  => 'nullable|string',
             'status'            => 'required|in:Active,Inactive',
             'login_allowed'     => 'required|in:0,1',
             'employment_type'   => 'required|in:full_time,part_time,on_contract,internship,trainee',
@@ -516,6 +516,12 @@ class EmployeeController extends Controller
                 'probation_end_date', 'notice_start_date', 'notice_end_date',
                 'employment_type', 'marital_status', 'business_address', 'status', 'exit_date'
             ]);
+
+            if (isset($employeeData['skills'])) {
+                $rawSkills = array_filter(array_map('trim', explode(',', str_replace(['·', '|'], ',', (string) $employeeData['skills']))));
+                $safeSkills = array_filter($rawSkills, fn($s) => strlen($s) > 0 && strlen($s) <= 60 && !preg_match('/(SQLSTATE|Column not found|INSERT INTO|SELECT |`)/i', $s));
+                $employeeData['skills'] = !empty($safeSkills) ? implode(', ', $safeSkills) : null;
+            }
 
             // Add mobile without prefix for employee detail
             $employeeData['mobile'] = $request->mobile;
@@ -693,6 +699,14 @@ class EmployeeController extends Controller
                 );
             } catch (\Throwable $notifEx) {
                 Log::warning('Employee creation notification failed', ['error' => $notifEx->getMessage()]);
+            }
+
+            if ($request->filled('return_url')) {
+                $returnUrl = $request->input('return_url');
+                if (\Illuminate\Support\Str::startsWith($returnUrl, [url('/'), '/'])) {
+                    return redirect($returnUrl)
+                        ->with('success', 'Employee added successfully and notified.');
+                }
             }
 
             return redirect()->route('employees.index')
@@ -888,7 +902,7 @@ class EmployeeController extends Controller
             'email'              => $emailUniqueRule,
             'mobile_country_code' => 'required|string|regex:/^\+\d{1,4}$/',
             'mobile'             => $mobileRule,
-            'business_address'   => 'required|string',
+            'business_address'   => 'nullable|string',
             'status'             => 'required|in:Active,Inactive',
             'login_allowed'      => 'required|in:0,1',
             'department_id'      => 'nullable|exists:departments,id',
@@ -986,6 +1000,12 @@ class EmployeeController extends Controller
                 'probation_end_date', 'notice_start_date', 'notice_end_date',
                 'employment_type', 'marital_status', 'business_address', 'status', 'exit_date'
             ]);
+
+            if (isset($data['skills'])) {
+                $rawSkills = array_filter(array_map('trim', explode(',', str_replace(['·', '|'], ',', (string) $data['skills']))));
+                $safeSkills = array_filter($rawSkills, fn($s) => strlen($s) > 0 && strlen($s) <= 60 && !preg_match('/(SQLSTATE|Column not found|INSERT INTO|SELECT |`)/i', $s));
+                $data['skills'] = !empty($safeSkills) ? implode(', ', $safeSkills) : null;
+            }
 
             // Add mobile without prefix for employee detail
             $data['mobile'] = $request->mobile;
@@ -1092,6 +1112,14 @@ class EmployeeController extends Controller
                 route('employees.show', $user->id),
                 ['employee_id' => $user->id, 'type' => 'employee_updated', 'icon' => 'fa-user-pen']
             );
+
+            if ($request->filled('return_url')) {
+                $returnUrl = $request->input('return_url');
+                if (\Illuminate\Support\Str::startsWith($returnUrl, [url('/'), '/'])) {
+                    return redirect($returnUrl)
+                        ->with('success', 'Employee updated successfully.');
+                }
+            }
 
             return redirect()->route('employees.index')
                 ->with('success', 'Employee updated successfully.');
@@ -1477,12 +1505,40 @@ class EmployeeController extends Controller
             ], 422);
         }
 
+        $level = (int) $data['level'];
+        if ($level < 0 || $level > 6) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors'  => ['level' => ['Designation level must be strictly between 0 and 6.']]
+            ], 422);
+        }
+
+        if (!empty($data['parent_id'])) {
+            $parent = \App\Models\Designation::find($data['parent_id']);
+            if ($parent) {
+                $parentLevel = (int) ($parent->level ?? 0);
+                if ($parentLevel >= 6) {
+                    return response()->json([
+                        'message' => 'Validation failed',
+                        'errors'  => ['parent_id' => ['A Level 6 designation cannot have subordinate designations as Level 6 is the maximum organizational level allowed.']]
+                    ], 422);
+                }
+
+                if ($level <= $parentLevel) {
+                    return response()->json([
+                        'message' => 'Validation failed',
+                        'errors'  => ['level' => ['Subordinate designation level (' . $level . ') must be greater than parent designation level (Level ' . $parentLevel . '). Minimum allowed level is ' . ($parentLevel + 1) . '.']]
+                    ], 422);
+                }
+            }
+        }
+
         try {
 
             $designation = \App\Models\Designation::create([
                 'name' => $data['name'],
                 'parent_id' => $data['parent_id'] ?? null,
-                'level' => $data['level'],
+                'level' => $level,
                 'status' => $data['status'] ?? 'Active',
                 'added_by' => auth()->id()
             ]);

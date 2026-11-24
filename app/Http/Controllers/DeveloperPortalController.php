@@ -405,9 +405,17 @@ class DeveloperPortalController extends Controller
     {
         $dev = $this->getDevUser();
 
+        if ($request->filled('mobile')) {
+            $rawM = trim((string) $request->input('mobile'));
+            $mCode = $request->input('mobile_country_code', '+91');
+            if (! str_starts_with($rawM, '+')) {
+                $request->merge(['mobile' => $mCode . ' ' . $rawM]);
+            }
+        }
+
         $data = $request->validate([
             'profile_image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:5120'],
-            'mobile' => ['nullable', 'string', 'max:20'],
+            'mobile' => ['nullable', 'string', 'max:30'],
             'skills' => ['nullable', 'string', 'max:500'],
             'experience' => ['nullable', 'string', 'max:100'],
             'about' => ['nullable', 'string', 'max:1000'],
