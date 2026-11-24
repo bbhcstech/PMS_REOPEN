@@ -1485,6 +1485,726 @@
             grid-template-columns: 1fr;
         }
     }
+
+    /* ======================================================
+       WORKSPACE LOOK & FEEL OVERRIDES (HIGH SPECIFICITY)
+       Beats pms-refresh.css while preserving dark mode & functionality
+       ====================================================== */
+    #main.bx-admin-workspace {
+        background: var(--bx-bg) !important;
+    }
+
+    #main.bx-admin-workspace .content-wrapper {
+        padding: 1.5rem 1.75rem 2.5rem !important;
+        max-width: 1440px;
+        margin: 0 auto;
+    }
+
+    #main.bx-admin-workspace .industry-dashboard-shell {
+        gap: 1.25rem !important;
+        margin-bottom: 1.5rem !important;
+    }
+
+    /* Hero Command Center */
+    #main.bx-admin-workspace .industry-hero-card {
+        background: var(--bx-surface) !important;
+        border: 1px solid var(--bx-border) !important;
+        border-radius: 16px !important;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04) !important;
+        grid-template-columns: minmax(0, 1.35fr) minmax(300px, 0.85fr) !important;
+        gap: 1.75rem !important;
+        min-height: 210px !important;
+        padding: 1.75rem 2rem !important;
+        align-items: center;
+    }
+
+    #main.bx-admin-workspace .industry-hero-copy {
+        padding: 0 !important;
+        max-width: 560px;
+    }
+
+    #main.bx-admin-workspace .industry-eyebrow {
+        background: #EFF6FF !important;
+        border: 1px solid rgba(37, 99, 235, 0.14) !important;
+        color: #2563EB !important;
+        -webkit-text-fill-color: #2563EB !important;
+        font-size: 0.7rem !important;
+        font-weight: 700 !important;
+        letter-spacing: 0.06em !important;
+        padding: 0.3rem 0.75rem !important;
+        margin-bottom: 0.85rem !important;
+    }
+
+    #main.bx-admin-workspace .industry-eyebrow i {
+        color: #2563EB !important;
+        -webkit-text-fill-color: #2563EB !important;
+        -webkit-text-stroke: 0 !important;
+        font-size: 0.9rem !important;
+    }
+
+    html[data-pms-theme="dark"] #main.bx-admin-workspace .industry-eyebrow {
+        background: rgba(47, 107, 255, 0.16) !important;
+        border-color: rgba(96, 165, 250, 0.25) !important;
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
+    }
+
+    html[data-pms-theme="dark"] #main.bx-admin-workspace .industry-eyebrow i {
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
+    }
+
+    #main.bx-admin-workspace .industry-hero-copy h1 {
+        font-family: var(--font-display) !important;
+        font-size: clamp(1.65rem, 2.35vw, 2.15rem) !important;
+        font-weight: 800 !important;
+        letter-spacing: -0.025em !important;
+        line-height: 1.15 !important;
+        color: var(--bx-ink) !important;
+        -webkit-text-fill-color: var(--bx-ink) !important;
+        margin: 0 0 0.65rem !important;
+    }
+
+    #main.bx-admin-workspace .industry-hero-copy p {
+        color: var(--bx-ink-muted) !important;
+        -webkit-text-fill-color: var(--bx-ink-muted) !important;
+        font-size: 0.88rem !important;
+        font-weight: 500 !important;
+        line-height: 1.5 !important;
+        margin: 0 0 1.25rem !important;
+    }
+
+    #main.bx-admin-workspace .industry-actions {
+        gap: 0.65rem !important;
+        margin-top: 0 !important;
+    }
+
+    #main.bx-admin-workspace .industry-btn {
+        border-radius: 10px !important;
+        min-height: 38px !important;
+        padding: 0.5rem 1rem !important;
+        font-size: 0.82rem !important;
+        font-weight: 600 !important;
+        box-shadow: none !important;
+    }
+
+    #main.bx-admin-workspace .industry-btn i {
+        font-size: 1rem !important;
+        -webkit-text-stroke: 0 !important;
+    }
+
+    #main.bx-admin-workspace .industry-btn-primary {
+        background: #2563EB !important;
+        border: 1px solid #2563EB !important;
+        color: #FFFFFF !important;
+        -webkit-text-fill-color: #FFFFFF !important;
+        box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25) !important;
+    }
+
+    #main.bx-admin-workspace .industry-btn-primary:hover {
+        background: #1D4ED8 !important;
+        border-color: #1D4ED8 !important;
+    }
+
+    #main.bx-admin-workspace .industry-btn-light {
+        background: var(--bx-surface) !important;
+        border: 1px solid var(--bx-border) !important;
+        color: var(--bx-ink) !important;
+        -webkit-text-fill-color: var(--bx-ink) !important;
+    }
+
+    #main.bx-admin-workspace .industry-btn-light i {
+        color: var(--bx-ink-body) !important;
+        -webkit-text-fill-color: var(--bx-ink-body) !important;
+    }
+
+    #main.bx-admin-workspace .industry-btn-light:hover {
+        background: var(--bx-surface-3) !important;
+        border-color: var(--bx-border-strong) !important;
+    }
+
+    /* Hero Right: Enterprise Live Monitoring Widget */
+    #main.bx-admin-workspace .industry-hero-visual {
+        padding: 0 !important;
+        justify-content: flex-end !important;
+    }
+
+    #main.bx-admin-workspace .bx-monitor-widget {
+        width: 100%;
+        max-width: 356px;
+        background: linear-gradient(180deg, #F8FAFC 0%, #FFFFFF 100%);
+        border: 1px solid var(--bx-border);
+        border-radius: 16px;
+        padding: 14px;
+        box-shadow: 0 8px 24px -6px rgba(15, 23, 42, 0.08), 0 0 0 4px rgba(241, 245, 249, 0.75);
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    html[data-pms-theme="dark"] #main.bx-admin-workspace .bx-monitor-widget {
+        background: linear-gradient(180deg, #141B3D 0%, #0F1530 100%);
+        border-color: rgba(238, 241, 251, 0.12);
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4), 0 0 0 4px rgba(20, 27, 61, 0.5);
+    }
+
+    #main.bx-admin-workspace .bx-monitor-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 2px;
+    }
+
+    #main.bx-admin-workspace .bx-monitor-title {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        font-size: 0.76rem;
+        font-weight: 700;
+        color: var(--bx-ink) !important;
+        -webkit-text-fill-color: var(--bx-ink) !important;
+    }
+
+    #main.bx-admin-workspace .bx-monitor-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #10B981;
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+        display: inline-block;
+        flex-shrink: 0;
+    }
+
+    #main.bx-admin-workspace .bx-monitor-ver {
+        font-size: 0.68rem;
+        font-weight: 600;
+        color: var(--bx-ink-faint) !important;
+        -webkit-text-fill-color: var(--bx-ink-faint) !important;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    #main.bx-admin-workspace .bx-monitor-mid {
+        display: grid;
+        grid-template-columns: 1.05fr 0.95fr;
+        gap: 10px;
+    }
+
+    #main.bx-admin-workspace .bx-monitor-pipeline {
+        background: linear-gradient(155deg, #052E1E 0%, #0A4F35 100%);
+        border-radius: 12px;
+        padding: 11px 12px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        min-height: 92px;
+    }
+
+    #main.bx-admin-workspace .bx-monitor-pipeline span {
+        font-size: 0.68rem;
+        font-weight: 600;
+        color: #86EFAC !important;
+        -webkit-text-fill-color: #86EFAC !important;
+    }
+
+    #main.bx-admin-workspace .bx-pipeline-bars {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        align-items: end;
+        gap: 5px;
+        height: 44px;
+        margin-top: 8px;
+    }
+
+    #main.bx-admin-workspace .bx-pipeline-bars i {
+        display: block;
+        border-radius: 4px 4px 2px 2px;
+        font-style: normal;
+        -webkit-text-stroke: 0 !important;
+    }
+
+    #main.bx-admin-workspace .bx-monitor-nodes {
+        background: var(--bx-surface);
+        border: 1px solid var(--bx-border);
+        border-radius: 12px;
+        padding: 11px 12px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    html[data-pms-theme="dark"] #main.bx-admin-workspace .bx-monitor-nodes,
+    html[data-pms-theme="dark"] #main.bx-admin-workspace .bx-monitor-throughput {
+        background: rgba(15, 21, 48, 0.85);
+        border-color: rgba(238, 241, 251, 0.1);
+    }
+
+    #main.bx-admin-workspace .bx-monitor-nodes-label {
+        font-size: 0.64rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: var(--bx-ink-muted) !important;
+        -webkit-text-fill-color: var(--bx-ink-muted) !important;
+    }
+
+    #main.bx-admin-workspace .bx-monitor-nodes strong {
+        font-family: var(--font-display);
+        font-size: 1.35rem;
+        font-weight: 800;
+        line-height: 1.1;
+        color: var(--bx-ink) !important;
+        -webkit-text-fill-color: var(--bx-ink) !important;
+        letter-spacing: -0.02em;
+    }
+
+    #main.bx-admin-workspace .bx-monitor-nodes em {
+        font-style: normal;
+        font-size: 0.68rem;
+        font-weight: 600;
+        color: #10B981 !important;
+        -webkit-text-fill-color: #10B981 !important;
+    }
+
+    #main.bx-admin-workspace .bx-monitor-throughput {
+        background: var(--bx-surface);
+        border: 1px solid var(--bx-border);
+        border-radius: 12px;
+        padding: 9px 12px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+    }
+
+    #main.bx-admin-workspace .bx-monitor-throughput-copy span {
+        display: block;
+        font-size: 0.66rem;
+        font-weight: 600;
+        color: var(--bx-ink-muted) !important;
+        -webkit-text-fill-color: var(--bx-ink-muted) !important;
+    }
+
+    #main.bx-admin-workspace .bx-monitor-throughput-copy strong {
+        display: block;
+        font-family: var(--font-display);
+        font-size: 0.82rem;
+        font-weight: 800;
+        color: var(--bx-ink) !important;
+        -webkit-text-fill-color: var(--bx-ink) !important;
+    }
+
+    #main.bx-admin-workspace .bx-throughput-bars {
+        display: flex;
+        align-items: flex-end;
+        gap: 4px;
+        height: 24px;
+    }
+
+    #main.bx-admin-workspace .bx-throughput-bars i {
+        display: block;
+        width: 5px;
+        border-radius: 999px;
+        background: #10B981;
+        font-style: normal;
+        -webkit-text-stroke: 0 !important;
+    }
+
+    /* 4-Column KPI Row */
+    #main.bx-admin-workspace .industry-overview-grid {
+        gap: 1rem !important;
+    }
+
+    #main.bx-admin-workspace .industry-metric-card {
+        background: var(--bx-surface) !important;
+        border: 1px solid var(--bx-border) !important;
+        border-radius: 14px !important;
+        min-height: 136px !important;
+        padding: 1.15rem 1.25rem !important;
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03) !important;
+    }
+
+    #main.bx-admin-workspace .kpi-card-top span {
+        font-size: 0.72rem !important;
+        font-weight: 700 !important;
+        letter-spacing: 0.06em !important;
+        color: var(--bx-ink-muted) !important;
+        -webkit-text-fill-color: var(--bx-ink-muted) !important;
+    }
+
+    #main.bx-admin-workspace .kpi-icon-box {
+        width: 34px !important;
+        height: 34px !important;
+        border-radius: 9px !important;
+        background: #EFF6FF !important;
+        color: #2563EB !important;
+        font-size: 1.05rem !important;
+    }
+
+    #main.bx-admin-workspace .kpi-icon-box i {
+        color: #2563EB !important;
+        -webkit-text-fill-color: #2563EB !important;
+        -webkit-text-stroke: 0 !important;
+    }
+
+    html[data-pms-theme="dark"] #main.bx-admin-workspace .kpi-icon-box {
+        background: rgba(47, 107, 255, 0.16) !important;
+        color: #60A5FA !important;
+    }
+
+    html[data-pms-theme="dark"] #main.bx-admin-workspace .kpi-icon-box i {
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
+    }
+
+    #main.bx-admin-workspace .kpi-number {
+        font-size: 1.95rem !important;
+        font-weight: 800 !important;
+        letter-spacing: -0.03em !important;
+        color: var(--bx-ink) !important;
+        -webkit-text-fill-color: var(--bx-ink) !important;
+        margin: 0.45rem 0 0.55rem !important;
+    }
+
+    #main.bx-admin-workspace .kpi-card-footer small {
+        font-size: 0.76rem !important;
+        font-weight: 600 !important;
+        color: var(--bx-ink-muted) !important;
+        -webkit-text-fill-color: var(--bx-ink-muted) !important;
+    }
+
+    #main.bx-admin-workspace .kpi-card-footer small i {
+        -webkit-text-stroke: 0 !important;
+        font-size: 0.9rem !important;
+    }
+
+    #main.bx-admin-workspace .kpi-card-projects .kpi-card-footer small,
+    #main.bx-admin-workspace .kpi-card-projects .kpi-card-footer small i {
+        color: #2563EB !important;
+        -webkit-text-fill-color: #2563EB !important;
+    }
+
+    html[data-pms-theme="dark"] #main.bx-admin-workspace .kpi-card-projects .kpi-card-footer small,
+    html[data-pms-theme="dark"] #main.bx-admin-workspace .kpi-card-projects .kpi-card-footer small i {
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
+    }
+
+    #main.bx-admin-workspace .industry-arrow {
+        width: auto !important;
+        height: auto !important;
+        border: none !important;
+        background: transparent !important;
+        color: var(--bx-ink-muted) !important;
+        -webkit-text-fill-color: var(--bx-ink-muted) !important;
+        -webkit-text-stroke: 0 !important;
+        font-size: 1rem !important;
+    }
+
+    #main.bx-admin-workspace .industry-metric-card:hover .industry-arrow {
+        background: transparent !important;
+        color: #2563EB !important;
+        -webkit-text-fill-color: #2563EB !important;
+        -webkit-text-stroke: 0 !important;
+    }
+
+    /* Executive Business Model & Feature Predictions */
+    #main.bx-admin-workspace .saas-executive-grid {
+        display: grid !important;
+        grid-template-columns: 1.25fr 0.95fr !important;
+        gap: 1.25rem !important;
+    }
+
+    #main.bx-admin-workspace .industry-panel {
+        background: var(--bx-surface) !important;
+        border: 1px solid var(--bx-border) !important;
+        border-radius: 16px !important;
+        padding: 1.35rem 1.5rem !important;
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03) !important;
+    }
+
+    #main.bx-admin-workspace .industry-panel-head {
+        margin-bottom: 1rem !important;
+    }
+
+    #main.bx-admin-workspace .industry-panel-head h3 {
+        font-size: 1.05rem !important;
+        font-weight: 700 !important;
+        color: var(--bx-ink) !important;
+        -webkit-text-fill-color: var(--bx-ink) !important;
+    }
+
+    #main.bx-admin-workspace .industry-panel-head p {
+        font-size: 0.78rem !important;
+        font-weight: 500 !important;
+        color: var(--bx-ink-muted) !important;
+        -webkit-text-fill-color: var(--bx-ink-muted) !important;
+        margin-top: 0.15rem !important;
+    }
+
+    #main.bx-admin-workspace .industry-panel-head a {
+        background: #EFF6FF !important;
+        border: 1px solid rgba(37, 99, 235, 0.14) !important;
+        border-radius: 999px !important;
+        color: #2563EB !important;
+        -webkit-text-fill-color: #2563EB !important;
+        font-size: 0.74rem !important;
+        font-weight: 600 !important;
+        padding: 0.28rem 0.75rem !important;
+    }
+
+    #main.bx-admin-workspace .industry-panel-head a:hover {
+        background: #2563EB !important;
+        color: #FFFFFF !important;
+        -webkit-text-fill-color: #FFFFFF !important;
+    }
+
+    html[data-pms-theme="dark"] #main.bx-admin-workspace .industry-panel-head a {
+        background: rgba(47, 107, 255, 0.16) !important;
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
+    }
+
+    /* Enterprise Budget Allocation Bar */
+    #main.bx-admin-workspace .bx-budget-block {
+        margin-bottom: 1.1rem;
+    }
+
+    #main.bx-admin-workspace .bx-budget-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        margin-bottom: 0.45rem;
+        font-size: 0.78rem;
+    }
+
+    #main.bx-admin-workspace .bx-budget-label {
+        font-weight: 650;
+        color: var(--bx-ink) !important;
+        -webkit-text-fill-color: var(--bx-ink) !important;
+    }
+
+    #main.bx-admin-workspace .bx-budget-figures {
+        font-weight: 700;
+        color: var(--bx-ink) !important;
+        -webkit-text-fill-color: var(--bx-ink) !important;
+    }
+
+    #main.bx-admin-workspace .bx-budget-figures span {
+        font-weight: 500;
+        color: var(--bx-ink-muted) !important;
+        -webkit-text-fill-color: var(--bx-ink-muted) !important;
+    }
+
+    #main.bx-admin-workspace .bx-budget-track {
+        width: 100%;
+        height: 8px;
+        border-radius: 999px;
+        background: #E2E8F0;
+        overflow: hidden;
+    }
+
+    html[data-pms-theme="dark"] #main.bx-admin-workspace .bx-budget-track {
+        background: #1A2247;
+    }
+
+    #main.bx-admin-workspace .bx-budget-fill {
+        height: 100%;
+        border-radius: 999px;
+        background: #2563EB;
+        transition: width 0.4s ease;
+    }
+
+    /* 3-card Revenue Strip */
+    #main.bx-admin-workspace .saas-revenue-strip {
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+        gap: 0.8rem !important;
+    }
+
+    #main.bx-admin-workspace .saas-money-card {
+        background: var(--bx-surface-2) !important;
+        border: 1px solid var(--bx-border) !important;
+        border-radius: 12px !important;
+        min-height: 98px !important;
+        padding: 0.85rem 0.95rem !important;
+    }
+
+    #main.bx-admin-workspace .saas-money-card span {
+        font-size: 0.68rem !important;
+        font-weight: 700 !important;
+        letter-spacing: 0.05em !important;
+        color: var(--bx-ink-muted) !important;
+        -webkit-text-fill-color: var(--bx-ink-muted) !important;
+    }
+
+    #main.bx-admin-workspace .saas-money-card strong {
+        font-size: clamp(1.15rem, 1.5vw, 1.4rem) !important;
+        font-weight: 800 !important;
+        color: var(--bx-ink) !important;
+        -webkit-text-fill-color: var(--bx-ink) !important;
+        margin: 0.25rem 0 0.2rem !important;
+    }
+
+    #main.bx-admin-workspace .saas-money-card.is-positive-value strong {
+        color: #10B981 !important;
+        -webkit-text-fill-color: #10B981 !important;
+    }
+
+    #main.bx-admin-workspace .saas-money-card em {
+        font-size: 0.7rem !important;
+        font-weight: 600 !important;
+        color: var(--bx-ink-muted) !important;
+        -webkit-text-fill-color: var(--bx-ink-muted) !important;
+    }
+
+    #main.bx-admin-workspace .saas-money-card em.is-positive-meta {
+        color: #10B981 !important;
+        -webkit-text-fill-color: #10B981 !important;
+    }
+
+    /* Feature Predictions Grid */
+    #main.bx-admin-workspace .saas-prediction-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 0.85rem !important;
+    }
+
+    #main.bx-admin-workspace .saas-insight-card {
+        background: var(--bx-surface-2) !important;
+        border: 1px solid var(--bx-border) !important;
+        border-radius: 12px !important;
+        min-height: 112px !important;
+        padding: 0.95rem 1rem !important;
+        justify-content: flex-start !important;
+        gap: 0.35rem;
+    }
+
+    #main.bx-admin-workspace .saas-insight-card > span {
+        font-size: 0.68rem !important;
+        font-weight: 700 !important;
+        letter-spacing: 0.05em !important;
+        color: var(--bx-ink-muted) !important;
+        -webkit-text-fill-color: var(--bx-ink-muted) !important;
+    }
+
+    #main.bx-admin-workspace .bx-prediction-status {
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+        margin: 0.15rem 0 0.25rem;
+    }
+
+    #main.bx-admin-workspace .bx-signal-dot {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        flex-shrink: 0;
+        display: inline-block;
+    }
+
+    #main.bx-admin-workspace .bx-signal-dot.is-low {
+        background: #10B981;
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.18);
+    }
+
+    #main.bx-admin-workspace .bx-signal-dot.is-mid {
+        background: #F59E0B;
+        box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
+    }
+
+    #main.bx-admin-workspace .bx-signal-dot.is-high {
+        background: #F59E0B;
+        box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
+    }
+
+    #main.bx-admin-workspace .bx-prediction-status strong {
+        font-size: 0.96rem !important;
+        font-weight: 800 !important;
+        color: var(--bx-ink) !important;
+        -webkit-text-fill-color: var(--bx-ink) !important;
+        margin: 0 !important;
+        line-height: 1.2;
+    }
+
+    #main.bx-admin-workspace .saas-insight-card p {
+        font-size: 0.76rem !important;
+        font-weight: 500 !important;
+        color: var(--bx-ink-muted) !important;
+        -webkit-text-fill-color: var(--bx-ink-muted) !important;
+        line-height: 1.4 !important;
+    }
+
+    /* Panel Footer Strip */
+    #main.bx-admin-workspace .bx-panel-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        margin-top: 1.1rem;
+        padding-top: 0.85rem;
+        border-top: 1px solid var(--bx-border);
+        font-size: 0.75rem;
+    }
+
+    #main.bx-admin-workspace .bx-panel-footer-meta {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        color: var(--bx-ink-muted) !important;
+        -webkit-text-fill-color: var(--bx-ink-muted) !important;
+        font-weight: 500;
+    }
+
+    #main.bx-admin-workspace .bx-panel-footer-meta i {
+        color: #F59E0B !important;
+        -webkit-text-fill-color: #F59E0B !important;
+        -webkit-text-stroke: 0 !important;
+        font-size: 0.9rem !important;
+    }
+
+    #main.bx-admin-workspace .bx-panel-footer-link {
+        color: #2563EB !important;
+        -webkit-text-fill-color: #2563EB !important;
+        font-weight: 650 !important;
+        text-decoration: none;
+    }
+
+    #main.bx-admin-workspace .bx-panel-footer-link:hover {
+        text-decoration: underline;
+    }
+
+    html[data-pms-theme="dark"] #main.bx-admin-workspace .bx-panel-footer-link {
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
+    }
+
+    @media (max-width: 1199.98px) {
+        #main.bx-admin-workspace .saas-executive-grid {
+            grid-template-columns: 1fr !important;
+        }
+    }
+
+    @media (max-width: 991.98px) {
+        #main.bx-admin-workspace .industry-hero-card {
+            grid-template-columns: 1fr !important;
+        }
+        #main.bx-admin-workspace .industry-hero-visual {
+            display: flex !important;
+            justify-content: flex-start !important;
+        }
+        #main.bx-admin-workspace .bx-monitor-widget {
+            max-width: 100%;
+        }
+    }
+
+    @media (max-width: 767.98px) {
+        #main.bx-admin-workspace .saas-revenue-strip,
+        #main.bx-admin-workspace .saas-prediction-grid {
+            grid-template-columns: 1fr !important;
+        }
+        #main.bx-admin-workspace .industry-hero-card {
+            padding: 1.25rem !important;
+        }
+    }
 </style>
 
 <!-- Floating Background Elements -->
@@ -1494,7 +2214,7 @@
     <div class="floating-element"></div>
 </div>
 
-<main id="main" class="main">
+<main id="main" class="main bx-admin-workspace">
 
     <div class="content-wrapper">
 
@@ -1541,11 +2261,12 @@
                 return $currency . number_format($amount, 0);
             };
             $financeCards = [
-                ['label' => 'Total Revenue Outlook', 'value' => $grossRevenue, 'meta' => 'Deals, contracts, invoices, payments'],
-                ['label' => 'Investment / Expenses', 'value' => $expenseInvestmentValue, 'meta' => $budgetUtilization . '% of project budget'],
-                ['label' => 'Project Budget', 'value' => $projectBudgetTotal, 'meta' => 'Allocated delivery budget'],
-                ['label' => 'Net Business Outlook', 'value' => $netOutlook, 'meta' => $netOutlook >= 0 ? 'Positive operating signal' : 'Needs revenue recovery'],
+                ['label' => 'Revenue', 'value' => $grossRevenue, 'meta' => 'Deals, contracts & invoices', 'positive' => $grossRevenue > 0],
+                ['label' => 'Committed', 'value' => $expenseInvestmentValue, 'meta' => $budgetUtilization . '% of project budget', 'positive' => false],
+                ['label' => 'Net Return', 'value' => $netOutlook, 'meta' => $netOutlook >= 0 ? 'Positive operating signal' : 'Needs revenue recovery', 'positive' => $netOutlook >= 0, 'highlightValue' => $netOutlook >= 0],
+                ['label' => 'Project Budget', 'value' => $projectBudgetTotal, 'meta' => 'Allocated delivery budget', 'positive' => false],
             ];
+            $financeStripCards = array_slice($financeCards, 0, 3);
             $deliveryRisk = $dashboardTotalProject > 0 ? round(($dashboardUnresolvedTicket + $dashboardPendingTask) / max($dashboardTotalProject, 1)) : 0;
             $peopleRisk = $dashboardTotalEmployees > 0 ? round((($dashboardAbsentCount + $dashboardLateCount) / $dashboardTotalEmployees) * 100) : 0;
             $growthSignal = $dashboardTotalClient > 0 ? round(($dealPipelineValue / max($dashboardTotalClient, 1))) : 0;
@@ -1574,13 +2295,13 @@
                         @if(Route::has('tasks.create'))
                             @if(auth()->user()->canViewModule('tasks'))
                             <a href="{{ route('tasks.create') }}" class="industry-btn industry-btn-light">
-                                <i class="bx bx-task"></i> New Task
+                                <i class="bx bx-check-square"></i> New Task
                             </a>
                             @endif
                         @endif
                         @if(Route::has('attendance.report'))
                             @if(auth()->user()->canViewModule('reports-attendance'))
-                            <a href="{{ route('attendance.report') }}" class="industry-btn industry-btn-outline">
+                            <a href="{{ route('attendance.report') }}" class="industry-btn industry-btn-light">
                                 <i class="bx bx-bar-chart-alt-2"></i> Attendance Report
                             </a>
                             @endif
@@ -1588,7 +2309,44 @@
                     </div>
                 </div>
                 <div class="industry-hero-visual">
-                    <img src="{{ asset('admin/assets/img/illustrations/dashboard-ui-preview.png') }}" alt="Admin Dashboard overview">
+                    <div class="bx-monitor-widget" aria-label="Enterprise Live Monitoring summary">
+                        <div class="bx-monitor-head">
+                            <span class="bx-monitor-title">
+                                <span class="bx-monitor-dot" aria-hidden="true"></span>
+                                Enterprise Live Monitoring
+                            </span>
+                            <span class="bx-monitor-ver">v4.1.2</span>
+                        </div>
+                        <div class="bx-monitor-mid">
+                            <div class="bx-monitor-pipeline">
+                                <span>System Pipeline</span>
+                                <div class="bx-pipeline-bars" aria-hidden="true">
+                                    <i style="height: 36%; background: #0E6B47;"></i>
+                                    <i style="height: 55%; background: #16A34A;"></i>
+                                    <i style="height: 74%; background: #34D399;"></i>
+                                    <i style="height: 96%; background: #6EE7B7;"></i>
+                                </div>
+                            </div>
+                            <div class="bx-monitor-nodes">
+                                <span class="bx-monitor-nodes-label">Live Nodes</span>
+                                <strong>99.98%</strong>
+                                <em>Optimal Status</em>
+                            </div>
+                        </div>
+                        <div class="bx-monitor-throughput">
+                            <div class="bx-monitor-throughput-copy">
+                                <span>Weekly Throughput</span>
+                                <strong>14.8k operations</strong>
+                            </div>
+                            <div class="bx-throughput-bars" aria-hidden="true">
+                                <i style="height: 45%;"></i>
+                                <i style="height: 75%;"></i>
+                                <i style="height: 60%;"></i>
+                                <i style="height: 90%;"></i>
+                                <i style="height: 100%;"></i>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -1603,7 +2361,7 @@
                     </div>
                     <strong class="kpi-number">{{ $dashboardTotalProject }}</strong>
                     <div class="kpi-card-footer">
-                        <small style="color: var(--bx-blue);"><i class="bx bx-up-arrow-alt"></i> Open project workspace</small>
+                        <small><i class="bx bx-up-arrow-alt"></i> Open project workspace</small>
                         <i class="bx bx-right-arrow-alt industry-arrow"></i>
                     </div>
                 </a>
@@ -1613,7 +2371,7 @@
                     <div class="kpi-card-top">
                         <span>Pending Tasks</span>
                         <div class="kpi-icon-box kpi-violet">
-                            <i class="bx bx-task"></i>
+                            <i class="bx bx-check-square"></i>
                         </div>
                     </div>
                     <strong class="kpi-number">{{ $dashboardPendingTask }}</strong>
@@ -1648,7 +2406,7 @@
                     </div>
                     <strong class="kpi-number">{{ $dashboardAttendancePercent }}%</strong>
                     <div class="kpi-card-footer">
-                        <small style="color: var(--bx-emerald);"><i class="bx bx-check"></i> {{ $dashboardPresentCount }} present today</small>
+                        <small><i class="bx bx-check"></i> {{ $dashboardPresentCount }} present today</small>
                         <i class="bx bx-right-arrow-alt industry-arrow"></i>
                     </div>
                 </a>
@@ -1658,50 +2416,77 @@
             <div class="saas-executive-grid">
                 @if(auth()->user()->canViewModule('reports-finance'))
                 <div class="industry-panel">
-                    <div class="industry-panel-head">
-                        <div>
-                            <h3>Executive Business Model</h3>
-                            <p>Revenue, investment, budget, and net outlook from available finance data.</p>
-                        </div>
-                        <a href="{{ Route::has('admin.deals.index') ? route('admin.deals.index') : '#' }}">Pipeline</a>
-                    </div>
-                    <div class="saas-revenue-strip">
-                        @foreach($financeCards as $card)
-                            <div class="saas-money-card">
-                                <span>{{ $card['label'] }}</span>
-                                <strong title="{{ $formatMoney($card['value']) }}" aria-label="{{ $card['label'] . ': ' . $formatMoney($card['value']) }}">{{ $formatCompactMoney($card['value']) }}</strong>
-                                <em>{{ $card['meta'] }}</em>
+                    <div>
+                        <div class="industry-panel-head">
+                            <div>
+                                <h3>Executive Business Model</h3>
+                                <p>Revenue, investment, budget, and net outlook from available finance data.</p>
                             </div>
-                        @endforeach
+                            <a href="{{ Route::has('admin.deals.index') ? route('admin.deals.index') : '#' }}">Pipeline</a>
+                        </div>
+                        <div class="bx-budget-block">
+                            <div class="bx-budget-row">
+                                <span class="bx-budget-label">Enterprise Budget Allocation</span>
+                                <span class="bx-budget-figures" title="{{ $formatMoney($expenseInvestmentValue) . ' / ' . $formatMoney($projectBudgetTotal) }}">
+                                    {{ $formatMoney($expenseInvestmentValue) }} <span>/ {{ $formatMoney($projectBudgetTotal) }}</span>
+                                </span>
+                            </div>
+                            <div class="bx-budget-track" role="progressbar" aria-valuenow="{{ min(100, max(0, $budgetUtilization)) }}" aria-valuemin="0" aria-valuemax="100" aria-label="Enterprise Budget Allocation">
+                                <div class="bx-budget-fill" style="width: {{ $projectBudgetTotal > 0 ? min(100, max(4, $budgetUtilization)) : 0 }}%;"></div>
+                            </div>
+                        </div>
+                        <div class="saas-revenue-strip">
+                            @foreach($financeStripCards as $card)
+                                <div class="saas-money-card {{ !empty($card['highlightValue']) ? 'is-positive-value' : '' }}">
+                                    <span>{{ $card['label'] }}</span>
+                                    <strong title="{{ $formatMoney($card['value']) }}" aria-label="{{ $card['label'] . ': ' . $formatMoney($card['value']) }}">{{ $formatCompactMoney($card['value']) }}</strong>
+                                    <em class="{{ !empty($card['positive']) ? 'is-positive-meta' : '' }}">{{ $card['meta'] }}</em>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                    <div class="bx-panel-footer">
+                        <span class="bx-panel-footer-meta">Last financial sync: {{ now()->format('h:i A') }}</span>
+                        @if(Route::has('reports.finance'))
+                            <a href="{{ route('reports.finance') }}" class="bx-panel-footer-link">View Detailed Ledger &rsaquo;</a>
+                        @elseif(Route::has('admin.deals.index'))
+                            <a href="{{ route('admin.deals.index') }}" class="bx-panel-footer-link">View Detailed Ledger &rsaquo;</a>
+                        @endif
                     </div>
                 </div>
                 @endif
 
                 <div class="industry-panel">
-                    <div class="industry-panel-head">
-                        <div>
-                            <h3>Feature Predictions</h3>
-                            <p>Simple operating signals generated from current dashboard data.</p>
+                    <div>
+                        <div class="industry-panel-head">
+                            <div>
+                                <h3>Feature Predictions</h3>
+                                <p>Simple operating signals generated from current dashboard data.</p>
+                            </div>
+                        </div>
+                        <div class="saas-prediction-grid">
+                            @foreach($predictionCards as $card)
+                                @if(auth()->user()->canViewModule(match ($card['label']) {
+                                    'Delivery Prediction' => 'tasks', 'People Prediction' => 'attendance',
+                                    'Revenue Prediction' => 'reports-finance', default => 'crm-deals',
+                                }))
+                                <div class="saas-insight-card">
+                                    <span>{{ $card['label'] }}</span>
+                                    <div class="bx-prediction-status">
+                                        <span class="bx-signal-dot is-{{ $card['risk'] }}" aria-hidden="true"></span>
+                                        <strong>{{ $card['value'] }}</strong>
+                                    </div>
+                                    <p>{{ $card['hint'] }}</p>
+                                </div>
+                                @endif
+                            @endforeach
                         </div>
                     </div>
-                    <div class="saas-prediction-grid">
-                        @foreach($predictionCards as $card)
-                            @if(auth()->user()->canViewModule(match ($card['label']) {
-                                'Delivery Prediction' => 'tasks', 'People Prediction' => 'attendance',
-                                'Revenue Prediction' => 'reports-finance', default => 'crm-deals',
-                            }))
-                            <div class="saas-insight-card">
-                                <span>{{ $card['label'] }}</span>
-                                <strong>{{ $card['value'] }}</strong>
-                                <p>{{ $card['hint'] }}</p>
-                                <div class="mt-2">
-                                    <span class="saas-risk-pill saas-risk-{{ $card['risk'] }}">
-                                        <i class="bx bx-pulse"></i> {{ ucfirst($card['risk']) }} signal
-                                    </span>
-                                </div>
-                            </div>
-                            @endif
-                        @endforeach
+                    <div class="bx-panel-footer">
+                        <span class="bx-panel-footer-meta"><i class="bx bxs-zap"></i> Real-time heuristic analysis</span>
+                        @if(Route::has('admin.settings.app') && auth()->user()->canViewModule('settings'))
+                            <a href="{{ route('admin.settings.app') }}" class="bx-panel-footer-link">Config Signals</a>
+                        @endif
                     </div>
                 </div>
             </div>
