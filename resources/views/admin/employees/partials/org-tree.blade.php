@@ -28,7 +28,11 @@
             <select id="eotDepartment" class="eot-select" aria-label="Highlight department">
                 <option value="">All departments</option>
             </select>
-            <div class="eot-group" role="group" aria-label="Zoom">
+            <div class="eot-group eot-modes" role="group" aria-label="Tree layout">
+                <button type="button" class="eot-mode is-on" data-eot-action="mode-chart" aria-pressed="true" title="Chart view"><i class="fas fa-sitemap" aria-hidden="true"></i><span>Chart</span></button>
+                <button type="button" class="eot-mode" data-eot-action="mode-table" aria-pressed="false" title="Table view with reporting flow"><i class="fas fa-table-list" aria-hidden="true"></i><span>Table</span></button>
+            </div>
+            <div class="eot-group eot-chart-only" role="group" aria-label="Zoom">
                 <button type="button" class="eot-tool" data-eot-action="zoom-out" title="Zoom out"><i class="fas fa-minus" aria-hidden="true"></i></button>
                 <span class="eot-zoom" id="eotZoom">100%</span>
                 <button type="button" class="eot-tool" data-eot-action="zoom-in" title="Zoom in"><i class="fas fa-plus" aria-hidden="true"></i></button>
@@ -63,6 +67,24 @@
                 <span><i class="eot-dot is-reporting"></i>Reporting manager</span>
                 <span><i class="eot-dot is-level"></i>Placed by designation level</span>
             </div>
+        </div>
+
+        <div class="eot-tablewrap" id="eotTableWrap" hidden>
+            <table class="eot-flow" aria-label="Organization table with reporting flow">
+                <thead>
+                    <tr>
+                        <th scope="col">Employee</th>
+                        <th scope="col">Designation</th>
+                        <th scope="col">Level</th>
+                        <th scope="col">Department</th>
+                        <th scope="col">Reporting flow</th>
+                        <th scope="col">Team</th>
+                        <th scope="col">Status</th>
+                        <th scope="col"><span class="visually-hidden">Details</span></th>
+                    </tr>
+                </thead>
+                <tbody id="eotTableBody"></tbody>
+            </table>
         </div>
 
         <aside class="eot-inspector" id="eotInspector" aria-label="Member inspector" aria-hidden="true">
@@ -116,6 +138,12 @@
         --eot-warn-soft: rgba(251, 191, 36, .14);
         --eot-shadow: 0 10px 30px rgba(0, 0, 0, .35);
     }
+
+    /* Employee List: reporting flow under "Reports To" */
+    .employee-dashboard .role-info .reports-flow { display: flex; align-items: center; gap: 5px; min-width: 0; max-width: 260px; font-size: .75rem; font-weight: 600; color: var(--emp-reports-color, #64748b) !important; -webkit-text-fill-color: var(--emp-reports-color, #64748b) !important; }
+    .employee-dashboard .role-info .reports-flow > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: inherit !important; -webkit-text-fill-color: currentColor !important; }
+    .employee-dashboard .role-info .reports-flow i { flex-shrink: 0; font-size: .7rem; font-style: normal; color: #8b5cf6 !important; -webkit-text-fill-color: #8b5cf6 !important; }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body.dark) .employee-dashboard .role-info .reports-flow i { color: #c4b5fd !important; -webkit-text-fill-color: #c4b5fd !important; }
 
     .employee-dashboard.eot-tree-mode .filter-export-card,
     .employee-dashboard.eot-tree-mode .table-card { display: none !important; }
@@ -255,6 +283,44 @@
     .eot-exports { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
     .eot-note { font-size: 12px; color: var(--eot-muted) !important; -webkit-text-fill-color: var(--eot-muted) !important; margin: 0; }
 
+    /* Chart / Table layout switch */
+    .emp-orgtree .eot-mode { display: inline-flex !important; align-items: center; gap: 6px; height: 32px; padding: 0 10px !important; border: 0 !important; border-radius: 8px !important; background: transparent !important; color: var(--eot-muted) !important; -webkit-text-fill-color: var(--eot-muted) !important; font-size: 12px; font-weight: 700; cursor: pointer; width: auto !important; min-height: 0 !important; box-shadow: none !important; }
+    .emp-orgtree .eot-mode i { color: inherit !important; -webkit-text-fill-color: currentColor !important; font-size: 12px; }
+    .emp-orgtree .eot-mode.is-on { background: var(--eot-accent) !important; color: #fff !important; -webkit-text-fill-color: #fff !important; }
+    .emp-orgtree.is-table-mode .eot-chart-only, .emp-orgtree.is-table-mode .eot-viewport { display: none !important; }
+    .eot-tablewrap { flex: 1; min-width: 0; height: min(72vh, 760px); min-height: 460px; overflow: auto; background: var(--eot-surface); }
+    .eot-tablewrap[hidden] { display: none !important; }
+    .emp-orgtree .eot-flow { width: 100%; min-width: 980px; border-collapse: separate; border-spacing: 0; margin: 0; background: transparent !important; }
+    .emp-orgtree .eot-flow th { position: sticky; top: 0; z-index: 1; padding: 11px 14px; background: var(--eot-canvas) !important; border-bottom: 1px solid var(--eot-border); font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; text-align: left; white-space: nowrap; color: var(--eot-muted) !important; -webkit-text-fill-color: var(--eot-muted) !important; }
+    .emp-orgtree .eot-flow td { padding: 10px 14px; border-bottom: 1px solid var(--eot-border); vertical-align: middle; font-size: 13px; background: transparent !important; color: var(--eot-text) !important; -webkit-text-fill-color: var(--eot-text) !important; }
+    .emp-orgtree .eot-flow tbody tr { cursor: pointer; transition: background .15s, opacity .15s; }
+    .emp-orgtree .eot-flow tbody tr:hover td { background: var(--eot-accent-soft) !important; }
+    .emp-orgtree .eot-flow tbody tr.is-selected td { background: var(--eot-accent-soft) !important; }
+    .emp-orgtree .eot-flow tbody tr.is-selected td:first-child { box-shadow: inset 3px 0 0 var(--eot-accent); }
+    .emp-orgtree .eot-flow tbody tr.is-path td:first-child { box-shadow: inset 3px 0 0 var(--eot-path); }
+    .emp-orgtree .eot-flow tbody tr.is-dim { opacity: .35; }
+    .emp-orgtree .eot-flow tbody tr.is-match td { background: var(--eot-warn-soft) !important; }
+    .emp-orgtree .eot-flow tbody tr:focus-visible { outline: 2px solid var(--eot-accent); outline-offset: -2px; }
+    .eot-cell-person { display: flex; align-items: center; gap: 8px; min-width: 220px; }
+    .eot-indent { display: inline-block; flex-shrink: 0; align-self: stretch; }
+    .emp-orgtree .eot-rowtoggle { width: 22px !important; height: 22px !important; min-width: 22px !important; min-height: 0 !important; padding: 0 !important; display: inline-grid !important; place-items: center; border: 1px solid var(--eot-border) !important; border-radius: 6px !important; background: var(--eot-surface) !important; color: var(--eot-accent) !important; -webkit-text-fill-color: var(--eot-accent) !important; cursor: pointer; box-shadow: none !important; flex-shrink: 0; }
+    .emp-orgtree .eot-rowtoggle i { color: inherit !important; -webkit-text-fill-color: currentColor !important; font-size: 10px; transition: transform .2s; }
+    .emp-orgtree .eot-rowtoggle[aria-expanded="false"] i { transform: rotate(-90deg); }
+    .eot-rowspacer { width: 22px; flex-shrink: 0; display: inline-grid; place-items: center; }
+    .eot-rowspacer::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--eot-line); }
+    .eot-cell-person .eot-photo { width: 32px; height: 32px; font-size: 12px; }
+    .eot-cell-person strong { display: block; font-size: 13px; white-space: nowrap; color: var(--eot-text) !important; -webkit-text-fill-color: var(--eot-text) !important; }
+    .eot-cell-person small { display: block; font-size: 11px; color: var(--eot-muted) !important; -webkit-text-fill-color: var(--eot-muted) !important; }
+    .eot-chain { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; max-width: 360px; }
+    .eot-chain-step { padding: 2px 8px !important; border-radius: 999px !important; border: 1px solid var(--eot-border) !important; background: var(--eot-canvas) !important; font-size: 11px; font-weight: 600; white-space: nowrap; color: var(--eot-muted) !important; -webkit-text-fill-color: var(--eot-muted) !important; }
+    .eot-chain-step.is-self { border-color: var(--eot-accent) !important; background: var(--eot-accent-soft) !important; color: var(--eot-accent) !important; -webkit-text-fill-color: var(--eot-accent) !important; }
+    .emp-orgtree button.eot-chain-step { cursor: pointer; min-height: 0 !important; box-shadow: none !important; width: auto !important; line-height: 1.5; }
+    .emp-orgtree button.eot-chain-step:hover { border-color: var(--eot-accent) !important; color: var(--eot-accent) !important; -webkit-text-fill-color: var(--eot-accent) !important; }
+    .emp-orgtree .eot-chain-sep { font-size: 9px; color: var(--eot-muted) !important; -webkit-text-fill-color: var(--eot-muted) !important; }
+    .eot-team { white-space: nowrap; }
+    .emp-orgtree .eot-flow td.eot-team { color: var(--eot-muted) !important; -webkit-text-fill-color: var(--eot-muted) !important; }
+    .eot-team strong { color: var(--eot-text) !important; -webkit-text-fill-color: var(--eot-text) !important; }
+
     @media (max-width: 991.98px) {
         .eot-inspector { position: fixed; top: 0; bottom: 0; right: 0; width: min(100vw, 400px); z-index: 1065; }
         .eot-legend { display: none; }
@@ -289,6 +355,9 @@
     const departmentSelect = document.getElementById('eotDepartment');
     const inspector = document.getElementById('eotInspector');
     const inspectorBody = document.getElementById('eotInspectorBody');
+    const tableWrap = document.getElementById('eotTableWrap');
+    const tableBody = document.getElementById('eotTableBody');
+    const MODE_KEY = 'pmsEmployeeTreeMode';
     const VIEW_KEY = 'pmsEmployeeView';
     const MIN_SCALE = 0.2, MAX_SCALE = 2.5;
 
@@ -378,8 +447,8 @@
         });
         state.children.forEach(list => list.sort((a, b) => {
             const na = state.nodes.get(a), nb = state.nodes.get(b);
-            const la = na.level ?? 999, lb = nb.level ?? 999;
-            return la - lb || String(na.department || '').localeCompare(String(nb.department || '')) || na.name.localeCompare(nb.name);
+            const la = na.level ?? -1, lb = nb.level ?? -1;
+            return lb - la || String(na.department || '').localeCompare(String(nb.department || '')) || na.name.localeCompare(nb.name);
         }));
         state.roots = state.children.get(null) || [];
         if (!state.initialCollapse) {
@@ -506,7 +575,103 @@
         tree.appendChild(top);
         stage.replaceChildren(tree);
         emptyState.hidden = state.nodes.size > 0;
+        renderTable();
         paintHighlights();
+    }
+
+    /* ---------- Table view (same hierarchy, reporting flow per row) ---------- */
+    function chainOf(id) { return ancestors(id).reverse().concat([id]); }
+    function chainElement(id, clickable) {
+        const box = el('div', 'eot-chain');
+        const chain = chainOf(id);
+        chain.forEach((step, index) => {
+            const node = state.nodes.get(step);
+            const self = step === id;
+            const item = el(clickable && !self ? 'button' : 'span', 'eot-chain-step' + (self ? ' is-self' : ''), node.name);
+            if (clickable && !self) { item.type = 'button'; item.dataset.person = step; item.title = node.designation || ''; }
+            box.appendChild(item);
+            if (index < chain.length - 1) box.appendChild(icon('fa-chevron-right eot-chain-sep'));
+        });
+        return box;
+    }
+    function tableRow(id, depth, rows) {
+        const node = state.nodes.get(id);
+        const kids = state.children.get(id) || [];
+        const tr = el('tr');
+        tr.dataset.row = id;
+        tr.tabIndex = 0;
+        const person = el('td');
+        const cell = el('div', 'eot-cell-person');
+        const indent = el('span', 'eot-indent');
+        indent.style.width = (depth * 22) + 'px';
+        cell.appendChild(indent);
+        if (kids.length) {
+            const toggle = el('button', 'eot-rowtoggle');
+            toggle.type = 'button';
+            toggle.dataset.toggle = id;
+            toggle.setAttribute('aria-expanded', state.collapsed.has(id) ? 'false' : 'true');
+            toggle.title = state.collapsed.has(id) ? 'Expand team' : 'Collapse team';
+            toggle.appendChild(icon('fa-chevron-down'));
+            cell.appendChild(toggle);
+        } else {
+            cell.appendChild(el('span', 'eot-rowspacer'));
+        }
+        cell.appendChild(photo(node));
+        const who = el('span');
+        who.appendChild(el('strong', '', node.name));
+        who.appendChild(el('small', '', node.employee_code || node.email || ''));
+        cell.appendChild(who);
+        person.appendChild(cell);
+        tr.appendChild(person);
+        tr.appendChild(el('td', '', node.designation || 'No designation'));
+        const level = el('td'); level.appendChild(el('span', 'eot-tag', levelLabel(node))); tr.appendChild(level);
+        tr.appendChild(el('td', '', node.department || 'No department'));
+        const flow = el('td'); flow.appendChild(chainElement(id, true)); tr.appendChild(flow);
+        const team = el('td', 'eot-team');
+        team.appendChild(el('strong', '', node.directs)); team.appendChild(document.createTextNode(' directs · '));
+        team.appendChild(el('strong', '', node.total)); team.appendChild(document.createTextNode(' total'));
+        tr.appendChild(team);
+        const status = el('td'); status.appendChild(el('span', 'eot-tag ' + (isActive(node) ? 'is-ok' : 'is-warn'), display(node.status))); tr.appendChild(status);
+        const more = el('td');
+        const open = el('button', 'eot-tool');
+        open.type = 'button'; open.dataset.person = id; open.title = 'View details';
+        open.appendChild(icon('fa-arrow-right'));
+        more.appendChild(open);
+        tr.appendChild(more);
+        rows.push(tr);
+        if (!state.collapsed.has(id)) kids.forEach(kid => tableRow(kid, depth + 1, rows));
+    }
+    function renderTable() {
+        const rows = [];
+        state.roots.forEach(id => tableRow(id, 0, rows));
+        tableBody.replaceChildren(...rows);
+    }
+    tableBody.addEventListener('click', event => {
+        const toggle = event.target.closest('[data-toggle]');
+        if (toggle) { toggleBranch(Number(toggle.dataset.toggle)); return; }
+        const target = event.target.closest('[data-person], tr[data-row]');
+        if (target) openInspector(Number(target.dataset.person || target.dataset.row), true);
+    });
+    tableBody.addEventListener('keydown', event => {
+        const row = event.target.closest('tr[data-row]');
+        if (row && event.target === row && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); openInspector(Number(row.dataset.row), true); }
+    });
+    function setMode(mode, persist) {
+        state.mode = mode === 'table' ? 'table' : 'chart';
+        const table = state.mode === 'table';
+        root.classList.toggle('is-table-mode', table);
+        tableWrap.hidden = !table;
+        root.querySelectorAll('.eot-mode').forEach(button => {
+            const on = button.dataset.eotAction === 'mode-' + state.mode;
+            button.classList.toggle('is-on', on);
+            button.setAttribute('aria-pressed', on ? 'true' : 'false');
+        });
+        if (persist) storage.set(MODE_KEY, state.mode);
+        if (!table && state.loaded) requestAnimationFrame(() => { if (!state.userMoved) fit(); });
+    }
+    function scrollRowIntoView(id) {
+        const row = tableBody.querySelector('tr[data-row="' + id + '"]');
+        if (row) row.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     }
 
     function paintHighlights() {
@@ -524,6 +689,14 @@
         stage.querySelectorAll('li[data-node]').forEach(li => {
             const id = Number(li.dataset.node);
             li.classList.toggle('is-path', path.has(id) || id === state.selected);
+        });
+        tableBody.querySelectorAll('tr[data-row]').forEach(tr => {
+            const id = Number(tr.dataset.row);
+            const node = state.nodes.get(id);
+            tr.classList.toggle('is-selected', id === state.selected);
+            tr.classList.toggle('is-path', path.has(id));
+            tr.classList.toggle('is-dim', !!dept && String(node.department_id) !== dept);
+            tr.classList.toggle('is-match', !!query && query.length > 1 && node.name.toLowerCase().includes(query));
         });
     }
 
@@ -642,6 +815,8 @@
         if (forceOpen === true) state.collapsed.delete(id);
         else if (state.collapsed.has(id)) state.collapsed.delete(id);
         else state.collapsed.add(id);
+        renderTable();
+        paintHighlights();
         const li = stage.querySelector('li[data-node="' + id + '"]');
         if (!li) return;
         const collapsed = state.collapsed.has(id);
@@ -667,6 +842,8 @@
             case 'expand': state.collapsed.clear(); render(); break;
             case 'collapse': state.nodes.forEach(node => { if ((state.children.get(node.id) || []).length && node.parent !== null) state.collapsed.add(node.id); }); render(); fit(); break;
             case 'refresh': load(false); break;
+            case 'mode-chart': setMode('chart', true); break;
+            case 'mode-table': setMode('table', true); break;
             case 'pan-up': pan(0, step); break;
             case 'pan-down': pan(0, -step); break;
             case 'pan-left': pan(step, 0); break;
@@ -757,6 +934,10 @@
         else reports.appendChild(el('p', 'eot-note', node.reporting_to_name ? node.reporting_to_name + ' (outside this view)' : 'Top of the organization'));
         body.appendChild(reports);
 
+        const flow = section('Reporting flow');
+        flow.appendChild(chainElement(id, true));
+        body.appendChild(flow);
+
         const stats = el('div', 'eot-stats eot-section');
         const directs = el('div'); directs.appendChild(el('strong', '', node.directs)); directs.appendChild(el('span', '', 'Direct Leads'));
         const total = el('div'); total.appendChild(el('strong', '', node.total)); total.appendChild(el('span', '', 'Total Staff'));
@@ -789,7 +970,7 @@
         body.scrollTop = 0;
         const expanded = reveal(id);
         paintHighlights();
-        if (focus) requestAnimationFrame(() => centerOn(id, !expanded));
+        if (focus) requestAnimationFrame(() => { if (state.mode === 'table') scrollRowIntoView(id); else centerOn(id, !expanded); });
     }
     function closeInspector() {
         state.selected = null;
@@ -892,6 +1073,7 @@
     document.addEventListener('pms:records-updated', () => { if (state.loaded && !root.hidden) load(false); else state.loaded = false; });
     window.addEventListener('resize', () => { if (!root.hidden && !state.userMoved) fit(); });
 
+    setMode(storage.get(MODE_KEY) === 'table' ? 'table' : 'chart', false);
     const requested = new URLSearchParams(window.location.search).get('view');
     setView(requested === 'tree' || requested === 'list' ? requested : (storage.get(VIEW_KEY) === 'tree' ? 'tree' : 'list'), false);
 })();

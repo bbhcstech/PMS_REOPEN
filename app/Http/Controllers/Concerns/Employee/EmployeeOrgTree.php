@@ -14,7 +14,8 @@ use Illuminate\Support\Facades\Schema;
  *
  * Placement rules (so a newly added employee lands in the right branch automatically):
  *  1. The saved "Reporting To" manager, when that manager is part of the visible tree.
- *  2. Otherwise the closest superior by designation level (lower level number = more senior),
+ *  2. Otherwise the closest superior by designation level (higher level number = more senior:
+ *     L0 is the most junior level, L6 and above the most senior),
  *     preferring the same department, then the same parent department, then the company.
  *  3. Employees with no superior become roots; several roots hang under the company node.
  */
@@ -166,10 +167,11 @@ trait EmployeeOrgTree
         return $nodes;
     }
 
-    /** Most senior-adjacent employee above this node's level: same department, parent department, then company. */
+    /** Nearest employee one or more levels above (higher L number): same department, parent department, then company. */
     private function orgTreeClosestSuperior(array $node, array $nodes): ?int
     {
-        $ownLevel = $node['level'] ?? PHP_INT_MAX;
+        // An employee without a designation level ranks below every leveled colleague.
+        $ownLevel = $node['level'] ?? PHP_INT_MIN;
         $scopes = [
             fn ($candidate) => $node['department_id'] && $candidate['department_id'] === $node['department_id'],
             fn ($candidate) => $node['parent_department_id'] && $candidate['parent_department_id'] === $node['parent_department_id'],
@@ -179,11 +181,11 @@ trait EmployeeOrgTree
         foreach ($scopes as $inScope) {
             $best = null;
             foreach ($nodes as $candidate) {
-                if ($candidate['id'] === $node['id'] || $candidate['level'] === null || $candidate['level'] >= $ownLevel || ! $inScope($candidate)) {
+                if ($candidate['id'] === $node['id'] || $candidate['level'] === null || $candidate['level'] <= $ownLevel || ! $inScope($candidate)) {
                     continue;
                 }
                 if ($best === null
-                    || $candidate['level'] > $best['level']
+                    || $candidate['level'] < $best['level']
                     || ($candidate['level'] === $best['level'] && $candidate['id'] < $best['id'])) {
                     $best = $candidate;
                 }
