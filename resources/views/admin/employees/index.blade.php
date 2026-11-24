@@ -333,6 +333,8 @@
     </div>
     @endif
 
+    @include('admin.employees.partials.org-tree')
+
     {{-- Filter & Export Section - PERFECT ALIGNMENT --}}
     <div class="filter-export-card employee-filter-polish animate-fadeIn !overflow-visible !rounded-[22px]">
         <div class="filter-header !flex !flex-col !gap-4 !p-4 sm:!p-5 lg:!flex-row lg:!items-center lg:!justify-between">

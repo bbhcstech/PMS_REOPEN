@@ -6,6 +6,7 @@ use App\Http\Controllers\Concerns\Employee\EmployeeInvitations;
 use App\Http\Controllers\Concerns\Employee\EmployeeLifecycle;
 use App\Http\Controllers\Concerns\Employee\EmployeeOnboarding;
 use App\Http\Controllers\Concerns\Employee\EmployeeOrganizationFields;
+use App\Http\Controllers\Concerns\Employee\EmployeeOrgTree;
 use App\Http\Controllers\Concerns\Employee\EmployeeProfileUpdates;
 use App\Models\Company;
 use App\Models\Designation;
@@ -22,6 +23,7 @@ class EmployeeController extends Controller
     use EmployeeLifecycle;
     use EmployeeInvitations;
     use EmployeeOrganizationFields;
+    use EmployeeOrgTree;
 
     /**
      * Simple role guard for employee-management methods.
