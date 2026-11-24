@@ -179,9 +179,13 @@ class LeaveService
             $unpaidUsed += $unpaidDays;
         }
 
-        $pending = Leave::where('user_id', $employee->id)->where('status', 'pending')->count();
-        $approvedCount = Leave::where('user_id', $employee->id)->where('status', 'approved')->count();
-        $rejected = Leave::where('user_id', $employee->id)->where('status', 'rejected')->count();
+        $requestCounts = Leave::where('user_id', $employee->id)
+            ->whereIn('status', ['pending', 'approved', 'rejected'])
+            ->toBase()
+            ->selectRaw('COUNT(CASE WHEN status = ? THEN 1 END) AS pending_requests', ['pending'])
+            ->selectRaw('COUNT(CASE WHEN status = ? THEN 1 END) AS approved_requests', ['approved'])
+            ->selectRaw('COUNT(CASE WHEN status = ? THEN 1 END) AS rejected_requests', ['rejected'])
+            ->first();
 
         $paidUsed = array_sum($usedByCode);
         $allocated = (float) $balance->allocated_leaves;
@@ -193,9 +197,9 @@ class LeaveService
             'unpaid_used' => $unpaidUsed,
             'used_leaves' => min($allocated, $paidUsed),
             'remaining_leaves' => max(0, $allocated - $paidUsed),
-            'pending_requests' => $pending,
-            'approved_requests' => $approvedCount,
-            'rejected_requests' => $rejected,
+            'pending_requests' => (int) $requestCounts->pending_requests,
+            'approved_requests' => (int) $requestCounts->approved_requests,
+            'rejected_requests' => (int) $requestCounts->rejected_requests,
         ])->save();
 
         $employee->forceFill([

@@ -46,16 +46,20 @@ class ProjectController extends Controller
         'client',
         'users.employeeDetail',
         'latestUpdate.employee',
-        'tasks' => function ($q) use ($viewer, $isEmployee) {
-            if ($isEmployee && $viewer) {
+    ])->withCount('tasks')->whereNull('deleted_at');
+
+    // The list's task modal is rendered only for employee roles.
+    if (strtolower((string) $viewer?->role) === 'employee') {
+        $query->with(['tasks' => function ($q) use ($viewer, $isEmployee) {
+            if ($isEmployee) {
                 $q->where(function ($taskScope) use ($viewer) {
                     $taskScope->whereHas('assignees', fn ($assignees) => $assignees->where('users.id', $viewer->id))
                         ->orWhereRaw('FIND_IN_SET(?, assigned_to)', [$viewer->id]);
                 });
             }
             $q->orderBy('title');
-        }
-    ])->withCount('tasks')->whereNull('deleted_at');
+        }]);
+    }
 
     if ($isEmployee) {
         $query->where(function ($q) use ($viewer) {
@@ -653,25 +657,38 @@ public function edit($id)
         $actual = [];
         $ideal = [];
 
-        $totalTasks = Task::where('project_id', $projectId)->count();
+        $tasks = Task::where('project_id', $projectId);
+        $totalTasks = (clone $tasks)->count();
         $days = $start->diffInDays($end) + 1;
 
         if ($totalTasks > 0 && $days > 0) {
+            $dates = [];
             for ($i = 0; $i < $days; $i++) {
                 $date = $start->copy()->addDays($i);
+                $dates[] = $date->toDateString();
                 $labels[] = $date->format('d-m-Y');
 
                 // Ideal line
                 $ideal[] = $days > 1
                     ? round($totalTasks - ($totalTasks / ($days - 1)) * $i, 2)
                     : $totalTasks;
+            }
 
-                // Actual line
-                $completed = Task::where('project_id', $projectId)
-                    ->whereDate('updated_at', '<=', $date)
-                    ->where('status', 'Completed')
-                    ->count();
+            $completedByDate = (clone $tasks)->where('status', 'Completed')
+                ->whereDate('updated_at', '<=', $dates[array_key_last($dates)])
+                ->toBase()
+                ->selectRaw('DATE(updated_at) AS completed_date, COUNT(*) AS completed_count')
+                ->groupBy('completed_date')
+                ->orderBy('completed_date')
+                ->get();
 
+            $completed = 0;
+            $position = 0;
+            foreach ($dates as $date) {
+                while (isset($completedByDate[$position]) && $completedByDate[$position]->completed_date <= $date) {
+                    $completed += (int) $completedByDate[$position]->completed_count;
+                    $position++;
+                }
                 $actual[] = $totalTasks - $completed;
             }
         }

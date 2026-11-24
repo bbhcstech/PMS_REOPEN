@@ -30,7 +30,7 @@ class TaskController extends Controller
 public function index(Request $request, ?Project $project = null) 
 {
     \App\Services\TaskPrioritySchema::ensure();
-    $query = Task::with(['project', 'assignees', 'subTasks.assignee', 'timers', 'latestUpdate.user'])
+    $query = Task::with(['project', 'assignees', 'subTasks.assignee', 'timers', 'finishedTimers', 'latestUpdate.user'])
         ->whereNull('parent_id');
     $user = auth()->user();
     $canManageTasks = $this->canCreateWorkItems();
@@ -130,7 +130,6 @@ public function create(Request $request)
     $assignedUserIds = [];
 
     $projects = Project::all();
-    $users = User::where('role', 'employee')->orderBy('name')->get();
     $labels = TaskLabel::with('project')->get();
     $taskCategories = TaskCategory::all();
     $milestones = ProjectMilestone::all();
@@ -381,7 +380,6 @@ public function create(Request $request)
     $task->load(['assignees']); // eager load to avoid null
 
     $projects = Project::all();
-    $users = User::where('role', 'employee')->orderBy('name')->get();
     $labels = TaskLabel::with('project')->get();
     $taskCategories = TaskCategory::all();
     $milestones = ProjectMilestone::all();
@@ -396,8 +394,6 @@ public function create(Request $request)
     ->get();
     $assignedUserIds = $task->assignees()->pluck('users.id')->toArray();
     
-       $departments = Department::all();
-        
         $designations = Designation::all();
          $departments = Department::with('parent')->latest()->get();
         $users = User::where('role', 'employee')->orderBy('name')->get();
@@ -577,7 +573,7 @@ public function update(Request $request, Task $task)
             if ($parent) {
                 $allSubTasksCompleted = Task::where('parent_id', $parent->id)
                     ->where('is_completed', false)
-                    ->count() === 0;
+                    ->doesntExist();
 
                 if ($allSubTasksCompleted) {
                     $parent->is_completed = true;
@@ -660,12 +656,12 @@ public function updateStatus(Request $request, Task $task)
     ]);
 
     // ❗ Rule: If marking a parent task as 'Completed', check all sub-tasks
-    if ($request->status === 'Completed' && $task->subTasks()->count() > 0) {
+    if ($request->status === 'Completed') {
         $pendingSubTasks = $task->subTasks()->where(function ($q) {
             $q->where('is_completed', false)->orWhereNull('is_completed');
-        })->count();
+        })->exists();
 
-        if ($pendingSubTasks > 0) {
+        if ($pendingSubTasks) {
             return response()->json([
                 'success' => false,
                 'message' => 'Cannot mark task as Completed while sub-tasks are pending.',

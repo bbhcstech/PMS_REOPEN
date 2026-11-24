@@ -636,6 +636,7 @@
     <!-- Duplicate Modals -->
     @foreach($projects as $project)
         @if($isAdmin)
+            @php($projectMembersById = $project->users->keyBy('id'))
             <div class="modal fade" id="duplicateProjectModal{{ $project->id }}" tabindex="-1" aria-hidden="true">
                 <div class="modal-dialog modal-lg modal-dialog-centered">
                     <div class="modal-content">
@@ -682,7 +683,7 @@
                                         <label class="form-label">Members</label>
                                         <select name="user_id[]" class="form-select" multiple>
                                             @foreach($users as $user)
-                                                <option value="{{ $user->id }}" @selected($project->users->contains('id', $user->id))>{{ $user->name }}{{ $user->employeeDetail?->employee_id ? ' (' . $user->employeeDetail->employee_id . ')' : '' }}</option>
+                                                <option value="{{ $user->id }}" @selected($projectMembersById->has($user->id))>{{ $user->name }}{{ $user->employeeDetail?->employee_id ? ' (' . $user->employeeDetail->employee_id . ')' : '' }}</option>
                                             @endforeach
                                         </select>
                                     </div>

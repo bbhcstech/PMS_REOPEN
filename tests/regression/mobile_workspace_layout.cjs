@@ -5,7 +5,12 @@ const http = require('node:http'), {spawn} = require('node:child_process');
 const root = path.resolve(__dirname, '../..');
 const read = file => fs.readFileSync(path.join(root, file), 'utf8');
 const exists = file => fs.existsSync(path.join(root, file));
-const style = source => [...source.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].map(m => m[1]).join('\n').replace(/@import[^;]+;/g, '');
+const style = source => {
+  const withPartials = source.replace(/@include\('([\w.-]+-styles)'\)/g, (_, view) =>
+    read('resources/views/' + view.replaceAll('.', '/') + '.blade.php'));
+  return [...withPartials.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)]
+    .map(match => match[1]).join('\n').replace(/@import[^;]+;/g, '');
+};
 const views = [];
 function visit(dir) {
   for (const item of fs.readdirSync(path.join(root, dir), {withFileTypes:true})) {

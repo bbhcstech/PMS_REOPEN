@@ -31,7 +31,7 @@ const companyStyles = fixtures.find(fixture => fixture.page.includes('company-pr
 fixtures.push({name:'Associate Manager / rendered Company Profile', styles:companyStyles, html:companyPage.html});
 const css = fs.readFileSync(path.join(root, 'public/admin/assets/css/pms-bitroxia-theme.css'), 'utf8');
 const foundation = ['public/admin/assets/vendor/css/core.css','public/admin/assets/css/demo.css','public/admin/assets/css/pms-refresh.css'].map(file => fs.readFileSync(path.join(root, file), 'utf8')).join('\n');
-const menu = fs.readFileSync(path.join(root, 'resources/views/admin/layout/manu.blade.php'), 'utf8');
+const menu = fs.readFileSync(path.join(root, 'resources/views/admin/layout/partials/workspace-styles.blade.php'), 'utf8');
 const menuStyles = [...menu.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].map(match => match[1]).join('\n');
 const script = `
 const fixtures = ${JSON.stringify(fixtures)};

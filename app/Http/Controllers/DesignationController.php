@@ -681,7 +681,7 @@ class DesignationController extends Controller
                     continue;
                 }
 
-                if ($designation->employeeDetails()->count() > 0) {
+                if ($designation->employeeDetails()->exists()) {
                     $blocked++;
                     $blockedNames[] = $designation->name;
                 } else {

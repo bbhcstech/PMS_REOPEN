@@ -23,6 +23,11 @@ foreach (['1H' => 10, '6H' => 15, '24H' => 20, '7D' => 25, '30D' => 30] as $rang
     }
 }
 if ($service->chart('bad')['range'] !== '24H') throw new RuntimeException('Default range failed.');
+$points = $service->chart('24H')['points'];
+if (array_column($points, 'api') !== [null, null, null, 30.0, null, null, 15.0]
+    || array_column($points, 'db') !== [null, null, null, 15.0, null, null, 7.5]) {
+    throw new RuntimeException('Latency samples moved between chart buckets.');
+}
 $compiled = Blade::compileString(file_get_contents(resource_path('views/superadmin/system_health/index.blade.php')));
 try { token_get_all($compiled, TOKEN_PARSE); }
 catch (ParseError $e) {

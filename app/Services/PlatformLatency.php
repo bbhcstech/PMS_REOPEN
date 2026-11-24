@@ -16,15 +16,17 @@ class PlatformLatency
             ->whereBetween('sampled_at', [$start, $end])->orderBy('sampled_at')->get();
         $points = [];
         $width = self::RANGES[$range] / 7;
+        $startTimestamp = $start->timestamp;
+        $buckets = $samples->groupBy(function ($sample) use ($startTimestamp, $width) {
+            $offset = \Carbon\Carbon::parse($sample->sampled_at)->timestamp - $startTimestamp;
+            return min(6, (int) floor($offset / $width));
+        });
         for ($i = 0; $i < 7; $i++) {
-            $bucket = $samples->filter(function ($sample) use ($start, $width, $i) {
-                $offset = \Carbon\Carbon::parse($sample->sampled_at)->timestamp - $start->timestamp;
-                return min(6, (int) floor($offset / $width)) === $i;
-            });
+            $bucket = $buckets->get($i);
             $time = $start->copy()->addSeconds((int) (($i + 1) * $width));
             $points[] = ['time' => $time->format(in_array($range, ['7D', '30D']) ? 'd M' : 'H:i'),
-                'api' => $bucket->isEmpty() ? null : round($bucket->avg('api_ms'), 1),
-                'db' => $bucket->isEmpty() ? null : round($bucket->avg('db_ms'), 1)];
+                'api' => $bucket === null ? null : round($bucket->avg('api_ms'), 1),
+                'db' => $bucket === null ? null : round($bucket->avg('db_ms'), 1)];
         }
         $sorted = $samples->pluck('api_ms')->sort()->values();
         return ['range' => $range, 'points' => $points,

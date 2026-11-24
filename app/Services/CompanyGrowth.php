@@ -14,10 +14,13 @@ class CompanyGrowth
             ->map(fn ($company) => [
                 'created' => CarbonImmutable::parse($company->created_at),
                 'active' => strtolower((string) $company->status) === 'active',
-            ]);
+            ])->sortBy('created')->values();
+        $recordCount = $records->count();
         $result = [];
         foreach (['daily' => 30, 'weekly' => 12, 'monthly' => 12] as $frequency => $length) {
             $series = ['labels' => [], 'total' => [], 'active' => []];
+            $registered = 0;
+            $active = 0;
             for ($offset = $length - 1; $offset >= 0; $offset--) {
                 $period = match ($frequency) {
                     'daily' => $today->startOfDay()->subDays($offset),
@@ -30,11 +33,14 @@ class CompanyGrowth
                     'monthly' => $period->endOfMonth(),
                 };
                 if ($end->greaterThan($today)) $end = $today;
-                $registered = $records->filter(fn ($record) => $record['created']->lessThanOrEqualTo($end));
+                while ($registered < $recordCount && $records[$registered]['created']->lessThanOrEqualTo($end)) {
+                    $active += (int) $records[$registered]['active'];
+                    $registered++;
+                }
                 $series['labels'][] = $period->format($frequency === 'monthly' ? 'M Y' : 'd M Y');
-                $series['total'][] = $registered->count();
+                $series['total'][] = $registered;
                 // Current active companies grouped by registration date; historical status is not inferred.
-                $series['active'][] = $registered->where('active', true)->count();
+                $series['active'][] = $active;
             }
             $result[$frequency] = $series;
         }

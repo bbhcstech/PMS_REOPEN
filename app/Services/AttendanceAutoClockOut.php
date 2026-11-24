@@ -17,23 +17,25 @@ class AttendanceAutoClockOut
         // attendance rows so a first-use upgrade cannot end the closing transaction.
         AttendanceClockPolicy::ensureSchema();
         $policy = WorkScheduleService::attendancePolicy();
+        $columns = array_map('strtolower', $schema->getColumnListing('attendances'));
+        $tracksAutoClockOut = in_array('auto_clocked_out', $columns, true);
+        $tracksTotalHours = in_array('total_hours', $columns, true);
         $query = Attendance::withoutGlobalScopes()->whereNotNull('clock_in')->whereNull('clock_out')
             ->whereHas('user', fn ($q) => $q->where('company_id', $companyId));
-        if ($schema->hasColumn('attendances', 'company_id')) $query->where(fn ($q) => $q->where('company_id', $companyId)->orWhereNull('company_id'));
-        if ($schema->hasColumn('attendances', 'archived_at')) $query->whereNull('archived_at');
+        if (in_array('company_id', $columns, true)) $query->where(fn ($q) => $q->where('company_id', $companyId)->orWhereNull('company_id'));
+        if (in_array('archived_at', $columns, true)) $query->whereNull('archived_at');
         if ($userId !== null) $query->where('user_id', $userId);
         $closed = 0;
-        $query->chunkById(100, function ($rows) use ($now, $policy, &$closed) {
+        $query->chunkById(100, function ($rows) use ($now, $policy, $tracksAutoClockOut, $tracksTotalHours, &$closed) {
             foreach ($rows as $row) {
-                DB::connection('tenant')->transaction(function () use ($row, $now, $policy, &$closed) {
+                DB::connection('tenant')->transaction(function () use ($row, $now, $policy, $tracksAutoClockOut, $tracksTotalHours, &$closed) {
                     $record = Attendance::withoutGlobalScopes()->whereKey($row->id)->lockForUpdate()->first();
                     if (!$record || $record->clock_out !== null) return;
                     $cutoff = $record->auto_clock_out_at;
                     if (!$cutoff || ($now ?: Carbon::now($cutoff->timezone))->lt($cutoff)) return;
                     $record->clock_out = $cutoff->format('H:i:s');
-                    $schema = $record->getConnection()->getSchemaBuilder();
-                    if ($schema->hasColumn('attendances', 'auto_clocked_out')) $record->auto_clocked_out = true;
-                    if ($schema->hasColumn('attendances', 'total_hours')) $record->total_hours = round($record->total_seconds / 3600, 2);
+                    if ($tracksAutoClockOut) $record->auto_clocked_out = true;
+                    if ($tracksTotalHours) $record->total_hours = round($record->total_seconds / 3600, 2);
                     $record->save();
                     WorkScheduleService::applyOrganizationAttendanceRules($record, $policy);
                     $closed++;
