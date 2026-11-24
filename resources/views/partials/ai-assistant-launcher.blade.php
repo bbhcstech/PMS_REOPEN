@@ -16,12 +16,12 @@
         <span>AI Assistant</span>
     </a>
     <style>
-        #pms-ai-assistant-launcher { position: fixed; right: 24px; bottom: 90px; z-index: 1040; display: inline-flex; align-items: center; gap: 10px; padding: 12px 18px; border: 1px solid #93c5fd; border-radius: 28px; background: #2563eb !important; color: #fff !important; text-decoration: none; box-shadow: 0 6px 20px rgba(37, 99, 235, .3); font-weight: 600; }
+        #pms-ai-assistant-launcher { position: fixed; right: 24px; bottom: 24px; z-index: 1040; display: inline-flex; align-items: center; gap: 9px; padding: 11px 18px; border: 1px solid rgba(147, 197, 253, 0.45); border-radius: 999px; background: #2563eb !important; color: #fff !important; text-decoration: none; box-shadow: 0 8px 24px rgba(37, 99, 235, 0.32); font-size: 0.86rem; font-weight: 600; }
         #pms-ai-assistant-launcher span, #pms-ai-assistant-launcher svg { color: #fff !important; -webkit-text-fill-color: #fff !important; }
-        #pms-ai-assistant-launcher svg { background: transparent !important; flex-shrink: 0; }
-        #pms-ai-assistant-launcher:hover { background: #1d4ed8 !important; }
+        #pms-ai-assistant-launcher svg { background: transparent !important; flex-shrink: 0; width: 20px; height: 20px; }
+        #pms-ai-assistant-launcher:hover { background: #1d4ed8 !important; transform: translateY(-1px); box-shadow: 0 10px 28px rgba(37, 99, 235, 0.4); }
         #pms-ai-assistant-launcher:focus-visible { outline: 3px solid #93c5fd; outline-offset: 4px; }
-        @media (max-width: 575px) { #pms-ai-assistant-launcher { right: 16px; bottom: 90px; padding: 10px 14px; } }
+        @media (max-width: 575px) { #pms-ai-assistant-launcher { right: 16px; bottom: 20px; padding: 10px 14px; } }
         /* Never cover page controls: step aside while a menu is open or a control sits underneath. */
         #pms-ai-assistant-launcher { transition: opacity .18s ease, transform .18s ease, visibility .18s; }
         body:has(.pms-table-export.is-open, .dropdown-menu.show, .select2-container--open, .swal2-container) #pms-ai-assistant-launcher,

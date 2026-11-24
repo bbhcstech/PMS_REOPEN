@@ -802,8 +802,9 @@
 
    #layout-menu .sidebar-notification-badge.type-pending,
    #layout-menu .sidebar-notification-badge.type-warning {
-       color: #1e293b !important;
-       -webkit-text-fill-color: #1e293b !important;
+       background: #F59E0B !important;
+       color: #ffffff !important;
+       -webkit-text-fill-color: #ffffff !important;
    }
 
    /* Sticky Notes System Styling */
