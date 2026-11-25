@@ -1587,7 +1587,7 @@
                     <li class="menu-item {{ (request()->routeIs('attendance.*') && !request()->routeIs('attendance.report')) ? 'active' : '' }}">
                           <a href="{{ route('attendance.index') }}" class="menu-link" data-sidebar-key="attendance">
                             <div class="text-truncate" data-i18n="Without menu">
-                              {{ in_array(strtolower((string)(auth()->user()->role ?? '')), ['admin', 'superadmin', 'administrator'], true) ? 'Attendance' : 'My Attendance' }}
+                              {{ in_array(strtolower((string)(auth()->user()->role ?? '')), ['admin', 'superadmin', 'administrator', 'hr', 'manager'], true) ? 'Attendance' : 'My Attendance' }}
                             </div>
                           </a>
                     </li>

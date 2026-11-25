@@ -380,78 +380,78 @@ class AttendanceController extends Controller
             })
             ->toArray();
 
-        // Step 2: load users and attendances based on role
+        $selectedUserId = $userId ? (int) $userId : null;
+
+        // Step 2: load all accessible users for this role / company
         if ($this->isAdminUser($user) || $this->canManageAttendance($user)) {
-            $usersQuery = User::with('employeeDetail')->where(function ($q) {
+            $baseUsersQuery = User::with(['employeeDetail.department', 'employeeDetail.designation'])->where(function ($q) {
                 $q->whereNotIn(DB::raw('LOWER(COALESCE(role, ""))'), ['client']);
             });
 
             if ($companyId) {
-                $usersQuery->where('company_id', $companyId);
+                $baseUsersQuery->where('company_id', $companyId);
             } elseif ($user->company_id && strtolower((string)$user->role) === 'hr') {
-                $usersQuery->where('company_id', $user->company_id);
-            }
-
-            if ($userId) {
-                $usersQuery->where('id', (int) $userId);
+                $baseUsersQuery->where('company_id', $user->company_id);
             }
 
             if ($departmentId) {
-                $usersQuery->whereHas('employeeDetail', function ($q) use ($departmentId) {
+                $baseUsersQuery->whereHas('employeeDetail', function ($q) use ($departmentId) {
                     $q->where('department_id', $departmentId);
                 });
             }
 
             if ($designationId) {
-                $usersQuery->whereHas('employeeDetail', function ($q) use ($designationId) {
+                $baseUsersQuery->whereHas('employeeDetail', function ($q) use ($designationId) {
                     $q->where('designation_id', $designationId);
                 });
             }
 
-            $users = $usersQuery->orderBy('name')->get();
-
-            $attendances = Attendance::whereIn('user_id', $users->pluck('id'))
-                ->whereNull('archived_at')
-                ->whereMonth('date', $month)
-                ->whereYear('date', $year)
-                ->get();
+            $allEmployees = $baseUsersQuery->orderBy('name')->get();
         } elseif ($this->isManagerOrHrUser($user)) {
             $visibleIds = method_exists($user, 'visibleEmployeeIds') ? $user->visibleEmployeeIds() : collect();
-            $usersQuery = User::with('employeeDetail')
+            $baseUsersQuery = User::with(['employeeDetail.department', 'employeeDetail.designation'])
                 ->whereIn('id', $visibleIds);
 
-            if ($userId) {
-                $usersQuery->where('id', (int) $userId);
-            }
-
             if ($departmentId) {
-                $usersQuery->whereHas('employeeDetail', function ($q) use ($departmentId) {
+                $baseUsersQuery->whereHas('employeeDetail', function ($q) use ($departmentId) {
                     $q->where('department_id', $departmentId);
                 });
             }
 
             if ($designationId) {
-                $usersQuery->whereHas('employeeDetail', function ($q) use ($designationId) {
+                $baseUsersQuery->whereHas('employeeDetail', function ($q) use ($designationId) {
                     $q->where('designation_id', $designationId);
                 });
             }
 
-            $users = $usersQuery->orderBy('name')->get();
-            $attendances = Attendance::whereIn('user_id', $users->pluck('id'))
-                ->whereNull('archived_at')
-                ->whereMonth('date', $month)
-                ->whereYear('date', $year)
-                ->get();
+            $allEmployees = $baseUsersQuery->orderBy('name')->get();
         } else {
             // Employee can only see their own data
-            $users = collect([$user]);
-
-            $attendances = Attendance::where('user_id', $user->id)
-                ->whereNull('archived_at')
-                ->whereMonth('date', $month)
-                ->whereYear('date', $year)
-                ->get();
+            $user->loadMissing(['employeeDetail.department', 'employeeDetail.designation']);
+            $allEmployees = collect([$user]);
         }
+
+        // Selected User resolution:
+        // 'all' = all employees selected (grid view)
+        // numeric ID = specific employee for calendar view
+        if ($userId === 'all') {
+            $selectedUserId = 'all';
+            $users = $allEmployees;
+        } elseif ($userId && is_numeric($userId)) {
+            $selectedUserId = (int) $userId;
+            $users = $allEmployees;
+        } else {
+            $selectedUserId = $allEmployees->first()?->id ?? $user->id;
+            $users = $allEmployees;
+        }
+
+        // Always query attendances for ALL accessible employees in the month
+        // This ensures zero-latency switching between employees on client-side
+        $attendances = Attendance::whereIn('user_id', $allEmployees->pluck('id'))
+            ->whereNull('archived_at')
+            ->whereMonth('date', $month)
+            ->whereYear('date', $year)
+            ->get();
 
         // ensure model accessors are appended so view can use total_seconds/total_duration
         $attendances->each->append(['total_seconds','total_duration','clock_in_datetime','clock_out_datetime']);
@@ -552,6 +552,8 @@ class AttendanceController extends Controller
 
         return view('admin.attendance.index', compact(
             'users',
+            'allEmployees',
+            'selectedUserId',
             'attendanceMap',
             'daysInMonth',
             'month',
@@ -559,7 +561,8 @@ class AttendanceController extends Controller
             'departments',
             'designations',
             'periodTotals',
-            'archivedCount'
+            'archivedCount',
+            'canManage'
         ));
     }
 
@@ -682,60 +685,65 @@ class AttendanceController extends Controller
         $isManagerOrHr = $this->isManagerOrHrUser($user);
 
         if ($isAdmin || $canManage) {
-            $usersQuery = User::with('employeeDetail')->where(function ($q) {
+            $baseUsersQuery = User::with(['employeeDetail.department', 'employeeDetail.designation'])->where(function ($q) {
                 $q->whereNotIn(DB::raw('LOWER(COALESCE(role, ""))'), ['client']);
             });
 
             if ($user->company_id && strtolower((string)$user->role) === 'hr') {
-                $usersQuery->where('company_id', $user->company_id);
-            }
-
-            if ($userId) {
-                $usersQuery->where('id', (int) $userId);
+                $baseUsersQuery->where('company_id', $user->company_id);
             }
 
             if ($department_id) {
-                $usersQuery->whereHas('employeeDetail', function ($q) use ($department_id) {
+                $baseUsersQuery->whereHas('employeeDetail', function ($q) use ($department_id) {
                     $q->where('department_id', $department_id);
                 });
             }
 
             if ($designation_id) {
-                $usersQuery->whereHas('employeeDetail', function ($q) use ($designation_id) {
+                $baseUsersQuery->whereHas('employeeDetail', function ($q) use ($designation_id) {
                     $q->where('designation_id', $designation_id);
                 });
             }
+
+            $allEmployees = $baseUsersQuery->orderBy('name')->get();
         } elseif ($isManagerOrHr) {
             $visibleIds = method_exists($user, 'visibleEmployeeIds') ? $user->visibleEmployeeIds() : collect();
-            $usersQuery = User::with('employeeDetail')
+            $baseUsersQuery = User::with(['employeeDetail.department', 'employeeDetail.designation'])
                 ->whereIn('id', $visibleIds);
 
-            if ($userId) {
-                $usersQuery->where('id', (int) $userId);
-            }
-
             if ($department_id) {
-                $usersQuery->whereHas('employeeDetail', function ($q) use ($department_id) {
+                $baseUsersQuery->whereHas('employeeDetail', function ($q) use ($department_id) {
                     $q->where('department_id', $department_id);
                 });
             }
 
             if ($designation_id) {
-                $usersQuery->whereHas('employeeDetail', function ($q) use ($designation_id) {
+                $baseUsersQuery->whereHas('employeeDetail', function ($q) use ($designation_id) {
                     $q->where('designation_id', $designation_id);
                 });
             }
+
+            $allEmployees = $baseUsersQuery->orderBy('name')->get();
         } else {
             // Employee can only see their own data
-            $usersQuery = User::with('employeeDetail')->where('id', $user->id);
+            $allEmployees = User::with(['employeeDetail.department', 'employeeDetail.designation'])->where('id', $user->id)->get();
         }
 
-        $users = $usersQuery->orderBy('name')->get();
+        if ($userId && $userId !== 'all' && is_numeric($userId)) {
+            $users = $allEmployees->where('id', (int) $userId)->values();
+            if ($users->isEmpty()) {
+                $users = $allEmployees;
+            }
+            $selectedUserId = (int) $userId;
+        } else {
+            $users = $allEmployees;
+            $selectedUserId = ($userId === 'all') ? 'all' : ($allEmployees->first()?->id ?? $user->id);
+        }
 
         $daysInMonth = Carbon::createFromDate($year, $month, 1)->daysInMonth;
 
         // if no users, still return empty table
-        if ($users->isEmpty()) {
+        if ($allEmployees->isEmpty()) {
             $attendanceMap = [];
             $designations = ($isAdmin || $canManage) ? Designation::all() : collect();
 
@@ -751,7 +759,7 @@ class AttendanceController extends Controller
             return response()->json([
                 'html' => $html,
                 'meta' => [
-                    'totalEmployees' => $users->count(),
+                    'totalEmployees' => 0,
                     'monthName' => Carbon::createFromDate($year, $month, 1)->format('F'),
                     'year' => $year,
                     'daysInMonth' => $daysInMonth,
@@ -759,7 +767,7 @@ class AttendanceController extends Controller
             ]);
         }
 
-        $userIds = $users->pluck('id')->toArray();
+        $userIds = $allEmployees->pluck('id')->toArray();
 
         $attendances = Attendance::whereIn('user_id', $userIds)
             ->whereNull('archived_at')
@@ -827,11 +835,33 @@ class AttendanceController extends Controller
             'periodTotals'
         ))->render();
 
+        $selectedUserId = ($userId === 'all')
+            ? 'all'
+            : ($userId && is_numeric($userId) ? (int) $userId : ($allEmployees->first()?->id ?? $user->id));
+
         return response()->json([
             'html' => $html,
             'meta' => [
-                'totalEmployees' => $users->count(),
+                'totalEmployees' => $allEmployees->count(),
                 'monthName' => Carbon::createFromDate($year, $month, 1)->format('F'),
+                'year' => $year,
+                'daysInMonth' => $daysInMonth,
+            ],
+            'calendarData' => [
+                'users' => $allEmployees->map(function ($u) {
+                    return [
+                        'id' => $u->id,
+                        'name' => $u->name,
+                        'email' => $u->email,
+                        'avatar' => $u->profile_image ? asset($u->profile_image) : asset('images/default-avatar.png'),
+                        'designation' => $u->employeeDetail?->designation?->name ?? ($u->designation ?? 'Employee'),
+                        'department' => $u->employeeDetail?->department?->dpt_name ?? 'N/A',
+                        'employee_id' => $u->employeeDetail?->employee_id ?? ('EMP-' . str_pad($u->id, 4, '0', STR_PAD_LEFT)),
+                    ];
+                })->values(),
+                'attendanceMap' => $attendanceMap,
+                'selectedUserId' => $selectedUserId,
+                'month' => $month,
                 'year' => $year,
                 'daysInMonth' => $daysInMonth,
             ],
@@ -971,8 +1001,11 @@ class AttendanceController extends Controller
     {
         $user = Auth::user();
 
-        // Only admin can store attendance
-        if ($user->role !== 'admin') {
+        // Only authorized roles can store attendance
+        if (!$this->canManageAttendance($user)) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['status' => 'error', 'message' => 'You do not have permission to add attendance.'], 403);
+            }
             return redirect()->route('attendance.index')
                 ->with('error', 'You do not have permission to add attendance.');
         }
@@ -1122,6 +1155,10 @@ class AttendanceController extends Controller
                     );
                 }
             }
+        }
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json(['success' => true, 'message' => 'Attendance saved successfully.']);
         }
 
         return redirect()->route('attendance.index')->with('success', 'Attendance saved successfully.');
@@ -1794,15 +1831,23 @@ class AttendanceController extends Controller
             $date = $request->date;
 
             // Check permission: Employee can only view their own details
-            if ($user->role === 'employee' && $requestedUserId != $user->id) {
+            if ($user->role === 'employee' && $requestedUserId && $requestedUserId != $user->id) {
                 return response('<div class="alert alert-danger">You can only view your own attendance details.</div>', 403);
             }
 
-            $attendance = Attendance::with('user', 'user.employeeDetail')->find($attendanceId);
+            $attendance = null;
+            if ($attendanceId) {
+                $attendance = Attendance::with(['user', 'user.employeeDetail.department', 'user.employeeDetail.designation'])->find($attendanceId);
+            } elseif ($requestedUserId && $date) {
+                $attendance = Attendance::with(['user', 'user.employeeDetail.department', 'user.employeeDetail.designation'])
+                    ->where('user_id', $requestedUserId)
+                    ->whereDate('date', $date)
+                    ->first();
+            }
 
             if (!$attendance) {
-                Log::warning('Attendance record not found', ['attendance_id' => $attendanceId]);
-                return response('<div class="alert alert-danger">Attendance record not found.</div>', 404);
+                Log::warning('Attendance record not found', ['attendance_id' => $attendanceId, 'user_id' => $requestedUserId, 'date' => $date]);
+                return response('<div class="alert alert-warning py-4 text-center"><i class="fas fa-info-circle me-2"></i>Attendance record not found for this date.</div>', 404);
             }
 
             // Double-check permission
@@ -1810,8 +1855,40 @@ class AttendanceController extends Controller
                 return response('<div class="alert alert-danger">You can only view your own attendance details.</div>', 403);
             }
 
-            // Rest of your existing showAttendanceDetails method...
-            // ... [keep your existing showAttendanceDetails method code]
+            $attendanceSettings = $this->attendancePolicy();
+            $companyTimezone = config('app.timezone', 'UTC');
+            $attendanceDate = $attendance->date ? Carbon::parse($attendance->date) : ($date ? Carbon::parse($date) : null);
+            $dateStr = $attendanceDate ? $attendanceDate->format('Y-m-d') : null;
+
+            $startTime = $this->buildDateTimeFromDateAndTime($dateStr, $attendance->clock_in);
+            $endTime = $this->buildDateTimeFromDateAndTime($dateStr, $attendance->clock_out);
+            $firstClockIn = $startTime;
+            $lastClockOut = $endTime;
+            $notClockedOut = empty($attendance->clock_out);
+            $totalTimeSeconds = (int) ($attendance->total_seconds ?? 0);
+            if ($totalTimeSeconds === 0 && $startTime && $endTime) {
+                $totalTimeSeconds = max(0, $endTime->diffInSeconds($startTime));
+            }
+            $totalTimeFormatted = $this->secondsToHhmm($totalTimeSeconds, true);
+
+            $normalizedActivities = [];
+            if ($startTime) {
+                $durHuman = '';
+                $durSec = null;
+                if ($endTime) {
+                    $durSec = max(0, $endTime->diffInSeconds($startTime));
+                    $durHuman = $this->secondsToHhmm($durSec, false);
+                }
+                $normalizedActivities[] = (object) [
+                    'in_dt' => $startTime,
+                    'out_dt' => $endTime,
+                    'out_for_duration' => (bool)$endTime,
+                    'duration_seconds' => $durSec,
+                    'duration_human' => $durHuman,
+                    'location' => $attendance->location ?? 'Office',
+                    'raw' => $attendance,
+                ];
+            }
 
             return view('admin.attendance.attendance_details', [
                 'attendance' => $attendance,
@@ -1845,8 +1922,8 @@ class AttendanceController extends Controller
     {
         $user = Auth::user();
 
-        // Only admin can edit attendance
-        if ($user->role !== 'admin') {
+        // Only authorized roles can edit attendance
+        if (!$this->canManageAttendance($user)) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'You do not have permission to edit attendance.'
@@ -1894,8 +1971,8 @@ class AttendanceController extends Controller
     {
         $user = Auth::user();
 
-        // Only admin can update attendance
-        if ($user->role !== 'admin') {
+        // Only authorized roles can update attendance
+        if (!$this->canManageAttendance($user)) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'You do not have permission to update attendance.'
@@ -1908,12 +1985,19 @@ class AttendanceController extends Controller
             'status'    => 'required|string'
         ]);
 
-        $attendance->update([
-            // store as time-only (H:i:s) because DB has TIME columns
+        $payload = [
             'clock_in' => $request->clock_in ? Carbon::createFromFormat('H:i', $request->clock_in)->format('H:i:s') : null,
             'clock_out'=> $request->clock_out ? Carbon::createFromFormat('H:i', $request->clock_out)->format('H:i:s') : null,
             'status'   => $request->status,
-        ]);
+        ];
+        if ($request->filled('location_id')) $payload['location_id'] = $request->location_id;
+        if ($request->filled('working_from')) $payload['working_from'] = $request->working_from;
+        if ($request->filled('work_from_type')) $payload['work_from_type'] = $request->work_from_type;
+        if ($request->has('late')) $payload['late'] = $request->late === 'yes' ? 'yes' : 'no';
+        if ($request->has('half_day')) $payload['half_day'] = $request->half_day === 'yes' ? 'yes' : 'no';
+        if ($request->filled('half_day_type')) $payload['half_day_type'] = $request->half_day_type;
+
+        $attendance->update($payload);
         $attendance = $this->applyOrganizationAttendanceRules($attendance);
 
         if ($attendance->user) {

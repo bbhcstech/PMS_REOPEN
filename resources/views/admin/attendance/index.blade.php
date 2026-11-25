@@ -715,6 +715,113 @@
         -webkit-text-fill-color: #0f172a !important;
     }
 
+    /* ===== VIEW MODE TOGGLE ===== */
+    .view-mode-toggle-card {
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .view-mode-switch {
+        display: inline-flex;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(16px);
+        padding: 5px;
+        border-radius: 20px;
+        border: 1px solid rgba(47, 107, 255, 0.15);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+        gap: 6px;
+    }
+
+    .view-mode-btn {
+        border: none;
+        background: transparent;
+        padding: 0.65rem 1.4rem;
+        border-radius: 14px;
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: #64748b;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        transition: all 0.25s ease;
+    }
+
+    .view-mode-btn:hover {
+        color: #2F6BFF;
+    }
+
+    .view-mode-btn.active {
+        background: linear-gradient(135deg, #2F6BFF, #1E4FCC);
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        box-shadow: 0 4px 14px rgba(47, 107, 255, 0.35);
+    }
+
+    .view-mode-btn .view-badge {
+        font-size: 0.72rem;
+        padding: 0.15rem 0.5rem;
+        border-radius: 20px;
+        background: rgba(47, 107, 255, 0.1);
+        color: #2F6BFF;
+        font-weight: 700;
+    }
+
+    .view-mode-btn.active .view-badge {
+        background: rgba(255, 255, 255, 0.25);
+        color: #ffffff;
+        -webkit-text-fill-color: #ffffff;
+    }
+
+    html[data-pms-theme="dark"] .view-mode-switch,
+    html[data-theme="dark"] .view-mode-switch,
+    html[data-bs-theme="dark"] .view-mode-switch,
+    [data-pms-theme="dark"] .view-mode-switch,
+    [data-theme="dark"] .view-mode-switch,
+    [data-bs-theme="dark"] .view-mode-switch,
+    body.dark-mode .view-mode-switch,
+    .dark-mode .view-mode-switch {
+        background: #0F1530 !important;
+        border-color: rgba(255, 255, 255, 0.12) !important;
+    }
+
+    html[data-pms-theme="dark"] .view-mode-btn,
+    html[data-theme="dark"] .view-mode-btn,
+    html[data-bs-theme="dark"] .view-mode-btn,
+    [data-pms-theme="dark"] .view-mode-btn,
+    [data-theme="dark"] .view-mode-btn,
+    [data-bs-theme="dark"] .view-mode-btn,
+    body.dark-mode .view-mode-btn,
+    .dark-mode .view-mode-btn {
+        color: #94a3b8 !important;
+        -webkit-text-fill-color: #94a3b8 !important;
+    }
+
+    html[data-pms-theme="dark"] .view-mode-btn.active,
+    html[data-theme="dark"] .view-mode-btn.active,
+    html[data-bs-theme="dark"] .view-mode-btn.active,
+    [data-pms-theme="dark"] .view-mode-btn.active,
+    [data-theme="dark"] .view-mode-btn.active,
+    [data-bs-theme="dark"] .view-mode-btn.active,
+    body.dark-mode .view-mode-btn.active,
+    .dark-mode .view-mode-btn.active {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
+    .attendance-view-section {
+        animation: fadeInView 0.3s ease;
+    }
+
+    @keyframes fadeInView {
+        from { opacity: 0; transform: translateY(6px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
     /* ===== TABLE CARD ===== */
     .table-card {
         background: rgba(255, 255, 255, 0.95);
@@ -1882,7 +1989,7 @@
                         <select name="user_id" id="user_id" class="form-select">
                             @if($canManage)
                                 <option value="">All Employees</option>
-                                @foreach($users as $detail)
+                                @foreach($allEmployees ?? $users as $detail)
                                     <option value="{{ $detail->id }}" {{ request('user_id') == $detail->id ? 'selected' : '' }}>
                                         {{ $detail->name ?? 'N/A' }}
                                     </option>
@@ -1981,77 +2088,107 @@
             </div>
         </div>
 
-        <!-- ===== LEGEND ===== -->
-        <div class="legend-card">
-            <div class="legend-title"><i class="fas fa-key"></i>Attendance Status Legend</div>
-            <div class="legend-items">
-                <span class="legend-item" data-filter="present" title="Click to filter: Present only">
-                    <span class="legend-icon present"><i class="fas fa-check"></i></span>
-                    <span class="legend-text">Present</span>
-                </span>
-                <span class="legend-item" data-filter="absent" title="Click to filter: Absent only">
-                    <span class="legend-icon absent"><i class="fas fa-times"></i></span>
-                    <span class="legend-text">Absent</span>
-                </span>
-                <span class="legend-item" data-filter="late" title="Click to filter: Late only">
-                    <span class="legend-icon late"><i class="fas fa-clock"></i></span>
-                    <span class="legend-text">Late</span>
-                </span>
-                <span class="legend-item" data-filter="halfday" title="Click to filter: Half Day only">
-                    <span class="legend-icon halfday"><i class="fas fa-star-half-alt"></i></span>
-                    <span class="legend-text">Half Day</span>
-                </span>
-                <span class="legend-item" data-filter="holiday" title="Click to filter: Holiday only">
-                    <span class="legend-icon holiday"><i class="fas fa-star"></i></span>
-                    <span class="legend-text">Holiday</span>
-                </span>
-                <span class="legend-item" data-filter="dayoff" title="Click to filter: Day Off only">
-                    <span class="legend-icon dayoff"><i class="fas fa-calendar"></i></span>
-                    <span class="legend-text">Day Off</span>
-                </span>
-                <span class="legend-item" data-filter="leave" title="Click to filter: On Leave only">
-                    <span class="legend-icon leave"><i class="fas fa-plane-departure"></i></span>
-                    <span class="legend-text">On Leave</span>
-                </span>
-                <span class="legend-item" data-filter="wfh" title="Click to filter: Work From Home only">
-                    <span class="legend-icon wfh"><i class="fas fa-laptop-house"></i></span>
-                    <span class="legend-text">Work From Home</span>
-                </span>
-                <span class="legend-item legend-reset" id="legendResetBtn" title="Show all employees" style="display:none;border-color:rgba(239,68,68,0.35);background:rgba(239,68,68,0.06);">
-                    <span class="legend-icon" style="background:#ef4444;"><i class="fas fa-times"></i></span>
-                    <span class="legend-text" style="color:#ef4444!important;-webkit-text-fill-color:#ef4444!important;">Clear Filter</span>
-                </span>
+        <!-- ===== VIEW MODE TOGGLE ===== -->
+        <div class="view-mode-toggle-card">
+            <div class="view-mode-switch">
+                <button type="button" class="view-mode-btn active" id="btnViewCalendar" data-view="calendar">
+                    <i class="fas fa-calendar-alt"></i> <span>Calendar View</span>
+                    <span class="view-badge">Simplified</span>
+                </button>
+                <button type="button" class="view-mode-btn" id="btnViewGrid" data-view="grid">
+                    <i class="fas fa-table-cells"></i> <span>Grid / Table View</span>
+                    <span class="view-badge">All Employees</span>
+                </button>
             </div>
         </div>
 
-        <!-- ===== TABLE CARD ===== -->
-        <div class="table-card">
-            <div class="table-header">
-                <h6><i class="fas fa-table"></i>Attendance Summary</h6>
-                <div class="attendance-table-actions">
-                    <div class="dropdown attendance-export-dropdown">
-                        <button class="btn-export-menu dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="fas fa-cloud-download-alt"></i> Export
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li><button type="button" class="dropdown-item" onclick="exportTo('copy')"><i class="fas fa-copy text-primary"></i> Copy to Clipboard</button></li>
-                            <li><button type="button" class="dropdown-item" onclick="exportTo('csv')"><i class="fas fa-file-csv text-success"></i> Export as CSV</button></li>
-                            <li><button type="button" class="dropdown-item" onclick="exportTo('excel')"><i class="fas fa-file-excel text-success"></i> Export as Excel</button></li>
-                            <li><button type="button" class="dropdown-item" onclick="exportTo('pdf')"><i class="fas fa-file-pdf text-danger"></i> Export as PDF</button></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><button type="button" class="dropdown-item" onclick="exportTo('print')"><i class="fas fa-print text-info"></i> Print</button></li>
-                        </ul>
-                    </div>
+        <!-- ===== 1. CALENDAR VIEW SECTION (DEFAULT SIMPLIFIED VIEW) ===== -->
+        <div id="calendarViewSection" class="attendance-view-section">
+            @include('admin.attendance.calendar', [
+                'users' => $allEmployees ?? $users,
+                'selectedUserId' => $selectedUserId ?? ($users->first()?->id ?? auth()->id()),
+                'attendanceMap' => $attendanceMap,
+                'daysInMonth' => $daysInMonth,
+                'month' => $month,
+                'year' => $year,
+                'canManage' => $canManage
+            ])
+        </div>
+
+        <!-- ===== 2. GRID / TABLE VIEW SECTION (ALL EMPLOYEES GRID) ===== -->
+        <div id="gridViewSection" class="attendance-view-section" style="display: none;">
+            <!-- ===== LEGEND ===== -->
+            <div class="legend-card">
+                <div class="legend-title"><i class="fas fa-key"></i>Attendance Status Legend</div>
+                <div class="legend-items">
+                    <span class="legend-item" data-filter="present" title="Click to filter: Present only">
+                        <span class="legend-icon present"><i class="fas fa-check"></i></span>
+                        <span class="legend-text">Present</span>
+                    </span>
+                    <span class="legend-item" data-filter="absent" title="Click to filter: Absent only">
+                        <span class="legend-icon absent"><i class="fas fa-times"></i></span>
+                        <span class="legend-text">Absent</span>
+                    </span>
+                    <span class="legend-item" data-filter="late" title="Click to filter: Late only">
+                        <span class="legend-icon late"><i class="fas fa-clock"></i></span>
+                        <span class="legend-text">Late</span>
+                    </span>
+                    <span class="legend-item" data-filter="halfday" title="Click to filter: Half Day only">
+                        <span class="legend-icon halfday"><i class="fas fa-star-half-alt"></i></span>
+                        <span class="legend-text">Half Day</span>
+                    </span>
+                    <span class="legend-item" data-filter="holiday" title="Click to filter: Holiday only">
+                        <span class="legend-icon holiday"><i class="fas fa-star"></i></span>
+                        <span class="legend-text">Holiday</span>
+                    </span>
+                    <span class="legend-item" data-filter="dayoff" title="Click to filter: Day Off only">
+                        <span class="legend-icon dayoff"><i class="fas fa-calendar"></i></span>
+                        <span class="legend-text">Day Off</span>
+                    </span>
+                    <span class="legend-item" data-filter="leave" title="Click to filter: On Leave only">
+                        <span class="legend-icon leave"><i class="fas fa-plane-departure"></i></span>
+                        <span class="legend-text">On Leave</span>
+                    </span>
+                    <span class="legend-item" data-filter="wfh" title="Click to filter: Work From Home only">
+                        <span class="legend-icon wfh"><i class="fas fa-laptop-house"></i></span>
+                        <span class="legend-text">Work From Home</span>
+                    </span>
+                    <span class="legend-item legend-reset" id="legendResetBtn" title="Show all employees" style="display:none;border-color:rgba(239,68,68,0.35);background:rgba(239,68,68,0.06);">
+                        <span class="legend-icon" style="background:#ef4444;"><i class="fas fa-times"></i></span>
+                        <span class="legend-text" style="color:#ef4444!important;-webkit-text-fill-color:#ef4444!important;">Clear Filter</span>
+                    </span>
                 </div>
             </div>
-            <div id="attendance-table">
-                @include('admin.attendance.table', [
-                    'users' => $users,
-                    'attendanceMap' => $attendanceMap,
-                    'daysInMonth' => $daysInMonth,
-                    'month' => $month,
-                    'year' => $year
-                ])
+
+            <!-- ===== TABLE CARD ===== -->
+            <div class="table-card">
+                <div class="table-header">
+                    <h6><i class="fas fa-table"></i>Attendance Summary</h6>
+                    <div class="attendance-table-actions">
+                        <div class="dropdown attendance-export-dropdown">
+                            <button class="btn-export-menu dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-cloud-download-alt"></i> Export
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><button type="button" class="dropdown-item" onclick="exportTo('copy')"><i class="fas fa-copy text-primary"></i> Copy to Clipboard</button></li>
+                                <li><button type="button" class="dropdown-item" onclick="exportTo('csv')"><i class="fas fa-file-csv text-success"></i> Export as CSV</button></li>
+                                <li><button type="button" class="dropdown-item" onclick="exportTo('excel')"><i class="fas fa-file-excel text-success"></i> Export as Excel</button></li>
+                                <li><button type="button" class="dropdown-item" onclick="exportTo('pdf')"><i class="fas fa-file-pdf text-danger"></i> Export as PDF</button></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><button type="button" class="dropdown-item" onclick="exportTo('print')"><i class="fas fa-print text-info"></i> Print</button></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div id="attendance-table">
+                    @include('admin.attendance.table', [
+                        'users' => $users,
+                        'attendanceMap' => $attendanceMap,
+                        'daysInMonth' => $daysInMonth,
+                        'month' => $month,
+                        'year' => $year
+                    ])
+                </div>
             </div>
         </div>
 
@@ -2089,6 +2226,73 @@
 @push('js')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    // ===== VIEW MODE TOGGLE (Calendar View vs Grid/Table View) =====
+    const btnViewCalendar = document.getElementById('btnViewCalendar');
+    const btnViewGrid = document.getElementById('btnViewGrid');
+    const calendarViewSection = document.getElementById('calendarViewSection');
+    const gridViewSection = document.getElementById('gridViewSection');
+
+    function setViewMode(mode, savePref = true) {
+        if (mode === 'grid') {
+            if (btnViewCalendar) btnViewCalendar.classList.remove('active');
+            if (btnViewGrid) btnViewGrid.classList.add('active');
+            if (calendarViewSection) calendarViewSection.style.display = 'none';
+            if (gridViewSection) gridViewSection.style.display = 'block';
+            if (savePref) {
+                try { localStorage.setItem('pms_attendance_view_mode', 'grid'); } catch(e) {}
+            }
+            if (typeof $ !== 'undefined' && $.fn.DataTable && $.fn.DataTable.isDataTable('#attendanceTable')) {
+                setTimeout(function() {
+                    $('#attendanceTable').DataTable().columns.adjust().responsive.recalc();
+                }, 100);
+            }
+        } else {
+            // Default: Calendar View (Simplified)
+            if (btnViewCalendar) btnViewCalendar.classList.add('active');
+            if (btnViewGrid) btnViewGrid.classList.remove('active');
+            if (calendarViewSection) calendarViewSection.style.display = 'block';
+            if (gridViewSection) gridViewSection.style.display = 'none';
+            if (savePref) {
+                try { localStorage.setItem('pms_attendance_view_mode', 'calendar'); } catch(e) {}
+            }
+            if (window.pmsRenderAttendanceCalendar && window.PMS_CAL_DATA) {
+                window.pmsRenderAttendanceCalendar(window.PMS_CAL_DATA.selectedUserId);
+            }
+        }
+    }
+
+    window.pmsSetViewMode = setViewMode;
+
+    if (btnViewCalendar) {
+        btnViewCalendar.addEventListener('click', function() {
+            setViewMode('calendar');
+        });
+    }
+
+    if (btnViewGrid) {
+        btnViewGrid.addEventListener('click', function() {
+            setViewMode('grid');
+        });
+    }
+
+    // Determine initial view mode:
+    // URL parameter ?view=grid or ?view=calendar takes highest priority
+    // Otherwise fallback to localStorage, defaulting to 'calendar'
+    const urlParams = new URLSearchParams(window.location.search);
+    const viewParam = urlParams.get('view');
+    let storedViewMode = null;
+    try { storedViewMode = localStorage.getItem('pms_attendance_view_mode'); } catch(e) {}
+
+    if (viewParam === 'grid') {
+        setViewMode('grid', false);
+    } else if (viewParam === 'calendar') {
+        setViewMode('calendar', false);
+    } else if (storedViewMode === 'grid') {
+        setViewMode('grid', false);
+    } else {
+        setViewMode('calendar', false);
+    }
+
     // Initialize select2 if available
     if (typeof $ !== 'undefined' && $.fn.select2) {
         $('.form-select').select2({
@@ -2291,6 +2495,17 @@ document.addEventListener('DOMContentLoaded', function () {
                 target.innerHTML = json.html;
                 updateAttendanceStats(json.meta);
                 initDataTable();
+
+                if (json.calendarData && window.pmsRenderAttendanceCalendar && window.PMS_CAL_DATA) {
+                    window.PMS_CAL_DATA.users = json.calendarData.users;
+                    window.PMS_CAL_DATA.attendanceMap = json.calendarData.attendanceMap;
+                    window.PMS_CAL_DATA.month = json.calendarData.month;
+                    window.PMS_CAL_DATA.year = json.calendarData.year;
+                    window.PMS_CAL_DATA.daysInMonth = json.calendarData.daysInMonth;
+                    window.PMS_CAL_DATA.selectedUserId = json.calendarData.selectedUserId;
+                    window.pmsRenderAttendanceCalendar(json.calendarData.selectedUserId);
+                }
+
                 window.history.replaceState({}, '', "{{ route('attendance.index') }}" + (data ? '?' + data : ''));
 
                 if (showSuccess) {
@@ -2592,6 +2807,10 @@ document.addEventListener('DOMContentLoaded', function () {
             cleanModalState(true);
         }
 
+        window.pmsGetAttendanceModal = getAttendanceModal;
+        window.pmsShowAttendanceLoading = showAttendanceLoading;
+        window.pmsCloseAttendanceModal = closeAttendanceModal;
+
         function escapeHtml(v) {
             return String(v ?? '').replace(/[&<>"']/g, function(c) {
                 return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c];
@@ -2730,7 +2949,21 @@ document.addEventListener('DOMContentLoaded', function () {
                 url: form.action, type: form.method || 'POST',
                 data: new FormData(form), processData: false, contentType: false,
                 headers: { 'X-Requested-With': 'XMLHttpRequest' },
-                success: function() { closeAttendanceModal(); window.location.reload(); },
+                success: function(resp) {
+                    closeAttendanceModal();
+                    showNotification((resp && resp.message) || 'Attendance saved successfully!', 'success');
+                    var activeUserId = $('#calEmployeeSelect').val() || (window.PMS_CAL_DATA ? window.PMS_CAL_DATA.selectedUserId : '') || '';
+                    var activeMonth = $('#calMonthSelect').val() || (window.PMS_CAL_DATA ? window.PMS_CAL_DATA.month : '') || '';
+                    var activeYear = $('#calYearSelect').val() || (window.PMS_CAL_DATA ? window.PMS_CAL_DATA.year : '') || '';
+                    var targetUrl = "{{ route('attendance.index') }}";
+                    var query = [];
+                    if (activeUserId) query.push('user_id=' + encodeURIComponent(activeUserId));
+                    if (activeMonth) query.push('month=' + encodeURIComponent(activeMonth));
+                    if (activeYear) query.push('year=' + encodeURIComponent(activeYear));
+                    setTimeout(function() {
+                        window.location.href = targetUrl + (query.length ? '?' + query.join('&') : '');
+                    }, 400);
+                },
                 error: function(xhr) {
                     var msg = (xhr.responseJSON && xhr.responseJSON.message) || 'Unable to save. Please try again.';
                     $(form).prepend('<div class="alert alert-danger alert-dismissible fade show" role="alert">' + msg +

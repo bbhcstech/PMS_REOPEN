@@ -792,6 +792,12 @@
         border-color: #2F6BFF !important;
         box-shadow: 0 0 0 3px rgba(47, 107, 255, 0.25) !important;
     }
+    html[data-pms-theme="dark"] .card,
+    html[data-theme="dark"] .card {
+        background: var(--bx-surface, #0F1530) !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+        color: #CBD5E1 !important;
+    }
     html[data-pms-theme="dark"] .card-header.bg-white,
     html[data-theme="dark"] .card-header.bg-white {
         background: var(--bx-surface, #0F1530) !important;
@@ -895,6 +901,9 @@
                     @endif
                     @if(Route::has('leaves.index') && $canSeeModule('leaves'))
                         <a href="{{ route('leaves.index') }}" class="role-btn role-btn-light"><i class="bx bx-calendar-minus"></i> Leaves</a>
+                    @endif
+                    @if(Route::has('attendance.index') && ($canSeeModule('attendance') || in_array(strtolower((string) auth()->user()?->role), ['admin', 'manager', 'hr'], true)))
+                        <a href="{{ route('attendance.index') }}" class="role-btn role-btn-light"><i class="bx bx-calendar-check"></i> Attendance</a>
                     @endif
                     @if(Route::has('attendance.report') && $canSeeModule('attendance'))
                         <a href="{{ route('attendance.report') }}" class="role-btn role-btn-light"><i class="bx bx-bar-chart-alt-2"></i> Reports</a>
@@ -1422,6 +1431,40 @@
         </div>
     </div>
 </div>
+
+<!-- ============ ATTENDANCE MANAGEMENT SECTION (CALENDAR VIEW) ============ -->
+<div class="row g-3 mt-3">
+    <div class="col-12">
+        <div class="card shadow-sm border-0" style="border-radius: 20px; overflow: hidden;">
+            <div class="card-header bg-white border-bottom py-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
+                <div>
+                    <h6 class="mb-0 fw-bold text-dark"><i class="bx bx-calendar-check text-primary me-2"></i>Attendance Section (Calendar View)</h6>
+                    <small class="text-muted">Interactive monthly attendance calendar, employee dropdown selector, and status tracking.</small>
+                </div>
+                <div class="d-flex flex-wrap gap-2 align-items-center ms-auto">
+                    @if(Route::has('attendance.index'))
+                        <a href="{{ route('attendance.index') }}" class="btn btn-sm btn-primary px-3 py-2 text-nowrap d-inline-flex align-items-center gap-1">
+                            <i class="bx bx-calendar me-1"></i> Full Attendance Hub
+                        </a>
+                        <a href="{{ route('attendance.index', ['view' => 'grid']) }}" class="btn btn-sm btn-outline-secondary px-3 py-2 text-nowrap d-inline-flex align-items-center gap-1">
+                            <i class="bx bx-grid-alt me-1"></i> Grid / Table View
+                        </a>
+                    @endif
+                    @if(Route::has('attendance.report'))
+                        <a href="{{ route('attendance.report') }}" class="btn btn-sm btn-outline-info px-3 py-2 text-nowrap d-inline-flex align-items-center gap-1">
+                            <i class="bx bx-bar-chart-alt-2 me-1"></i> Reports
+                        </a>
+                    @endif
+                </div>
+            </div>
+            <div class="card-body p-3 p-md-4">
+                @include('admin.attendance.calendar')
+            </div>
+        </div>
+    </div>
+</div>
+<!-- ============ END ATTENDANCE MANAGEMENT SECTION ============ -->
+
     <div class="clock-camera-modal" id="clockCameraModal" aria-hidden="true">
         <div class="clock-camera-panel">
             <div class="clock-camera-header">

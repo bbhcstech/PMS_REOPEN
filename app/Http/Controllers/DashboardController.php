@@ -22,6 +22,7 @@ use App\Models\EmployeeDetail;
 use App\Models\Department;
 use App\Models\Designation;
 use App\Models\StickyNote;
+use App\Models\Holiday;
 use App\Models\User;
 use App\Services\SystemNotificationService;
 use Carbon\Carbon;
@@ -1185,6 +1186,126 @@ public function hrindex(Request $request)
         $officeRadiusMeters = self::OFFICE_RADIUS_METERS;
         $officeAddress = self::OFFICE_ADDRESS;
 
+        // Attendance Calendar Data for HR Dashboard
+        $calMonth = (int) ($request->filled('month') ? $request->month : now()->month);
+        $calYear = (int) ($request->filled('year') ? $request->year : now()->year);
+        $calUserId = $request->input('user_id');
+        $calDaysInMonth = Carbon::createFromDate($calYear, $calMonth, 1)->daysInMonth;
+        $calStartDate = Carbon::create($calYear, $calMonth, 1);
+        $calEndDate = $calStartDate->copy()->endOfMonth();
+
+        $hrUser = Auth::user();
+        $baseUsersQuery = User::with(['employeeDetail.department', 'employeeDetail.designation'])
+            ->where(function ($q) {
+                $q->whereNotIn(DB::raw('LOWER(COALESCE(role, ""))'), ['client']);
+            });
+
+        if ($hrUser && $hrUser->company_id && strtolower((string)$hrUser->role) === 'hr') {
+            $baseUsersQuery->where('company_id', $hrUser->company_id);
+        }
+
+        $allEmployees = $baseUsersQuery->orderBy('name')->get();
+        $users = $allEmployees;
+        $selectedUserId = $calUserId ?? ($allEmployees->first()?->id ?? $hrUser?->id);
+
+        $holidays = Holiday::whereBetween('date', [$calStartDate, $calEndDate])
+            ->get()
+            ->mapWithKeys(function ($holiday) {
+                return [
+                    Carbon::parse($holiday->date)->format('Y-m-d') => $holiday->occassion ?? $holiday->title ?? 'Holiday',
+                ];
+            })
+            ->toArray();
+
+        $attendances = Attendance::whereIn('user_id', $allEmployees->pluck('id'))
+            ->whereNull('archived_at')
+            ->whereMonth('date', $calMonth)
+            ->whereYear('date', $calYear)
+            ->get();
+
+        $attendances->each->append(['total_seconds', 'total_duration', 'clock_in_datetime', 'clock_out_datetime']);
+
+        $leavesQuery = Leave::query();
+        if (Schema::hasColumn('leaves', 'status')) {
+            $leavesQuery->where('status', 'approved');
+        }
+        if ($allEmployees->isNotEmpty()) {
+            $leavesQuery->whereIn('user_id', $allEmployees->pluck('id'));
+        }
+        $leavesQuery->where(function ($q) use ($calStartDate, $calEndDate, $calMonth, $calYear) {
+            $hasDateFilter = false;
+            if (Schema::hasColumn('leaves', 'start_date') && Schema::hasColumn('leaves', 'end_date')) {
+                $q->where(function ($sub) use ($calStartDate, $calEndDate) {
+                    $sub->whereDate('start_date', '<=', $calEndDate)
+                        ->whereDate('end_date', '>=', $calStartDate);
+                });
+                $hasDateFilter = true;
+            }
+            if (Schema::hasColumn('leaves', 'date')) {
+                if ($hasDateFilter) {
+                    $q->orWhere(function ($sub) use ($calMonth, $calYear) {
+                        $sub->whereMonth('date', $calMonth)->whereYear('date', $calYear);
+                    });
+                } else {
+                    $q->whereMonth('date', $calMonth)->whereYear('date', $calYear);
+                }
+            }
+        });
+        $leaves = $leavesQuery->get();
+
+        $attendanceMap = [];
+        foreach ($allEmployees as $u) {
+            for ($d = $calStartDate->copy(); $d->lte($calEndDate); $d->addDay()) {
+                $formattedDate = $d->format('Y-m-d');
+                $attendanceMap[$u->id][$formattedDate] = null;
+
+                if (array_key_exists($formattedDate, $holidays)) {
+                    $attendanceMap[$u->id][$formattedDate] = (object)[
+                        'status' => 'holiday',
+                        'occassion' => $holidays[$formattedDate]
+                    ];
+                }
+            }
+        }
+
+        foreach ($attendances as $att) {
+            $dateKey = Carbon::parse($att->date)->format('Y-m-d');
+            $attendanceMap[$att->user_id][$dateKey] = $att;
+        }
+
+        foreach ($leaves as $leave) {
+            $lStart = !empty($leave->start_date) ? Carbon::parse($leave->start_date) : (!empty($leave->date) ? Carbon::parse($leave->date) : null);
+            $lEnd = !empty($leave->end_date) ? Carbon::parse($leave->end_date) : $lStart;
+
+            if ($lStart) {
+                for ($curr = $lStart->copy(); $curr->lte($lEnd); $curr->addDay()) {
+                    if ($curr->gte($calStartDate) && $curr->lte($calEndDate)) {
+                        $dateKey = $curr->format('Y-m-d');
+                        $attendanceMap[$leave->user_id][$dateKey] = (object)[
+                            'status' => 'leave',
+                            'leave_type' => $leave->type ?? 'leave',
+                            'duration' => $leave->duration ?? 'full_day',
+                            'reason' => $leave->reason ?? null,
+                        ];
+                    }
+                }
+            }
+        }
+
+        foreach ($allEmployees as $u) {
+            for ($date = $calStartDate->copy(); $date->lte($calEndDate); $date->addDay()) {
+                $formattedDate = $date->format('Y-m-d');
+                if (!isset($attendanceMap[$u->id][$formattedDate])) {
+                    $attendanceMap[$u->id][$formattedDate] = (object)[ 'status' => 'absent' ];
+                }
+            }
+        }
+
+        $canManage = true;
+        $month = $calMonth;
+        $year = $calYear;
+        $daysInMonth = $calDaysInMonth;
+
         return view('dashboard-hr', compact(
             'totalEmployees',
             'activeEmployees',
@@ -1223,7 +1344,15 @@ public function hrindex(Request $request)
             'officeLatitude',
             'officeLongitude',
             'officeRadiusMeters',
-            'officeAddress'
+            'officeAddress',
+            'users',
+            'allEmployees',
+            'attendanceMap',
+            'month',
+            'year',
+            'daysInMonth',
+            'selectedUserId',
+            'canManage'
         ));
     }
 
