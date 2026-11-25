@@ -2,998 +2,191 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\BonusRule;
-use App\Models\DeductionComponent;
-use App\Models\OvertimeRule;
+use App\Http\Controllers\Concerns\Payroll\EmployeeSalaryAssignments;
+use App\Http\Controllers\Concerns\Payroll\PayrollHistoryAndExports;
+use App\Http\Controllers\Concerns\Payroll\PayrollPayslips;
+use App\Http\Controllers\Concerns\Payroll\PayrollProcessing;
+use App\Http\Controllers\Concerns\Payroll\SalaryStructures;
+use App\Models\Company;
+use App\Models\Department;
+use App\Models\EmployeeSalaryAssignment;
 use App\Models\Payroll;
-use App\Models\PayrollArchitecture;
-use App\Models\PayrollArchitectureVersion;
 use App\Models\PayrollAuditLog;
-use App\Models\PayrollCycle;
 use App\Models\PayrollHistory;
-use App\Models\Payslip;
-use App\Models\PayslipTemplate;
-use App\Models\SalaryComponent;
 use App\Models\SalaryStructure;
-use App\Models\SalaryStructureVersion;
-use App\Models\TaxRule;
-use App\Models\BusinessAddress;
-use App\Models\EmployeeDetail;
 use App\Services\PayrollCalculationService;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Str;
 
 class PayrollController extends Controller
 {
+    use SalaryStructures;
+    use EmployeeSalaryAssignments;
+    use PayrollProcessing;
+    use PayrollHistoryAndExports;
+    use PayrollPayslips;
+
+    use \App\Http\Controllers\Concerns\ManagesPayrollFormulas;
+
+    /**
+     * 1. Payroll Dashboard
+     */
     public function index(Request $request)
     {
         $this->authorizePayroll('payroll');
         $companyId = $this->selectedCompanyId($request);
 
-        return view('admin.payroll.index', [
-            'activeArchitecture' => $this->companyQuery(PayrollArchitecture::query(), $companyId)->where('is_active', true)->first(),
-            'cycles' => $this->companyQuery(PayrollCycle::query(), $companyId)->latest()->take(5)->get(),
-            'payrolls' => $this->companyQuery(Payroll::with('cycle'), $companyId)->latest()->take(10)->get(),
-            'payslipCount' => $this->payslipQuery($companyId)->count(),
-            'historyCount' => $this->payrollHistoryQuery($companyId)->count(),
+        $request->validate([
+            'month' => ['nullable', 'integer', 'between:1,12'],
+            'year' => ['nullable', 'integer', 'between:2000,2100'],
         ]);
-    }
+        $selectedMonth = (int) $request->input('month', now()->month);
+        $selectedYear = (int) $request->input('year', now()->year);
 
-    public function processing(Request $request, PayrollCalculationService $payrollService)
-    {
-        $this->authorizePayroll('payroll');
-        $companyId = $this->selectedCompanyId($request);
+        $payrollService = app(PayrollCalculationService::class);
+        $eligibleEmployees = $payrollService->getEligibleEmployees($companyId, null, null, null, $selectedYear, $selectedMonth);
+        $totalEmployees = $eligibleEmployees->count();
+        $startDate = Carbon::create($selectedYear, $selectedMonth, 1)->startOfMonth()->toDateString();
+        $endDate = Carbon::create($selectedYear, $selectedMonth, 1)->endOfMonth()->toDateString();
 
-        $year = (int) $request->input('year', date('Y'));
-        $month = (int) $request->input('month', date('n'));
-        $workingDays = (int) $request->input('working_days', 22);
-        $office = $request->input('office', 'all');
-        $employeeType = $request->input('employee_type', 'all');
-
-        $offices = BusinessAddress::pluck('branch_name')->filter()->unique()->toArray();
-        $dbEmpAddresses = EmployeeDetail::pluck('business_address')->filter()->unique()->toArray();
-        $officesList = array_unique(array_merge(['BBH', 'Kolkata', 'Main Office'], $offices, $dbEmpAddresses));
-
-        $empTypesList = ['Full Time', 'Part Time', 'Contract', 'Internship', 'Remote'];
-
-        // Check if existing payroll exists for period
-        $existingPayroll = $payrollService->checkExistingPayroll($companyId, $year, $month, $office, $employeeType);
-
-        $payrollRun = null;
-        $payrollItems = collect();
-
-        if ($existingPayroll) {
-            $payrollRun = $existingPayroll;
-            $payrollItems = PayrollHistory::where('payroll_id', $existingPayroll->id)->orderBy('id', 'asc')->get();
-        } elseif ($request->boolean('generate') || $request->isMethod('post')) {
-            $payrollRun = $payrollService->processPayrollRun($companyId, $year, $month, $workingDays, $office, $employeeType, auth()->id());
-            $payrollItems = PayrollHistory::where('payroll_id', $payrollRun->id)->orderBy('id', 'asc')->get();
-        } else {
-            // Auto calculate draft preview in-memory
-            $employees = $payrollService->getEligibleEmployees($companyId, $office, $employeeType);
-            $srNo = 1;
-            foreach ($employees as $employee) {
-                $line = $payrollService->calculateEmployeePayrollLine($employee, $year, $month, $workingDays, $srNo++);
-                $payrollItems->push((object)[
-                    'id' => null,
-                    'user_id' => $employee->id,
-                    'snapshot' => $line,
-                    'gross_salary' => $line['gross'],
-                    'net_salary' => $line['ac_gross'],
-                    'payroll_status' => 'Calculated',
-                ]);
-            }
+        // Use saved employee lines, never cached run totals or unsaved projections.
+        // Include department/office runs for the month; a rerun replaces an employee's older line.
+        $periodRuns = $this->companyQuery(Payroll::query(), $companyId)
+            ->whereDate('period_start', '>=', $startDate)
+            ->whereDate('period_end', '<=', $endDate)
+            ->orderByDesc('created_at')->orderByDesc('id')->get();
+        $currentPayroll = $periodRuns->first();
+        $runOrder = $periodRuns->pluck('id')->flip();
+        $savedLines = PayrollHistory::whereIn('payroll_id', $periodRuns->pluck('id'))
+            ->whereIn('user_id', $eligibleEmployees->pluck('id'))
+            ->get()->sort(function ($a, $b) use ($runOrder) {
+                return ($runOrder[$a->payroll_id] <=> $runOrder[$b->payroll_id]) ?: ($b->id <=> $a->id);
+            })->unique('user_id')->values();
+        $processedCount = $savedLines->count();
+        $pendingCount = max(0, $totalEmployees - $processedCount);
+        $grossTotal = $deductionTotal = $netTotal = $inHandTotal = $employerTotal = $ctcTotal = 0.0;
+        $counts = ['finalized' => 0, 'approved' => 0, 'reviewed' => 0, 'calculated' => 0, 'draft' => 0];
+        foreach ($savedLines as $line) {
+            $snapshot = $line->snapshot ?? [];
+            $gross = (float) ($snapshot['gross_salary'] ?? $line->gross_salary ?? 0);
+            $deductions = (float) ($snapshot['total_deductions'] ?? $line->total_deductions ?? 0);
+            $net = (float) ($snapshot['net_pay'] ?? $line->net_salary ?? 0);
+            $employer = (float) ($snapshot['total_employer_contribution'] ?? 0);
+            $grossTotal += $gross;
+            $deductionTotal += $deductions;
+            $netTotal += $net;
+            $inHandTotal += (float) ($snapshot['total_in_hand'] ?? $line->total_in_hand ?? $net);
+            $employerTotal += $employer;
+            $ctcTotal += (float) ($snapshot['ctc'] ?? $line->ctc ?? ($gross + $employer + ($snapshot['total_additional_earnings'] ?? 0)));
+            $status = strtolower((string) $line->payroll_status);
+            $counts[array_key_exists($status, $counts) ? $status : 'draft']++;
         }
+        $finalizedCount = $counts['finalized'];
+        $approvedCount = $counts['approved'];
+        $reviewedCount = $counts['reviewed'];
+        $calculatedCount = $counts['calculated'];
+        $draftCount = $counts['draft'];
 
-        // Calculate dynamic KPIs
-        $totalEmployees = $payrollItems->count();
-        $grossPayroll = 0.0;
-        $actualPayroll = 0.0;
-        $totalAbsent = 0.0;
-        $totalPresent = 0.0;
-        $totalLeave = 0.0;
-
-        foreach ($payrollItems as $item) {
-            $snap = is_array($item->snapshot) ? $item->snapshot : (json_decode($item->snapshot ?? '{}', true) ?: []);
-            $grossPayroll += (float) ($snap['gross'] ?? 0);
-            $actualPayroll += (float) ($snap['ac_gross'] ?? 0);
-            $totalAbsent += (float) ($snap['total_absent'] ?? 0);
-            $totalPresent += (float) ($snap['presents'] ?? 0);
-            $totalLeave += (float) ($snap['total_leave'] ?? 0);
-        }
-
-        $summary = [
+        $kpis = [
             'total_employees' => $totalEmployees,
-            'gross_payroll' => round($grossPayroll, 2),
-            'actual_payroll' => round($actualPayroll, 2),
-            'total_absent' => round($totalAbsent, 2),
-            'total_present' => round($totalPresent, 2),
-            'total_leave' => round($totalLeave, 2),
-            'payslips_count' => $payrollRun ? Payslip::where('payroll_id', $payrollRun->id)->count() : 0,
-            'pending_review' => ($payrollRun && $payrollRun->status !== 'finalized') ? 1 : 0,
+            'payroll_processed' => $processedCount,
+            'payroll_pending' => $pendingCount,
+            'total_gross' => $grossTotal,
+            'total_deductions' => $deductionTotal,
+            'total_net_pay' => $netTotal,
+            'total_in_hand' => $inHandTotal,
+            'total_employer_contribution' => $employerTotal,
+            'total_ctc' => $ctcTotal,
+            'selected_month' => $selectedMonth,
+            'selected_year' => $selectedYear,
+            'month_name' => Carbon::createFromDate($selectedYear, $selectedMonth, 1)->format('F'),
         ];
 
-        return view('admin.payroll.processing', [
-            'year' => $year,
-            'month' => $month,
-            'workingDays' => $workingDays,
-            'office' => $office,
-            'employeeType' => $employeeType,
-            'officesList' => $officesList,
-            'empTypesList' => $empTypesList,
-            'existingPayroll' => $existingPayroll,
-            'payrollRun' => $payrollRun,
-            'payrollItems' => $payrollItems,
-            'summary' => $summary,
-        ]);
-    }
-
-    public function calculate(Request $request, PayrollCalculationService $payrollService)
-    {
-        $this->authorizePayroll('payroll', 'create');
-
-        $request->validate([
-            'year' => ['required', 'integer', 'min:2020', 'max:2035'],
-            'month' => ['required', 'integer', 'min:1', 'max:12'],
-            'working_days' => ['required', 'integer', 'min:1', 'max:31'],
-            'office' => ['nullable', 'string'],
-            'employee_type' => ['nullable', 'string'],
-        ]);
-
-        $companyId = $this->selectedCompanyId($request);
-        $year = $request->integer('year');
-        $month = $request->integer('month');
-        $workingDays = $request->integer('working_days');
-        $office = $request->input('office', 'all');
-        $employeeType = $request->input('employee_type', 'all');
-
-        try {
-            $payroll = $payrollService->processPayrollRun($companyId, $year, $month, $workingDays, $office, $employeeType, auth()->id());
-            return redirect()->route('payroll.processing', [
-                'year' => $year,
-                'month' => $month,
-                'working_days' => $workingDays,
-                'office' => $office,
-                'employee_type' => $employeeType,
-            ])->with('success', 'Payroll calculated successfully for ' . date('F Y', mktime(0, 0, 0, $month, 1, $year)) . '.');
-        } catch (\Exception $e) {
-            return back()->with('error', $e->getMessage());
-        }
-    }
-
-    public function finalize(Request $request, Payroll $payroll, PayrollCalculationService $payrollService)
-    {
-        $this->authorizePayroll('payroll', 'create');
-
-        try {
-            $payrollService->finalizePayroll($payroll, auth()->id());
-            return back()->with('success', 'Payroll run #' . $payroll->id . ' has been finalized successfully.');
-        } catch (\Exception $e) {
-            return back()->with('error', $e->getMessage());
-        }
-    }
-
-    public function recalculate(Request $request, Payroll $payroll, PayrollCalculationService $payrollService)
-    {
-        $this->authorizePayroll('payroll', 'create');
-
-        $meta = $payroll->metadata ?? [];
-        $year = (int) ($meta['year'] ?? date('Y', strtotime($payroll->period_start)));
-        $month = (int) ($meta['month'] ?? date('n', strtotime($payroll->period_start)));
-        $workingDays = (int) ($meta['working_days'] ?? $request->integer('working_days', 22));
-        $office = $meta['office'] ?? 'all';
-        $employeeType = $meta['employee_type'] ?? 'all';
-
-        try {
-            // Allow recalculating if status is draft, calculated, or review_required
-            if ($payroll->status === 'finalized') {
-                // If explicit admin recalculation requested, unlock status
-                $payroll->update(['status' => 'calculated']);
-            }
-            $payrollService->processPayrollRun($payroll->company_id, $year, $month, $workingDays, $office, $employeeType, auth()->id());
-            return back()->with('success', 'Payroll recalculated successfully.');
-        } catch (\Exception $e) {
-            return back()->with('error', $e->getMessage());
-        }
-    }
-
-    public function generatePayslipsForRun(Request $request, Payroll $payroll, PayrollCalculationService $payrollService)
-    {
-        $this->authorizePayroll('payslips', 'create');
-
-        try {
-            $count = $payrollService->generatePayslips($payroll, auth()->id());
-            return back()->with('success', "{$count} Payslips generated successfully.");
-        } catch (\Exception $e) {
-            return back()->with('error', $e->getMessage());
-        }
-    }
-
-    public function sendPayslipSingle(Request $request, Payslip $payslip, PayrollCalculationService $payrollService)
-    {
-        $this->authorizePayroll('payslips', 'create');
-
-        $sent = $payrollService->sendPayslip($payslip);
-        if ($sent) {
-            return back()->with('success', 'Payslip sent to ' . ($payslip->user?->email ?: 'employee') . ' successfully.');
-        }
-        return back()->with('error', 'Failed to send payslip. Please check email configuration.');
-    }
-
-    public function export(Request $request, Payroll $payroll)
-    {
-        $this->authorizePayroll('payroll');
-
-        $query = PayrollHistory::where('payroll_id', $payroll->id);
-        if ($request->filled('selected_ids')) {
-            $ids = array_filter(explode(',', (string) $request->input('selected_ids')));
-            if (!empty($ids)) {
-                $query->whereIn('user_id', $ids);
-            }
-        }
-        $items = $query->get();
-        $fileName = 'Payroll_' . date('Y_m', strtotime($payroll->period_start)) . '_Export.csv';
-
-        $headers = [
-            'Content-Type' => 'text/csv',
-            'Content-Disposition' => "attachment; filename=\"$fileName\"",
-            'Pragma' => 'no-cache',
-            'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
-            'Expires' => '0',
+        $statusBreakdown = [
+            'finalized' => $finalizedCount,
+            'approved' => $approvedCount,
+            'reviewed' => $reviewedCount,
+            'calculated' => $calculatedCount,
+            'draft' => $draftCount,
+            'total' => max(1, $processedCount ?: $totalEmployees),
         ];
 
-        $callback = function () use ($items) {
-            $file = fopen('php://output', 'w');
-            
-            // CSV Header Row matching section 8 requirements
-            fputcsv($file, [
-                'Sr. No',
-                'Employee ID',
-                'Employee Name',
-                'Initial Leave Balance',
-                'Full Leave',
-                'Half Leave',
-                'Current Leave Balance',
-                'Full Absent',
-                'Half Absent',
-                'Total Absent',
-                'Presents',
-                'Basic',
-                'HRA',
-                'Special',
-                'Gross',
-                'Actual Basic',
-                'Actual HRA',
-                'Actual Special',
-                'Actual Gross',
-                'Status',
+        $recentPayrolls = $this->dashboardSection('recent payroll runs', fn () => $this->companyQuery(Payroll::query(), $companyId)->latest()->take(6)->get(), collect());
+        $totalPayrollRuns = $this->dashboardSection('payroll run count', fn () => $this->companyQuery(Payroll::query(), $companyId)->count(), 0);
+        $structuresCount = $this->dashboardSection('salary structure count', fn () => SalaryStructure::where('status', 'active')
+            ->when($companyId && Schema::hasColumn('salary_structures', 'company_id'), fn ($q) => $q->where('company_id', $companyId))
+            ->count(), 0);
+        $assignmentsCount = $this->dashboardSection('salary assignment count', fn () => EmployeeSalaryAssignment::where('status', 'active')
+            ->when($companyId && Schema::hasColumn('employee_salary_assignments', 'company_id'), fn ($q) => $q->where('company_id', $companyId))
+            ->count(), 0);
+        $payslipCount = $this->dashboardSection('payslip count', fn () => $this->payslipQuery($companyId)->count(), 0);
+        $latestPayroll = $currentPayroll;
+
+        return view('admin.payroll.index', compact(
+            'kpis',
+            'statusBreakdown',
+            'recentPayrolls',
+            'structuresCount',
+            'assignmentsCount',
+            'payslipCount',
+            'totalPayrollRuns',
+            'latestPayroll'
+        ));
+    }
+
+    /**
+     * Working days of a payroll month from the company's Work Schedule: calendar days minus weekly
+     * offs, company holidays and special holidays (WorkScheduleService::getHolidaysAndOffDays).
+     */
+    private function monthWorkingDays(int $year, int $month, ?int $companyId): int
+    {
+        return app(PayrollCalculationService::class)->workingDaysInMonth($year, $month, $companyId);
+    }
+
+    /**
+     * Runs one dashboard data section; a failure is logged with its cause and the section falls back
+     * to an empty value instead of turning the whole Payroll page into a 500 error.
+     */
+    private function dashboardSection(string $section, callable $callback, $default)
+    {
+        try {
+            return $callback();
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Payroll dashboard section failed: ' . $section, [
+                'company_id' => auth()->user()?->company_id,
+                'error' => $e->getMessage(),
+                'file' => $e->getFile() . ':' . $e->getLine(),
             ]);
-
-            foreach ($items as $item) {
-                $s = is_array($item->snapshot) ? $item->snapshot : (json_decode($item->snapshot ?? '{}', true) ?: []);
-                fputcsv($file, [
-                    $s['sr_no'] ?? '-',
-                    $s['employee_id'] ?? '-',
-                    $s['employee_name'] ?? '-',
-                    $s['initial_leave_balance'] ?? 0,
-                    $s['full_leave'] ?? 0,
-                    $s['half_leave'] ?? 0,
-                    $s['current_leave_balance'] ?? 0,
-                    $s['full_absent'] ?? 0,
-                    $s['half_absent'] ?? 0,
-                    $s['total_absent'] ?? 0,
-                    $s['presents'] ?? 0,
-                    $s['basic'] ?? 0,
-                    $s['hra'] ?? 0,
-                    $s['special'] ?? 0,
-                    $s['gross'] ?? 0,
-                    $s['ac_basic'] ?? 0,
-                    $s['ac_hra'] ?? 0,
-                    $s['ac_special'] ?? 0,
-                    $s['ac_gross'] ?? 0,
-                    $item->payroll_status ?? 'Calculated',
-                ]);
-            }
-
-            fclose($file);
-        };
-
-        return response()->stream($callback, 200, $headers);
+            return $default;
+        }
     }
 
-    public function architectures()
+    private function authorizePayroll(string $moduleSlug = 'payroll', string $permission = 'view'): void
     {
-        $this->authorizePayroll('payroll-architectures');
-        $companyId = $this->selectedCompanyId(request());
-
-        return view('admin.payroll.architectures', [
-            'architectures' => $this->companyQuery(PayrollArchitecture::query(), $companyId)->latest()->get(),
-            'types' => ['standard', 'startup', 'hourly', 'contract', 'project_based', 'commission_based', 'custom'],
-        ]);
-    }
-
-    public function storeArchitecture(Request $request)
-    {
-        $this->authorizePayroll('payroll-architectures', 'create');
-
-        $data = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'type' => ['required', 'string', 'max:50'],
-            'description' => ['nullable', 'string'],
-            'effective_date' => ['nullable', 'date'],
-        ]);
-
-        $architecturePayload = [
-            ...$data,
-            'code' => Str::slug($data['name']) . '-' . Str::upper(Str::random(4)),
-            'created_by' => auth()->id(),
-            'version' => 1,
-        ];
-        if (Schema::hasColumn('payroll_architectures', 'company_id')) {
-            $architecturePayload['company_id'] = auth()->user()?->company_id;
+        $role = strtolower((string)(auth()->user()?->role ?? ''));
+        if (!in_array($role, ['admin', 'superadmin', 'administrator', 'hr'], true)) {
+            abort(403, 'Unauthorized. Payroll management is restricted to Admin and permitted HR accounts.');
         }
 
-        $architecture = PayrollArchitecture::create($architecturePayload);
-
-        $this->versionArchitecture($architecture);
-        $this->audit('created_architecture', $architecture, null, $architecture->toArray(), $request);
-
-        return back()->with('success', 'Payroll architecture created.');
-    }
-
-    public function activateArchitecture(Request $request, PayrollArchitecture $architecture)
-    {
-        $this->authorizePayroll('payroll-architectures', 'edit');
-
-        DB::transaction(function () use ($request, $architecture) {
-            PayrollArchitecture::where('is_active', true)->update(['is_active' => false]);
-            $old = $architecture->toArray();
-            $architecture->update(['is_active' => true, 'version' => $architecture->version + 1]);
-            $this->versionArchitecture($architecture->fresh());
-            $this->audit('activated_architecture', $architecture, $old, $architecture->fresh()->toArray(), $request);
-        });
-
-        return back()->with('success', 'Active payroll architecture updated.');
-    }
-
-    public function salaryStructures()
-    {
-        $this->authorizePayroll('salary-structures');
-        $companyId = $this->selectedCompanyId(request());
-
-        return view('admin.payroll.salary-structures', [
-            'structures' => $this->companyQuery(SalaryStructure::withCount('components'), $companyId)->latest()->get(),
-            'components' => SalaryComponent::with('salaryStructure')->orderBy('sort_order')->latest()->get(),
-        ]);
-    }
-
-    public function storeSalaryStructure(Request $request)
-    {
-        $this->authorizePayroll('salary-structures', 'create');
-
-        $data = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'description' => ['nullable', 'string'],
-            'effective_date' => ['nullable', 'date'],
-        ]);
-
-        $structurePayload = [
-            ...$data,
-            'code' => Str::slug($data['name']) . '-' . Str::upper(Str::random(4)),
-            'created_by' => auth()->id(),
-            'version' => 1,
-        ];
-        if (Schema::hasColumn('salary_structures', 'company_id')) {
-            $structurePayload['company_id'] = auth()->user()?->company_id;
-        }
-
-        $structure = SalaryStructure::create($structurePayload);
-
-        $this->versionSalaryStructure($structure);
-        $this->audit('created_salary_structure', $structure, null, $structure->toArray(), $request);
-
-        return back()->with('success', 'Salary structure created.');
-    }
-
-    public function storeSalaryComponent(Request $request)
-    {
-        $this->authorizePayroll('salary-structures', 'create');
-
-        $data = $request->validate([
-            'salary_structure_id' => ['nullable', 'exists:salary_structures,id'],
-            'name' => ['required', 'string', 'max:255'],
-            'component_type' => ['required', 'string', 'max:60'],
-            'calculation_type' => ['required', 'string', 'max:60'],
-            'value' => ['nullable', 'numeric'],
-            'formula' => ['nullable', 'string'],
-            'taxable' => ['nullable', 'boolean'],
-            'required' => ['nullable', 'boolean'],
-            'effective_date' => ['nullable', 'date'],
-        ]);
-
-        $component = SalaryComponent::create([
-            ...$data,
-            'code' => Str::slug($data['name']),
-            'taxable' => $request->boolean('taxable'),
-            'required' => $request->boolean('required'),
-        ]);
-
-        $this->audit('created_salary_component', $component, null, $component->toArray(), $request);
-
-        return back()->with('success', 'Salary component added.');
-    }
-
-    public function deductionRules()
-    {
-        $this->authorizePayroll('deduction-rules');
-
-        return $this->rulesView('Deduction Rules', 'deduction-rules', DeductionComponent::latest()->get());
-    }
-
-    public function storeDeductionRule(Request $request)
-    {
-        $this->authorizePayroll('deduction-rules', 'create');
-        $rule = DeductionComponent::create($this->rulePayload($request, 'deduction_type'));
-        $this->audit('created_deduction_rule', $rule, null, $rule->toArray(), $request);
-
-        return back()->with('success', 'Deduction rule saved.');
-    }
-
-    public function bonusRules()
-    {
-        $this->authorizePayroll('bonus-rules');
-
-        return $this->rulesView('Bonus Rules', 'bonus-rules', BonusRule::latest()->get());
-    }
-
-    public function storeBonusRule(Request $request)
-    {
-        $this->authorizePayroll('bonus-rules', 'create');
-        $rule = BonusRule::create($this->rulePayload($request, 'bonus_type'));
-        $this->audit('created_bonus_rule', $rule, null, $rule->toArray(), $request);
-
-        return back()->with('success', 'Bonus rule saved.');
-    }
-
-    public function taxRules()
-    {
-        $this->authorizePayroll('tax-rules');
-
-        return $this->rulesView('Tax Rules', 'tax-rules', TaxRule::latest()->get());
-    }
-
-    public function storeTaxRule(Request $request)
-    {
-        $this->authorizePayroll('tax-rules', 'create');
-        $data = $this->baseRuleValidation($request);
-        $rule = TaxRule::create([
-            'code' => Str::slug($data['name']),
-            'name' => $data['name'],
-            'country' => $request->input('country', 'custom'),
-            'formula' => $data['formula'] ?? null,
-            'effective_date' => $data['effective_date'] ?? null,
-            'slabs' => $this->jsonInput($request->input('slabs')),
-            'exemptions' => $this->jsonInput($request->input('exemptions')),
-        ]);
-        $this->audit('created_tax_rule', $rule, null, $rule->toArray(), $request);
-
-        return back()->with('success', 'Tax rule saved.');
-    }
-
-    public function overtimeRules()
-    {
-        $this->authorizePayroll('overtime-rules');
-
-        return $this->rulesView('Overtime Rules', 'overtime-rules', OvertimeRule::latest()->get());
-    }
-
-    public function storeOvertimeRule(Request $request)
-    {
-        $this->authorizePayroll('overtime-rules', 'create');
-        $data = $this->baseRuleValidation($request);
-        $rule = OvertimeRule::create([
-            'code' => Str::slug($data['name']),
-            'name' => $data['name'],
-            'overtime_type' => $request->input('rule_type', 'weekday'),
-            'multiplier' => $request->input('multiplier', 1),
-            'formula' => $data['formula'] ?? null,
-            'effective_date' => $data['effective_date'] ?? null,
-        ]);
-        $this->audit('created_overtime_rule', $rule, null, $rule->toArray(), $request);
-
-        return back()->with('success', 'Overtime rule saved.');
-    }
-
-    public function cycles()
-    {
-        $this->authorizePayroll('payroll-cycles');
-        $companyId = $this->selectedCompanyId(request());
-
-        return view('admin.payroll.cycles', [
-            'cycles' => $this->companyQuery(PayrollCycle::query(), $companyId)->latest()->get(),
-            'cycleTypes' => ['monthly', 'weekly', 'biweekly', 'quarterly', 'half_yearly', 'yearly', 'custom'],
-        ]);
-    }
-
-    public function storeCycle(Request $request)
-    {
-        $this->authorizePayroll('payroll-cycles', 'create');
-
-        $data = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'cycle_type' => ['required', 'string', 'max:60'],
-            'start_date' => ['required', 'date'],
-            'end_date' => ['required', 'date', 'after_or_equal:start_date'],
-            'pay_date' => ['nullable', 'date'],
-            'lock_date' => ['nullable', 'date'],
-            'description' => ['nullable', 'string'],
-        ]);
-
-        $cyclePayload = [
-            ...$data,
-            'created_by' => auth()->id(),
-        ];
-        if (Schema::hasColumn('payroll_cycles', 'company_id')) {
-            $cyclePayload['company_id'] = auth()->user()?->company_id;
-        }
-
-        $cycle = PayrollCycle::create($cyclePayload);
-        $this->audit('created_payroll_cycle', $cycle, null, $cycle->toArray(), $request);
-
-        return back()->with('success', 'Payroll cycle created.');
-    }
-
-    public function process(Request $request, PayrollCycle $cycle)
-    {
-        $this->authorizePayroll('payroll', 'create');
-
-        $payrollPayload = [
-            'payroll_cycle_id' => $cycle->id,
-            'status' => 'draft',
-            'period_start' => $cycle->start_date,
-            'period_end' => $cycle->end_date,
-            'pay_date' => $cycle->pay_date,
-            'generated_by' => auth()->id(),
-            'attendance_summary' => ['source' => 'attendance_leave_timesheet_integration'],
-        ];
-        if (Schema::hasColumn('payrolls', 'company_id')) {
-            $payrollPayload['company_id'] = ($cycle->company_id ?? null) ?: auth()->user()?->company_id;
-        }
-
-        $payroll = Payroll::create($payrollPayload);
-
-        $this->audit('generated_payroll_draft', $payroll, null, $payroll->toArray(), $request);
-
-        return redirect()->route('payroll.index')->with('success', 'Payroll draft generated.');
-    }
-
-    public function payslips()
-    {
-        $this->authorizePayroll('payslips');
-
-        return view('admin.payroll.payslips', [
-            'payslips' => $this->payslipQuery($this->selectedCompanyId(request()))->latest()->get(),
-            'templates' => PayslipTemplate::latest()->get(),
-        ]);
-    }
-
-    public function reports()
-    {
-        $this->authorizePayroll('payroll-reports');
-
-        return view('admin.payroll.reports', [
-            'payrolls' => $this->companyQuery(Payroll::query(), $this->selectedCompanyId(request()))->latest()->get(),
-            'histories' => $this->payrollHistoryQuery($this->selectedCompanyId(request()))->latest()->take(100)->get(),
-        ]);
-    }
-
-    public function auditLogs()
-    {
-        $this->authorizePayroll('payroll-audit-logs');
-
-        return view('admin.payroll.audit-logs', [
-            'logs' => PayrollAuditLog::latest()->paginate(50),
-        ]);
-    }
-
-    public function viewPayslip(Payslip $payslip)
-    {
-        $this->authorizePayroll('payslips');
-        $payslip->load('user');
-
-        return view('admin.payroll.payslip-view', compact('payslip'));
-    }
-
-    public function printPayslip(Payslip $payslip)
-    {
-        $this->authorizePayroll('payslips');
-        $payslip->load('user');
-
-        return view('admin.payroll.payslip-print', compact('payslip'));
-    }
-
-    public function exportReport(Request $request)
-    {
-        $this->authorizePayroll('payroll-reports');
-        $companyId = $this->selectedCompanyId($request);
-
-        $payrolls = $this->companyQuery(Payroll::query(), $companyId)->latest()->get();
-        $fileName = 'Payroll_Report_' . date('Y_m_d') . '.csv';
-
-        $headers = [
-            'Content-Type'        => 'text/csv',
-            'Content-Disposition' => "attachment; filename=\"{$fileName}\"",
-            'Pragma'              => 'no-cache',
-            'Cache-Control'       => 'must-revalidate, post-check=0, pre-check=0',
-        ];
-
-        $callback = function () use ($payrolls) {
-            $file = fopen('php://output', 'w');
-            fputcsv($file, ['Period Start', 'Period End', 'Status', 'Gross Total', 'Deduction Total', 'Tax Total', 'Net Total', 'Generated At']);
-            foreach ($payrolls as $payroll) {
-                fputcsv($file, [
-                    $payroll->period_start,
-                    $payroll->period_end,
-                    $payroll->status,
-                    $payroll->gross_total,
-                    $payroll->deduction_total,
-                    $payroll->tax_total,
-                    $payroll->net_total,
-                    $payroll->created_at?->format('Y-m-d H:i'),
-                ]);
-            }
-            fclose($file);
-        };
-
-        return response()->stream($callback, 200, $headers);
-    }
-
-    public function policies()
-    {
-        // Delegate to PayrollPolicyController
-        return app(\App\Http\Controllers\PayrollPolicyController::class)->index(request());
-    }
-
-    public function settings()
-    {
-        return $this->placeholder('settings');
-    }
-
-    public function importExport(Request $request)
-    {
-        $this->authorizePayroll('payroll-import-export');
-        $companyId = $this->selectedCompanyId($request);
-
-        return view('admin.payroll.import-export', [
-            'importLogs' => \App\Models\PayrollImportLog::latest()->take(20)->get(),
-            'exportLogs' => \App\Models\PayrollExportLog::latest()->take(20)->get(),
-        ]);
-    }
-
-    public function importPayroll(Request $request)
-    {
-        $this->authorizePayroll('payroll-import-export', 'create');
-
-        $request->validate([
-            'import_file' => 'required|file|mimes:csv,txt,xlsx|max:5120',
-        ]);
-
-        $file = $request->file('import_file');
-        $path = $file->store('payroll-imports', 'local');
-
-        $log = \App\Models\PayrollImportLog::create([
-            'file_name'    => $file->getClientOriginalName(),
-            'file_type'    => $file->getClientMimeType(),
-            'file_path'    => $path,
-            'status'       => 'pending',
-            'processed_by' => auth()->id(),
-        ]);
-
-        $this->audit('payroll_import_uploaded', $log, null, $log->toArray(), $request);
-
-        return back()->with('success', 'File "' . $file->getClientOriginalName() . '" uploaded. Processing will begin shortly.');
-    }
-
-    public function exportCsv(Request $request)
-    {
-        $this->authorizePayroll('payroll-import-export');
-        $companyId = $this->selectedCompanyId($request);
-
-        $histories = $this->payrollHistoryQuery($companyId)->latest()->take(5000)->get();
-        $fileName  = 'Payroll_Full_Export_' . date('Y_m_d') . '.csv';
-
-        $headers = [
-            'Content-Type'        => 'text/csv',
-            'Content-Disposition' => "attachment; filename=\"{$fileName}\"",
-        ];
-
-        $callback = function () use ($histories) {
-            $file = fopen('php://output', 'w');
-            fputcsv($file, ['User ID', 'Period Start', 'Period End', 'Gross Salary', 'Total Deductions', 'Net Salary', 'Status']);
-            foreach ($histories as $h) {
-                fputcsv($file, [
-                    $h->user_id,
-                    $h->period_start,
-                    $h->period_end,
-                    $h->gross_salary,
-                    $h->total_deductions,
-                    $h->net_salary,
-                    $h->payroll_status,
-                ]);
-            }
-            fclose($file);
-        };
-
-        return response()->stream($callback, 200, $headers);
-    }
-
-    public function downloadTemplate()
-    {
-        $this->authorizePayroll('payroll-import-export');
-
-        $headers = [
-            'Content-Type'        => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="payroll_import_template.csv"',
-        ];
-
-        $callback = function () {
-            $file = fopen('php://output', 'w');
-            fputcsv($file, ['employee_id', 'basic_salary', 'hra', 'special_allowance', 'gross_salary', 'pf_deduction', 'esi_deduction', 'pt_deduction', 'net_salary', 'period_month', 'period_year', 'notes']);
-            fputcsv($file, ['EMP-001', '30000', '12000', '8000', '50000', '1800', '375', '200', '47625', '1', '2025', 'Sample row']);
-            fclose($file);
-        };
-
-        return response()->stream($callback, 200, $headers);
-    }
-
-    public function archive(Request $request)
-    {
-        $this->authorizePayroll('payroll-archive');
-        $companyId = $this->selectedCompanyId($request);
-
-        return view('admin.payroll.archive', [
-            'archives'    => \App\Models\PayrollArchive::with('archiver')->latest()->paginate(25),
-            'payrolls'    => $this->companyQuery(Payroll::query(), $companyId)->where('status', 'finalized')->latest()->get(),
-        ]);
-    }
-
-    public function archivePayroll(Request $request, Payroll $payroll)
-    {
-        $this->authorizePayroll('payroll-archive', 'create');
-
-        $request->validate([
-            'reason' => 'nullable|string|max:500',
-        ]);
-
-        DB::transaction(function () use ($request, $payroll) {
-            \App\Models\PayrollArchive::create([
-                'archivable_type' => Payroll::class,
-                'archivable_id'   => $payroll->id,
-                'snapshot'        => $payroll->load('histories', 'payslips')->toArray(),
-                'archived_by'     => auth()->id(),
-                'archived_at'     => now(),
-                'reason'          => $request->input('reason', 'Manual archive'),
-            ]);
-            $payroll->update(['status' => 'archived']);
-            $this->audit('payroll_archived', $payroll, ['status' => $payroll->getOriginal('status')], ['status' => 'archived'], $request);
-        });
-
-        return back()->with('success', 'Payroll run #' . $payroll->id . ' archived successfully.');
-    }
-
-    public function formulaBuilder(Request $request)
-    {
-        $this->authorizePayroll('formula-builder');
-
-        return view('admin.payroll.formula-builder', [
-            'formulas'    => \App\Models\PayrollFormula::latest()->paginate(20),
-            'categories'  => ['earnings', 'deduction', 'tax', 'bonus', 'custom'],
-            'variables'   => [
-                'BASIC', 'HRA', 'SPECIAL', 'GROSS', 'NET',
-                'PF', 'ESI', 'PT', 'TDS', 'BONUS',
-                'OVERTIME', 'ATTENDANCE_DAYS', 'WORKING_DAYS',
-                'BASIC_PERCENTAGE', 'CTC', 'MONTH_DAYS',
-            ],
-        ]);
-    }
-
-    public function storeFormula(Request $request)
-    {
-        $this->authorizePayroll('formula-builder', 'create');
-
-        $data = $request->validate([
-            'name'     => 'required|string|max:255',
-            'category' => 'required|in:earnings,deduction,tax,bonus,custom',
-            'formula'  => 'required|string|max:2000',
-            'description' => 'nullable|string|max:1000',
-        ]);
-
-        // Extract variables used (uppercase tokens A-Z_)
-        preg_match_all('/\b([A-Z][A-Z_]+)\b/', strtoupper($data['formula']), $matches);
-        $variablesUsed = array_unique($matches[1] ?? []);
-
-        $formula = \App\Models\PayrollFormula::create([
-            'name'           => $data['name'],
-            'code'           => Str::slug($data['name']),
-            'category'       => $data['category'],
-            'description'    => $data['description'] ?? null,
-            'formula'        => $data['formula'],
-            'variables_used' => $variablesUsed,
-            'is_valid'       => false,
-            'is_active'      => true,
-            'company_id'     => auth()->user()?->company_id,
-            'created_by'     => auth()->id(),
-            'updated_by'     => auth()->id(),
-        ]);
-
-        $this->audit('formula_created', $formula, null, $formula->toArray(), $request);
-
-        return back()->with('success', 'Formula "' . $formula->name . '" saved successfully.');
-    }
-
-    public function validateFormula(Request $request)
-    {
-        $this->authorizePayroll('formula-builder', 'create');
-
-        $request->validate([
-            'formula' => 'required|string|max:2000',
-            'inputs'  => 'nullable|array',
-        ]);
-
-        $formula   = strtoupper($request->input('formula'));
-        $inputs    = $request->input('inputs', []);
-        $testVars  = array_map('floatval', $inputs);
-
-        $result = \App\Models\PayrollFormula::evaluate($formula, $testVars);
-
-        if ($result === false) {
-            return response()->json(['valid' => false, 'error' => 'Invalid formula syntax. Only numeric arithmetic expressions with uppercase variable names are allowed.']);
-        }
-
-        return response()->json(['valid' => true, 'result' => round($result, 2)]);
-    }
-
-    public function destroyFormula(Request $request, \App\Models\PayrollFormula $formula)
-    {
-        $this->authorizePayroll('formula-builder', 'delete');
-        $this->audit('formula_deleted', $formula, $formula->toArray(), null, $request);
-        $formula->delete();
-
-        return back()->with('success', 'Formula deleted.');
-    }
-
-    public function destroyArchitecture(Request $request, PayrollArchitecture $architecture)
-    {
-        $this->authorizePayroll('payroll-architectures', 'delete');
-        $this->audit('architecture_deleted', $architecture, $architecture->toArray(), null, $request);
-        $architecture->delete();
-
-        return back()->with('success', 'Architecture deleted.');
-    }
-
-    public function destroySalaryComponent(Request $request, SalaryComponent $component)
-    {
-        $this->authorizePayroll('salary-structures', 'delete');
-        $this->audit('salary_component_deleted', $component, $component->toArray(), null, $request);
-        $component->delete();
-
-        return back()->with('success', 'Salary component removed.');
-    }
-
-    public function destroyDeductionRule(Request $request, DeductionComponent $rule)
-    {
-        $this->authorizePayroll('deduction-rules', 'delete');
-        $this->audit('deduction_rule_deleted', $rule, $rule->toArray(), null, $request);
-        $rule->delete();
-
-        return back()->with('success', 'Deduction rule deleted.');
-    }
-
-    public function destroyBonusRule(Request $request, BonusRule $rule)
-    {
-        $this->authorizePayroll('bonus-rules', 'delete');
-        $this->audit('bonus_rule_deleted', $rule, $rule->toArray(), null, $request);
-        $rule->delete();
-
-        return back()->with('success', 'Bonus rule deleted.');
-    }
-
-    public function destroyTaxRule(Request $request, TaxRule $rule)
-    {
-        $this->authorizePayroll('tax-rules', 'delete');
-        $this->audit('tax_rule_deleted', $rule, $rule->toArray(), null, $request);
-        $rule->delete();
-
-        return back()->with('success', 'Tax rule deleted.');
-    }
-
-    public function destroyOvertimeRule(Request $request, OvertimeRule $rule)
-    {
-        $this->authorizePayroll('overtime-rules', 'delete');
-        $this->audit('overtime_rule_deleted', $rule, $rule->toArray(), null, $request);
-        $rule->delete();
-
-        return back()->with('success', 'Overtime rule deleted.');
-    }
-
-    public function updateCycleStatus(Request $request, PayrollCycle $cycle)
-    {
-        $this->authorizePayroll('payroll-cycles', 'create');
-
-        $request->validate(['status' => 'required|in:draft,open,processing,closed,cancelled']);
-        $old = $cycle->status;
-        $cycle->update(['status' => $request->status]);
-        $this->audit('cycle_status_updated', $cycle, ['status' => $old], ['status' => $request->status], $request);
-
-        return back()->with('success', 'Cycle status updated to ' . ucfirst($request->status) . '.');
-    }
-
-    public function destroyCycle(Request $request, PayrollCycle $cycle)
-    {
-        $this->authorizePayroll('payroll-cycles', 'delete');
-        $this->audit('cycle_deleted', $cycle, $cycle->toArray(), null, $request);
-        $cycle->delete();
-
-        return back()->with('success', 'Payroll cycle deleted.');
-    }
-
-    public function placeholder(string $module)
-    {
-        $slug = match ($module) {
-            'policies'      => 'payroll-policies',
-            'settings'      => 'payroll-settings',
-            'import-export' => 'payroll-import-export',
-            'archive'       => 'payroll-archive',
-            'formula-builder' => 'formula-builder',
-            default         => 'payroll',
-        };
-
-        $this->authorizePayroll($slug);
-
-        return view('admin.payroll.placeholder', [
-            'title'      => Str::headline($module),
-            'moduleSlug' => $slug,
-        ]);
-    }
-
-
-    private function authorizePayroll(string $moduleSlug, string $permission = 'view'): void
-    {
-        if (! auth()->user()?->hasModulePermission($moduleSlug, $permission)) {
+        $user = auth()->user();
+        $moduleSlug = app(\App\Services\AdminWorkspaceModules::class)
+            ->subdivisionForRoute((string) request()->route()?->getName()) ?? $moduleSlug;
+        $allowed = $user?->hasModulePermission($moduleSlug, $permission);
+        if (! $allowed) {
             abort(403, 'You do not have permission to access this payroll module.');
         }
-    }
 
-    private function payslipQuery(?int $companyId = null)
-    {
-        $query = Payslip::query();
-        if (auth()->user()->normalizedRole() === 'employee') {
-            $query->where('user_id', auth()->id());
-        } elseif (auth()->user()->normalizedRole() === 'manager') {
-            $query->whereIn('user_id', auth()->user()->visibleEmployeeIds());
-        } elseif ($companyId) {
-            if (Schema::hasColumn('payslips', 'company_id')) {
-                $query->where('company_id', $companyId);
-            } else {
-                $query->whereHas('user', fn ($userQuery) => $userQuery->where('company_id', $companyId));
-            }
-        }
-
-        return $query;
+        // Company databases not migrated after a deploy are missing payroll tables/columns (500 on every page).
+        \App\Services\PayrollSchema::ensure();
     }
 
     private function payrollHistoryQuery(?int $companyId = null)
     {
         $query = PayrollHistory::query();
-
-        if (auth()->user()->normalizedRole() === 'employee') {
-            $query->where('user_id', auth()->id());
-        } elseif ($companyId) {
+        if ($companyId) {
             $query->whereHas('user', fn ($userQuery) => $userQuery->where('company_id', $companyId));
         }
-
         return $query;
     }
 
@@ -1004,7 +197,8 @@ class PayrollController extends Controller
         }
 
         $model = $query->getModel();
-        if (Schema::hasColumn($model->getTable(), 'company_id')) {
+        $conn = $model->getConnectionName() ?: config('database.default');
+        if (Schema::connection($conn)->hasColumn($model->getTable(), 'company_id')) {
             $query->where($model->getTable() . '.company_id', $companyId);
         }
 
@@ -1013,78 +207,10 @@ class PayrollController extends Controller
 
     private function selectedCompanyId(Request $request): ?int
     {
-        if (auth()->user()?->normalizedRole() !== 'admin') {
-            return auth()->user()?->company_id;
+        if (auth()->check() && auth()->user()->company_id) {
+            return (int) auth()->user()->company_id;
         }
-
         return $request->integer('company_id') ?: null;
-    }
-
-    private function versionArchitecture(PayrollArchitecture $architecture): void
-    {
-        PayrollArchitectureVersion::updateOrCreate(
-            ['payroll_architecture_id' => $architecture->id, 'version' => $architecture->version],
-            [
-                'snapshot' => $architecture->toArray(),
-                'effective_date' => $architecture->effective_date,
-                'created_by' => auth()->id(),
-            ]
-        );
-    }
-
-    private function versionSalaryStructure(SalaryStructure $structure): void
-    {
-        SalaryStructureVersion::updateOrCreate(
-            ['salary_structure_id' => $structure->id, 'version' => $structure->version],
-            [
-                'snapshot' => $structure->load('components')->toArray(),
-                'effective_date' => $structure->effective_date,
-                'created_by' => auth()->id(),
-            ]
-        );
-    }
-
-    private function rulesView(string $title, string $slug, $rules)
-    {
-        return view('admin.payroll.rules', compact('title', 'slug', 'rules'));
-    }
-
-    private function rulePayload(Request $request, string $typeColumn): array
-    {
-        $data = $this->baseRuleValidation($request);
-
-        return [
-            'name' => $data['name'],
-            'code' => Str::slug($data['name']),
-            $typeColumn => $request->input('rule_type', 'custom'),
-            'calculation_type' => $request->input('calculation_type', 'formula'),
-            'value' => $request->input('value'),
-            'formula' => $data['formula'] ?? null,
-            'effective_date' => $data['effective_date'] ?? null,
-        ];
-    }
-
-    private function baseRuleValidation(Request $request): array
-    {
-        return $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'rule_type' => ['nullable', 'string', 'max:80'],
-            'calculation_type' => ['nullable', 'string', 'max:60'],
-            'value' => ['nullable', 'numeric'],
-            'formula' => ['nullable', 'string'],
-            'effective_date' => ['nullable', 'date'],
-        ]);
-    }
-
-    private function jsonInput(?string $value): ?array
-    {
-        if (! $value) {
-            return null;
-        }
-
-        $decoded = json_decode($value, true);
-
-        return is_array($decoded) ? $decoded : ['raw' => $value];
     }
 
     private function audit(string $action, object $model, ?array $oldValue, ?array $newValue, Request $request): void
@@ -1100,5 +226,11 @@ class PayrollController extends Controller
             'new_value' => $newValue,
             'reason' => $request->input('reason'),
         ]);
+    }
+
+    private function getDepartments()
+    {
+        $col = Schema::hasColumn('departments', 'dpt_name') ? 'dpt_name' : (Schema::hasColumn('departments', 'name') ? 'name' : 'id');
+        return Department::orderBy($col, 'asc')->get();
     }
 }

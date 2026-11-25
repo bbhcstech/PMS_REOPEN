@@ -430,6 +430,12 @@
         border-right: none;
     }
     table.matrix-table thead th:first-child { text-align: left; }
+
+    #tab-comparison table.matrix-table th,
+    #tab-comparison table.matrix-table td {
+        padding: 14px 20px;
+        vertical-align: middle;
+    }
     
     .category-header-row td {
         background: #f1f5f9;
@@ -596,6 +602,29 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
+    }
+
+    /* Keep subscription details readable without changing other platform drawers. */
+    #companyDetailDrawer { overflow: hidden !important; }
+    #companyDetailDrawer .drawer-panel-custom { max-width: 820px; overflow: hidden !important; }
+    #companyDetailDrawer .drawer-header { flex: 0 0 auto; gap: 16px; overflow: visible !important; }
+    #companyDetailDrawer .drawer-company-identity { display: flex; align-items: center; gap: 14px; min-width: 0; }
+    #companyDetailDrawer #drawerCompanyLogoBox { flex-shrink: 0; }
+    #companyDetailDrawer .drawer-company-text { min-width: 0; overflow-wrap: anywhere; }
+    #companyDetailDrawer .drawer-company-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+    #companyDetailDrawer #closeDrawerBtn { flex: 0 0 auto; width: auto !important; min-width: 40px; }
+    #companyDetailDrawer .drawer-company-identity { flex: 1 1 auto; }
+    #companyDetailDrawer .drawer-panel-custom { height: 100dvh; max-height: 100dvh; }
+    #companyDetailDrawer .drawer-body { min-height: 0; min-width: 0; overflow-y: auto !important; overflow-x: hidden; }
+    #companyDetailDrawer .drawer-body > * { flex-shrink: 0; min-width: 0; }
+    #companyDetailDrawer .drawer-card-box { width: 100%; height: auto; max-height: none; overflow: visible !important; overflow-wrap: anywhere; }
+    #companyDetailDrawer .drawer-card-box .box-title { gap: 12px; flex-wrap: wrap; }
+    #companyDetailDrawer .drawer-card-box :is(strong, span) { min-width: 0; white-space: normal; }
+    @media (max-width: 575px) {
+        #companyDetailDrawer .drawer-header, #companyDetailDrawer .drawer-body { padding: 16px; }
+        #companyDetailDrawer .drawer-card-box { padding: 16px; }
+        #companyDetailDrawer .drawer-card-box [style*="grid-template-columns"] { grid-template-columns: minmax(0, 1fr) !important; }
+        #companyDetailDrawer .drawer-card-box [style*="justify-content: space-between"] { gap: 10px; flex-wrap: wrap; }
     }
 
     /* Modal Backdrop */
@@ -1352,6 +1381,24 @@
         background: #0F1530 !important;
         border-color: rgba(238, 241, 251, 0.09) !important;
     }
+    #companyDetailDrawer .subscription-override-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 10.5px;
+        font-weight: 800;
+        padding: 2px 6px;
+        border-radius: 4px;
+        white-space: nowrap;
+        color: #92400e !important;
+        background: #fffbeb !important;
+        border: 1px solid #fde68a;
+    }
+    :is([data-pms-theme="dark"], [data-theme="dark"], [data-bs-theme="dark"], .dark, .dark-mode) #companyDetailDrawer .subscription-override-badge {
+        color: #fcd34d !important;
+        background: #332719 !important;
+        border-color: #7c5b19;
+    }
 </style>
 
 
@@ -1410,7 +1457,7 @@
             continue;
         }
 
-        $subItem = $c->activeSubscription;
+        $subItem = ($c->activeSubscription ?? $c->subscriptions->sortByDesc('id')->first());
         $expiryObj = $subItem?->ends_at ?? $c->trial_ends_at;
         if ($expiryObj) {
             $dLeft = (int) $todayObj->diffInDays(\Carbon\Carbon::parse($expiryObj)->startOfDay(), false);
@@ -1498,7 +1545,7 @@
             <span class="lbl">Gold Plans</span>
             <div class="icon-box" style="background: #fffbeb; color: #d97706;"><i class="fas fa-crown"></i></div>
         </div>
-        <div class="val">{{ number_format($companies->filter(fn($c) => strtolower($c->activeSubscription?->plan?->name ?? '') === 'gold')->count()) }}</div>
+        <div class="val">{{ number_format($companies->filter(fn($c) => strtolower(($c->activeSubscription ?? $c->subscriptions->sortByDesc('id')->first())?->plan?->name ?? '') === 'gold')->count()) }}</div>
         <div class="sub positive">Popular tier</div>
     </div>
 
@@ -1508,7 +1555,7 @@
             <span class="lbl">Platinum &amp; Diamond</span>
             <div class="icon-box" style="background: #f5f3ff; color: #7c3aed;"><i class="fas fa-gem"></i></div>
         </div>
-        <div class="val">{{ number_format($companies->filter(fn($c) => in_array(strtolower($c->activeSubscription?->plan?->name ?? ''), ['platinum', 'diamond'], true))->count()) }}</div>
+        <div class="val">{{ number_format($companies->filter(fn($c) => in_array(strtolower(($c->activeSubscription ?? $c->subscriptions->sortByDesc('id')->first())?->plan?->name ?? ''), ['platinum', 'diamond'], true))->count()) }}</div>
         <div class="sub positive">High-tier enterprise</div>
     </div>
 </div>
@@ -1594,7 +1641,7 @@
                 <tbody>
                     @forelse($companies as $index => $company)
                     @php
-                        $sub = $company->activeSubscription;
+                        $sub = ($company->activeSubscription ?? $company->subscriptions->sortByDesc('id')->first());
                         $plan = $sub?->plan;
                         $planName = strtoupper($plan?->name ?? 'FREE');
                         $pClass = strtolower($planName);
@@ -1710,12 +1757,12 @@
         @foreach(['FREE', 'GOLD', 'PLATINUM', 'DIAMOND'] as $idx => $pName)
         @php
             $pClass = strtolower($pName);
-            $planObj = $plans->first(fn($p) => strtoupper($p->name) === $pName);
+            $planObj = $plans->first(fn($p) => strtoupper($p->slug) === $pName);
             $mPrice = $planObj?->monthly_price ?? match($pName) { 'FREE' => 0, 'GOLD' => 4999, 'PLATINUM' => 9999, 'DIAMOND' => 19999 };
             $yPrice = $planObj?->yearly_price ?? ($mPrice * 10);
             $uLimit = $planObj?->max_users ?? match($pName) { 'FREE' => 5, 'GOLD' => 25, 'PLATINUM' => 100, 'DIAMOND' => 0 };
             $sGb = round(($planObj?->max_storage_mb ?? match($pName) { 'FREE' => 5120, 'GOLD' => 25600, 'PLATINUM' => 102400, 'DIAMOND' => 512000 }) / 1024);
-            $subCount = $companies->filter(fn($c) => strtoupper($c->activeSubscription?->plan?->name ?? ($idx === 0 ? 'FREE' : '')) === $pName)->count();
+            $subCount = $companies->filter(fn($c) => strtoupper(($c->activeSubscription ?? $c->subscriptions->sortByDesc('id')->first())?->plan?->name ?? ($idx === 0 ? 'FREE' : '')) === $pName)->count();
             $totalModCount = max(1, $modules->count());
             $enabledModCount = $planObj && method_exists($planObj, 'modules') && $planObj->modules->count() > 0 
                 ? $planObj->modules->count() 
@@ -1845,6 +1892,7 @@
                                 </div>
                                 <div>
                                     <strong style="color: var(--text-main); font-size: 13.5px;">{{ $mod->name }}</strong>
+                                    <span class="badge-status {{ $mod->is_active ? 'badge-status-active' : 'badge-status-suspended' }}">{{ $mod->is_active ? 'Active' : 'Inactive' }}</span>
                                     <div style="font-size: 11.5px; color: var(--text-subtle);">{{ $mod->description ?? 'Module functionality.' }}</div>
                                 </div>
                             </div>
@@ -1852,26 +1900,14 @@
 
                         @foreach(['FREE', 'GOLD', 'PLATINUM', 'DIAMOND'] as $pIndex => $pName)
                         @php
-                            $planObj = $plans->first(fn($p) => strtoupper($p->name) === $pName);
+                            $planObj = $plans->first(fn($p) => strtoupper($p->slug) === $pName);
                             $planId = $planObj?->id ?? ($pIndex + 1);
                             
-                            // Default availability rules
-                            $isDefaultEnabled = match($pName) {
-                                'FREE' => in_array($mod->slug, ['dashboard', 'notifications', 'organization', 'hr', 'employees', 'attendance', 'leave-management']),
-                                'GOLD' => !in_array($mod->slug, ['payroll', 'analytics', 'advanced-reports']),
-                                'PLATINUM' => true,
-                                'DIAMOND' => true,
-                            };
-                            
-                            $isEnabledInDb = false;
-                            if ($planObj && method_exists($planObj, 'modules')) {
-                                $isEnabledInDb = $planObj->modules->contains('id', $mod->id);
-                            }
-                            $checked = $isEnabledInDb || $isDefaultEnabled;
+                            $checked = $planObj && app(\App\Services\PlanFeatureEntitlements::class)->allows($planObj, $mod->slug);
                         @endphp
                         <td>
                             <label class="toggle-switch-wrap">
-                                <input type="checkbox" class="matrix-toggle-input" data-planid="{{ $planId }}" data-moduleid="{{ $mod->id }}" {{ $checked ? 'checked' : '' }} />
+                                <input type="checkbox" class="matrix-toggle-input" data-planid="{{ $planId }}" data-moduleid="{{ $mod->id }}" @disabled(!$planObj) {{ $checked ? 'checked' : '' }} />
                                 <span class="toggle-slider"></span>
                             </label>
                         </td>
@@ -1943,7 +1979,7 @@
                     <label style="font-size: 12px; font-weight: 700; color: var(--text-subtle); text-transform: uppercase;">Select Tenant Company:</label>
                     <select id="overrideCompanySelect" style="width: 100%; padding: 10px 14px; border-radius: 10px; border: 1px solid var(--border-color); font-size: 14px; font-weight: 700; font-family: inherit; margin-top: 4px; display: block; background: #fff;">
                         @foreach($companies as $c)
-                            <option value="{{ $c->id }}">{{ $c->name }} (Current Plan: {{ strtoupper($c->activeSubscription?->plan?->name ?? 'FREE') }})</option>
+                            <option value="{{ $c->id }}">{{ $c->name }} (Current Plan: {{ strtoupper(($c->activeSubscription ?? $c->subscriptions->sortByDesc('id')->first())?->plan?->name ?? 'FREE') }})</option>
                         @endforeach
                     </select>
                 </div>
@@ -1964,7 +2000,9 @@
                 </thead>
                 <tbody id="companyOverrideTableBody">
                     @php
-                        $groupedModules = $modules->groupBy(fn($m) => $m->category ?? 'CORE PLATFORM');
+                        // One row per workspace feature; legacy alias rows (e.g. "deals" for Deals) are folded into it.
+                        $featureEntitlements = app(\App\Services\FeatureEntitlements::class);
+                        $groupedModules = $modules->reject(fn($m) => $featureEntitlements->isLegacyAlias($m->slug))->groupBy(fn($m) => $m->category ?? 'CORE PLATFORM');
                     @endphp
                     @foreach($groupedModules as $categoryName => $catModules)
                     <tr class="category-header-row" style="background: #f8fafc; font-weight: 700;">
@@ -1978,10 +2016,11 @@
                         <td style="text-align: left;">
                             <div style="display: flex; align-items: center; gap: 10px;">
                                 <div style="width: 28px; height: 28px; border-radius: 6px; background: #f1f5f9; color: #3b82f6; display: flex; align-items: center; justify-content: center; font-size: 13px;">
-                                    <i class="fas {{ $mod->icon ?? 'fa-cube' }}"></i>
+                                    <i class="{{ str_starts_with($mod->icon ?? '', 'bx-') ? 'bx ' . $mod->icon : 'fas fa-cube' }}"></i>
                                 </div>
                                 <div>
-                                    <strong style="color: var(--text-main); font-size: 13.5px;">{{ $mod->name }}</strong>
+                                    <strong style="color: var(--text-main); font-size: 13.5px;">{{ $mod->sidebar_name ?? $mod->name }}</strong>
+                                    <span class="badge-status {{ $mod->is_active ? 'badge-status-active' : 'badge-status-suspended' }}">{{ $mod->is_active ? 'Active' : 'Inactive' }}</span>
                                     <div style="font-size: 11.5px; color: var(--text-subtle);">{{ $mod->description ?? 'Module functionality' }}</div>
                                 </div>
                             </div>
@@ -2040,19 +2079,19 @@
 <!-- ============================================================ -->
 <!-- SUBSCRIPTION COMMAND CENTER DRAWER (PREMIUM DESIGN) -->
 <!-- ============================================================ -->
-<div class="drawer-overlay-custom" id="companyDetailDrawer">
+<div class="drawer-overlay-custom" id="companyDetailDrawer" data-live-preserve>
     <div class="drawer-panel-custom">
         <!-- DRAWER HEADER -->
         <div class="drawer-header">
-            <div style="display: flex; align-items: center; gap: 14px;">
+            <div class="drawer-company-identity">
                 <div id="drawerCompanyLogoBox" style="width: 48px; height: 48px; border-radius: 14px; background: #0f172a; color: #60a5fa; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 18px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
                     CO
                 </div>
-                <div>
-                    <h3 style="font-size: 20px; font-weight: 800; margin: 0; color: var(--text-main);" id="drawerCompanyName">Company Name</h3>
-                    <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
-                        <code style="font-family: monospace; font-size: 11.5px; font-weight: 700; color: #0284c7; background: #e0f2fe; padding: 2px 8px; border-radius: 4px;" id="drawerTenantId">#TEN-0001</code>
-                        <span style="font-size: 12px; color: var(--text-muted);" id="drawerCompanyDomain">company.bbhpms.io</span>
+                <div class="drawer-company-text">
+                    <h3 style="font-size: 20px; font-weight: 800; margin: 0; color: var(--text-main);" id="drawerCompanyName"></h3>
+                    <div class="drawer-company-meta">
+                        <code style="font-family: monospace; font-size: 11.5px; font-weight: 700; color: #0284c7; background: #e0f2fe; padding: 2px 8px; border-radius: 4px;" id="drawerTenantId"></code>
+                        <span style="font-size: 12px; color: var(--text-muted);" id="drawerCompanyDomain"></span>
                     </div>
                 </div>
             </div>
@@ -2179,7 +2218,7 @@
                     </div>
                     <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--border-subtle);">
                         <span><i class="fas fa-bolt" style="color: #d97706; margin-right: 8px;"></i> Payroll Rules &amp; Payslips</span>
-                        <span style="font-size: 10.5px; font-weight: 800; color: #d97706; background: #fffbeb; padding: 2px 6px; border-radius: 4px;">⚡ Custom Override</span>
+                        <span class="subscription-override-badge">⚡ Custom Override</span>
                     </div>
                     <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 0;">
                         <span style="color: var(--text-subtle);"><i class="fas fa-lock" style="margin-right: 8px;"></i> Advanced Intelligence Analytics</span>
@@ -2251,7 +2290,7 @@
                 <label style="font-size: 12px; font-weight: 700; color: var(--text-subtle); text-transform: uppercase;">Select Tenant Company:</label>
                 <select name="company_id" id="modalCompanySelect" style="width: 100%; padding: 10px 14px; border-radius: 10px; border: 1px solid var(--border-color); font-size: 14px; font-weight: 700; font-family: inherit; margin-top: 4px; background: var(--bg-surface); color: var(--text-main);">
                     @foreach($companies as $c)
-                        <option value="{{ $c->id }}">{{ $c->name }} (Current: {{ strtoupper($c->activeSubscription?->plan?->name ?? 'FREE') }})</option>
+                        <option value="{{ $c->id }}">{{ $c->name }} (Current: {{ strtoupper(($c->activeSubscription ?? $c->subscriptions->sortByDesc('id')->first())?->plan?->name ?? 'FREE') }})</option>
                     @endforeach
                 </select>
             </div>
@@ -2261,7 +2300,7 @@
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 6px;" id="modalPlanOptionsGrid">
                     @foreach(['FREE', 'GOLD', 'PLATINUM', 'DIAMOND'] as $pIdx => $pName)
                     @php
-                        $planObj = $plans->first(fn($p) => strtoupper($p->name) === $pName);
+                        $planObj = $plans->first(fn($p) => strtoupper($p->slug) === $pName);
                         $pId = $planObj?->id ?? $pName;
                         $pPrice = $planObj?->monthly_price ?? match($pName) { 'FREE' => 0, 'GOLD' => 4999, 'PLATINUM' => 9999, 'DIAMOND' => 19999 };
                         $pLevel = match($pName) { 'FREE' => 0, 'GOLD' => 1, 'PLATINUM' => 2, 'DIAMOND' => 3 };
@@ -2371,6 +2410,9 @@ document.addEventListener('DOMContentLoaded', function() {
             const planId = this.getAttribute('data-planid');
             const moduleId = this.getAttribute('data-moduleid');
             const enabled = this.checked ? 1 : 0;
+            const input = this;
+            const planInputs = Array.from(document.querySelectorAll('.matrix-toggle-input')).filter(item => item.getAttribute('data-planid') === planId);
+            planInputs.forEach(item => { item.disabled = true; });
 
             fetch("{{ Route::has('super-admin.plans.toggle-module') ? route('super-admin.plans.toggle-module') : route('superadmin.plans.toggle-module') }}", {
                 method: 'POST',
@@ -2381,11 +2423,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
                 body: JSON.stringify({ plan_id: planId, module_id: moduleId, enabled: enabled })
             })
-            .then(res => res.json())
-            .then(data => {
-                showToast(data.message || 'Plan feature access updated successfully.');
+            .then(async res => {
+                const data = await res.json();
+                if (!res.ok || data.success === false) throw new Error(data.message || 'Unable to save plan access.');
+                return data;
             })
-            .catch(() => showToast('Feature access updated.'));
+            .then(data => {
+                if (data.states) planInputs.forEach(item => {
+                    const state = data.states[item.getAttribute('data-moduleid')];
+                    if (state !== undefined) item.checked = Number(state) === 1;
+                });
+                showToast(data.message || 'Plan feature access updated successfully.');
+                if (overrideCompanySelect && overrideCompanySelect.value) loadCompanyFeatureStates(overrideCompanySelect.value);
+            })
+            .catch(() => {
+                input.checked = !enabled;
+                showToast('Plan feature access could not be saved. Please try again.');
+            })
+            .finally(() => { planInputs.forEach(item => { item.disabled = false; }); });
         });
     });
 
@@ -2393,18 +2448,20 @@ document.addEventListener('DOMContentLoaded', function() {
     const drawer = document.getElementById('companyDetailDrawer');
     const closeDrawerBtn = document.getElementById('closeDrawerBtn');
 
-    document.querySelectorAll('.open-company-drawer').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const compId = this.getAttribute('data-id');
-            const compName = this.getAttribute('data-name');
-            const tenantId = this.getAttribute('data-tenant');
-            const plan = (this.getAttribute('data-plan') || 'FREE').toUpperCase();
-            const domain = this.getAttribute('data-domain');
-            const users = parseFloat(this.getAttribute('data-users') || 0);
-            const userLimit = parseFloat(this.getAttribute('data-userlimit') || 100);
-            const storage = parseFloat(this.getAttribute('data-storage') || 0);
-            const storageLimit = parseFloat(this.getAttribute('data-storagelimit') || 10);
-            const logoUrl = this.getAttribute('data-logo');
+    document.addEventListener('click', function(event) {
+            const btn = event.target.closest('.open-company-drawer');
+            if (!btn) return;
+            event.preventDefault();
+            const compId = btn.getAttribute('data-id');
+            const compName = btn.getAttribute('data-name');
+            const tenantId = btn.getAttribute('data-tenant');
+            const plan = (btn.getAttribute('data-plan') || 'FREE').toUpperCase();
+            const domain = btn.getAttribute('data-domain');
+            const users = parseFloat(btn.getAttribute('data-users') || 0);
+            const userLimit = parseFloat(btn.getAttribute('data-userlimit') || 100);
+            const storage = parseFloat(btn.getAttribute('data-storage') || 0);
+            const storageLimit = parseFloat(btn.getAttribute('data-storagelimit') || 10);
+            const logoUrl = btn.getAttribute('data-logo');
 
             document.getElementById('drawerCompanyName').innerText = compName;
             document.getElementById('drawerTenantId').innerText = tenantId;
@@ -2456,8 +2513,8 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             // Timestamps table cells handling
-            const startsAtStr = this.getAttribute('data-startsat') || 'N/A';
-            const endsAtStr = this.getAttribute('data-endsat') || 'N/A';
+            const startsAtStr = btn.getAttribute('data-startsat') || 'N/A';
+            const endsAtStr = btn.getAttribute('data-endsat') || 'N/A';
 
             const assignedCell = document.getElementById('drawerAssignedTimeCell');
             if (assignedCell) assignedCell.innerText = startsAtStr;
@@ -2484,7 +2541,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             // Attach data attributes & update status pill inside drawer hero banner
-            const statusStr = (this.getAttribute('data-status') || 'Active').toLowerCase();
+            const statusStr = (btn.getAttribute('data-status') || 'Active').toLowerCase();
             const drawerStatusPill = document.getElementById('drawerStatusPill');
 
             if (drawerStatusPill) {
@@ -2538,7 +2595,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             if (drawer) drawer.classList.add('open');
-        });
     });
 
     if (closeDrawerBtn && drawer) {
@@ -2573,48 +2629,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
-            this.disabled = true;
-            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Suspending...';
-
-            const url = "/super-admin/companies/" + compId + "/suspend";
-
-            fetch(url, {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': "{{ csrf_token() }}",
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                }
-            })
-            .then(res => res.json())
-            .then(data => {
-                this.disabled = false;
-                this.innerHTML = 'Confirm Suspension';
-                suspendModal.classList.remove('open');
-                if (drawer) drawer.classList.remove('open');
-
-                showToast(data.message || 'Subscription access suspended successfully.');
-
-                const row = document.querySelector('tr[data-company-id="' + compId + '"]') || document.querySelector('input.row-sub-cb[value="' + compId + '"]')?.closest('tr');
-                if (row) {
-                    row.setAttribute('data-status', 'suspended');
-                    const statusPill = row.querySelector('.status-pill');
-                    if (statusPill) {
-                        statusPill.className = 'status-pill status-suspended';
-                        statusPill.innerHTML = '<span class="dot"></span> Suspended';
-                    }
-                }
-
-                setTimeout(() => window.location.reload(), 500);
-            })
-            .catch(() => {
-                this.disabled = false;
-                this.innerHTML = 'Confirm Suspension';
-                suspendModal.classList.remove('open');
-                if (drawer) drawer.classList.remove('open');
-                showToast('Subscription access suspended.');
-                setTimeout(() => window.location.reload(), 500);
-            });
+            window.location.href = "{{ url('/superadmin/companies') }}/" + compId + "/suspension";
         });
     }
 
@@ -3150,10 +3165,10 @@ document.addEventListener('DOMContentLoaded', function() {
         "{{ $c->id }}": {
             "id": "{{ $c->id }}",
             "name": @json($c->name),
-            "plan": "{{ strtoupper($c->activeSubscription?->plan?->name ?? 'FREE') }}",
+            "plan": "{{ strtoupper(($c->activeSubscription ?? $c->subscriptions->sortByDesc('id')->first())?->plan?->name ?? 'FREE') }}",
             "highest_level": {{ (int) ($c->highest_plan_level ?? 0) }},
             "highest_slug": "{{ strtolower($c->highest_plan_slug ?? 'free') }}",
-            "plan_features": @json($c->activeSubscription?->plan?->features ?? []),
+            "plan_features": @json(($c->activeSubscription ?? $c->subscriptions->sortByDesc('id')->first())?->plan?->features ?? []),
             "overrides": {
                 @foreach($c->companyModules as $cm)
                 "{{ $cm->id }}": {{ $cm->pivot->is_enabled ? 1 : 0 }},
@@ -3164,66 +3179,66 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     function renderCompanyFeatureOverrides(companyId) {
-        if (!companyId) return;
         const compData = window.companyOverridesMap[companyId];
-        if (!compData) return;
-
-        const selectedNameEl = document.getElementById('overrideSelectedCompanyName');
-        if (selectedNameEl) {
-            selectedNameEl.innerText = compData.name + ' (' + compData.plan + ' Plan)';
+        if (!companyId || !compData) {
+            ++featureStateGeneration;
+            document.querySelectorAll('.company-override-input').forEach(input => { input.checked = false; input.disabled = true; input.setAttribute('data-companyid', ''); });
+            return;
         }
+        if (overrideCompanySelect && String(overrideCompanySelect.value) !== String(companyId)) return;
+        const name = document.getElementById('overrideSelectedCompanyName');
+        if (name) name.textContent = compData.name + ' (' + compData.plan + ' Plan)';
+        document.querySelectorAll('.company-override-input').forEach(input => {
+            input.disabled = true;
+            input.setAttribute('data-companyid', companyId);
+        });
+        if (compData.states) applyCompanyFeatureStates(companyId, compData.states);
+        loadCompanyFeatureStates(companyId);
+    }
+    const overrideCompanySelect = document.getElementById('overrideCompanySelect');
 
-        const planName = compData.plan;
-        const planClass = planName.toLowerCase();
-        const planFeatures = Array.isArray(compData.plan_features) ? compData.plan_features : [];
+    const featureStatesUrl = @json(route('super-admin.subscriptions.feature-states', ['company' => '__COMPANY__']));
+    let featureStateGeneration = 0;
+    const escapeFeatureText = value => String(value ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
 
+    function loadCompanyFeatureStates(companyId) {
+        const generation = ++featureStateGeneration;
+        fetch(featureStatesUrl.replace('__COMPANY__', encodeURIComponent(companyId)), { headers: { Accept: 'application/json' }, cache: 'no-store' })
+            .then(res => res.ok ? res.json() : Promise.reject(new Error('Feature states unavailable')))
+            .then(data => {
+                if (generation !== featureStateGeneration) return;
+                if (!data || !data.states) return;
+                if (window.companyOverridesMap && window.companyOverridesMap[companyId]) window.companyOverridesMap[companyId].states = data.states;
+                applyCompanyFeatureStates(companyId, data.states);
+            })
+            .catch(() => {
+                if (generation === featureStateGeneration) showToast('Unable to load saved company features. Please select the company again.');
+            });
+    }
+
+    function applyCompanyFeatureStates(companyId, states) {
+        const selector = document.getElementById('overrideCompanySelect');
+        if (selector && String(selector.value) !== String(companyId)) return;
         document.querySelectorAll('.override-module-row').forEach(row => {
-            const modId = row.getAttribute('data-moduleid');
-            const modSlug = row.getAttribute('data-moduleslug');
+            const state = states[row.getAttribute('data-moduleid')];
+            if (!state) return;
+            const on = Number(state.effective) === 1;
             const checkbox = row.querySelector('.company-override-input');
+            if (checkbox) { checkbox.checked = on; checkbox.disabled = false; }
             const basePlanCell = row.querySelector('.base-plan-status-cell');
-            const overrideStatusCell = row.querySelector('.override-status-cell');
-
-            const isIncludedInBasePlan = planFeatures.includes('*') || 
-                                         planFeatures.includes(modSlug) || 
-                                         ['gold', 'platinum', 'diamond'].includes(planClass) || 
-                                         ['dashboard', 'notifications', 'organization'].includes(modSlug);
-
             if (basePlanCell) {
-                if (isIncludedInBasePlan) {
-                    basePlanCell.innerHTML = `<span class="plan-badge-cell plan-${['free','gold','platinum','diamond'].includes(planClass) ? planClass : 'gold'}">Included (${planName})</span>`;
-                } else {
-                    basePlanCell.innerHTML = `<span class="plan-badge-cell plan-free">Not Included (${planName})</span>`;
-                }
+                const plan = window.companyOverridesMap[companyId]?.plan || 'FREE';
+                basePlanCell.textContent = (Number(state.plan) === 1 ? 'Included' : 'Not Included') + ' (' + plan + ')';
             }
-
-            const hasExplicitOverride = (compData.overrides && compData.overrides[modId] !== undefined);
-            const overrideValue = hasExplicitOverride ? parseInt(compData.overrides[modId], 10) : null;
-
-            if (checkbox) {
-                checkbox.setAttribute('data-companyid', companyId);
-                if (hasExplicitOverride) {
-                    checkbox.checked = (overrideValue === 1);
-                } else {
-                    checkbox.checked = isIncludedInBasePlan;
-                }
-            }
-
-            if (overrideStatusCell) {
-                if (hasExplicitOverride) {
-                    if (overrideValue === 1) {
-                        overrideStatusCell.innerHTML = `<span style="font-size: 11px; font-weight: 700; color: #16a34a; background: #f0fdf4; border: 1px solid #bbf7d0; padding: 3px 8px; border-radius: 4px;"><i class="fas fa-circle-check"></i> Super Admin Granted</span>`;
-                    } else {
-                        overrideStatusCell.innerHTML = `<span style="font-size: 11px; font-weight: 700; color: #dc2626; background: #fef2f2; border: 1px solid #fecaca; padding: 3px 8px; border-radius: 4px;"><i class="fas fa-ban"></i> Super Admin Revoked</span>`;
-                    }
-                } else {
-                    overrideStatusCell.innerHTML = `<span style="font-size: 11px; font-weight: 700; color: var(--text-subtle); background: #f1f5f9; padding: 3px 8px; border-radius: 4px;">Plan Default</span>`;
-                }
-            }
+            const statusCell = row.querySelector('.override-status-cell');
+            if (!statusCell) return;
+            const source = state.blocked_by
+                ? `Off via ${escapeFeatureText(state.blocked_by)}`
+                : (state.override === null ? 'Plan Default' : (Number(state.override) === 1 ? 'Super Admin Granted' : 'Super Admin Revoked'));
+            statusCell.innerHTML = `<span style="font-size: 11px; font-weight: 700; color: ${on ? '#16a34a' : '#dc2626'}; background: ${on ? '#f0fdf4' : '#fef2f2'}; border: 1px solid ${on ? '#bbf7d0' : '#fecaca'}; padding: 3px 8px; border-radius: 4px;"><i class="fas ${on ? 'fa-circle-check' : 'fa-ban'}"></i> ${on ? 'Active' : 'Inactive'} · ${source}</span>`;
         });
     }
 
-    const overrideCompanySelect = document.getElementById('overrideCompanySelect');
     if (overrideCompanySelect) {
         overrideCompanySelect.addEventListener('change', function() {
             renderCompanyFeatureOverrides(this.value);
@@ -3231,7 +3246,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (overrideCompanySelect.value) {
             renderCompanyFeatureOverrides(overrideCompanySelect.value);
-        }
+        } else renderCompanyFeatureOverrides(null);
     }
 
     // Attach click listener to Manage Features button in drawer
@@ -3267,6 +3282,10 @@ document.addEventListener('DOMContentLoaded', function() {
             const enabled = this.checked ? 1 : 0;
 
             if (!compId || !modId) return;
+            const input = this;
+            document.querySelectorAll('.company-override-input').forEach(item => { item.disabled = true; });
+            if (overrideCompanySelect) overrideCompanySelect.disabled = true;
+            ++featureStateGeneration;
 
             fetch("{{ Route::has('super-admin.subscriptions.toggle-override') ? route('super-admin.subscriptions.toggle-override') : (Route::has('superadmin.subscriptions.toggle-override') ? route('superadmin.subscriptions.toggle-override') : url('/super-admin/subscriptions/toggle-override')) }}", {
                 method: 'POST',
@@ -3277,27 +3296,28 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
                 body: JSON.stringify({ company_id: compId, module_id: modId, enabled: enabled })
             })
-            .then(res => res.json())
+            .then(async res => {
+                const data = await res.json();
+                if (!res.ok || data.success === false) throw new Error(data.message || 'Unable to update feature access.');
+                return data;
+            })
             .then(data => {
                 if (window.companyOverridesMap && window.companyOverridesMap[compId]) {
                     if (!window.companyOverridesMap[compId].overrides) {
                         window.companyOverridesMap[compId].overrides = {};
                     }
                     window.companyOverridesMap[compId].overrides[modId] = enabled;
+                    if (data.states) window.companyOverridesMap[compId].states = data.states;
                 }
                 renderCompanyFeatureOverrides(compId);
                 showToast(data.message || 'Company feature override updated successfully.');
             })
             .catch(() => {
-                if (window.companyOverridesMap && window.companyOverridesMap[compId]) {
-                    if (!window.companyOverridesMap[compId].overrides) {
-                        window.companyOverridesMap[compId].overrides = {};
-                    }
-                    window.companyOverridesMap[compId].overrides[modId] = enabled;
-                }
+                input.checked = !enabled;
                 renderCompanyFeatureOverrides(compId);
-                showToast('Company feature override updated.');
-            });
+                showToast('Feature access could not be saved. Please try again.');
+            })
+            .finally(() => { if (overrideCompanySelect) overrideCompanySelect.disabled = false; });
         });
     });
 

@@ -22,6 +22,8 @@ class RecruitmentRequirement extends TenantModel
         'requirements_summary',
         'status',
         'created_by',
+        'pdf_header_image',
+        'pdf_footer_image',
     ];
 
     protected $casts = [
@@ -38,6 +40,16 @@ class RecruitmentRequirement extends TenantModel
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /** Header/footer image as an embeddable data URI for the PDF (DomPDF needs no file or network access). */
+    public function pdfImageDataUri(string $column): ?string
+    {
+        $path = $this->getAttribute($column);
+        if (! $path) return null;
+        $file = public_path($path);
+        if (! is_file($file)) return null;
+        return \App\Services\PdfDocument::imageSource($file);
     }
 
     public function getStatusBadgeAttribute(): string

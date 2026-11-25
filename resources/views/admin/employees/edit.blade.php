@@ -1078,6 +1078,10 @@
         <div class="orb orb-2"></div>
     </div>
 
+    @php
+        $returnUrl = request('return_url') ?: old('return_url', route('employees.index'));
+    @endphp
+
     <div class="container-fluid">
         <div class="page-header-enterprise fade-up-stagger">
             <div class="header-title">
@@ -1085,7 +1089,7 @@
                 <p style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; font-weight: 800 !important;">Update employee information and configuration settings</p>
             </div>
             <div>
-                <a href="{{ route('employees.index') }}" class="btn-header-enterprise">
+                <a href="{{ $returnUrl }}" class="btn-header-enterprise">
                     <i class="fas fa-arrow-left"></i>
                     BACK TO DIRECTORY
                 </a>
@@ -1099,12 +1103,12 @@
         @endif
 
         @if ($errors->any())
-            <div class="alert-custom-err fade-up-stagger" style="animation-delay: 0.05s;">
+            <div class="alert-custom-err fade-up-stagger" data-validation-summary role="alert" style="animation-delay: 0.05s;">
                 <div class="fw-bold mb-2"><i class="fas fa-exclamation-circle me-2"></i>Please fix the following errors:</div>
                 <ul class="mb-0 ps-4">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
+                    @foreach ($errors->getMessages() as $field => $messages) @foreach ($messages as $error)
+                        <li data-validation-field="{{ $field }}">{{ $error }}</li>
+                    @endforeach @endforeach
                 </ul>
             </div>
         @endif
@@ -1130,6 +1134,8 @@
                 <form id="employeeForm" action="{{ route('employees.update', $employee->id) }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     @method('PUT')
+
+                    <input type="hidden" name="return_url" value="{{ $returnUrl }}">
 
                     <!-- Hidden fields for new designation/department -->
                     <input type="hidden" name="new_designation" id="new_designation" value="">
@@ -1235,7 +1241,7 @@
                                             @if(!empty($designation->unique_code))
                                                 ({{ $designation->unique_code }})
                                             @endif
-                                            @if(!empty($designation->level))
+                                            @if($designation->level !== null)
                                                 - Level {{ $designation->level }}
                                             @endif
                                         </option>
@@ -1330,13 +1336,18 @@
                             </label>
                             <div class="input-group-premium">
                                 @php
-                                    $rawMobile = old('mobile_with_code') ?? ($ed->mobile ?? ($employee->mobile ?? ''));
+                                    $savedMobile = trim((string) ($employee->mobile ?? ''));
+                                    if ($savedMobile === '') {
+                                        $savedMobile = trim((string) ($ed->mobile ?? ''));
+                                    }
+                                    $rawMobile = old('mobile_with_code') ?? $savedMobile;
                                     $selectedMobileCode = old('mobile_country_code');
                                     $mobileValue = old('mobile');
+                                    $selectedCountry = old('country') ?? ($ed->country ?? ($employee->country ?? ''));
 
-                                    if (empty($selectedMobileCode) || empty($mobileValue)) {
-                                        $countryMap = \App\Support\CountryPhone::map();
-                                        $selectedMobileCode = '+91';
+                                    if ($selectedMobileCode === null || $mobileValue === null) {
+                                        $countryMap = \App\Support\CountryPhone::formMap();
+                                        $selectedMobileCode = \App\Support\CountryPhone::meta($selectedCountry)['dial_code'];
                                         $mobileValue = $rawMobile;
 
                                         if (!empty($rawMobile)) {
@@ -1354,6 +1365,8 @@
                                                 }
                                             }
                                         }
+                                        $selectedMobileCode = old('mobile_country_code', $selectedMobileCode);
+                                        $mobileValue = old('mobile', $mobileValue);
                                     }
                                     $selectedCountry = old('country') ?? ($ed->country ?? ($employee->country ?? ''));
                                 @endphp
@@ -1374,13 +1387,13 @@
                                 <div id="mobile-error" class="invalid-feedback mobile-error d-none"></div>
                             </div>
                             <small id="mobile_help_text" class="text-muted d-block mt-1" style="font-size: 0.7rem;">Select the country code and enter a 10-digit phone number.</small>
-                            <input type="hidden" name="mobile_with_code" id="mobile_with_code" value="{{ old('mobile_with_code') ?? ($ed->mobile ?? $employee->mobile ?? '') }}">
+                            <input type="hidden" name="mobile_with_code" id="mobile_with_code" value="{{ old('mobile_with_code') ?? $savedMobile }}">
                             <input type="hidden" id="employee_id_val" value="{{ $employee->id }}">
                             @error('mobile_country_code')
-                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                                <div data-validation-field="mobile_country_code" class="invalid-feedback d-block">{{ $message }}</div>
                             @enderror
                             @error('mobile')
-                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                                <div data-validation-field="mobile" class="invalid-feedback d-block">{{ $message }}</div>
                             @enderror
                         </div>
 
@@ -1427,7 +1440,7 @@
 
                         <div class="col-md-4">
                             <label class="form-label-premium">
-                                <span><i class="fas fa-user-friends"></i> Reporting To</span>
+                                <span><i class="fas fa-users"></i> Reporting To</span>
                                 <span class="optional-badge">Optional</span>
                             </label>
                             @php $selectedReporting = old('reporting_to') ?? ($ed->reporting_to ?? ''); @endphp
@@ -1466,7 +1479,12 @@
                                 <option value="">Select Role</option>
                                 <option value="employee" {{ $role === 'employee' ? 'selected' : '' }}>Employee</option>
                                 <option value="admin" {{ $role === 'admin' ? 'selected' : '' }}>Admin</option>
+                                <option value="manager" {{ $role === 'manager' ? 'selected' : '' }}>Manager</option>
+                                <option value="hr" {{ $role === 'hr' ? 'selected' : '' }}>HR</option>
                             </select>
+                            @error('user_role')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
                         </div>
 
                         <div class="col-md-6">
@@ -1512,7 +1530,7 @@
                                 <span><i class="fas fa-code"></i> Skills</span>
                                 <span class="optional-badge">Optional</span>
                             </label>
-                            <textarea name="skills" class="form-control-premium" rows="2" placeholder="Comma separated skills (e.g., Laravel, Vue.js, React)">{{ old('skills') ?? ($ed->skills ?? $employee->skills ?? '') }}</textarea>
+                            <textarea name="skills" class="form-control-premium" rows="2" placeholder="Comma separated skills (e.g., Laravel, Vue.js, React)">{{ old('skills') ?? (!empty($ed?->clean_skills_array) ? implode(', ', $ed->clean_skills_array) : '') }}</textarea>
                         </div>
 
                         <div class="col-12">
@@ -1606,9 +1624,9 @@
                         <div class="col-md-4">
                             <label class="form-label-premium">
                                 <span><i class="fas fa-building"></i> Business Address</span>
-                                <span class="mandatory-badge">Required</span>
+                                <span class="optional-badge">Optional</span>
                             </label>
-                            <textarea name="business_address" class="form-control-premium" required rows="2">{{ old('business_address') ?? ($ed->business_address ?? $employee->business_address ?? 'Kolkata') }}</textarea>
+                            <textarea name="business_address" class="form-control-premium" rows="2">{{ old('business_address') ?? ($ed->business_address ?? $employee->business_address ?? 'Kolkata') }}</textarea>
                             @error('business_address')
                                 <div class="invalid-feedback d-block">{{ $message }}</div>
                             @enderror
@@ -1635,14 +1653,17 @@
                         <div class="col-md-4" id="exit-date-container" style="display: {{ $status === 'Inactive' ? 'block' : 'none' }};">
                             <label class="form-label-premium">
                                 <span><i class="fas fa-calendar-times"></i> Exit Date</span>
-                                <span class="optional-badge">Optional</span>
+                                <span class="mandatory-badge" id="exit-date-badge">Required</span>
                             </label>
-                            <input type="date" name="exit_date" id="exit_date" class="form-control-premium" value="{{ old('exit_date') ?? fmtDate($ed->exit_date ?? '') }}">
+                            <input type="date" name="exit_date" id="exit_date" class="form-control-premium @error('exit_date') is-invalid @enderror" value="{{ old('exit_date') ?? fmtDate($ed->exit_date ?? '') }}">
+                            @error('exit_date')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
                         </div>
                     </div>
 
                     <div class="action-buttons">
-                        <a href="{{ route('employees.index') }}" class="btn-cancel">
+                        <a href="{{ $returnUrl }}" class="btn-cancel">
                             <i class="fas fa-times"></i> Discard
                         </a>
                         <button type="submit" class="btn-submit" id="submitBtn">
@@ -1800,7 +1821,7 @@
 
                             <div class="mb-3">
                                 <label class="form-label fw-bold" style="color: var(--primary);">Designation Level <span class="text-danger">*</span></label>
-                                <input type="number" min="0" max="6" name="level" class="form-control-premium" id="designationLevel" placeholder="Enter level (0-6)" required>
+                                <input type="number" min="0" max="{{ \App\Services\DesignationLevels::maximum() }}" name="level" class="form-control-premium" id="designationLevel" placeholder="Enter level (0-{{ \App\Services\DesignationLevels::maximum() }})" required>
                                 <small class="text-muted">Level range: 0-6 (e.g., 0=Intern, 1=Associate, 2=Sr. Associate, etc.)</small>
                             </div>
                         </div>
@@ -1844,6 +1865,7 @@
 @endpush
 
 @push('js')
+<script src="{{ asset('admin/assets/js/pms-employee-mobile-check.js') }}?v={{ @filemtime(public_path('admin/assets/js/pms-employee-mobile-check.js')) ?: 1 }}"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
@@ -1854,7 +1876,11 @@ const $el = id => document.getElementById(id);
 function toggleExitDate() {
     const isInactive = $el('status-inactive') && $el('status-inactive').checked;
     const container = $el('exit-date-container');
+    const exitDateInput = $el('exit_date');
     if (container) container.style.display = isInactive ? 'block' : 'none';
+    if (!isInactive && exitDateInput) {
+        exitDateInput.value = '';
+    }
 }
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -1917,7 +1943,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const mobileOnly = $el('mobile_only_digits');
     if (mobileOnly) {
         mobileOnly.addEventListener('input', function () {
-            let v = this.value.replace(/\D/g, '').slice(0, 10);
+            let v = this.value.replace(/\D/g, '').slice(0, Number(document.getElementById('mobile_only_digits').maxLength) || 15);
             if (v.length > 0 && v[0] === '0') v = v.replace(/^0+/, '');
             this.value = v;
         });
@@ -1945,6 +1971,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 const hidden = $el('mobile_with_code');
                 const countryCode = $('#mobile_country_code').val() || '+91';
                 if (hidden) hidden.value = countryCode + mobileEl.value.trim();
+            }
+
+            const exitDateEl = $el('exit_date');
+            if ($el('status-inactive') && $el('status-inactive').checked && exitDateEl && !exitDateEl.value) {
+                e.preventDefault();
+                exitDateEl.focus();
+                alert('Please provide Exit Date when status is Inactive.');
+                return false;
             }
         });
     }
@@ -2126,13 +2160,13 @@ $(document).ready(function() {
         }
 
         if (level === '' || level === null) {
-            $('#designation-error').removeClass('d-none').text('Please enter a level between 0-6.');
+            $('#designation-error').removeClass('d-none').text('Please enter a level between 0-{{ \App\Services\DesignationLevels::maximum() }}.');
             return;
         }
 
         const levelNum = parseInt(level);
-        if (isNaN(levelNum) || levelNum < 0 || levelNum > 6) {
-            $('#designation-error').removeClass('d-none').text('Level must be a whole number between 0-6.');
+        if (isNaN(levelNum) || levelNum < 0 || levelNum > {{ \App\Services\DesignationLevels::maximum() }}) {
+            $('#designation-error').removeClass('d-none').text('Level must be a whole number between 0-{{ \App\Services\DesignationLevels::maximum() }}.');
             return;
         }
 
@@ -2296,39 +2330,11 @@ $(document).ready(function() {
         return true;
     }
 
-    let mobileCheckAjax = null;
     window.validateMobileInput = validateMobileInput;
-
-    $('#mobile_only_digits').on('blur', function() {
-        if (!validateMobileInput()) return;
-
-        const value = $(this).val().trim();
-        if (!value) return;
-
-        const selectedCountryCode = $('#mobile_country_code').val() || '+91';
-        $('#mobile_with_code').val(selectedCountryCode + value);
-
-        if (mobileCheckAjax) mobileCheckAjax.abort();
-
-        mobileCheckAjax = $.ajax({
-            url: '{{ route("employees.check-mobile") }}',
-            method: 'POST',
-            data: {
-                mobile: value,
-                mobile_country_code: selectedCountryCode,
-                employee_id: $('#employee_id_val').val() || null,
-                _token: '{{ csrf_token() }}'
-            },
-            success: function(response) {
-                if (response.exists) {
-                    $('#mobile_only_digits').addClass('is-invalid');
-                    $('#mobile-error').text('This mobile number is already registered').removeClass('d-none').addClass('d-block');
-                }
-            },
-            error: function(xhr, status) {
-                if (status !== 'abort') console.error('Mobile check failed');
-            }
-        });
+    window.PMSEmployeeMobileCheck.init({
+        url: '{{ route("employees.check-mobile") }}',
+        csrf: '{{ csrf_token() }}',
+        validate: validateMobileInput
     });
 
     if ($('#country').length) {

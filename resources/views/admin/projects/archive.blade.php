@@ -16,7 +16,7 @@
         <div class="header-card">
             <div class="header-left">
                 <div class="header-icon">
-                    <i class="fas fa-archive"></i>
+                    <svg class="archive-summary-icon" viewBox="0 0 24 24" aria-hidden="true"><rect style="fill: none !important; stroke: currentColor !important; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;" fill="none" stroke="currentColor" x="3" y="3" width="18" height="5" rx="1"/><path style="fill: none !important; stroke: currentColor !important; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;" fill="none" stroke="currentColor" d="M5 8v12h14V8M9 12h6"/></svg>
                 </div>
                 <div>
                     <h1>Archived Projects</h1>
@@ -36,7 +36,7 @@
         <!-- Stats Cards -->
         <div class="stats-grid">
             <div class="stat-card">
-                <div class="stat-icon"><i class="fas fa-archive"></i></div>
+                <div class="stat-icon"><svg class="archive-summary-icon" viewBox="0 0 24 24" aria-hidden="true"><rect style="fill: none !important; stroke: currentColor !important; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;" fill="none" stroke="currentColor" x="3" y="3" width="18" height="5" rx="1"/><path style="fill: none !important; stroke: currentColor !important; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;" fill="none" stroke="currentColor" d="M5 8v12h14V8M9 12h6"/></svg></div>
                 <div>
                     <h3>{{ $projects->count() }}</h3>
                     <span>Archived Projects</span>
@@ -44,7 +44,7 @@
                 </div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+                <div class="stat-icon"><svg class="archive-summary-icon" viewBox="0 0 24 24" aria-hidden="true"><circle style="fill: none !important; stroke: currentColor !important; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;" fill="none" stroke="currentColor" cx="12" cy="12" r="9"/><path style="fill: none !important; stroke: currentColor !important; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;" fill="none" stroke="currentColor" d="m8 12 3 3 5-6"/></svg></div>
                 <div>
                     <h3>{{ $projects->where('status', 'completed')->count() }}</h3>
                     <span>Completed</span>
@@ -52,7 +52,7 @@
                 </div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon"><i class="fas fa-clock"></i></div>
+                <div class="stat-icon"><svg class="archive-summary-icon" viewBox="0 0 24 24" aria-hidden="true"><circle style="fill: none !important; stroke: currentColor !important; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;" fill="none" stroke="currentColor" cx="12" cy="12" r="9"/><path style="fill: none !important; stroke: currentColor !important; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;" fill="none" stroke="currentColor" d="M12 7v5l3 2"/></svg></div>
                 <div>
                     <h3>{{ $projects->where('status', '!=', 'completed')->count() }}</h3>
                     <span>Incomplete</span>
@@ -60,7 +60,7 @@
                 </div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon"><i class="fas fa-calendar-alt"></i></div>
+                <div class="stat-icon"><svg class="archive-summary-icon" viewBox="0 0 24 24" aria-hidden="true"><rect style="fill: none !important; stroke: currentColor !important; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;" fill="none" stroke="currentColor" x="3" y="5" width="18" height="16" rx="2"/><path style="fill: none !important; stroke: currentColor !important; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;" fill="none" stroke="currentColor" d="M7 3v4M17 3v4M3 10h18M7 14h2M15 14h2M7 17h2"/></svg></div>
                 <div>
                     <h3>{{ $projects->where('updated_at', '>=', now()->subDays(30))->count() }}</h3>
                     <span>Recent</span>
@@ -256,6 +256,71 @@
 </div>
 
 <style>
+    .archived-projects-page .archive-summary-icon,
+    .archived-projects-page .archive-summary-icon * {
+        fill: none !important;
+        stroke: currentColor !important;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    .archived-projects-page .archive-summary-icon {
+        width: 24px;
+        height: 24px;
+        flex-shrink: 0;
+    }
+
+    /* pms-refresh.css gives every ".stat-icon svg" a white colour AND white background, which turned
+       these outline icons into solid white squares. Keep the SVG transparent and drawn in the tile's
+       own icon colour (blue tile -> white icon in light mode, #60A5FA on dark tiles in dark mode). */
+    .archived-projects-page .stats-grid .stat-icon svg.archive-summary-icon {
+        background: transparent !important;
+        background-color: transparent !important;
+        color: inherit !important;
+        fill: none !important;
+        opacity: 1 !important;
+    }
+
+    .archived-projects-page .header-icon .archive-summary-icon {
+        width: 32px;
+        height: 32px;
+        color: #ffffff !important;
+    }
+
+    html:not([data-pms-theme="dark"]) .archived-projects-page .stats-grid > .stat-card:first-child {
+        background: linear-gradient(145deg, #1e4fcc, #2f6bff) !important;
+    }
+
+    html:not([data-pms-theme="dark"]) .archived-projects-page .stats-grid .stat-icon {
+        background: #2f6bff !important;
+        color: #ffffff !important;
+        flex-shrink: 0;
+    }
+
+    html:not([data-pms-theme="dark"]) .archived-projects-page .stats-grid > .stat-card:first-child .stat-icon {
+        background: rgba(255, 255, 255, .22) !important;
+        border: 1px solid rgba(255, 255, 255, .4);
+    }
+
+    html:not([data-pms-theme="dark"]) .archived-projects-page .stats-grid > .stat-card:not(:first-child) h3 {
+        color: #0f172a !important;
+        -webkit-text-fill-color: #0f172a !important;
+    }
+
+    html:not([data-pms-theme="dark"]) .archived-projects-page .stats-grid > .stat-card:not(:first-child) span,
+    html:not([data-pms-theme="dark"]) .archived-projects-page .stats-grid > .stat-card:not(:first-child) .stat-sub {
+        color: #475569 !important;
+        -webkit-text-fill-color: #475569 !important;
+    }
+
+    html:not([data-pms-theme="dark"]) .archived-projects-page .stat-card:first-child h3,
+    html:not([data-pms-theme="dark"]) .archived-projects-page .stat-card:first-child span,
+    html:not([data-pms-theme="dark"]) .archived-projects-page .stat-card:first-child .stat-sub {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
     /* ===== PREMIUM ARCHIVED PROJECTS PAGE - GREEN/TEAL THEME ===== */
     .archived-projects-page {
         padding: 30px 0;

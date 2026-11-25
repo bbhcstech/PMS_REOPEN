@@ -37,6 +37,7 @@ return [
 
     'ocr' => [
         'tesseract_binary' => env('TESSERACT_BINARY', 'tesseract'),
+        'timeout' => env('TESSERACT_TIMEOUT', 5),
     ],
 
 ];

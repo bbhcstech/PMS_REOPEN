@@ -15,6 +15,7 @@ class Award extends TenantModel
         'description',
         'award_date',
         'image',
+        'photo',
         'status'
     ];
 

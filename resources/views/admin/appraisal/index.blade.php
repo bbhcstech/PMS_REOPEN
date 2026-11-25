@@ -69,10 +69,16 @@
         font-size: 1.4rem;
         flex-shrink: 0;
     }
-    .metric-icon.purple { background: #ede9fe; color: #7C3AED; }
-    .metric-icon.blue { background: #dbeafe; color: #2563eb; }
-    .metric-icon.green { background: #dcfce7; color: #16a34a; }
-    .metric-icon.amber { background: #fef3c7; color: #d97706; }
+    .metric-icon i {
+        color: inherit !important;
+        -webkit-text-fill-color: currentColor !important;
+        font-size: 1.45rem !important;
+        line-height: 1 !important;
+    }
+    .metric-icon.purple { background: #ede9fe !important; color: #7C3AED !important; }
+    .metric-icon.blue { background: #dbeafe !important; color: #2563eb !important; }
+    .metric-icon.green { background: #dcfce7 !important; color: #16a34a !important; }
+    .metric-icon.amber { background: #fef3c7 !important; color: #d97706 !important; }
     .metric-info h4 {
         margin: 0;
         font-weight: 800;
@@ -226,6 +232,33 @@
         border-radius: 999px;
     }
 
+    /* Employee Avatar & Initial Badge */
+    .appraisal-shell .avatar {
+        position: relative;
+        width: 34px !important;
+        height: 34px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        flex-shrink: 0 !important;
+    }
+    .appraisal-shell .avatar-initial,
+    .appraisal-shell .avatar-initial.bg-label-purple {
+        width: 34px !important;
+        height: 34px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        border-radius: 50% !important;
+        font-size: 0.85rem !important;
+        font-weight: 700 !important;
+        background: #ede9fe !important;
+        color: #6d28d9 !important;
+        -webkit-text-fill-color: #6d28d9 !important;
+        border: 1px solid #ddd6fe !important;
+        box-shadow: 0 2px 4px rgba(109, 40, 217, 0.12) !important;
+    }
+
     /* Dark Mode Overrides */
     html[data-pms-theme="dark"] .app-header h3 {
         color: #EEF1FB !important;
@@ -276,6 +309,49 @@
     }
     html[data-pms-theme="dark"] .score-progress {
         background: #141B3D !important;
+    }
+    html[data-pms-theme="dark"] .appraisal-shell .appraisal-filter-card {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+    }
+    html[data-pms-theme="dark"] .appraisal-shell .appraisal-filter-card .form-label {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .appraisal-shell .appraisal-filter-card .btn-outline-secondary {
+        color: #E2E8F0 !important;
+        -webkit-text-fill-color: #E2E8F0 !important;
+        border-color: rgba(238, 241, 251, 0.22) !important;
+        background: rgba(255, 255, 255, 0.06) !important;
+    }
+    html[data-pms-theme="dark"] .appraisal-shell .appraisal-filter-card .btn-outline-secondary:hover {
+        background: rgba(255, 255, 255, 0.15) !important;
+        border-color: rgba(238, 241, 251, 0.45) !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
+    /* High-Contrast Employee Avatar Badge in Dark Mode */
+    html[data-pms-theme="dark"] .appraisal-shell .avatar-initial,
+    html[data-pms-theme="dark"] .appraisal-shell .avatar-initial.bg-label-purple,
+    html[data-bs-theme="dark"] .appraisal-shell .avatar-initial,
+    html[data-bs-theme="dark"] .appraisal-shell .avatar-initial.bg-label-purple,
+    html[data-theme="dark"] .appraisal-shell .avatar-initial,
+    html[data-theme="dark"] .appraisal-shell .avatar-initial.bg-label-purple,
+    html.dark .appraisal-shell .avatar-initial,
+    html.dark .appraisal-shell .avatar-initial.bg-label-purple,
+    body[data-pms-theme="dark"] .appraisal-shell .avatar-initial,
+    body[data-pms-theme="dark"] .appraisal-shell .avatar-initial.bg-label-purple,
+    [data-pms-theme="dark"] .appraisal-shell .avatar-initial,
+    [data-pms-theme="dark"] .appraisal-shell .avatar-initial.bg-label-purple,
+    .dark .appraisal-shell .avatar-initial,
+    .dark .appraisal-shell .avatar-initial.bg-label-purple {
+        background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%) !important;
+        background-color: #7c3aed !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        border: 1px solid rgba(196, 181, 253, 0.5) !important;
+        box-shadow: 0 0 10px rgba(124, 58, 237, 0.45) !important;
+        font-weight: 700 !important;
     }
 
     /* ===== APPRAISAL TABLE ACTION BUTTONS (HIGH CONTRAST) ===== */
@@ -502,6 +578,215 @@
         color: #e2e8f0 !important;
         border-color: rgba(255, 255, 255, 0.18) !important;
     }
+
+    /* ===== DARK MODE FOR METRIC SUMMARY CARDS & ICONS ===== */
+    html[data-pms-theme="dark"] .appraisal-shell .metric-card,
+    html[data-bs-theme="dark"] .appraisal-shell .metric-card,
+    html[data-theme="dark"] .appraisal-shell .metric-card,
+    html.dark .appraisal-shell .metric-card,
+    body[data-pms-theme="dark"] .appraisal-shell .metric-card,
+    [data-pms-theme="dark"] .appraisal-shell .metric-card,
+    .dark .appraisal-shell .metric-card {
+        background: #111827 !important;
+        border-color: rgba(255, 255, 255, 0.08) !important;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    html[data-pms-theme="dark"] .appraisal-shell .metric-info h4,
+    html[data-bs-theme="dark"] .appraisal-shell .metric-info h4,
+    html[data-theme="dark"] .appraisal-shell .metric-info h4,
+    html.dark .appraisal-shell .metric-info h4,
+    body[data-pms-theme="dark"] .appraisal-shell .metric-info h4,
+    [data-pms-theme="dark"] .appraisal-shell .metric-info h4,
+    .dark .appraisal-shell .metric-info h4 {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
+    html[data-pms-theme="dark"] .appraisal-shell .metric-info span,
+    html[data-bs-theme="dark"] .appraisal-shell .metric-info span,
+    html[data-theme="dark"] .appraisal-shell .metric-info span,
+    html.dark .appraisal-shell .metric-info span,
+    body[data-pms-theme="dark"] .appraisal-shell .metric-info span,
+    [data-pms-theme="dark"] .appraisal-shell .metric-info span,
+    .dark .appraisal-shell .metric-info span {
+        color: #94a3b8 !important;
+        -webkit-text-fill-color: #94a3b8 !important;
+    }
+
+    /* Reset global icon wash-out filters for metric icons */
+    html[data-pms-theme="dark"] .appraisal-shell .metric-icon i,
+    html[data-bs-theme="dark"] .appraisal-shell .metric-icon i,
+    html[data-theme="dark"] .appraisal-shell .metric-icon i,
+    html.dark .appraisal-shell .metric-icon i,
+    body[data-pms-theme="dark"] .appraisal-shell .metric-icon i,
+    [data-pms-theme="dark"] .appraisal-shell .metric-icon i,
+    .dark .appraisal-shell .metric-icon i {
+        filter: none !important;
+        font-size: 1.55rem !important;
+        line-height: 1 !important;
+    }
+
+    /* 1. Purple Metric Icon (Total Evaluated) */
+    html[data-pms-theme="dark"] .appraisal-shell .metric-icon.purple,
+    html[data-bs-theme="dark"] .appraisal-shell .metric-icon.purple,
+    html[data-theme="dark"] .appraisal-shell .metric-icon.purple,
+    html.dark .appraisal-shell .metric-icon.purple,
+    body[data-pms-theme="dark"] .appraisal-shell .metric-icon.purple,
+    [data-pms-theme="dark"] .appraisal-shell .metric-icon.purple,
+    .dark .appraisal-shell .metric-icon.purple {
+        background: rgba(139, 92, 246, 0.22) !important;
+        border: 1px solid rgba(167, 139, 250, 0.45) !important;
+        color: #c4b5fd !important;
+        box-shadow: 0 0 16px rgba(139, 92, 246, 0.25) !important;
+    }
+    html[data-pms-theme="dark"] .appraisal-shell .metric-icon.purple i,
+    html[data-bs-theme="dark"] .appraisal-shell .metric-icon.purple i,
+    html[data-theme="dark"] .appraisal-shell .metric-icon.purple i,
+    html.dark .appraisal-shell .metric-icon.purple i,
+    body[data-pms-theme="dark"] .appraisal-shell .metric-icon.purple i,
+    [data-pms-theme="dark"] .appraisal-shell .metric-icon.purple i,
+    .dark .appraisal-shell .metric-icon.purple i {
+        color: #c4b5fd !important;
+        -webkit-text-fill-color: #c4b5fd !important;
+    }
+
+    /* 2. Blue Metric Icon (Avg Overall Score) */
+    html[data-pms-theme="dark"] .appraisal-shell .metric-icon.blue,
+    html[data-bs-theme="dark"] .appraisal-shell .metric-icon.blue,
+    html[data-theme="dark"] .appraisal-shell .metric-icon.blue,
+    html.dark .appraisal-shell .metric-icon.blue,
+    body[data-pms-theme="dark"] .appraisal-shell .metric-icon.blue,
+    [data-pms-theme="dark"] .appraisal-shell .metric-icon.blue,
+    .dark .appraisal-shell .metric-icon.blue {
+        background: rgba(59, 130, 246, 0.22) !important;
+        border: 1px solid rgba(96, 165, 250, 0.45) !important;
+        color: #93c5fd !important;
+        box-shadow: 0 0 16px rgba(59, 130, 246, 0.25) !important;
+    }
+    html[data-pms-theme="dark"] .appraisal-shell .metric-icon.blue i,
+    html[data-bs-theme="dark"] .appraisal-shell .metric-icon.blue i,
+    html[data-theme="dark"] .appraisal-shell .metric-icon.blue i,
+    html.dark .appraisal-shell .metric-icon.blue i,
+    body[data-pms-theme="dark"] .appraisal-shell .metric-icon.blue i,
+    [data-pms-theme="dark"] .appraisal-shell .metric-icon.blue i,
+    .dark .appraisal-shell .metric-icon.blue i {
+        color: #93c5fd !important;
+        -webkit-text-fill-color: #93c5fd !important;
+    }
+
+    /* 3. Green Metric Icon (Top Performers) */
+    html[data-pms-theme="dark"] .appraisal-shell .metric-icon.green,
+    html[data-bs-theme="dark"] .appraisal-shell .metric-icon.green,
+    html[data-theme="dark"] .appraisal-shell .metric-icon.green,
+    html.dark .appraisal-shell .metric-icon.green,
+    body[data-pms-theme="dark"] .appraisal-shell .metric-icon.green,
+    [data-pms-theme="dark"] .appraisal-shell .metric-icon.green,
+    .dark .appraisal-shell .metric-icon.green {
+        background: rgba(16, 185, 129, 0.22) !important;
+        border: 1px solid rgba(52, 211, 153, 0.45) !important;
+        color: #6ee7b7 !important;
+        box-shadow: 0 0 16px rgba(16, 185, 129, 0.25) !important;
+    }
+    html[data-pms-theme="dark"] .appraisal-shell .metric-icon.green i,
+    html[data-bs-theme="dark"] .appraisal-shell .metric-icon.green i,
+    html[data-theme="dark"] .appraisal-shell .metric-icon.green i,
+    html.dark .appraisal-shell .metric-icon.green i,
+    body[data-pms-theme="dark"] .appraisal-shell .metric-icon.green i,
+    [data-pms-theme="dark"] .appraisal-shell .metric-icon.green i,
+    .dark .appraisal-shell .metric-icon.green i {
+        color: #6ee7b7 !important;
+        -webkit-text-fill-color: #6ee7b7 !important;
+    }
+
+    /* 4. Amber Metric Icon (Needs Improvement) */
+    html[data-pms-theme="dark"] .appraisal-shell .metric-icon.amber,
+    html[data-bs-theme="dark"] .appraisal-shell .metric-icon.amber,
+    html[data-theme="dark"] .appraisal-shell .metric-icon.amber,
+    html.dark .appraisal-shell .metric-icon.amber,
+    body[data-pms-theme="dark"] .appraisal-shell .metric-icon.amber,
+    [data-pms-theme="dark"] .appraisal-shell .metric-icon.amber,
+    .dark .appraisal-shell .metric-icon.amber {
+        background: rgba(245, 158, 11, 0.22) !important;
+        border: 1px solid rgba(251, 191, 36, 0.45) !important;
+        color: #fde68a !important;
+        box-shadow: 0 0 16px rgba(245, 158, 11, 0.25) !important;
+    }
+    html[data-pms-theme="dark"] .appraisal-shell .metric-icon.amber i,
+    html[data-bs-theme="dark"] .appraisal-shell .metric-icon.amber i,
+    html[data-theme="dark"] .appraisal-shell .metric-icon.amber i,
+    html.dark .appraisal-shell .metric-icon.amber i,
+    body[data-pms-theme="dark"] .appraisal-shell .metric-icon.amber i,
+    [data-pms-theme="dark"] .appraisal-shell .metric-icon.amber i,
+    .dark .appraisal-shell .metric-icon.amber i {
+        color: #fde68a !important;
+        -webkit-text-fill-color: #fde68a !important;
+    }
+
+    /* Tab links in dark mode */
+    html[data-pms-theme="dark"] .appraisal-shell #appraisalTabs .nav-link:not(.active),
+    html[data-bs-theme="dark"] .appraisal-shell #appraisalTabs .nav-link:not(.active),
+    html[data-theme="dark"] .appraisal-shell #appraisalTabs .nav-link:not(.active),
+    html.dark .appraisal-shell #appraisalTabs .nav-link:not(.active),
+    body[data-pms-theme="dark"] .appraisal-shell #appraisalTabs .nav-link:not(.active),
+    [data-pms-theme="dark"] .appraisal-shell #appraisalTabs .nav-link:not(.active),
+    .dark .appraisal-shell #appraisalTabs .nav-link:not(.active) {
+        color: #e2e8f0 !important;
+        -webkit-text-fill-color: #e2e8f0 !important;
+    }
+    html[data-pms-theme="dark"] .appraisal-shell #appraisalTabs .nav-link:not(.active):hover,
+    html[data-bs-theme="dark"] .appraisal-shell #appraisalTabs .nav-link:not(.active):hover,
+    [data-pms-theme="dark"] .appraisal-shell #appraisalTabs .nav-link:not(.active):hover {
+        background: rgba(255, 255, 255, 0.05) !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+    html[data-pms-theme="dark"] .text-purple,
+    html[data-bs-theme="dark"] .text-purple,
+    [data-pms-theme="dark"] .text-purple {
+        color: #c4b5fd !important;
+        -webkit-text-fill-color: #c4b5fd !important;
+    }
+    /* Appraisal on phones: swipeable one-row tabs and table headers that wrap instead of overflowing. */
+    @media (max-width: 768px) {
+        .appraisal-shell #appraisalTabs {
+            flex-wrap: nowrap !important;
+            overflow-x: auto;
+            overflow-y: hidden;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: thin;
+            gap: 0.4rem;
+            padding-bottom: 2px;
+            max-width: 100%;
+        }
+        .appraisal-shell #appraisalTabs .nav-item {
+            flex: 0 0 auto;
+        }
+        .appraisal-shell #appraisalTabs .nav-link {
+            white-space: nowrap;
+            font-size: 0.82rem;
+            padding: 0.6rem 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        .appraisal-shell .app-table-card > .p-3.text-white.d-flex {
+            flex-direction: column;
+            align-items: flex-start !important;
+            gap: 0.6rem;
+        }
+        .appraisal-shell .app-table-card > .p-3.text-white.d-flex h5 {
+            font-size: 1.05rem;
+            line-height: 1.35;
+        }
+        .appraisal-shell .app-table-card > .p-3.text-white.d-flex .badge {
+            white-space: normal;
+            text-align: left;
+            line-height: 1.4;
+            max-width: 100%;
+            font-size: 0.75rem;
+        }
+    }
 </style>
 
 <div class="container-xxl flex-grow-1 container-p-y appraisal-shell">
@@ -519,17 +804,22 @@
     <div class="app-header">
         <div>
             <h3>Employee Performance Appraisal</h3>
-            <p>Evaluates personnel performance separately across Project Work (40%), Attendance (30%), and Behaviour (30%) with a Master Summary Table.</p>
+            <p>Review attendance ({{ $settings['attendance_weight'] }}%), work delivery ({{ $settings['work_weight'] }}%), and cultural behaviour ({{ $settings['behaviour_weight'] }}%). Weights and salary increase recommendations are managed in Admin Settings.</p>
         </div>
-        <div class="d-flex gap-2">
+        <div class="d-flex gap-2 flex-wrap">
+            @if($canCreate)
+                <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#calculateAppraisalModal"><i class="bx bx-user-plus me-1"></i>Add employees &amp; calculate</button>
+            @endif
+            @if($canCreate && $canEdit)
             <form method="POST" action="{{ route('appraisal.autoCalculate') }}">
                 @csrf
                 <input type="hidden" name="period" value="{{ $selectedPeriod }}">
                 <button type="submit" class="btn btn-outline-primary btn-sm d-flex align-items-center gap-1">
-                    <i class="bx bx-refresh"></i> Auto-Calculate Realtime Metrics
+                    <i class="bx bx-refresh"></i> Calculate recorded metrics
                 </button>
             </form>
-            @if(auth()->user()?->role === 'admin' || auth()->user()?->role === 'hr')
+            @endif
+            @if($canCreate)
             <button class="btn btn-purple-primary btn-sm d-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#evaluateAppraisalModal">
                 <i class="bx bx-edit-alt"></i> Evaluate Employee
             </button>
@@ -537,6 +827,10 @@
         </div>
     </div>
 
+    @if($errors->any())<div class="alert alert-danger" role="alert">{{ $errors->first() }}</div>@endif
+    @if(auth()->user()?->normalizedRole() === 'hr')<div class="alert alert-info">You may evaluate other company employees and managers. HR appraisals are reserved for Admin. Your own appraisal is read-only.</div>@endif
+    @if(\App\Services\WorkforceAccess::isAdmin(auth()->user()))<a href="{{ route('admin.settings.performance') }}" class="btn btn-outline-primary mb-3">Appraisal &amp; salary increase settings</a>@endif
+    <p class="small text-muted">Drafts contain recorded attendance and task metrics only. Cultural behaviour needs reviewer evidence. Each saved evaluation retains its policy weights; salary recommendations do not change payroll automatically.</p>
     {{-- METRIC SUMMARY CARDS --}}
     <div class="row mb-4">
         <div class="col-md-3 col-sm-6">
@@ -586,33 +880,41 @@
     </div>
 
     {{-- FILTER BAR & PERIOD SELECTOR --}}
-    <div class="card mb-4 border-0 shadow-sm">
+    <div class="card appraisal-filter-card mb-4 border-0 shadow-sm">
         <div class="card-body">
             <form method="GET" action="{{ route('appraisal.index') }}" class="row g-3">
-                <div class="col-md-5">
+                <div class="col-xl-5 col-lg-4 col-md-4 col-12">
                     <label class="form-label fw-bold">Search Personnel</label>
                     <div class="input-group input-group-merge">
                         <span class="input-group-text"><i class="bx bx-search"></i></span>
                         <input type="text" name="search" class="form-control" placeholder="Search by name, email, designation..." value="{{ request('search') }}">
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-xl-4 col-lg-4 col-md-4 col-12">
                     <label class="form-label fw-bold">Appraisal Period</label>
                     <select name="period" class="form-select" onchange="this.form.submit()">
-                        <option value="2026 Q3" {{ $selectedPeriod == '2026 Q3' ? 'selected' : '' }}>2026 Q3 (Current Quarter)</option>
-                        <option value="2026 Q2" {{ $selectedPeriod == '2026 Q2' ? 'selected' : '' }}>2026 Q2</option>
-                        <option value="2026 Q1" {{ $selectedPeriod == '2026 Q1' ? 'selected' : '' }}>2026 Q1</option>
-                        <option value="Annual 2025" {{ $selectedPeriod == 'Annual 2025' ? 'selected' : '' }}>Annual 2025</option>
+                        @foreach($periods as $period)
+                            <option value="{{ $period }}" @selected($selectedPeriod === $period)>{{ $period }}</option>
+                        @endforeach
                     </select>
                 </div>
-                <div class="col-md-3 d-flex align-items-end gap-1">
-                    <button type="submit" class="btn btn-primary w-100"><i class="bx bx-filter-alt"></i> Filter</button>
-                    <a href="{{ route('appraisal.index') }}" class="btn btn-outline-secondary" title="Reset Filters"><i class="bx bx-refresh"></i></a>
+                <div class="col-xl-3 col-lg-4 col-md-4 col-12 d-flex align-items-end gap-2">
+                    <button type="submit" class="btn btn-primary flex-grow-1 text-nowrap d-flex align-items-center justify-content-center gap-1" style="height: 38.6px;">
+                        <i class="bx bx-filter-alt"></i> Filter
+                    </button>
+                    <a href="{{ route('appraisal.index') }}" class="btn btn-outline-secondary flex-grow-1 text-nowrap d-flex align-items-center justify-content-center gap-1" title="Reset Filters" style="height: 38.6px;">
+                        <i class="bx bx-refresh"></i> Reset
+                    </a>
                 </div>
             </form>
         </div>
     </div>
 
+    @unless($canManage)
+        @foreach($appraisals as $personalAppraisal)
+            @include('admin.appraisal.personal-breakdown', ['record' => $personalAppraisal])
+        @endforeach
+    @endunless
     {{-- APPRAISAL TABS FOR SEPARATE TABLES & MASTER OVERALL TABLE --}}
     <ul class="nav nav-tabs appraisal-tabs" id="appraisalTabs" role="tablist">
         <li class="nav-item" role="presentation">
@@ -627,7 +929,7 @@
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link" id="behaviour-tab" data-bs-toggle="tab" data-bs-target="#behaviour-table-pane" type="button" role="tab">
-                <i class="bx bx-smile me-1 text-warning"></i> 3. Behaviour & Conduct Table
+                <i class="bx bx-smile me-1 text-warning"></i> 3. Cultural Behaviour Table
             </button>
         </li>
         <li class="nav-item" role="presentation">
@@ -644,16 +946,16 @@
             <div class="app-table-card">
                 <div class="p-3 text-white d-flex justify-content-between align-items-center" style="background: linear-gradient(135deg, #6d28d9 0%, #7c3aed 100%);">
                     <h5 class="text-white fw-bold mb-0"><i class="bx bx-trophy me-1"></i> Combined Master Performance Appraisal Summary Table</h5>
-                    <span class="badge bg-white text-dark fw-bold px-3 py-1.5" style="color: #6d28d9 !important;">Weighted Formula: 40% Project + 30% Attendance + 30% Behaviour</span>
+                    <span class="badge bg-white text-dark fw-bold px-3 py-1.5" style="color: #6d28d9 !important;">Current policy: {{ $settings['work_weight'] }}% Work + {{ $settings['attendance_weight'] }}% Attendance + {{ $settings['behaviour_weight'] }}% Culture</span>
                 </div>
                 <div class="table-responsive">
                     <table class="table app-table align-middle mb-0">
                         <thead>
                             <tr>
                                 <th style="min-width: 220px;">Employee</th>
-                                <th style="min-width: 140px;">Project (40%)</th>
-                                <th style="min-width: 150px;">Attendance (30%)</th>
-                                <th style="min-width: 150px;">Behaviour (30%)</th>
+                                <th style="min-width: 140px;">Work delivery</th>
+                                <th style="min-width: 150px;">Attendance</th>
+                                <th style="min-width: 150px;">Cultural behaviour</th>
                                 <th style="min-width: 190px;">Overall Score</th>
                                 <th style="min-width: 120px;">Grade</th>
                                 <th style="min-width: 260px;">Recommendation</th>
@@ -665,8 +967,12 @@
                             <tr>
                                 <td>
                                     <div class="d-flex align-items-center gap-2">
-                                        <div class="avatar avatar-sm">
-                                            <span class="avatar-initial rounded-circle bg-label-purple fw-bold">{{ strtoupper(substr($appr->employee?->name ?? 'E', 0, 1)) }}</span>
+                                        <div class="avatar avatar-sm flex-shrink-0">
+                                            @if(!empty($appr->employee?->profile_image))
+                                                <img src="{{ asset($appr->employee->profile_image) }}" alt="{{ $appr->employee->name }}" class="rounded-circle" style="width: 34px; height: 34px; object-fit: cover;">
+                                            @else
+                                                <span class="avatar-initial rounded-circle bg-label-purple fw-bold">{{ strtoupper(substr($appr->employee?->name ?? 'E', 0, 1)) }}</span>
+                                            @endif
                                         </div>
                                         <div>
                                             <div class="fw-bold text-dark fs-6">{{ $appr->employee?->name ?? 'Employee' }}</div>
@@ -681,11 +987,11 @@
                                     <span class="fw-bold text-success">{{ number_format($appr->attendance_score, 1) }} / 100</span>
                                 </td>
                                 <td>
-                                    <span class="fw-bold text-warning">{{ number_format($appr->behaviour_score, 1) }} / 100</span>
+                                    <span class="fw-bold text-warning">{{ $appr->teamwork_score < 1 || $appr->communication_score < 1 || $appr->punctuality_score < 1 ? 'Awaiting feedback' : number_format($appr->behaviour_score, 1).' / 100' }}</span>
                                 </td>
                                 <td>
                                     <div class="d-flex align-items-center gap-2">
-                                        <div class="fw-extrabold text-dark fs-6" style="min-width: 55px;">{{ number_format($appr->overall_score, 1) }}%</div>
+                                        <div class="fw-extrabold text-dark fs-6" style="min-width: 55px;">{{ $appr->status === 'draft' ? 'Pending' : number_format($appr->overall_score, 1).'%' }}</div>
                                         <div class="score-progress flex-grow-1" style="width: 80px;">
                                             <div class="score-progress-bar {{ $appr->overall_score >= 80 ? 'bg-success' : ($appr->overall_score >= 70 ? 'bg-primary' : 'bg-warning') }}" style="width: {{ min(100, $appr->overall_score) }}%;"></div>
                                         </div>
@@ -693,23 +999,27 @@
                                 </td>
                                 <td>
                                     <span class="{{ $appr->grade_badge }}">
-                                        Grade {{ $appr->overall_grade }}
+                                        {{ $appr->status === 'draft' ? 'Awaiting review' : 'Grade '.$appr->overall_grade }}
                                     </span>
                                 </td>
                                 <td>
                                     <span class="badge px-3 py-1.5 fw-bold" style="background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1;">
                                         <i class="bx bx-check me-1"></i> {{ $appr->recommendation }}
                                     </span>
+                                    <small class="d-block mt-2 text-muted">{{ ucfirst($appr->status ?? 'approved') }} · Recommended increase: {{ $appr->recommended_increment_percent === null ? 'Not assessed' : number_format($appr->recommended_increment_percent, 2).'%' }}</small>
+                                    @if((int) $appr->employee_id === (int) auth()->id() && auth()->user()?->normalizedRole() === 'hr')<small class="d-block text-warning mt-1">Your appraisal is managed by Admin.</small>@endif
                                 </td>
                                 <td class="text-end">
                                     <div class="d-inline-flex align-items-center gap-1.5 justify-content-end">
                                         <button class="btn btn-sm btn-appr-action btn-appr-view" type="button" data-bs-toggle="modal" data-bs-target="#viewAppraisalModal-{{ $appr->id }}" title="View Full Breakdown Card">
                                             <i class="bx bx-show"></i>
                                         </button>
-                                        @if(auth()->user()?->role === 'admin' || auth()->user()?->role === 'hr')
+                                        @if($canEdit && in_array($appr->id, $editableAppraisalIds, true))
                                         <button class="btn btn-sm btn-appr-action btn-appr-edit" type="button" data-bs-toggle="modal" data-bs-target="#editAppraisalModal-{{ $appr->id }}" title="Edit Scores">
                                             <i class="bx bx-edit"></i>
                                         </button>
+                                        @endif
+                                        @if($canDelete && in_array($appr->id, $editableAppraisalIds, true))
                                         <form method="POST" action="{{ route('appraisal.destroy', $appr->id) }}" class="d-inline-block" onsubmit="return confirm('Are you sure you want to delete this appraisal record?')">
                                             @csrf
                                             @method('DELETE')
@@ -722,135 +1032,7 @@
                                 </td>
                             </tr>
 
-                            {{-- VIEW FULL APPRAISAL CARD MODAL --}}
-                            <div class="modal fade" id="viewAppraisalModal-{{ $appr->id }}" tabindex="-1" aria-hidden="true">
-                                <div class="modal-dialog modal-lg modal-dialog-centered">
-                                    <div class="modal-content">
-                                        <div class="modal-header bg-purple text-white">
-                                            <h5 class="modal-title text-white fw-bold"><i class="bx bx-award me-1"></i> Appraisal Summary: {{ $appr->employee?->name }}</h5>
-                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                                        </div>
-                                        <div class="modal-body p-4">
-                                            <div class="d-flex justify-content-between align-items-center mb-4">
-                                                <div>
-                                                    <h4 class="fw-bold text-dark mb-0">{{ $appr->employee?->name }}</h4>
-                                                    <small class="text-muted">{{ $appr->employee?->designation ?? 'Staff Member' }} | Period: <strong>{{ $appr->appraisal_period }}</strong></small>
-                                                </div>
-                                                <div class="text-end">
-                                                    <span class="{{ $appr->grade_badge }}">Grade {{ $appr->overall_grade }}</span>
-                                                    <div class="fw-bold text-dark mt-1">Final Score: {{ number_format($appr->overall_score, 1) }} / 100</div>
-                                                </div>
-                                            </div>
-
-                                            <div class="row g-3 mb-4">
-                                                <div class="col-md-4">
-                                                    <div class="p-3 bg-light rounded border border-primary">
-                                                        <small class="text-primary d-block fw-bold uppercase">1. Project Work (40%)</small>
-                                                        <div class="fs-4 fw-extrabold text-dark mt-1">{{ number_format($appr->project_score, 1) }} / 100</div>
-                                                        <small class="text-muted d-block mt-1">Projects: {{ $appr->projects_count }} | Tasks Done: {{ $appr->completed_tasks }}</small>
-                                                        <small class="text-secondary d-block mt-2 font-italic">"{{ $appr->project_remarks }}"</small>
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-4">
-                                                    <div class="p-3 bg-light rounded border border-success">
-                                                        <small class="text-success d-block fw-bold uppercase">2. Attendance (30%)</small>
-                                                        <div class="fs-4 fw-extrabold text-dark mt-1">{{ number_format($appr->attendance_score, 1) }} / 100</div>
-                                                        <small class="text-muted d-block mt-1">Present: {{ $appr->present_days }} / {{ $appr->total_working_days }} Days ({{ number_format($appr->attendance_percentage, 1) }}%)</small>
-                                                        <small class="text-secondary d-block mt-2 font-italic">"{{ $appr->attendance_remarks }}"</small>
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-4">
-                                                    <div class="p-3 bg-light rounded border border-warning">
-                                                        <small class="text-warning d-block fw-bold uppercase">3. Behaviour (30%)</small>
-                                                        <div class="fs-4 fw-extrabold text-dark mt-1">{{ number_format($appr->behaviour_score, 1) }} / 100</div>
-                                                        <small class="text-muted d-block mt-1">Teamwork: {{ $appr->teamwork_score }}/10 | Comm: {{ $appr->communication_score }}/10</small>
-                                                        <small class="text-secondary d-block mt-2 font-italic">"{{ $appr->behaviour_remarks }}"</small>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div class="p-3 bg-purple-soft rounded border border-purple">
-                                                <small class="text-purple fw-bold uppercase d-block">Official Evaluation Recommendation</small>
-                                                <h5 class="fw-extrabold text-purple mb-0 mt-1">{{ $appr->recommendation }}</h5>
-                                            </div>
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            @if(auth()->user()?->role === 'admin' || auth()->user()?->role === 'hr')
-                            {{-- EDIT APPRAISAL MODAL --}}
-                            <div class="modal fade" id="editAppraisalModal-{{ $appr->id }}" tabindex="-1" aria-hidden="true">
-                                <div class="modal-dialog modal-lg modal-dialog-centered">
-                                    <div class="modal-content">
-                                        <form method="POST" action="{{ route('appraisal.store') }}">
-                                            @csrf
-                                            <input type="hidden" name="employee_id" value="{{ $appr->employee_id }}">
-                                            <input type="hidden" name="appraisal_period" value="{{ $appr->appraisal_period }}">
-                                            <div class="modal-header bg-purple text-white">
-                                                <h5 class="modal-title text-white fw-bold"><i class="bx bx-edit-alt me-1"></i> Edit Appraisal: {{ $appr->employee?->name }}</h5>
-                                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                                            </div>
-                                            <div class="modal-body p-4">
-                                                <div class="row g-3">
-                                                    <div class="col-md-4">
-                                                        <label class="form-label fw-bold text-primary">Project Work Score (0-100)</label>
-                                                        <input type="number" name="project_score" class="form-control" value="{{ $appr->project_score }}" step="0.1" min="0" max="100" required>
-                                                    </div>
-                                                    <div class="col-md-4">
-                                                        <label class="form-label fw-bold text-success">Attendance Score (0-100)</label>
-                                                        <input type="number" name="attendance_score" class="form-control" value="{{ $appr->attendance_score }}" step="0.1" min="0" max="100" required>
-                                                    </div>
-                                                    <div class="col-md-4">
-                                                        <label class="form-label fw-bold text-warning">Teamwork Rating (1-10)</label>
-                                                        <input type="number" name="teamwork_score" class="form-control" value="{{ $appr->teamwork_score }}" step="0.1" min="1" max="10" required>
-                                                    </div>
-
-                                                    <div class="col-md-6">
-                                                        <label class="form-label fw-bold text-warning">Communication Rating (1-10)</label>
-                                                        <input type="number" name="communication_score" class="form-control" value="{{ $appr->communication_score }}" step="0.1" min="1" max="10" required>
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <label class="form-label fw-bold text-warning">Punctuality Rating (1-10)</label>
-                                                        <input type="number" name="punctuality_score" class="form-control" value="{{ $appr->punctuality_score }}" step="0.1" min="1" max="10" required>
-                                                    </div>
-
-                                                    <div class="col-12">
-                                                        <label class="form-label fw-bold">Project Work Remarks</label>
-                                                        <textarea name="project_remarks" class="form-control" rows="2">{{ $appr->project_remarks }}</textarea>
-                                                    </div>
-
-                                                    <div class="col-12">
-                                                        <label class="form-label fw-bold">Behaviour & Soft Skills Remarks</label>
-                                                        <textarea name="behaviour_remarks" class="form-control" rows="2">{{ $appr->behaviour_remarks }}</textarea>
-                                                    </div>
-
-                                                    <div class="col-12">
-                                                        <label class="form-label fw-bold">HR Recommendation</label>
-                                                        <select name="recommendation" class="form-select">
-                                                            <option value="Promote & Merit Increment" {{ $appr->recommendation == 'Promote & Merit Increment' ? 'selected' : '' }}>Promote & Merit Increment</option>
-                                                            <option value="Salary Increment & Role Growth" {{ $appr->recommendation == 'Salary Increment & Role Growth' ? 'selected' : '' }}>Salary Increment & Role Growth</option>
-                                                            <option value="Standard Bonus & Continuation" {{ $appr->recommendation == 'Standard Bonus & Continuation' ? 'selected' : '' }}>Standard Bonus & Continuation</option>
-                                                            <option value="Role Maintenance & Skill Mentoring" {{ $appr->recommendation == 'Role Maintenance & Skill Mentoring' ? 'selected' : '' }}>Role Maintenance & Skill Mentoring</option>
-                                                            <option value="Performance Improvement Plan (PIP)" {{ $appr->recommendation == 'Performance Improvement Plan (PIP)' ? 'selected' : '' }}>Performance Improvement Plan (PIP)</option>
-                                                        </select>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                                <button type="submit" class="btn btn-purple-primary"><i class="bx bx-check-double me-1"></i> Save Updated Appraisal</button>
-                                            </div>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-                            @endif
-
-                            @empty
+                        @empty
                             <tr>
                                 <td colspan="8" class="text-center py-4">No appraisal records found.</td>
                             </tr>
@@ -866,7 +1048,7 @@
             <div class="app-table-card">
                 <div class="p-3 text-white d-flex justify-content-between align-items-center" style="background: linear-gradient(135deg, #1E4FCC 0%, #2F6BFF 100%);">
                     <h5 class="text-white fw-bold mb-0"><i class="bx bx-folder-open me-1"></i> Table 1: Project Work Performance Appraisal</h5>
-                    <span class="badge bg-white text-dark fw-bold px-3 py-1.5" style="color: #2F6BFF !important;">Weight in Overall Appraisal: 40%</span>
+                    <span class="badge bg-white text-dark fw-bold px-3 py-1.5" style="color: #2F6BFF !important;">Current policy weight: {{ $settings['work_weight'] }}%</span>
                 </div>
                 <div class="table-responsive">
                     <table class="table app-table align-middle mb-0">
@@ -883,7 +1065,18 @@
                         <tbody>
                             @forelse($appraisals as $appr)
                             <tr>
-                                <td class="fw-bold text-dark">{{ $appr->employee?->name }}</td>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="avatar avatar-sm flex-shrink-0">
+                                            @if(!empty($appr->employee?->profile_image))
+                                                <img src="{{ asset($appr->employee->profile_image) }}" alt="{{ $appr->employee->name }}" class="rounded-circle" style="width: 34px; height: 34px; object-fit: cover;">
+                                            @else
+                                                <span class="avatar-initial rounded-circle bg-label-purple fw-bold">{{ strtoupper(substr($appr->employee?->name ?? 'E', 0, 1)) }}</span>
+                                            @endif
+                                        </div>
+                                        <span class="fw-bold text-dark">{{ $appr->employee?->name }}</span>
+                                    </div>
+                                </td>
                                 <td><span class="badge px-3 py-1.5 fw-bold" style="background: #ede9fe; color: #6d28d9; border: 1px solid #ddd6fe;">{{ $appr->projects_count }} Project(s)</span></td>
                                 <td><span class="badge px-3 py-1.5 fw-bold" style="background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd;">{{ $appr->completed_tasks }} Task(s)</span></td>
                                 <td>
@@ -910,7 +1103,7 @@
             <div class="app-table-card">
                 <div class="p-3 text-white d-flex justify-content-between align-items-center" style="background: linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%);">
                     <h5 class="text-white fw-bold mb-0"><i class="bx bx-calendar-check me-1"></i> Table 2: Attendance & Punctuality Appraisal</h5>
-                    <span class="badge bg-white text-dark fw-bold px-3 py-1.5" style="color: #1e40af !important;">Weight in Overall Appraisal: 30%</span>
+                    <span class="badge bg-white text-dark fw-bold px-3 py-1.5" style="color: #1e40af !important;">Current policy weight: {{ $settings['attendance_weight'] }}%</span>
                 </div>
                 <div class="table-responsive">
                     <table class="table app-table align-middle mb-0">
@@ -927,7 +1120,18 @@
                         <tbody>
                             @forelse($appraisals as $appr)
                             <tr>
-                                <td class="fw-bold text-dark">{{ $appr->employee?->name }}</td>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="avatar avatar-sm flex-shrink-0">
+                                            @if(!empty($appr->employee?->profile_image))
+                                                <img src="{{ asset($appr->employee->profile_image) }}" alt="{{ $appr->employee->name }}" class="rounded-circle" style="width: 34px; height: 34px; object-fit: cover;">
+                                            @else
+                                                <span class="avatar-initial rounded-circle bg-label-purple fw-bold">{{ strtoupper(substr($appr->employee?->name ?? 'E', 0, 1)) }}</span>
+                                            @endif
+                                        </div>
+                                        <span class="fw-bold text-dark">{{ $appr->employee?->name }}</span>
+                                    </div>
+                                </td>
                                 <td><span class="fw-bold text-dark">{{ $appr->present_days }} / {{ $appr->total_working_days }} Days</span></td>
                                 <td><span class="fw-extrabold text-success fs-6">{{ number_format($appr->attendance_percentage, 1) }}%</span></td>
                                 <td><span class="fw-extrabold text-dark fs-6">{{ number_format($appr->attendance_score, 1) }} / 100</span></td>
@@ -952,43 +1156,44 @@
             <div class="app-table-card">
                 <div class="p-3 text-white d-flex justify-content-between align-items-center" style="background: linear-gradient(135deg, #d97706 0%, #b45309 100%);">
                     <h5 class="text-white fw-bold mb-0"><i class="bx bx-smile me-1"></i> Table 3: Behaviour, Soft Skills & Conduct Appraisal</h5>
-                    <span class="badge bg-white text-dark fw-bold px-3 py-1.5" style="color: #b45309 !important;">Weight in Overall Appraisal: 30%</span>
+                    <span class="badge bg-white text-dark fw-bold px-3 py-1.5" style="color: #b45309 !important;">Current policy weight: {{ $settings['behaviour_weight'] }}%</span>
                 </div>
-                <div class="table-responsive">
-                    <table class="table app-table align-middle mb-0">
-                        <thead>
-                            <tr>
-                                <th style="min-width: 200px;">Employee</th>
-                                <th style="min-width: 150px;">Teamwork (1-10)</th>
-                                <th style="min-width: 170px;">Communication (1-10)</th>
-                                <th style="min-width: 170px;">Punctuality Rating (1-10)</th>
-                                <th style="min-width: 180px;">Behaviour Score (0-100)</th>
-                                <th style="min-width: 250px;">Conduct Remarks</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($appraisals as $appr)
-                            <tr>
-                                <td class="fw-bold text-dark">{{ $appr->employee?->name }}</td>
-                                <td><span class="fw-bold text-dark">{{ number_format($appr->teamwork_score, 1) }}</span></td>
-                                <td><span class="fw-bold text-dark">{{ number_format($appr->communication_score, 1) }}</span></td>
-                                <td><span class="fw-bold text-dark">{{ number_format($appr->punctuality_score, 1) }}</span></td>
-                                <td><span class="fw-extrabold text-warning fs-6">{{ number_format($appr->behaviour_score, 1) }} / 100</span></td>
-                                <td><small class="text-muted">{{ $appr->behaviour_remarks ?? 'Positive professional attitude.' }}</small></td>
-                            </tr>
-                            @empty
-                            <tr><td colspan="6" class="text-center py-4">No behaviour metrics recorded.</td></tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
+                @include('admin.appraisal.behaviour-table')
             </div>
         </div>
 
     </div>
 </div>
 
-@if(auth()->user()?->role === 'admin' || auth()->user()?->role === 'hr')
+@stack('appraisal-behaviour-modals')
+@foreach($appraisals as $appr)
+    @include('admin.appraisal.modals')
+@endforeach
+
+@if($canCreate)
+<div class="modal fade" id="calculateAppraisalModal" tabindex="-1" aria-labelledby="calculateAppraisalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered"><div class="modal-content">
+        <form method="POST" action="{{ route('appraisal.autoCalculate') }}">
+            @csrf
+            <input type="hidden" name="period" value="{{ $selectedPeriod }}">
+            <div class="modal-header"><h5 class="modal-title" id="calculateAppraisalTitle">Add employees to {{ $selectedPeriod }}</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
+            <div class="modal-body">
+                <p class="text-muted">Select staff to calculate attendance and work marks using the saved company policy. Then enter behaviour ratings and complete the review. Submitted and approved appraisals stay unchanged.</p>
+                <input type="hidden" name="selected_staff_calculation" value="1">
+                <div class="border rounded p-3" style="max-height: 360px; overflow-y: auto;">
+                    @forelse($employees->whereIn('id', $editableEmployeeIds) as $staff)
+                        <div class="form-check py-2">
+                            <input class="form-check-input" type="checkbox" name="employee_ids[]" value="{{ $staff->id }}" id="appraisal-staff-{{ $staff->id }}">
+                            <label class="form-check-label" for="appraisal-staff-{{ $staff->id }}"><strong>{{ $staff->name }}</strong><span class="d-block small text-muted">{{ ucfirst($staff->role) }}{{ $staff->designation ? ' · '.$staff->designation : '' }}</span></label>
+                        </div>
+                    @empty<p class="text-muted mb-0">No eligible staff match your filters.</p>@endforelse
+                </div>
+                <p class="small text-muted mt-2 mb-0">Select at least one employee. Only staff in your company are available.</p>
+            </div>
+            <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button type="submit" class="btn btn-purple-primary">Calculate selected appraisals</button></div>
+        </form>
+    </div></div>
+</div>
 {{-- EVALUATE EMPLOYEE MODAL --}}
 <div class="modal fade" id="evaluateAppraisalModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -1005,36 +1210,40 @@
                             <label class="form-label fw-bold">Select Employee <sup class="text-danger">*</sup></label>
                             <select name="employee_id" class="form-select" required>
                                 <option value="">-- Choose Employee --</option>
-                                @foreach($employees as $emp)
+                                @foreach($employees->whereIn('id', $editableEmployeeIds) as $emp)
                                     <option value="{{ $emp->id }}">{{ $emp->name }} ({{ $emp->designation ?? $emp->role }})</option>
                                 @endforeach
                             </select>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-bold">Appraisal Period <sup class="text-danger">*</sup></label>
-                            <input type="text" name="appraisal_period" class="form-control" value="{{ $selectedPeriod }}" required>
+                            <select name="appraisal_period" class="form-select" required>
+                                @foreach($periods as $period)
+                                    <option value="{{ $period }}" @selected($selectedPeriod === $period)>{{ $period }}</option>
+                                @endforeach
+                            </select>
                         </div>
 
                         <div class="col-md-6">
                             <label class="form-label fw-bold text-primary">Project Work Score (0-100) <sup class="text-danger">*</sup></label>
-                            <input type="number" name="project_score" class="form-control" value="85" step="0.1" min="0" max="100" required>
+                            <input type="number" name="project_score" class="form-control" placeholder="Score supported by work evidence" step="0.1" min="0" max="100" required>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-bold text-success">Attendance Score (0-100) <sup class="text-danger">*</sup></label>
-                            <input type="number" name="attendance_score" class="form-control" value="90" step="0.1" min="0" max="100" required>
+                            <input type="number" name="attendance_score" class="form-control" placeholder="Score supported by attendance evidence" step="0.1" min="0" max="100" required>
                         </div>
 
                         <div class="col-md-4">
                             <label class="form-label fw-bold text-warning">Teamwork Rating (1-10)</label>
-                            <input type="number" name="teamwork_score" class="form-control" value="8.5" step="0.1" min="1" max="10" required>
+                            <input type="number" name="teamwork_score" class="form-control" step="0.1" min="1" max="10" required>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label fw-bold text-warning">Communication Rating (1-10)</label>
-                            <input type="number" name="communication_score" class="form-control" value="8.5" step="0.1" min="1" max="10" required>
+                            <input type="number" name="communication_score" class="form-control" step="0.1" min="1" max="10" required>
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label fw-bold text-warning">Punctuality Rating (1-10)</label>
-                            <input type="number" name="punctuality_score" class="form-control" value="8.5" step="0.1" min="1" max="10" required>
+                            <label class="form-label fw-bold text-warning">Professional conduct (1-10)</label>
+                            <input type="number" name="punctuality_score" class="form-control" step="0.1" min="1" max="10" required>
                         </div>
 
                         <div class="col-12">
@@ -1043,13 +1252,18 @@
                         </div>
 
                         <div class="col-12">
-                            <label class="form-label fw-bold">Behaviour & Soft Skills Remarks</label>
-                            <textarea name="behaviour_remarks" class="form-control" rows="2" placeholder="Teamwork, conduct, and communication feedback..."></textarea>
+                            <label class="form-label fw-bold">Attendance evidence</label>
+                            <textarea name="attendance_remarks" class="form-control" rows="2" placeholder="Explain any difference from recorded attendance."></textarea>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold">Cultural behaviour evidence</label>
+                            <textarea name="behaviour_remarks" class="form-control" rows="2" required placeholder="Teamwork, conduct, and communication feedback..."></textarea>
                         </div>
 
                         <div class="col-12">
                             <label class="form-label fw-bold">HR Recommendation</label>
                             <select name="recommendation" class="form-select">
+                                <option value="">Use grade-based recommendation</option>
                                 <option value="Promote & Merit Increment">Promote & Merit Increment</option>
                                 <option value="Salary Increment & Role Growth" selected>Salary Increment & Role Growth</option>
                                 <option value="Standard Bonus & Continuation">Standard Bonus & Continuation</option>

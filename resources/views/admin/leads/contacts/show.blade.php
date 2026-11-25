@@ -1091,7 +1091,7 @@ html[data-pms-theme="dark"] .lead-nav-tabs .nav-link:not(.active)#notes-tab i, [
                                                 {{ $fl->status }}
                                             </span>
                                         </td>
-                                        <td class="small text-secondary">{{ $fl->description }}</td>
+                                        <td class="small text-secondary" style="white-space: pre-wrap; overflow-wrap: anywhere;">{{ trim((string) $fl->description) !== '' ? $fl->description : 'No description' }}</td>
                                     </tr>
                                 @empty
                                     <tr>
@@ -1249,4 +1249,3 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 @endsection
-

@@ -667,23 +667,31 @@
 
         @media (max-width: 768px) {
             .show-container {
-                padding: 1rem;
+                padding: 0.75rem;
             }
             .card-body-premium {
-                padding: 1.5rem;
+                padding: 1.25rem;
             }
             .card-header-premium {
-                padding: 1rem 1.5rem;
+                padding: 0.85rem 1.25rem;
+                flex-wrap: wrap;
+                gap: 0.5rem;
             }
             .info-item {
-                padding: 1rem;
+                padding: 0.85rem;
             }
             .avatar-large {
-                width: 100px;
-                height: 100px;
+                width: 80px;
+                height: 80px;
             }
             .avatar-large i {
-                font-size: 2.5rem;
+                font-size: 2rem;
+            }
+            .btn-header-enterprise {
+                padding: 0.6rem 1.1rem;
+                font-size: 0.78rem;
+                margin-bottom: 1rem;
+                display: inline-flex;
             }
         }
 
@@ -1034,7 +1042,7 @@
                                 </div>
                             </div>
                             <div class="info-item">
-                                <div class="info-label"><i class="fas fa-user-friends"></i> Reporting To</div>
+                                <div class="info-label"><i class="fas fa-users"></i> Reporting To</div>
                                 <div class="info-value">{{ $detail?->reportingTo->name ?? 'N/A' }}</div>
                             </div>
                             <div class="info-item">
@@ -1061,12 +1069,15 @@
                             </div>
                         </div>
 
-                        @if($detail?->skills)
+                        @php
+                            $skillsList = $detail?->clean_skills_array ?? [];
+                        @endphp
+                        @if(!empty($skillsList))
                         <div class="resident-info-section" style="margin-top: 1.5rem;">
                             <div class="section-label"><i class="fas fa-code"></i> Skills & Expertise</div>
                             <div class="d-flex flex-wrap gap-2 mt-2">
-                                @foreach(explode(',', $detail->skills) as $skill)
-                                    <span class="skill-tag">{{ trim($skill) }}</span>
+                                @foreach($skillsList as $skill)
+                                    <span class="skill-tag">{{ $skill }}</span>
                                 @endforeach
                             </div>
                         </div>

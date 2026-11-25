@@ -54,10 +54,21 @@ class Client extends TenantModel
         parent::boot();
 
         static::creating(function ($client) {
-            $latest = static::orderBy('id', 'desc')->first();
-            $number = $latest ? $latest->id + 1 : 1;
+            $schema = $client->getConnection()->getSchemaBuilder();
+            if ($schema->hasTable('clients')) {
+                if ($schema->hasColumn('clients', 'client_uid')) {
+                    $latest = static::orderBy('id', 'desc')->first();
+                    $number = $latest ? $latest->id + 1 : 1;
 
-            $client->client_uid = 'XINK-CL-' . str_pad($number, 4, '0', STR_PAD_LEFT);
+                    $client->client_uid = 'XINK-CL-' . str_pad($number, 4, '0', STR_PAD_LEFT);
+                } else {
+                    unset($client->attributes['client_uid']);
+                }
+
+                if (! $schema->hasColumn('clients', 'status')) {
+                    unset($client->attributes['status']);
+                }
+            }
         });
     }
 

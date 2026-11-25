@@ -444,6 +444,13 @@
         color: #FFFFFF !important;
         transform: translateX(2px);
     }
+    /* Theme icon rules (loaded later, !important) recolour every dashboard icon blue; keep the
+       hovered footer arrow white on its blue button in both themes. */
+    html body .industry-overview-grid .industry-metric-card:hover .industry-arrow {
+        color: #FFFFFF !important;
+        -webkit-text-fill-color: #FFFFFF !important;
+        -webkit-text-stroke-color: #FFFFFF !important;
+    }
 
     /* ======================================================
        EXECUTIVE PANELS & BUSINESS MODEL
@@ -531,6 +538,7 @@
         border: 1px solid var(--bx-border);
         border-radius: 12px;
         min-height: 125px;
+        min-width: 0;
         padding: 1rem;
         position: relative;
         transition: all 0.2s ease;
@@ -563,6 +571,9 @@
         letter-spacing: -0.02em;
         line-height: 1.15;
         margin: 0.35rem 0 0.25rem;
+        max-width: 100%;
+        overflow-wrap: anywhere;
+        white-space: normal;
     }
 
     .saas-money-card em {
@@ -741,45 +752,6 @@
         background-color: #F87171 !important;
     }
 
-    /* ======================================================
-       TREND BOARD & GAUGES
-       ====================================================== */
-    .saas-trend-board {
-        display: grid;
-        gap: 1.25rem;
-        grid-template-columns: 1fr 1fr;
-    }
-
-    .saas-line-card {
-        min-height: 220px;
-    }
-
-    .saas-sparkline {
-        align-items: flex-end;
-        display: flex;
-        gap: 0.75rem;
-        height: 120px;
-        margin-top: 1rem;
-        padding: 0.6rem;
-        background: var(--bx-surface-2);
-        border-radius: 12px;
-        border: 1px solid var(--bx-border);
-    }
-
-    .saas-sparkline span {
-        background: var(--bx-blue);
-        border-radius: 6px 6px 3px 3px;
-        flex: 1 1 0;
-        min-width: 10px;
-        height: var(--spark);
-        transition: transform 0.2s ease, background 0.2s ease;
-    }
-
-    .saas-sparkline span:hover {
-        transform: scaleY(1.06);
-        background: var(--bx-violet);
-    }
-
     /* Gauges */
     .industry-gauge {
         align-items: center;
@@ -901,277 +873,40 @@
         margin: 0;
     }
 
-    /* ======================================================
-       AUTOMATIC MODULES & SHORTCUTS
-       ====================================================== */
-    .saas-module-grid {
-        display: grid;
+    /* Keep Work Analytics horizontal in light mode despite shared chart styles. */
+    html:not([data-pms-theme="dark"]) .industry-analytics-card .industry-bars {
+        grid-template-columns: minmax(0, 1fr);
+        min-height: 0;
+        align-items: stretch;
         gap: 1rem;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
+        padding-top: 0;
     }
 
-    .saas-module-card {
-        background: var(--bx-surface-2);
-        border: 1px solid var(--bx-border);
-        border-radius: 14px;
-        color: var(--bx-ink) !important;
-        display: flex;
-        flex-direction: column;
-        gap: 0.75rem;
-        min-height: 185px;
-        padding: 1rem;
-        text-decoration: none;
-        transition: all 0.2s ease;
-        box-shadow: var(--bx-shadow-sm);
-    }
-
-    .saas-module-card:hover {
-        border-color: var(--bx-blue);
-        transform: translateY(-2px);
-    }
-
-    .saas-module-head {
+    html:not([data-pms-theme="dark"]) .industry-analytics-card .industry-bar {
+        grid-template-columns: minmax(0, 1fr) 100px;
+        justify-items: stretch;
         align-items: center;
-        display: flex;
-        gap: 0.65rem;
-    }
-
-    .saas-module-icon {
-        align-items: center;
-        background: var(--bx-blue-soft);
-        border-radius: 10px;
-        color: var(--bx-blue) !important;
-        display: inline-flex;
-        flex: 0 0 36px;
-        font-size: 1.15rem;
-        height: 36px;
-        justify-content: center;
-        width: 36px;
-    }
-
-    .saas-module-card h4 {
-        color: var(--bx-ink);
-        font-family: var(--font-display);
-        font-size: 0.9rem;
-        font-weight: 700;
-        margin: 0;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
-    .saas-module-card small {
-        color: var(--bx-ink-muted);
-        font-size: 0.75rem;
-        font-weight: 550;
-    }
-
-    .saas-module-donut {
-        --accent: var(--bx-blue);
-        align-items: center;
-        align-self: center;
-        background: conic-gradient(var(--accent) calc(var(--percent) * 1%), var(--bx-gauge-track) 0);
-        border-radius: 50%;
-        display: flex;
-        height: 80px;
-        justify-content: center;
-        position: relative;
-        width: 80px;
-    }
-
-    .saas-module-donut::after {
-        background: var(--bx-surface);
-        border-radius: 50%;
-        content: "";
-        inset: 10px;
-        position: absolute;
-    }
-
-    .saas-module-donut strong {
-        color: var(--bx-ink);
-        font-family: var(--font-display);
-        font-size: 1.05rem;
-        font-weight: 800;
-        position: relative;
-        z-index: 1;
-    }
-
-    .saas-module-meta {
-        align-items: center;
-        display: flex;
-        justify-content: space-between;
-        margin-top: auto;
-    }
-
-    .saas-module-meta em {
-        background: var(--bx-blue-soft);
-        border-radius: 6px;
-        color: var(--bx-blue);
-        font-size: 0.72rem;
-        font-style: normal;
-        font-weight: 700;
-        padding: 0.25rem 0.55rem;
-    }
-
-    /* Module Intelligence Pie Charts Grid */
-    .industry-chart-grid {
-        display: grid;
         gap: 1rem;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
     }
 
-    .industry-chart-card {
-        background: var(--bx-surface-2);
-        border: 1px solid var(--bx-border);
-        border-radius: 14px;
-        min-height: 230px;
-        padding: 1.15rem;
-        transition: all 0.2s ease;
+    html:not([data-pms-theme="dark"]) .industry-analytics-card .industry-bar span {
+        width: 100%;
+        height: 12px;
+        min-height: 0;
+        background: #e2e8f0;
+        box-shadow: none;
     }
 
-    .industry-chart-card:hover {
-        border-color: var(--bx-blue);
-        transform: translateY(-2px);
+    html:not([data-pms-theme="dark"]) .industry-analytics-card .industry-bar span::after {
+        background: #2f6bff;
     }
 
-    .industry-chart-body {
-        align-items: center;
-        display: flex;
-        flex-direction: column;
-        gap: 0.85rem;
-        text-align: center;
+    html:not([data-pms-theme="dark"]) .industry-analytics-card .industry-bar.is-muted span::after {
+        background: #10b981;
     }
 
-    .industry-donut {
-        --accent: var(--bx-blue);
-        align-items: center;
-        background: conic-gradient(var(--accent) calc(var(--percent) * 1%), var(--bx-gauge-track) 0);
-        border-radius: 50%;
-        display: flex;
-        height: 110px;
-        justify-content: center;
-        position: relative;
-        width: 110px;
-    }
-
-    .industry-donut::after {
-        background: var(--bx-surface);
-        border-radius: 50%;
-        content: "";
-        inset: 14px;
-        position: absolute;
-    }
-
-    .industry-donut strong {
-        color: var(--bx-ink);
-        font-family: var(--font-display);
-        font-size: 1.35rem;
-        font-weight: 800;
-        position: relative;
-        z-index: 1;
-    }
-
-    .industry-chart-meta h4 {
-        color: var(--bx-ink);
-        font-family: var(--font-display);
-        font-size: 0.95rem;
-        font-weight: 700;
-        margin: 0 0 0.25rem;
-    }
-
-    .industry-chart-meta p {
-        color: var(--bx-ink-muted);
-        font-size: 0.8rem;
-        font-weight: 500;
-        margin: 0;
-    }
-
-    .industry-chart-link {
-        color: var(--bx-blue) !important;
-        font-family: var(--font-display);
-        font-size: 0.82rem;
-        font-weight: 650;
-        text-decoration: none;
-    }
-
-    .industry-chart-link:hover {
-        text-decoration: underline;
-    }
-
-    /* Feature Shortcuts Grid */
-    .industry-feature-grid {
-        display: grid;
-        gap: 0.85rem;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-    }
-
-    .industry-feature-card {
-        align-items: center;
-        background: var(--bx-surface-2);
-        border: 1px solid var(--bx-border);
-        border-radius: 12px;
-        color: var(--bx-ink) !important;
-        display: grid;
-        gap: 0.75rem;
-        grid-template-columns: 40px minmax(0, 1fr) auto;
-        min-height: 72px;
-        padding: 0.85rem;
-        text-decoration: none;
-        transition: all 0.2s ease;
-    }
-
-    .industry-feature-card:hover {
-        border-color: var(--bx-blue);
-        transform: translateY(-2px);
-    }
-
-    .industry-feature-icon {
-        align-items: center;
-        background: var(--bx-blue-soft);
-        border-radius: 10px;
-        color: var(--bx-blue) !important;
-        display: inline-flex;
-        font-size: 1.2rem;
-        height: 40px;
-        justify-content: center;
-        width: 40px;
-    }
-
-    .industry-feature-copy {
-        min-width: 0;
-    }
-
-    .industry-feature-copy strong {
-        color: var(--bx-ink);
-        font-family: var(--font-display);
-        font-size: 0.88rem;
-        font-weight: 700;
-        display: block;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
-    .industry-feature-copy small {
-        color: var(--bx-ink-muted);
-        font-size: 0.75rem;
-        font-weight: 500;
-        display: block;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
-    .industry-feature-card em {
-        background: var(--bx-surface-3);
-        border-radius: 6px;
-        color: var(--bx-ink-body);
-        font-size: 0.75rem;
-        font-style: normal;
-        font-weight: 700;
-        min-width: 32px;
-        padding: 0.25rem 0.5rem;
-        text-align: center;
+    html:not([data-pms-theme="dark"]) .industry-analytics-card .industry-bar label {
+        color: #334155 !important;
     }
 
     /* ======================================================
@@ -1383,6 +1118,77 @@
         border-radius: 999px;
     }
 
+    #totalEmployeesCard {
+        background: linear-gradient(145deg, #1e4fcc, #2f6bff) !important;
+        border-color: rgba(255, 255, 255, 0.2) !important;
+    }
+
+    #totalEmployeesCard .stat-title,
+    #totalEmployeesCard .stat-title a,
+    #totalEmployeesCard .stat-value,
+    #totalEmployeesCard .stat-trend,
+    #totalEmployeesCard .stat-trend span,
+    #totalEmployeesCard .stat-trend i,
+    #totalEmployeesCard .stat-dropdown > button,
+    #totalEmployeesCard .stat-dropdown > button i {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
+    #totalEmployeesCard i.bx,
+    #totalEmployeesCard i.bx::before {
+        font-family: boxicons !important;
+        font-weight: normal !important;
+        font-style: normal !important;
+        line-height: 1 !important;
+        background: transparent !important;
+        filter: none;
+    }
+
+    #totalEmployeesCard .stat-icon {
+        background: rgba(255, 255, 255, 0.22) !important;
+        border: 1px solid rgba(255, 255, 255, 0.4) !important;
+    }
+
+    #totalEmployeesCard .stat-icon i::before,
+    #totalEmployeesCard .stat-trend i::before,
+    #totalEmployeesCard .stat-dropdown > button i::before {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        opacity: 1 !important;
+    }
+
+    #totalEmployeesCard .stat-dropdown > button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.12) !important;
+        border: 1px solid rgba(255, 255, 255, 0.3) !important;
+        opacity: 1 !important;
+    }
+
+    #totalEmployeesCard .stat-dropdown > button:hover,
+    #totalEmployeesCard .stat-dropdown > button:focus-visible {
+        background: rgba(255, 255, 255, 0.18) !important;
+    }
+
+    #totalEmployeesCard .stat-progress {
+        background: transparent !important;
+    }
+
+    #totalEmployeesCard .progress-container {
+        background: rgba(255, 255, 255, 0.25) !important;
+    }
+
+    #totalEmployeesCard .progress-bar {
+        background: #ffffff !important;
+        height: 100% !important;
+        opacity: 1 !important;
+    }
+
     /* ======================================================
        CONTENT CARDS & LISTS (TICKETS, TASKS, ACTIVITIES)
        Soft Status Badges & Clean Timeline
@@ -1436,6 +1242,14 @@
     .card-title i {
         color: var(--bx-blue);
         font-size: 1.15rem;
+    }
+
+    /* Header icons sit on coloured tiles in both dashboard themes. */
+    html body #main .dashboard-notification-feed .content-card .card-title > i,
+    html body #main .dashboard-notification-feed .content-card .card-title > i::before {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        opacity: 1 !important;
     }
 
     .card-action {
@@ -1631,17 +1445,13 @@
        ====================================================== */
     @media (max-width: 1199.98px) {
         .industry-overview-grid,
-        .industry-chart-grid,
-        .industry-feature-grid,
         .saas-revenue-strip,
-        .saas-module-grid,
         .stats-grid,
         .content-grid {
             grid-template-columns: repeat(2, minmax(0, 1fr));
         }
 
         .saas-executive-grid,
-        .saas-trend-board,
         .industry-main-grid {
             grid-template-columns: 1fr;
         }
@@ -1669,13 +1479,730 @@
         .industry-overview-grid,
         .saas-revenue-strip,
         .saas-prediction-grid,
-        .saas-module-grid,
-        .industry-chart-grid,
-        .industry-feature-grid,
         .industry-presence-row,
         .stats-grid,
         .content-grid {
             grid-template-columns: 1fr;
+        }
+    }
+
+    /* ======================================================
+       WORKSPACE LOOK & FEEL OVERRIDES (HIGH SPECIFICITY)
+       Beats pms-refresh.css while preserving dark mode & functionality
+       ====================================================== */
+    #main.bx-admin-workspace {
+        background: var(--bx-bg) !important;
+    }
+
+    #main.bx-admin-workspace .content-wrapper {
+        padding: 1.5rem 1.75rem 2.5rem !important;
+        max-width: 1440px;
+        margin: 0 auto;
+    }
+
+    #main.bx-admin-workspace .industry-dashboard-shell {
+        gap: 1.25rem !important;
+        margin-bottom: 1.5rem !important;
+    }
+
+    /* Hero Command Center */
+    #main.bx-admin-workspace .industry-hero-card {
+        background: var(--bx-surface) !important;
+        border: 1px solid var(--bx-border) !important;
+        border-radius: 16px !important;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04) !important;
+        grid-template-columns: minmax(0, 1.35fr) minmax(300px, 0.85fr) !important;
+        gap: 1.75rem !important;
+        min-height: 210px !important;
+        padding: 1.75rem 2rem !important;
+        align-items: center;
+    }
+
+    #main.bx-admin-workspace .industry-hero-copy {
+        padding: 0 !important;
+        max-width: 560px;
+    }
+
+    #main.bx-admin-workspace .industry-eyebrow {
+        background: #EFF6FF !important;
+        border: 1px solid rgba(37, 99, 235, 0.14) !important;
+        color: #2563EB !important;
+        -webkit-text-fill-color: #2563EB !important;
+        font-size: 0.7rem !important;
+        font-weight: 700 !important;
+        letter-spacing: 0.06em !important;
+        padding: 0.3rem 0.75rem !important;
+        margin-bottom: 0.85rem !important;
+    }
+
+    #main.bx-admin-workspace .industry-eyebrow i {
+        color: #2563EB !important;
+        -webkit-text-fill-color: #2563EB !important;
+        -webkit-text-stroke: 0 !important;
+        font-size: 0.9rem !important;
+    }
+
+    html[data-pms-theme="dark"] #main.bx-admin-workspace .industry-eyebrow {
+        background: rgba(47, 107, 255, 0.16) !important;
+        border-color: rgba(96, 165, 250, 0.25) !important;
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
+    }
+
+    html[data-pms-theme="dark"] #main.bx-admin-workspace .industry-eyebrow i {
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
+    }
+
+    #main.bx-admin-workspace .industry-hero-copy h1 {
+        font-family: var(--font-display) !important;
+        font-size: clamp(1.65rem, 2.35vw, 2.15rem) !important;
+        font-weight: 800 !important;
+        letter-spacing: -0.025em !important;
+        line-height: 1.15 !important;
+        color: var(--bx-ink) !important;
+        -webkit-text-fill-color: var(--bx-ink) !important;
+        margin: 0 0 0.65rem !important;
+    }
+
+    #main.bx-admin-workspace .industry-hero-copy p {
+        color: var(--bx-ink-muted) !important;
+        -webkit-text-fill-color: var(--bx-ink-muted) !important;
+        font-size: 0.88rem !important;
+        font-weight: 500 !important;
+        line-height: 1.5 !important;
+        margin: 0 0 1.25rem !important;
+    }
+
+    #main.bx-admin-workspace .industry-actions {
+        gap: 0.65rem !important;
+        margin-top: 0 !important;
+    }
+
+    #main.bx-admin-workspace .industry-btn {
+        border-radius: 10px !important;
+        min-height: 38px !important;
+        padding: 0.5rem 1rem !important;
+        font-size: 0.82rem !important;
+        font-weight: 600 !important;
+        box-shadow: none !important;
+    }
+
+    #main.bx-admin-workspace .industry-btn i {
+        font-size: 1rem !important;
+        -webkit-text-stroke: 0 !important;
+    }
+
+    #main.bx-admin-workspace .industry-btn-primary {
+        background: #2563EB !important;
+        border: 1px solid #2563EB !important;
+        color: #FFFFFF !important;
+        -webkit-text-fill-color: #FFFFFF !important;
+        box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25) !important;
+    }
+
+    #main.bx-admin-workspace .industry-btn-primary:hover {
+        background: #1D4ED8 !important;
+        border-color: #1D4ED8 !important;
+    }
+
+    #main.bx-admin-workspace .industry-btn-light {
+        background: var(--bx-surface) !important;
+        border: 1px solid var(--bx-border) !important;
+        color: var(--bx-ink) !important;
+        -webkit-text-fill-color: var(--bx-ink) !important;
+    }
+
+    #main.bx-admin-workspace .industry-btn-light i {
+        color: var(--bx-ink-body) !important;
+        -webkit-text-fill-color: var(--bx-ink-body) !important;
+    }
+
+    #main.bx-admin-workspace .industry-btn-light:hover {
+        background: var(--bx-surface-3) !important;
+        border-color: var(--bx-border-strong) !important;
+    }
+
+    /* Hero Right: Enterprise Live Monitoring Widget */
+    #main.bx-admin-workspace .industry-hero-visual {
+        padding: 0 !important;
+        justify-content: flex-end !important;
+    }
+
+    #main.bx-admin-workspace .bx-monitor-widget {
+        width: 100%;
+        max-width: 356px;
+        background: linear-gradient(180deg, #F8FAFC 0%, #FFFFFF 100%);
+        border: 1px solid var(--bx-border);
+        border-radius: 16px;
+        padding: 14px;
+        box-shadow: 0 8px 24px -6px rgba(15, 23, 42, 0.08), 0 0 0 4px rgba(241, 245, 249, 0.75);
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    html[data-pms-theme="dark"] #main.bx-admin-workspace .bx-monitor-widget {
+        background: linear-gradient(180deg, #141B3D 0%, #0F1530 100%);
+        border-color: rgba(238, 241, 251, 0.12);
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4), 0 0 0 4px rgba(20, 27, 61, 0.5);
+    }
+
+    #main.bx-admin-workspace .bx-monitor-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 2px;
+    }
+
+    #main.bx-admin-workspace .bx-monitor-title {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        font-size: 0.76rem;
+        font-weight: 700;
+        color: var(--bx-ink) !important;
+        -webkit-text-fill-color: var(--bx-ink) !important;
+    }
+
+    #main.bx-admin-workspace .bx-monitor-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #10B981;
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+        display: inline-block;
+        flex-shrink: 0;
+    }
+
+    #main.bx-admin-workspace .bx-monitor-ver {
+        font-size: 0.68rem;
+        font-weight: 600;
+        color: var(--bx-ink-faint) !important;
+        -webkit-text-fill-color: var(--bx-ink-faint) !important;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    #main.bx-admin-workspace .bx-monitor-mid {
+        display: grid;
+        grid-template-columns: 1.05fr 0.95fr;
+        gap: 10px;
+    }
+
+    #main.bx-admin-workspace .bx-monitor-pipeline {
+        background: linear-gradient(155deg, #052E1E 0%, #0A4F35 100%);
+        border-radius: 12px;
+        padding: 11px 12px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        min-height: 92px;
+    }
+
+    #main.bx-admin-workspace .bx-monitor-pipeline span {
+        font-size: 0.68rem;
+        font-weight: 600;
+        color: #86EFAC !important;
+        -webkit-text-fill-color: #86EFAC !important;
+    }
+
+    #main.bx-admin-workspace .bx-pipeline-bars {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        align-items: end;
+        gap: 5px;
+        height: 44px;
+        margin-top: 8px;
+    }
+
+    #main.bx-admin-workspace .bx-pipeline-bars i {
+        display: block;
+        border-radius: 4px 4px 2px 2px;
+        font-style: normal;
+        -webkit-text-stroke: 0 !important;
+    }
+
+    #main.bx-admin-workspace .bx-monitor-nodes {
+        background: var(--bx-surface);
+        border: 1px solid var(--bx-border);
+        border-radius: 12px;
+        padding: 11px 12px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    html[data-pms-theme="dark"] #main.bx-admin-workspace .bx-monitor-nodes,
+    html[data-pms-theme="dark"] #main.bx-admin-workspace .bx-monitor-throughput {
+        background: rgba(15, 21, 48, 0.85);
+        border-color: rgba(238, 241, 251, 0.1);
+    }
+
+    #main.bx-admin-workspace .bx-monitor-nodes-label {
+        font-size: 0.64rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: var(--bx-ink-muted) !important;
+        -webkit-text-fill-color: var(--bx-ink-muted) !important;
+    }
+
+    #main.bx-admin-workspace .bx-monitor-nodes strong {
+        font-family: var(--font-display);
+        font-size: 1.35rem;
+        font-weight: 800;
+        line-height: 1.1;
+        color: var(--bx-ink) !important;
+        -webkit-text-fill-color: var(--bx-ink) !important;
+        letter-spacing: -0.02em;
+    }
+
+    #main.bx-admin-workspace .bx-monitor-nodes em {
+        font-style: normal;
+        font-size: 0.68rem;
+        font-weight: 600;
+        color: #10B981 !important;
+        -webkit-text-fill-color: #10B981 !important;
+    }
+
+    #main.bx-admin-workspace .bx-monitor-throughput {
+        background: var(--bx-surface);
+        border: 1px solid var(--bx-border);
+        border-radius: 12px;
+        padding: 9px 12px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+    }
+
+    #main.bx-admin-workspace .bx-monitor-throughput-copy span {
+        display: block;
+        font-size: 0.66rem;
+        font-weight: 600;
+        color: var(--bx-ink-muted) !important;
+        -webkit-text-fill-color: var(--bx-ink-muted) !important;
+    }
+
+    #main.bx-admin-workspace .bx-monitor-throughput-copy strong {
+        display: block;
+        font-family: var(--font-display);
+        font-size: 0.82rem;
+        font-weight: 800;
+        color: var(--bx-ink) !important;
+        -webkit-text-fill-color: var(--bx-ink) !important;
+    }
+
+    #main.bx-admin-workspace .bx-throughput-bars {
+        display: flex;
+        align-items: flex-end;
+        gap: 4px;
+        height: 24px;
+    }
+
+    #main.bx-admin-workspace .bx-throughput-bars i {
+        display: block;
+        width: 5px;
+        border-radius: 999px;
+        background: #10B981;
+        font-style: normal;
+        -webkit-text-stroke: 0 !important;
+    }
+
+    /* 4-Column KPI Row */
+    #main.bx-admin-workspace .industry-overview-grid {
+        gap: 1rem !important;
+    }
+
+    #main.bx-admin-workspace .industry-metric-card {
+        background: var(--bx-surface) !important;
+        border: 1px solid var(--bx-border) !important;
+        border-radius: 14px !important;
+        min-height: 136px !important;
+        padding: 1.15rem 1.25rem !important;
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03) !important;
+    }
+
+    #main.bx-admin-workspace .kpi-card-top span {
+        font-size: 0.72rem !important;
+        font-weight: 700 !important;
+        letter-spacing: 0.06em !important;
+        color: var(--bx-ink-muted) !important;
+        -webkit-text-fill-color: var(--bx-ink-muted) !important;
+    }
+
+    #main.bx-admin-workspace .kpi-icon-box {
+        width: 34px !important;
+        height: 34px !important;
+        border-radius: 9px !important;
+        background: #EFF6FF !important;
+        color: #2563EB !important;
+        font-size: 1.05rem !important;
+    }
+
+    #main.bx-admin-workspace .kpi-icon-box i {
+        color: #2563EB !important;
+        -webkit-text-fill-color: #2563EB !important;
+        -webkit-text-stroke: 0 !important;
+    }
+
+    html[data-pms-theme="dark"] #main.bx-admin-workspace .kpi-icon-box {
+        background: rgba(47, 107, 255, 0.16) !important;
+        color: #60A5FA !important;
+    }
+
+    html[data-pms-theme="dark"] #main.bx-admin-workspace .kpi-icon-box i {
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
+    }
+
+    #main.bx-admin-workspace .kpi-number {
+        font-size: 1.95rem !important;
+        font-weight: 800 !important;
+        letter-spacing: -0.03em !important;
+        color: var(--bx-ink) !important;
+        -webkit-text-fill-color: var(--bx-ink) !important;
+        margin: 0.45rem 0 0.55rem !important;
+    }
+
+    #main.bx-admin-workspace .kpi-card-footer small {
+        font-size: 0.76rem !important;
+        font-weight: 600 !important;
+        color: var(--bx-ink-muted) !important;
+        -webkit-text-fill-color: var(--bx-ink-muted) !important;
+    }
+
+    #main.bx-admin-workspace .kpi-card-footer small i {
+        -webkit-text-stroke: 0 !important;
+        font-size: 0.9rem !important;
+    }
+
+    #main.bx-admin-workspace .kpi-card-projects .kpi-card-footer small,
+    #main.bx-admin-workspace .kpi-card-projects .kpi-card-footer small i {
+        color: #2563EB !important;
+        -webkit-text-fill-color: #2563EB !important;
+    }
+
+    html[data-pms-theme="dark"] #main.bx-admin-workspace .kpi-card-projects .kpi-card-footer small,
+    html[data-pms-theme="dark"] #main.bx-admin-workspace .kpi-card-projects .kpi-card-footer small i {
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
+    }
+
+    #main.bx-admin-workspace .industry-arrow {
+        width: auto !important;
+        height: auto !important;
+        border: none !important;
+        background: transparent !important;
+        color: var(--bx-ink-muted) !important;
+        -webkit-text-fill-color: var(--bx-ink-muted) !important;
+        -webkit-text-stroke: 0 !important;
+        font-size: 1rem !important;
+    }
+
+    #main.bx-admin-workspace .industry-metric-card:hover .industry-arrow {
+        background: transparent !important;
+        color: #2563EB !important;
+        -webkit-text-fill-color: #2563EB !important;
+        -webkit-text-stroke: 0 !important;
+    }
+
+    /* Executive Business Model & Feature Predictions */
+    #main.bx-admin-workspace .saas-executive-grid {
+        display: grid !important;
+        grid-template-columns: 1.25fr 0.95fr !important;
+        gap: 1.25rem !important;
+    }
+
+    #main.bx-admin-workspace .industry-panel {
+        background: var(--bx-surface) !important;
+        border: 1px solid var(--bx-border) !important;
+        border-radius: 16px !important;
+        padding: 1.35rem 1.5rem !important;
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03) !important;
+    }
+
+    #main.bx-admin-workspace .industry-panel-head {
+        margin-bottom: 1rem !important;
+    }
+
+    #main.bx-admin-workspace .industry-panel-head h3 {
+        font-size: 1.05rem !important;
+        font-weight: 700 !important;
+        color: var(--bx-ink) !important;
+        -webkit-text-fill-color: var(--bx-ink) !important;
+    }
+
+    #main.bx-admin-workspace .industry-panel-head p {
+        font-size: 0.78rem !important;
+        font-weight: 500 !important;
+        color: var(--bx-ink-muted) !important;
+        -webkit-text-fill-color: var(--bx-ink-muted) !important;
+        margin-top: 0.15rem !important;
+    }
+
+    #main.bx-admin-workspace .industry-panel-head a {
+        background: #EFF6FF !important;
+        border: 1px solid rgba(37, 99, 235, 0.14) !important;
+        border-radius: 999px !important;
+        color: #2563EB !important;
+        -webkit-text-fill-color: #2563EB !important;
+        font-size: 0.74rem !important;
+        font-weight: 600 !important;
+        padding: 0.28rem 0.75rem !important;
+    }
+
+    #main.bx-admin-workspace .industry-panel-head a:hover {
+        background: #2563EB !important;
+        color: #FFFFFF !important;
+        -webkit-text-fill-color: #FFFFFF !important;
+    }
+
+    html[data-pms-theme="dark"] #main.bx-admin-workspace .industry-panel-head a {
+        background: rgba(47, 107, 255, 0.16) !important;
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
+    }
+
+    /* Enterprise Budget Allocation Bar */
+    #main.bx-admin-workspace .bx-budget-block {
+        margin-bottom: 1.1rem;
+    }
+
+    #main.bx-admin-workspace .bx-budget-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        margin-bottom: 0.45rem;
+        font-size: 0.78rem;
+    }
+
+    #main.bx-admin-workspace .bx-budget-label {
+        font-weight: 650;
+        color: var(--bx-ink) !important;
+        -webkit-text-fill-color: var(--bx-ink) !important;
+    }
+
+    #main.bx-admin-workspace .bx-budget-figures {
+        font-weight: 700;
+        color: var(--bx-ink) !important;
+        -webkit-text-fill-color: var(--bx-ink) !important;
+    }
+
+    #main.bx-admin-workspace .bx-budget-figures span {
+        font-weight: 500;
+        color: var(--bx-ink-muted) !important;
+        -webkit-text-fill-color: var(--bx-ink-muted) !important;
+    }
+
+    #main.bx-admin-workspace .bx-budget-track {
+        width: 100%;
+        height: 8px;
+        border-radius: 999px;
+        background: #E2E8F0;
+        overflow: hidden;
+    }
+
+    html[data-pms-theme="dark"] #main.bx-admin-workspace .bx-budget-track {
+        background: #1A2247;
+    }
+
+    #main.bx-admin-workspace .bx-budget-fill {
+        height: 100%;
+        border-radius: 999px;
+        background: #2563EB;
+        transition: width 0.4s ease;
+    }
+
+    /* 3-card Revenue Strip */
+    #main.bx-admin-workspace .saas-revenue-strip {
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+        gap: 0.8rem !important;
+    }
+
+    #main.bx-admin-workspace .saas-money-card {
+        background: var(--bx-surface-2) !important;
+        border: 1px solid var(--bx-border) !important;
+        border-radius: 12px !important;
+        min-height: 98px !important;
+        padding: 0.85rem 0.95rem !important;
+    }
+
+    #main.bx-admin-workspace .saas-money-card span {
+        font-size: 0.68rem !important;
+        font-weight: 700 !important;
+        letter-spacing: 0.05em !important;
+        color: var(--bx-ink-muted) !important;
+        -webkit-text-fill-color: var(--bx-ink-muted) !important;
+    }
+
+    #main.bx-admin-workspace .saas-money-card strong {
+        font-size: clamp(1.15rem, 1.5vw, 1.4rem) !important;
+        font-weight: 800 !important;
+        color: var(--bx-ink) !important;
+        -webkit-text-fill-color: var(--bx-ink) !important;
+        margin: 0.25rem 0 0.2rem !important;
+    }
+
+    #main.bx-admin-workspace .saas-money-card.is-positive-value strong {
+        color: #10B981 !important;
+        -webkit-text-fill-color: #10B981 !important;
+    }
+
+    #main.bx-admin-workspace .saas-money-card em {
+        font-size: 0.7rem !important;
+        font-weight: 600 !important;
+        color: var(--bx-ink-muted) !important;
+        -webkit-text-fill-color: var(--bx-ink-muted) !important;
+    }
+
+    #main.bx-admin-workspace .saas-money-card em.is-positive-meta {
+        color: #10B981 !important;
+        -webkit-text-fill-color: #10B981 !important;
+    }
+
+    /* Feature Predictions Grid */
+    #main.bx-admin-workspace .saas-prediction-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 0.85rem !important;
+    }
+
+    #main.bx-admin-workspace .saas-insight-card {
+        background: var(--bx-surface-2) !important;
+        border: 1px solid var(--bx-border) !important;
+        border-radius: 12px !important;
+        min-height: 112px !important;
+        padding: 0.95rem 1rem !important;
+        justify-content: flex-start !important;
+        gap: 0.35rem;
+    }
+
+    #main.bx-admin-workspace .saas-insight-card > span {
+        font-size: 0.68rem !important;
+        font-weight: 700 !important;
+        letter-spacing: 0.05em !important;
+        color: var(--bx-ink-muted) !important;
+        -webkit-text-fill-color: var(--bx-ink-muted) !important;
+    }
+
+    #main.bx-admin-workspace .bx-prediction-status {
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+        margin: 0.15rem 0 0.25rem;
+    }
+
+    #main.bx-admin-workspace .bx-signal-dot {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        flex-shrink: 0;
+        display: inline-block;
+    }
+
+    #main.bx-admin-workspace .bx-signal-dot.is-low {
+        background: #10B981;
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.18);
+    }
+
+    #main.bx-admin-workspace .bx-signal-dot.is-mid {
+        background: #F59E0B;
+        box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
+    }
+
+    #main.bx-admin-workspace .bx-signal-dot.is-high {
+        background: #F59E0B;
+        box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
+    }
+
+    #main.bx-admin-workspace .bx-prediction-status strong {
+        font-size: 0.96rem !important;
+        font-weight: 800 !important;
+        color: var(--bx-ink) !important;
+        -webkit-text-fill-color: var(--bx-ink) !important;
+        margin: 0 !important;
+        line-height: 1.2;
+    }
+
+    #main.bx-admin-workspace .saas-insight-card p {
+        font-size: 0.76rem !important;
+        font-weight: 500 !important;
+        color: var(--bx-ink-muted) !important;
+        -webkit-text-fill-color: var(--bx-ink-muted) !important;
+        line-height: 1.4 !important;
+    }
+
+    /* Panel Footer Strip */
+    #main.bx-admin-workspace .bx-panel-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        margin-top: 1.1rem;
+        padding-top: 0.85rem;
+        border-top: 1px solid var(--bx-border);
+        font-size: 0.75rem;
+    }
+
+    #main.bx-admin-workspace .bx-panel-footer-meta {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        color: var(--bx-ink-muted) !important;
+        -webkit-text-fill-color: var(--bx-ink-muted) !important;
+        font-weight: 500;
+    }
+
+    #main.bx-admin-workspace .bx-panel-footer-meta i {
+        color: #F59E0B !important;
+        -webkit-text-fill-color: #F59E0B !important;
+        -webkit-text-stroke: 0 !important;
+        font-size: 0.9rem !important;
+    }
+
+    #main.bx-admin-workspace .bx-panel-footer-link {
+        color: #2563EB !important;
+        -webkit-text-fill-color: #2563EB !important;
+        font-weight: 650 !important;
+        text-decoration: none;
+    }
+
+    #main.bx-admin-workspace .bx-panel-footer-link:hover {
+        text-decoration: underline;
+    }
+
+    html[data-pms-theme="dark"] #main.bx-admin-workspace .bx-panel-footer-link {
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
+    }
+
+    @media (max-width: 1199.98px) {
+        #main.bx-admin-workspace .saas-executive-grid {
+            grid-template-columns: 1fr !important;
+        }
+    }
+
+    @media (max-width: 991.98px) {
+        #main.bx-admin-workspace .industry-hero-card {
+            grid-template-columns: 1fr !important;
+        }
+        #main.bx-admin-workspace .industry-hero-visual {
+            display: flex !important;
+            justify-content: flex-start !important;
+        }
+        #main.bx-admin-workspace .bx-monitor-widget {
+            max-width: 100%;
+        }
+    }
+
+    @media (max-width: 767.98px) {
+        #main.bx-admin-workspace .saas-revenue-strip,
+        #main.bx-admin-workspace .saas-prediction-grid {
+            grid-template-columns: 1fr !important;
+        }
+        #main.bx-admin-workspace .industry-hero-card {
+            padding: 1.25rem !important;
         }
     }
 </style>
@@ -1687,7 +2214,7 @@
     <div class="floating-element"></div>
 </div>
 
-<main id="main" class="main">
+<main id="main" class="main bx-admin-workspace">
 
     <div class="content-wrapper">
 
@@ -1702,90 +2229,10 @@
             $dashboardAbsentCount = $absentCount ?? max($dashboardTotalEmployees - $dashboardPresentCount, 0);
             $dashboardAttendancePercent = $dashboardTotalEmployees > 0 ? round(($dashboardPresentCount / $dashboardTotalEmployees) * 100) : 0;
             $dashboardTaskScale = max($dashboardPendingTask, $dashboardUnresolvedTicket, $dashboardTotalProject, $dashboardTotalClient, 1);
-            $dashboardPendingLeaves = optional($pendingLeaves ?? collect())->count();
-            $dashboardFeatureScale = max(
-                $dashboardTotalEmployees,
-                $dashboardPresentCount,
-                $dashboardPendingLeaves,
-                $dashboardTotalProject,
-                $dashboardPendingTask,
-                $dashboardUnresolvedTicket,
-                $dashboardTotalClient,
-                1
-            );
-            $featureLinks = [
-                ['label' => 'Employees', 'hint' => 'Team directory', 'icon' => 'bx-group', 'route' => 'employees.index', 'value' => $dashboardTotalEmployees],
-                ['label' => 'Attendance', 'hint' => 'Today and reports', 'icon' => 'bx-calendar-check', 'route' => 'attendance.index', 'value' => $dashboardPresentCount],
-                ['label' => 'Leaves', 'hint' => 'Requests and policy', 'icon' => 'bx-calendar-minus', 'route' => 'leaves.index', 'value' => $dashboardPendingLeaves],
-                ['label' => 'Projects', 'hint' => 'Active work', 'icon' => 'bx-briefcase-alt-2', 'route' => 'projects.index', 'value' => $dashboardTotalProject],
-                ['label' => 'Tasks', 'hint' => 'Pending actions', 'icon' => 'bx-task', 'route' => 'tasks.index', 'value' => $dashboardPendingTask],
-                ['label' => 'Timesheet', 'hint' => 'Work logs', 'icon' => 'bx-time-five', 'route' => 'timelogs.index', 'value' => 'Log'],
-                ['label' => 'Tickets', 'hint' => 'Support queue', 'icon' => 'bx-support', 'route' => 'tickets.index', 'value' => $dashboardUnresolvedTicket],
-                ['label' => 'Clients', 'hint' => 'Client records', 'icon' => 'bx-user-circle', 'route' => 'clients.index', 'value' => $dashboardTotalClient],
-                ['label' => 'Leads', 'hint' => 'Contacts pipeline', 'icon' => 'bx-target-lock', 'route' => 'leads.contacts.index', 'value' => 'CRM'],
-                ['label' => 'Deals', 'hint' => 'Sales stages', 'icon' => 'bx-trending-up', 'route' => 'admin.deals.index', 'value' => 'Deal'],
-                ['label' => 'Holidays', 'hint' => 'Calendar view', 'icon' => 'bx-calendar-star', 'route' => 'holidays.calendar', 'value' => 'Cal'],
-                ['label' => 'Reports', 'hint' => 'Attendance report', 'icon' => 'bx-bar-chart-alt-2', 'route' => 'attendance.report', 'value' => 'View'],
-                ['label' => 'Payroll', 'hint' => 'Salary operations', 'icon' => 'bx-wallet', 'route' => 'payroll.index', 'value' => 'Pay'],
-                ['label' => 'Organization', 'hint' => 'Company directory', 'icon' => 'bx-sitemap', 'route' => 'organization.index', 'value' => 'Org'],
-                ['label' => 'Awards', 'hint' => 'Recognition', 'icon' => 'bx-trophy', 'route' => 'awards.index', 'value' => 'HR'],
-                ['label' => 'Departments', 'hint' => 'Team structure', 'icon' => 'bx-buildings', 'route' => 'departments.index', 'value' => 'Dept'],
-                ['label' => 'Designations', 'hint' => 'Role hierarchy', 'icon' => 'bx-id-card', 'route' => 'designations.index', 'value' => 'Role'],
-                ['label' => 'Modules', 'hint' => 'Feature controls', 'icon' => 'bx-grid-alt', 'route' => 'admin.modules.index', 'value' => 'Mod'],
-                ['label' => 'Permissions', 'hint' => 'Access matrix', 'icon' => 'bx-lock-alt', 'route' => 'admin.role-permissions.index', 'value' => 'ACL'],
-                ['label' => 'Settings', 'hint' => 'System setup', 'icon' => 'bx-cog', 'route' => 'admin.settings.app', 'value' => 'Set'],
-            ];
-            $featureLinks = collect($featureLinks)->filter(function ($link) use ($currentCompany) {
-                $slug = match ($link['label']) {
-                    'Employees' => 'employees',
-                    'Attendance' => 'attendance',
-                    'Leaves' => 'leaves',
-                    'Projects' => 'projects',
-                    'Tasks' => 'tasks',
-                    'Timesheet' => 'timelogs',
-                    'Tickets' => 'tickets',
-                    'Clients' => 'clients',
-                    'Leads' => 'leads',
-                    'Deals' => 'deals',
-                    'Holidays' => 'holidays',
-                    'Reports' => 'reports',
-                    'Payroll' => 'payroll',
-                    'Organization' => 'organization',
-                    'Awards' => 'awards',
-                    'Departments' => 'departments',
-                    'Designations' => 'designations',
-                    default => strtolower($link['label']),
-                };
-                return $currentCompany ? $currentCompany->hasFeature($slug) : true;
-            })->values()->all();
-
-            $adminPieCharts = [
-                ['label' => 'Attendance', 'slug' => 'attendance', 'hint' => "{$dashboardPresentCount} present / {$dashboardTotalEmployees} employees", 'route' => 'attendance.index', 'value' => $dashboardPresentCount, 'percent' => $dashboardAttendancePercent, 'color' => '#22D3EE'],
-                ['label' => 'Projects', 'slug' => 'projects', 'hint' => "{$dashboardTotalProject} active projects", 'route' => 'projects.index', 'value' => $dashboardTotalProject, 'percent' => round(($dashboardTotalProject / $dashboardFeatureScale) * 100), 'color' => '#2F6BFF'],
-                ['label' => 'Tasks', 'slug' => 'tasks', 'hint' => "{$dashboardPendingTask} pending tasks", 'route' => 'tasks.index', 'value' => $dashboardPendingTask, 'percent' => round(($dashboardPendingTask / $dashboardFeatureScale) * 100), 'color' => '#8B5CF6'],
-                ['label' => 'Tickets', 'slug' => 'tickets', 'hint' => "{$dashboardUnresolvedTicket} unresolved tickets", 'route' => 'tickets.index', 'value' => $dashboardUnresolvedTicket, 'percent' => round(($dashboardUnresolvedTicket / $dashboardFeatureScale) * 100), 'color' => '#FB7185'],
-                ['label' => 'Clients', 'slug' => 'clients', 'hint' => "{$dashboardTotalClient} client records", 'route' => 'clients.index', 'value' => $dashboardTotalClient, 'percent' => round(($dashboardTotalClient / $dashboardFeatureScale) * 100), 'color' => '#38BDF8'],
-                ['label' => 'Leaves', 'slug' => 'leaves', 'hint' => "{$dashboardPendingLeaves} pending requests", 'route' => 'leaves.index', 'value' => $dashboardPendingLeaves, 'percent' => round(($dashboardPendingLeaves / $dashboardFeatureScale) * 100), 'color' => '#A78BFA'],
-                ['label' => 'Employees', 'slug' => 'employees', 'hint' => "{$dashboardTotalEmployees} total employees", 'route' => 'employees.index', 'value' => $dashboardTotalEmployees, 'percent' => round(($dashboardTotalEmployees / $dashboardFeatureScale) * 100), 'color' => '#60A5FA'],
-                ['label' => 'Reports', 'slug' => 'reports', 'hint' => 'Attendance and operations reporting', 'route' => 'attendance.report', 'value' => 'View', 'percent' => max(35, $dashboardAttendancePercent), 'color' => '#6366F1'],
-            ];
-            $adminPieCharts = collect($adminPieCharts)->filter(function ($chart) use ($currentCompany) {
-                return $currentCompany ? $currentCompany->hasFeature($chart['slug']) : true;
-            })->values()->all();
-
             $safeTableSum = function (string $table, string $column): float {
                 try {
                     return \Illuminate\Support\Facades\Schema::hasTable($table) && \Illuminate\Support\Facades\Schema::hasColumn($table, $column)
                         ? (float) \Illuminate\Support\Facades\DB::table($table)->sum($column)
-                        : 0;
-                } catch (\Throwable $e) {
-                    return 0;
-                }
-            };
-            $safeTableCount = function (string $table): int {
-                try {
-                    return \Illuminate\Support\Facades\Schema::hasTable($table)
-                        ? (int) \Illuminate\Support\Facades\DB::table($table)->count()
                         : 0;
                 } catch (\Throwable $e) {
                     return 0;
@@ -1803,12 +2250,23 @@
             $budgetUtilization = $projectBudgetTotal > 0 ? round(($expenseInvestmentValue / $projectBudgetTotal) * 100) : 0;
             $currency = '₹';
             $formatMoney = fn ($value) => $currency . number_format((float) $value, 0);
+            $formatCompactMoney = function ($value) use ($currency) {
+                $amount = (float) $value;
+                foreach ([1e12 => 'T', 1e9 => 'B', 1e6 => 'M', 1e3 => 'K'] as $scale => $suffix) {
+                    if (round(abs($amount) / $scale, 2) >= 1) {
+                        $short = rtrim(rtrim(number_format($amount / $scale, 2, '.', ','), '0'), '.');
+                        return $currency . $short . $suffix;
+                    }
+                }
+                return $currency . number_format($amount, 0);
+            };
             $financeCards = [
-                ['label' => 'Total Revenue Outlook', 'value' => $formatMoney($grossRevenue), 'meta' => 'Deals, contracts, invoices, payments'],
-                ['label' => 'Investment / Expenses', 'value' => $formatMoney($expenseInvestmentValue), 'meta' => $budgetUtilization . '% of project budget'],
-                ['label' => 'Project Budget', 'value' => $formatMoney($projectBudgetTotal), 'meta' => 'Allocated delivery budget'],
-                ['label' => 'Net Business Outlook', 'value' => $formatMoney($netOutlook), 'meta' => $netOutlook >= 0 ? 'Positive operating signal' : 'Needs revenue recovery'],
+                ['label' => 'Revenue', 'value' => $grossRevenue, 'meta' => 'Deals, contracts & invoices', 'positive' => $grossRevenue > 0],
+                ['label' => 'Committed', 'value' => $expenseInvestmentValue, 'meta' => $budgetUtilization . '% of project budget', 'positive' => false],
+                ['label' => 'Net Return', 'value' => $netOutlook, 'meta' => $netOutlook >= 0 ? 'Positive operating signal' : 'Needs revenue recovery', 'positive' => $netOutlook >= 0, 'highlightValue' => $netOutlook >= 0],
+                ['label' => 'Project Budget', 'value' => $projectBudgetTotal, 'meta' => 'Allocated delivery budget', 'positive' => false],
             ];
+            $financeStripCards = array_slice($financeCards, 0, 3);
             $deliveryRisk = $dashboardTotalProject > 0 ? round(($dashboardUnresolvedTicket + $dashboardPendingTask) / max($dashboardTotalProject, 1)) : 0;
             $peopleRisk = $dashboardTotalEmployees > 0 ? round((($dashboardAbsentCount + $dashboardLateCount) / $dashboardTotalEmployees) * 100) : 0;
             $growthSignal = $dashboardTotalClient > 0 ? round(($dealPipelineValue / max($dashboardTotalClient, 1))) : 0;
@@ -1817,124 +2275,6 @@
                 ['label' => 'People Prediction', 'value' => $peopleRisk > 35 ? 'Attendance Risk' : ($peopleRisk > 15 ? 'Monitor' : 'Stable'), 'hint' => "{$dashboardPresentCount} present, {$dashboardLateCount} late, {$dashboardAbsentCount} absent today.", 'risk' => $peopleRisk > 35 ? 'high' : ($peopleRisk > 15 ? 'mid' : 'low')],
                 ['label' => 'Revenue Prediction', 'value' => $netOutlook >= 0 ? 'Profitable Outlook' : 'Cost Pressure', 'hint' => 'Projected revenue minus tracked investments and expenses.', 'risk' => $netOutlook >= 0 ? 'low' : 'high'],
                 ['label' => 'Pipeline Prediction', 'value' => $growthSignal > 0 ? $formatMoney($growthSignal) . ' / client' : 'Build Pipeline', 'hint' => 'Average pipeline value per active client.', 'risk' => $growthSignal > 0 ? 'low' : 'mid'],
-            ];
-            $moduleRouteFallbacks = [
-                'dashboard' => 'dashboard',
-                'employees' => 'employees.index',
-                'attendance' => 'attendance.index',
-                'leaves' => 'leaves.index',
-                'holidays' => 'holidays.index',
-                'awards' => 'awards.index',
-                'reports' => 'attendance.report',
-                'clients' => 'clients.index',
-                'projects' => 'projects.index',
-                'tasks' => 'tasks.index',
-                'timelogs' => 'timelogs.index',
-                'payroll' => 'payroll.index',
-                'leads' => 'leads.contacts.index',
-                'tickets' => 'tickets.index',
-                'settings' => 'admin.settings.app',
-                'organization' => 'organization.index',
-                'departments' => 'departments.index',
-                'designations' => 'designations.index',
-                'collaborating-companies' => 'collaborating-companies.index',
-            ];
-            $moduleRouteParams = [
-                'admin.role-accounts.index' => ['role' => 'hr'],
-            ];
-            $safeRouteUrl = function (?string $routeName) use ($moduleRouteParams): ?string {
-                if (! $routeName || ! Route::has($routeName)) {
-                    return null;
-                }
-
-                try {
-                    $route = Route::getRoutes()->getByName($routeName);
-                    $requiredParameters = $route ? $route->parameterNames() : [];
-                    $params = $moduleRouteParams[$routeName] ?? [];
-
-                    foreach ($requiredParameters as $parameter) {
-                        if (! array_key_exists($parameter, $params)) {
-                            return null;
-                        }
-                    }
-
-                    return route($routeName, $params);
-                } catch (\Throwable $e) {
-                    return null;
-                }
-            };
-            $moduleMetricMap = [
-                'employees' => $dashboardTotalEmployees,
-                'attendance' => $dashboardPresentCount,
-                'leaves' => $dashboardPendingLeaves,
-                'clients' => $dashboardTotalClient,
-                'projects' => $dashboardTotalProject,
-                'tasks' => $dashboardPendingTask,
-                'tickets' => $dashboardUnresolvedTicket,
-                'timelogs' => $safeTableCount('time_logs') ?: $safeTableCount('timelogs'),
-                'payroll' => $safeTableCount('payrolls'),
-                'leads' => $safeTableCount('lead_contacts'),
-                'awards' => $safeTableCount('awards'),
-                'holidays' => $safeTableCount('holidays'),
-                'departments' => $safeTableCount('departments'),
-                'designations' => $safeTableCount('designations'),
-                'organization' => $dashboardTotalEmployees,
-                'settings' => $safeTableCount('modules'),
-            ];
-            try {
-                $activeModules = \App\Models\Module::query()
-                    ->where('is_active', true)
-                    ->orderBy('sort_order')
-                    ->orderBy('name')
-                    ->get();
-            } catch (\Throwable $e) {
-                $activeModules = collect();
-            }
-            if ($currentCompany && method_exists($currentCompany, 'hasFeature')) {
-                $activeModules = $activeModules->filter(fn ($m) => $currentCompany->hasFeature($m->slug))->values();
-            }
-            $moduleScale = max(collect($moduleMetricMap)->filter(fn ($value) => is_numeric($value))->max() ?? 1, 1);
-            $autoModuleCards = $activeModules->map(function ($module, $index) use ($moduleRouteFallbacks, $moduleMetricMap, $moduleScale, $safeRouteUrl) {
-                $route = $module->route_name ?: ($moduleRouteFallbacks[$module->slug] ?? null);
-                $url = $safeRouteUrl($route);
-                $metric = $moduleMetricMap[$module->slug] ?? 1;
-                return [
-                    'name' => $module->name,
-                    'slug' => $module->slug,
-                    'icon' => $module->icon ?: 'bx-grid-alt',
-                    'route' => $route,
-                    'url' => $url,
-                    'value' => $metric,
-                    'percent' => is_numeric($metric) ? round(((float) $metric / $moduleScale) * 100) : 35,
-                    'color' => ['#2F6BFF', '#8B5CF6', '#22D3EE', '#60A5FA', '#FBBF24', '#FB7185', '#38BDF8', '#6366F1'][$index % 8],
-                ];
-            })->filter(fn ($module) => $module['url'])->values();
-            if ($autoModuleCards->isEmpty()) {
-                $autoModuleCards = collect($moduleRouteFallbacks)->filter(function ($route, $slug) use ($currentCompany) {
-                    return $currentCompany ? $currentCompany->hasFeature($slug) : true;
-                })->map(function ($route, $slug) use ($moduleMetricMap, $moduleScale, $safeRouteUrl) {
-                    $url = $safeRouteUrl($route);
-                    $metric = $moduleMetricMap[$slug] ?? 1;
-
-                    return [
-                        'name' => \Illuminate\Support\Str::headline($slug),
-                        'slug' => $slug,
-                        'icon' => 'bx-grid-alt',
-                        'route' => $route,
-                        'url' => $url,
-                        'value' => $metric,
-                        'percent' => is_numeric($metric) ? round(((float) $metric / $moduleScale) * 100) : 35,
-                        'color' => '#2563eb',
-                    ];
-                })->filter(fn ($module) => $module['url'])->take(8)->values();
-            }
-            $sparkValues = [
-                max(10, min(100, $dashboardAttendancePercent)),
-                max(10, min(100, round(($dashboardTotalProject / $dashboardFeatureScale) * 100))),
-                max(10, min(100, round(($dashboardPendingTask / $dashboardFeatureScale) * 100))),
-                max(10, min(100, round(($dashboardUnresolvedTicket / $dashboardFeatureScale) * 100))),
-                max(10, min(100, $budgetUtilization)),
-                max(10, min(100, $activeModules->count() * 4)),
             ];
         @endphp
 
@@ -1946,28 +2286,72 @@
                     <p>Real-time command center for project progression, employee presence, pending work queue, and enterprise operations.</p>
                     <div class="industry-actions">
                         @if(Route::has('projects.create'))
+                            @if(auth()->user()->canViewModule('projects'))
                             <a href="{{ route('projects.create') }}" class="industry-btn industry-btn-primary">
                                 <i class="bx bx-plus"></i> Add Project
                             </a>
+                            @endif
                         @endif
                         @if(Route::has('tasks.create'))
+                            @if(auth()->user()->canViewModule('tasks'))
                             <a href="{{ route('tasks.create') }}" class="industry-btn industry-btn-light">
-                                <i class="bx bx-task"></i> New Task
+                                <i class="bx bx-check-square"></i> New Task
                             </a>
+                            @endif
                         @endif
                         @if(Route::has('attendance.report'))
-                            <a href="{{ route('attendance.report') }}" class="industry-btn industry-btn-outline">
+                            @if(auth()->user()->canViewModule('reports-attendance'))
+                            <a href="{{ route('attendance.report') }}" class="industry-btn industry-btn-light">
                                 <i class="bx bx-bar-chart-alt-2"></i> Attendance Report
                             </a>
+                            @endif
                         @endif
                     </div>
                 </div>
                 <div class="industry-hero-visual">
-                    <img src="{{ asset('admin/assets/img/illustrations/dashboard-ui-preview.png') }}" alt="Admin Dashboard overview">
+                    <div class="bx-monitor-widget" aria-label="Enterprise Live Monitoring summary">
+                        <div class="bx-monitor-head">
+                            <span class="bx-monitor-title">
+                                <span class="bx-monitor-dot" aria-hidden="true"></span>
+                                Enterprise Live Monitoring
+                            </span>
+                            <span class="bx-monitor-ver">v4.1.2</span>
+                        </div>
+                        <div class="bx-monitor-mid">
+                            <div class="bx-monitor-pipeline">
+                                <span>System Pipeline</span>
+                                <div class="bx-pipeline-bars" aria-hidden="true">
+                                    <i style="height: 36%; background: #0E6B47;"></i>
+                                    <i style="height: 55%; background: #16A34A;"></i>
+                                    <i style="height: 74%; background: #34D399;"></i>
+                                    <i style="height: 96%; background: #6EE7B7;"></i>
+                                </div>
+                            </div>
+                            <div class="bx-monitor-nodes">
+                                <span class="bx-monitor-nodes-label">Live Nodes</span>
+                                <strong>99.98%</strong>
+                                <em>Optimal Status</em>
+                            </div>
+                        </div>
+                        <div class="bx-monitor-throughput">
+                            <div class="bx-monitor-throughput-copy">
+                                <span>Weekly Throughput</span>
+                                <strong>14.8k operations</strong>
+                            </div>
+                            <div class="bx-throughput-bars" aria-hidden="true">
+                                <i style="height: 45%;"></i>
+                                <i style="height: 75%;"></i>
+                                <i style="height: 60%;"></i>
+                                <i style="height: 90%;"></i>
+                                <i style="height: 100%;"></i>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <div class="industry-overview-grid">
+                @if(auth()->user()->canViewModule('projects'))
                 <a href="{{ Route::has('projects.index') ? route('projects.index') : '#' }}" class="industry-metric-card kpi-card-projects">
                     <div class="kpi-card-top">
                         <span>Total Projects</span>
@@ -1977,15 +2361,17 @@
                     </div>
                     <strong class="kpi-number">{{ $dashboardTotalProject }}</strong>
                     <div class="kpi-card-footer">
-                        <small style="color: var(--bx-blue);"><i class="bx bx-up-arrow-alt"></i> Open project workspace</small>
+                        <small><i class="bx bx-up-arrow-alt"></i> Open project workspace</small>
                         <i class="bx bx-right-arrow-alt industry-arrow"></i>
                     </div>
                 </a>
+                @endif
+                @if(auth()->user()->canViewModule('tasks'))
                 <a href="{{ Route::has('tasks.index') ? route('tasks.index') : '#' }}" class="industry-metric-card kpi-card-tasks">
                     <div class="kpi-card-top">
                         <span>Pending Tasks</span>
                         <div class="kpi-icon-box kpi-violet">
-                            <i class="bx bx-task"></i>
+                            <i class="bx bx-check-square"></i>
                         </div>
                     </div>
                     <strong class="kpi-number">{{ $dashboardPendingTask }}</strong>
@@ -1994,6 +2380,8 @@
                         <i class="bx bx-right-arrow-alt industry-arrow"></i>
                     </div>
                 </a>
+                @endif
+                @if(auth()->user()->canViewModule('tickets'))
                 <a href="{{ Route::has('tickets.index') ? route('tickets.index') : '#' }}" class="industry-metric-card kpi-card-tickets">
                     <div class="kpi-card-top">
                         <span>Open Tickets</span>
@@ -2007,6 +2395,8 @@
                         <i class="bx bx-right-arrow-alt industry-arrow"></i>
                     </div>
                 </a>
+                @endif
+                @if(auth()->user()->canViewModule('attendance'))
                 <a href="{{ Route::has('attendance.report') ? route('attendance.report') : '#' }}" class="industry-metric-card kpi-card-attendance">
                     <div class="kpi-card-top">
                         <span>Attendance</span>
@@ -2016,128 +2406,132 @@
                     </div>
                     <strong class="kpi-number">{{ $dashboardAttendancePercent }}%</strong>
                     <div class="kpi-card-footer">
-                        <small style="color: var(--bx-emerald);"><i class="bx bx-check"></i> {{ $dashboardPresentCount }} present today</small>
+                        <small><i class="bx bx-check"></i> {{ $dashboardPresentCount }} present today</small>
                         <i class="bx bx-right-arrow-alt industry-arrow"></i>
                     </div>
                 </a>
+                @endif
             </div>
 
             <div class="saas-executive-grid">
+                @if(auth()->user()->canViewModule('reports-finance'))
                 <div class="industry-panel">
-                    <div class="industry-panel-head">
-                        <div>
-                            <h3>Executive Business Model</h3>
-                            <p>Revenue, investment, budget, and net outlook from available finance data.</p>
-                        </div>
-                        <a href="{{ Route::has('admin.deals.index') ? route('admin.deals.index') : '#' }}">Pipeline</a>
-                    </div>
-                    <div class="saas-revenue-strip">
-                        @foreach($financeCards as $card)
-                            <div class="saas-money-card">
-                                <span>{{ $card['label'] }}</span>
-                                <strong>{{ $card['value'] }}</strong>
-                                <em>{{ $card['meta'] }}</em>
+                    <div>
+                        <div class="industry-panel-head">
+                            <div>
+                                <h3>Executive Business Model</h3>
+                                <p>Revenue, investment, budget, and net outlook from available finance data.</p>
                             </div>
-                        @endforeach
-                    </div>
-                </div>
-
-                <div class="industry-panel">
-                    <div class="industry-panel-head">
-                        <div>
-                            <h3>Feature Predictions</h3>
-                            <p>Simple operating signals generated from current dashboard data.</p>
+                            <a href="{{ Route::has('admin.deals.index') ? route('admin.deals.index') : '#' }}">Pipeline</a>
                         </div>
-                    </div>
-                    <div class="saas-prediction-grid">
-                        @foreach($predictionCards as $card)
-                            <div class="saas-insight-card">
-                                <span>{{ $card['label'] }}</span>
-                                <strong>{{ $card['value'] }}</strong>
-                                <p>{{ $card['hint'] }}</p>
-                                <div class="mt-2">
-                                    <span class="saas-risk-pill saas-risk-{{ $card['risk'] }}">
-                                        <i class="bx bx-pulse"></i> {{ ucfirst($card['risk']) }} signal
-                                    </span>
+                        <div class="bx-budget-block">
+                            <div class="bx-budget-row">
+                                <span class="bx-budget-label">Enterprise Budget Allocation</span>
+                                <span class="bx-budget-figures" title="{{ $formatMoney($expenseInvestmentValue) . ' / ' . $formatMoney($projectBudgetTotal) }}">
+                                    {{ $formatMoney($expenseInvestmentValue) }} <span>/ {{ $formatMoney($projectBudgetTotal) }}</span>
+                                </span>
+                            </div>
+                            <div class="bx-budget-track" role="progressbar" aria-valuenow="{{ min(100, max(0, $budgetUtilization)) }}" aria-valuemin="0" aria-valuemax="100" aria-label="Enterprise Budget Allocation">
+                                <div class="bx-budget-fill" style="width: {{ $projectBudgetTotal > 0 ? min(100, max(4, $budgetUtilization)) : 0 }}%;"></div>
+                            </div>
+                        </div>
+                        <div class="saas-revenue-strip">
+                            @foreach($financeStripCards as $card)
+                                <div class="saas-money-card {{ !empty($card['highlightValue']) ? 'is-positive-value' : '' }}">
+                                    <span>{{ $card['label'] }}</span>
+                                    <strong title="{{ $formatMoney($card['value']) }}" aria-label="{{ $card['label'] . ': ' . $formatMoney($card['value']) }}">{{ $formatCompactMoney($card['value']) }}</strong>
+                                    <em class="{{ !empty($card['positive']) ? 'is-positive-meta' : '' }}">{{ $card['meta'] }}</em>
                                 </div>
-                            </div>
-                        @endforeach
-                    </div>
-                </div>
-            </div>
-
-            <div class="saas-trend-board">
-                <div class="industry-panel saas-line-card">
-                    <div class="industry-panel-head">
-                        <div>
-                            <h3>Operating Trend Graph</h3>
-                            <p>Compact trend generated from attendance, projects, tasks, tickets, investment, and modules.</p>
+                            @endforeach
                         </div>
                     </div>
-                    <div class="saas-sparkline" aria-label="Operating trend graph">
-                        @foreach($sparkValues as $spark)
-                            <span style="--spark: {{ $spark }}%"></span>
-                        @endforeach
+                    <div class="bx-panel-footer">
+                        <span class="bx-panel-footer-meta">Last financial sync: {{ now()->format('h:i A') }}</span>
+                        @if(Route::has('reports.finance'))
+                            <a href="{{ route('reports.finance') }}" class="bx-panel-footer-link">View Detailed Ledger &rsaquo;</a>
+                        @elseif(Route::has('admin.deals.index'))
+                            <a href="{{ route('admin.deals.index') }}" class="bx-panel-footer-link">View Detailed Ledger &rsaquo;</a>
+                        @endif
                     </div>
                 </div>
+                @endif
 
                 <div class="industry-panel">
-                    <div class="industry-panel-head">
-                        <div>
-                            <h3>SaaS Health Score</h3>
-                            <p>Blended score across team presence, workload, revenue outlook, and enabled modules.</p>
+                    <div>
+                        <div class="industry-panel-head">
+                            <div>
+                                <h3>Feature Predictions</h3>
+                                <p>Simple operating signals generated from current dashboard data.</p>
+                            </div>
+                        </div>
+                        <div class="saas-prediction-grid">
+                            @foreach($predictionCards as $card)
+                                @if(auth()->user()->canViewModule(match ($card['label']) {
+                                    'Delivery Prediction' => 'tasks', 'People Prediction' => 'attendance',
+                                    'Revenue Prediction' => 'reports-finance', default => 'crm-deals',
+                                }))
+                                <div class="saas-insight-card">
+                                    <span>{{ $card['label'] }}</span>
+                                    <div class="bx-prediction-status">
+                                        <span class="bx-signal-dot is-{{ $card['risk'] }}" aria-hidden="true"></span>
+                                        <strong>{{ $card['value'] }}</strong>
+                                    </div>
+                                    <p>{{ $card['hint'] }}</p>
+                                </div>
+                                @endif
+                            @endforeach
                         </div>
                     </div>
-                    @php
-                        $healthScore = max(0, min(100, round(
-                            ($dashboardAttendancePercent * .35)
-                            + (max(0, 100 - min(100, $deliveryRisk * 8)) * .25)
-                            + (($netOutlook >= 0 ? 100 : 45) * .2)
-                            + (min(100, $activeModules->count() * 5) * .2)
-                        )));
-                    @endphp
-                    <div class="industry-gauge" style="--value-deg: {{ round($healthScore * 1.8) }}deg">
-                        <div>
-                            <strong>{{ $healthScore }}%</strong>
-                            <span>Health</span>
-                        </div>
-                    </div>
-                    <div class="industry-presence-row">
-                        <span><b>{{ $activeModules->count() }}</b> Modules</span>
-                        <span><b>{{ $dashboardPendingTask }}</b> Tasks</span>
-                        <span><b>{{ $dashboardUnresolvedTicket }}</b> Tickets</span>
+                    <div class="bx-panel-footer">
+                        <span class="bx-panel-footer-meta"><i class="bx bxs-zap"></i> Real-time heuristic analysis</span>
+                        @if(Route::has('admin.settings.app') && auth()->user()->canViewModule('settings'))
+                            <a href="{{ route('admin.settings.app') }}" class="bx-panel-footer-link">Config Signals</a>
+                        @endif
                     </div>
                 </div>
             </div>
 
             <div class="industry-main-grid">
+                <!-- feature-panel-reports-task -->@if(collect(['projects', 'tasks', 'tickets', 'attendance', 'clients'])->contains(fn ($slug) => auth()->user()->canViewModule($slug)))
                 <div class="industry-panel industry-analytics-card">
                     <div class="industry-panel-head">
                         <div>
                             <h3>Work Analytics</h3>
                             <p>Quick health snapshot across core modules.</p>
                         </div>
-                        <a href="{{ Route::has('attendance.report') ? route('attendance.report') : '#' }}">View Report</a>
+                        @if(auth()->user()->canViewModule('reports-attendance'))<a href="{{ Route::has('attendance.report') ? route('attendance.report') : '#' }}">View Report</a>@endif
                     </div>
                     <div class="industry-bars" aria-label="Dashboard analytics chart">
-                        <div class="industry-bar" style="--bar: {{ max(18, min(100, round(($dashboardTotalProject / $dashboardTaskScale) * 100))) }}%">
+                        @if(auth()->user()->canViewModule('projects'))
+                <div class="industry-bar" style="--bar: {{ max(18, min(100, round(($dashboardTotalProject / $dashboardTaskScale) * 100))) }}%">
                             <span></span><label>Projects</label>
                         </div>
-                        <div class="industry-bar" style="--bar: {{ max(18, min(100, round(($dashboardPendingTask / $dashboardTaskScale) * 100))) }}%">
+                @endif
+                        @if(auth()->user()->canViewModule('tasks'))
+                <div class="industry-bar" style="--bar: {{ max(18, min(100, round(($dashboardPendingTask / $dashboardTaskScale) * 100))) }}%">
                             <span></span><label>Tasks</label>
                         </div>
-                        <div class="industry-bar" style="--bar: {{ max(18, min(100, round(($dashboardUnresolvedTicket / $dashboardTaskScale) * 100))) }}%">
+                @endif
+                        @if(auth()->user()->canViewModule('tickets'))
+                <div class="industry-bar" style="--bar: {{ max(18, min(100, round(($dashboardUnresolvedTicket / $dashboardTaskScale) * 100))) }}%">
                             <span></span><label>Tickets</label>
                         </div>
-                        <div class="industry-bar" style="--bar: {{ max(18, min(100, round(($dashboardTotalClient / $dashboardTaskScale) * 100))) }}%">
+                @endif
+                        @if(auth()->user()->canViewModule('clients'))
+                <div class="industry-bar" style="--bar: {{ max(18, min(100, round(($dashboardTotalClient / $dashboardTaskScale) * 100))) }}%">
                             <span></span><label>Clients</label>
                         </div>
-                        <div class="industry-bar is-muted" style="--bar: {{ max(18, min(100, $dashboardAttendancePercent)) }}%">
+                @endif
+                        @if(auth()->user()->canViewModule('attendance'))
+                <div class="industry-bar is-muted" style="--bar: {{ max(18, min(100, $dashboardAttendancePercent)) }}%">
                             <span></span><label>Attendance</label>
                         </div>
+                @endif
                     </div>
                 </div>
+                @endif
 
+                <!-- feature-panel-attendance -->@if(auth()->user()->canViewModule('attendance'))
                 <div class="industry-panel industry-attendance-card">
                     <div class="industry-panel-head">
                         <div>
@@ -2158,91 +2552,12 @@
                         <span><b>{{ $dashboardAbsentCount }}</b> Absent</span>
                     </div>
                 </div>
+                @endif
             </div>
 
-            @if($autoModuleCards->isNotEmpty())
-                <div class="industry-panel">
-                    <div class="industry-panel-head">
-                        <div>
-                            <h3>Automatic Feature Analytics</h3>
-                            <p>Generated from active admin modules. New active modules appear here when their route is available.</p>
-                        </div>
-                        <a href="{{ Route::has('admin.modules.index') ? route('admin.modules.index') : '#' }}">Manage Modules</a>
-                    </div>
-                    <div class="saas-module-grid">
-                        @foreach($autoModuleCards as $module)
-                            <a href="{{ $module['url'] }}" class="saas-module-card">
-                                <div class="saas-module-head">
-                                    <span class="saas-module-icon"><i class="bx {{ $module['icon'] }}"></i></span>
-                                    <div>
-                                        <h4>{{ $module['name'] }}</h4>
-                                        <small>{{ $module['slug'] }}</small>
-                                    </div>
-                                </div>
-                                <div class="saas-module-donut" style="--percent: {{ max(3, min(100, $module['percent'])) }}; --accent: {{ $module['color'] }};">
-                                    <strong>{{ is_numeric($module['value']) ? $module['value'] : $module['value'] }}</strong>
-                                </div>
-                                <div class="saas-module-meta">
-                                    <small>{{ max(3, min(100, $module['percent'])) }}% signal</small>
-                                    <em>Open</em>
-                                </div>
-                            </a>
-                        @endforeach
-                    </div>
-                </div>
-            @endif
-
-            <div class="industry-panel">
-                <div class="industry-panel-head">
-                    <div>
-                        <h3>Module Intelligence</h3>
-                        <p>Pie-style module coverage across the admin workspace.</p>
-                    </div>
-                    <a href="{{ Route::has('attendance.report') ? route('attendance.report') : '#' }}">Analytics</a>
-                </div>
-                <div class="industry-chart-grid">
-                    @foreach($adminPieCharts as $chart)
-                        @if(Route::has($chart['route']))
-                            <div class="industry-chart-card">
-                                <div class="industry-chart-body">
-                                    <div class="industry-donut" style="--percent: {{ max(3, min(100, $chart['percent'])) }}; --accent: {{ $chart['color'] }};">
-                                        <strong>{{ is_numeric($chart['value']) ? $chart['value'] : $chart['value'] }}</strong>
-                                    </div>
-                                    <div class="industry-chart-meta">
-                                        <h4>{{ $chart['label'] }}</h4>
-                                        <p>{{ $chart['hint'] }}</p>
-                                    </div>
-                                    <a href="{{ route($chart['route']) }}" class="industry-chart-link">Open {{ $chart['label'] }}</a>
-                                </div>
-                            </div>
-                        @endif
-                    @endforeach
-                </div>
-            </div>
-
-            <div class="industry-panel industry-feature-panel">
-                <div class="industry-panel-head">
-                    <div>
-                        <h3>Feature Shortcuts</h3>
-                        <p>Every core module is one click away.</p>
-                    </div>
-                </div>
-                <div class="industry-feature-grid">
-                    @foreach($featureLinks as $feature)
-                        @if(Route::has($feature['route']))
-                            <a href="{{ route($feature['route']) }}" class="industry-feature-card">
-                                <span class="industry-feature-icon"><i class="bx {{ $feature['icon'] }}"></i></span>
-                                <span class="industry-feature-copy">
-                                    <strong>{{ $feature['label'] }}</strong>
-                                    <small>{{ $feature['hint'] }}</small>
-                                </span>
-                                <em>{{ $feature['value'] }}</em>
-                            </a>
-                        @endif
-                    @endforeach
-                </div>
-            </div>
         </section>
+
+        @include('admin.partials.dashboard-shortcuts')
 
         <!-- Welcome Section -->
         <div class="welcome-section">
@@ -2293,13 +2608,14 @@
                 @endphp
 
                 <!-- Total Employees -->
-                <div class="stat-card">
+                @if(auth()->user()->canViewModule('employees'))
+                <div class="stat-card" id="totalEmployeesCard">
                     <div class="stat-header">
                         <div class="stat-icon">
                             <i class="bx bx-group"></i>
                         </div>
                         <div class="stat-dropdown">
-                            <button class="btn p-0" type="button" data-bs-toggle="dropdown">
+                            <button class="btn p-0" type="button" data-bs-toggle="dropdown" aria-label="Total Employees actions">
                                 <i class="bx bx-dots-vertical-rounded"></i>
                             </button>
                             <div class="dropdown-menu dropdown-menu-end">
@@ -2324,8 +2640,10 @@
                         </div>
                     </div>
                 </div>
+                @endif
 
                 <!-- Total Attendance - DIVISION BY ZERO FIXED -->
+                @if(auth()->user()->canViewModule('attendance'))
                 <div class="stat-card">
                     <div class="stat-header">
                         <div class="stat-icon">
@@ -2357,8 +2675,10 @@
                         </div>
                     </div>
                 </div>
+                @endif
 
                 <!-- Total Clients -->
+                @if(auth()->user()->canViewModule('clients'))
                 <div class="stat-card">
                     <div class="stat-header">
                         <div class="stat-icon">
@@ -2390,8 +2710,10 @@
                         </div>
                     </div>
                 </div>
+                @endif
 
                 <!-- Total Projects -->
+                @if(auth()->user()->canViewModule('projects'))
                 <div class="stat-card">
                     <div class="stat-header">
                         <div class="stat-icon">
@@ -2423,13 +2745,15 @@
                         </div>
                     </div>
                 </div>
+                @endif
             </div>
         </div>
 
         <!-- Content Section -->
-        <div class="content-section">
+        <div class="content-section dashboard-notification-feed">
             <div class="content-grid">
                 <!-- Open Tickets -->
+                @if(auth()->user()->canViewModule('tickets'))
                 <div class="content-card">
                     <div class="card-header">
                         <div class="card-title">
@@ -2468,8 +2792,10 @@
                         @endforelse
                     </div>
                 </div>
+                @endif
 
                 <!-- Pending Tasks -->
+                @if(auth()->user()->canViewModule('tasks'))
                 <div class="content-card">
                     <div class="card-header">
                         <div class="card-title">
@@ -2504,6 +2830,7 @@
                         @endforelse
                     </div>
                 </div>
+                @endif
 
                 <!-- Project Activities -->
                 <div class="content-card">
@@ -2594,7 +2921,7 @@
         }
 
         // Add hover effects to cards
-        const cards = document.querySelectorAll('.stat-card, .content-card, .industry-metric-card, .industry-panel, .industry-feature-card, .industry-chart-card');
+        const cards = document.querySelectorAll('.stat-card, .content-card, .industry-metric-card, .industry-panel');
         cards.forEach(card => {
             card.addEventListener('mouseenter', function() {
                 this.style.zIndex = '10';
@@ -2654,7 +2981,7 @@
 
         // Add intersection observer for scroll animations. Keep mobile panels visible so
         // dashboard sections do not disappear when mobile browsers delay observers.
-        const animatedCards = document.querySelectorAll('.stat-card, .content-card, .industry-metric-card, .industry-panel, .industry-feature-card, .industry-chart-card');
+        const animatedCards = document.querySelectorAll('.stat-card, .content-card, .industry-metric-card, .industry-panel');
         if (window.innerWidth > 575 && 'IntersectionObserver' in window) {
             const observerOptions = {
                 threshold: 0.1,

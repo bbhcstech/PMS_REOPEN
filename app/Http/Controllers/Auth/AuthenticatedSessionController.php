@@ -18,8 +18,8 @@ class AuthenticatedSessionController extends Controller
      */
     public function create(Request $request): Response|RedirectResponse
     {
-        if (Auth::check()) {
-            $user = Auth::user();
+        if (Auth::guard('web')->check()) {
+            $user = Auth::guard('web')->user();
             if ($user && (
                 (method_exists($user, 'isDeveloper') && $user->isDeveloper()) ||
                 in_array(strtolower((string) ($user->role ?? '')), ['developer', 'dev'], true) ||
@@ -29,6 +29,14 @@ class AuthenticatedSessionController extends Controller
             )) {
                 return redirect()->route('developer.dashboard');
             }
+            if ($user && strtolower((string) ($user->role ?? '')) === 'superadmin') {
+                return redirect()->route('superadmin.dashboard');
+            }
+            return redirect()->route('dashboard');
+        }
+
+        if (Auth::guard('super_admin')->check()) {
+            return redirect()->route('superadmin.dashboard');
         }
 
         $request->session()->regenerateToken();
@@ -53,11 +61,14 @@ class AuthenticatedSessionController extends Controller
         // the company session keys written inside authenticate() above).
         $request->session()->regenerate();
 
-        // Multi-Tenant: Re-affirm the company session and lock the DB connection.
-        // We deliberately do NOT read user->company_id here because Auth::user() may
-        // have been loaded from the wrong DB connection before SetTenantConnection
-        // had a chance to switch it. The session is the single source of truth.
         $user = Auth::user();
+
+        // If a standard company user is logged in (manager, hr, employee, admin, etc.), clear any stale super_admin guard
+        if ($user && strtolower((string) ($user->role ?? '')) !== 'superadmin') {
+            if (Auth::guard('super_admin')->check()) {
+                Auth::guard('super_admin')->logout();
+            }
+        }
         $isDeveloper = $user && (
             (method_exists($user, 'isDeveloper') && $user->isDeveloper()) ||
             in_array(strtolower((string) ($user->role ?? '')), ['developer', 'dev'], true) ||
@@ -66,34 +77,13 @@ class AuthenticatedSessionController extends Controller
             str_contains(strtolower((string) ($user->designation ?? '')), 'engineer')
         );
 
-        if ($user && ! $isDeveloper) {
-            // Resolve company exclusively from session (set correctly by authenticate())
-            $company = null;
-            if (session('current_company_id')) {
-                try {
-                    $company = \App\Models\Central\Company::on('central')->find(session('current_company_id'));
-                } catch (\Throwable $e) {}
-            }
-
-            $dbName     = $company?->db_name     ?: (session('current_company_db')   ?: config('database.connections.tenant.database'));
-            $companyId   = $company?->id          ?: session('current_company_id');
-            $companyName = $company?->name        ?: session('current_company_name');
-
-            // Write final, authoritative company context to session
-            $request->session()->put('current_company_db',   $dbName);
-            $request->session()->put('current_company_id',   $companyId);
-            $request->session()->put('current_company_name', $companyName);
-
-            // Point both connections at the correct company DB
-            config([
-                'database.connections.tenant.database' => $dbName,
-                'database.connections.mysql.database'  => $dbName,
-            ]);
-            \Illuminate\Support\Facades\DB::purge('tenant');
-            \Illuminate\Support\Facades\DB::purge('mysql');
-
-            if (app()->bound(\App\Services\CompanyContext::class)) {
-                app(\App\Services\CompanyContext::class)->reset();
+        if ($user && $user->company_id && !\App\Services\SecureCompanyLogin::isPlatformDeveloper($user)) {
+            $company = \App\Models\Central\Company::find(session('current_company_id'));
+            if (!$company || (int) $company->id !== (int) $user->company_id
+                || $company->db_name !== config('database.connections.tenant.database')) {
+                $request->session()->forget([Auth::guard('web')->getName(), 'current_company_id', 'current_company_db', 'current_company_name']);
+                Auth::guard('web')->forgetUser();
+                throw \Illuminate\Validation\ValidationException::withMessages(['email' => trans('auth.failed')]);
             }
         }
 
@@ -105,6 +95,10 @@ class AuthenticatedSessionController extends Controller
         $user = Auth::user();
         $role = strtolower((string) ($user?->role ?? ''));
         $designation = strtolower((string) ($user?->designation ?? ''));
+        if ($user?->company_staff_role_id) return redirect()->route('dashboard');
+        // A newly added employee's first login opens the employee dashboard once for the welcome; every
+        // later login goes straight to their usual workspace (e.g. the developer portal for engineers).
+        if ($role === 'employee' && $user && ! $user->employee_welcome_seen_at) return redirect()->route('dashboard');
 
         // 1. Developer redirection (unconditional for any developer account)
         if (
@@ -117,7 +111,7 @@ class AuthenticatedSessionController extends Controller
             return redirect()->route('developer.dashboard');
         }
 
-        if ($role === 'superadmin') {
+        if ($role === 'superadmin' || (! $user && Auth::guard('super_admin')->check())) {
             // If superadmin logged in via company credentials (tenant company session active), redirect to company dashboard
             if (session('current_company_id') && session('current_company_id') != 1) {
                 return redirect()->route('dashboard');
@@ -141,29 +135,6 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
-        Auth::guard('web')->logout();
-        if (Auth::guard('super_admin')->check()) {
-            Auth::guard('super_admin')->logout();
-        }
-        Auth::logout();
-
-        $request->session()->forget(['current_company_id', 'current_company_db', 'current_company_name']);
-        $request->session()->flush();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-
-        $defaultDb = env('DB_DATABASE', 'pms_last');
-        config([
-            'database.connections.tenant.database' => $defaultDb,
-            'database.connections.mysql.database'  => $defaultDb,
-        ]);
-        \Illuminate\Support\Facades\DB::purge('tenant');
-        \Illuminate\Support\Facades\DB::purge('mysql');
-
-        if (app()->bound(\App\Services\CompanyContext::class)) {
-            app(\App\Services\CompanyContext::class)->reset();
-        }
-
-        return redirect()->route('login');
+        return app(\App\Services\AuthenticationSession::class)->logout($request);
     }
 }

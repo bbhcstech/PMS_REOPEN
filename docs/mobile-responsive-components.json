@@ -1,0 +1,26 @@
+[
+  {
+    "width": 320,
+    "failures": []
+  },
+  {
+    "width": 375,
+    "failures": []
+  },
+  {
+    "width": 430,
+    "failures": []
+  },
+  {
+    "width": 768,
+    "failures": []
+  },
+  {
+    "width": 1024,
+    "failures": []
+  },
+  {
+    "width": 1440,
+    "failures": []
+  }
+]

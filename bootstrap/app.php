@@ -22,6 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
             guests: '/login',
             users: function (\Illuminate\Http\Request $request) {
                 $user = auth()->user();
+                if ($user?->company_staff_role_id) return route('dashboard');
                 if ($user && (
                     (method_exists($user, 'isDeveloper') && $user->isDeveloper()) ||
                     in_array(strtolower((string) ($user->role ?? '')), ['developer', 'dev'], true) ||
@@ -37,9 +38,19 @@ return Application::configure(basePath: dirname(__DIR__))
                 return route('dashboard');
             }
         );
+        $middleware->prependToPriorityList(
+            \Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests::class,
+            SetTenantConnection::class
+        );
         $middleware->web(append: [
             SetTenantConnection::class,
+            \App\Http\Middleware\ConfigureCompanyMail::class,
             \App\Http\Middleware\EnsureCompanySubscriptionActive::class,
+            \App\Http\Middleware\NormalizePhoneCountryCodes::class,
+            \App\Http\Middleware\BlockTicketsInAdminWorkspace::class,
+            \App\Http\Middleware\FinanceComingSoon::class,
+            \App\Http\Middleware\ProtectWorkforceRecords::class,
+            \App\Http\Middleware\EnforceRolePermissionToggles::class,
         ]);
         $middleware->alias([
             'admin' => RoleMiddleware::class,
@@ -48,6 +59,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => RoleMiddleware::class,
             'feature' => \App\Http\Middleware\CheckFeatureAccess::class,
             'developer.access' => \App\Http\Middleware\EnsureDeveloperAccess::class,
+            'platform.superadmin' => \App\Http\Middleware\EnsurePlatformSuperAdmin::class,
             'subscription.active' => \App\Http\Middleware\EnsureCompanySubscriptionActive::class,
         ]);
     })
@@ -55,14 +67,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\HttpException $e, \Illuminate\Http\Request $request) {
             if ($e->getStatusCode() === 419) {
                 if ($request->is('logout') || $request->is('*/logout') || $request->routeIs('logout*')) {
-                    \Illuminate\Support\Facades\Auth::guard('web')->logout();
-                    if (\Illuminate\Support\Facades\Auth::guard('super_admin')->check()) {
-                        \Illuminate\Support\Facades\Auth::guard('super_admin')->logout();
-                    }
-                    \Illuminate\Support\Facades\Auth::logout();
-                    $request->session()->invalidate();
-                    $request->session()->regenerateToken();
-                    return redirect('/login');
+                    return app(\App\Services\AuthenticationSession::class)->logout($request);
                 }
                 return redirect('/login')->with('error', 'Your session expired. Please log in again.');
             }

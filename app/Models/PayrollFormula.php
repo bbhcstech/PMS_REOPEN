@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class PayrollFormula extends Model
+class PayrollFormula extends TenantModel
 {
     use HasFactory, SoftDeletes;
 
@@ -24,6 +24,9 @@ class PayrollFormula extends Model
         'is_valid',
         'is_active',
         'last_validated_at',
+        'effective_from',
+        'effective_to',
+        'version',
         'company_id',
         'created_by',
         'updated_by',
@@ -36,6 +39,9 @@ class PayrollFormula extends Model
         'is_valid'         => 'boolean',
         'is_active'        => 'boolean',
         'last_validated_at'=> 'datetime',
+        'effective_from'   => 'date',
+        'effective_to'     => 'date',
+        'version'          => 'integer',
     ];
 
     public function creator()
@@ -50,28 +56,13 @@ class PayrollFormula extends Model
 
     /**
      * Evaluate a formula with provided variable bindings.
-     * Only numeric operations with whitelisted variables are allowed.
+     * Uses the bounded arithmetic parser shared with the tester and payroll processor.
+     * This compatibility helper returns false for invalid expressions.
      */
     public static function evaluate(string $formula, array $variables = []): float|false
     {
-        // Replace variable names with their values
-        $expr = $formula;
-        foreach ($variables as $key => $value) {
-            $expr = str_replace(strtoupper($key), (float) $value, $expr);
-        }
-
-        // Allow only safe arithmetic: digits, decimals, operators, parentheses, whitespace
-        if (!preg_match('/^[\d\s\+\-\*\/\.\(\)]+$/', $expr)) {
-            return false;
-        }
-
-        try {
-            // phpcs:ignore
-            $result = eval("return ({$expr});");
-            return is_numeric($result) ? (float) $result : false;
-        } catch (\Throwable $e) {
-            return false;
-        }
+        try { return app(\App\Services\PayrollExpression::class)->evaluate($formula, $variables); }
+        catch (\InvalidArgumentException $e) { return false; }
     }
 
     /**

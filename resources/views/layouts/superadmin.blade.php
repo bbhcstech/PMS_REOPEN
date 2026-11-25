@@ -2,6 +2,7 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
   <meta charset="utf-8" />
+  @include('partials.timezone')
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="csrf-token" content="{{ csrf_token() }}" />
   <title>@yield('title', 'Super Admin · Command Center') - {{ config('app.name', 'BBHPMS') }}</title>
@@ -1222,12 +1223,14 @@
        RESPONSIVE & ALL-DEVICE SCREEN COMPATIBILITY
        ============================================================ */
     html, body {
-      overflow-x: hidden !important;
+      overflow-x: clip !important;
       max-width: 100vw !important;
     }
 
     .main {
-      overflow-x: hidden;
+      /* Clip horizontal overflow without making a separate scroll container.
+         The header must stick to the document's scrolling viewport. */
+      overflow-x: clip;
     }
 
     /* Auto-responsive table containers */
@@ -1383,7 +1386,9 @@
       .header-actions button,
       .filter-actions .btn,
       .action-bar .btn,
-      [class*="btn-"]:not(.hamburger):not(.theme-toggle-btn):not(.btn-notif):not(.profile) {
+      /* Compact, close and icon buttons keep their own size: stretching e.g. a drawer's × button to the full
+         row squeezed the drawer title into a one-character column and pushed the drawer content off-screen. */
+      [class*="btn-"]:not(.hamburger):not(.theme-toggle-btn):not(.btn-notif):not(.profile):not([class*="btn-xs"]):not(.btn-close):not(.btn-icon) {
         width: 100%;
         justify-content: center;
       }
@@ -1584,6 +1589,12 @@
 
     /* ---- MOBILE BOTTOM NAVIGATION BAR ---- */
     /* Shows quick-access links at bottom on mobile instead of requiring sidebar */
+    /* .main is its own stacking layer (z-index: 1), so an open drawer/overlay inside a page sat under the
+       fixed mobile bottom navigation. Lift the page layer above it only while such a layer is open. */
+    .main:has(:is(.drawer-overlay-custom, .drawer-overlay, .modal-overlay).open) {
+      z-index: 1000;
+    }
+
     .mobile-bottom-nav {
       display: none;
       position: fixed;
@@ -2027,10 +2038,16 @@
       </a>
 
       <!-- TENANT MANAGEMENT -->
+      <a href="{{ route('super-admin.ai.index') }}" class="{{ request()->routeIs('super-admin.ai.*') ? 'active' : '' }}">
+        <i class="bx bx-bot icon"></i> Platform Assistant
+      </a>
       <div class="nav-label">Tenant Management</div>
       <a href="{{ Route::has('superadmin.companies.index') ? route('superadmin.companies.index') : (Route::has('super-admin.companies.index') ? route('super-admin.companies.index') : url('/superadmin/companies')) }}" 
-         class="{{ request()->routeIs('*companies.index') || request()->routeIs('*companies.list') || ((request()->routeIs('*companies.*')) && !request()->routeIs('*companies.metrics')) ? 'active' : '' }}">
+         class="{{ request()->routeIs('*companies.index') || request()->routeIs('*companies.list') || ((request()->routeIs('*companies.*')) && !request()->routeIs('*companies.metrics', '*companies.suspended')) ? 'active' : '' }}">
         <i class="bx bx-building-house icon"></i> Companies
+      </a>
+      <a href="{{ route('superadmin.companies.suspended') }}" class="{{ request()->routeIs('*companies.suspended') ? 'active' : '' }}">
+        <i class="bx bx-pause-circle icon"></i> Suspended Companies
       </a>
       <a href="{{ Route::has('superadmin.companies.metrics') ? route('superadmin.companies.metrics') : (Route::has('super-admin.companies.metrics') ? route('super-admin.companies.metrics') : url('/superadmin/companies/metrics')) }}" 
          class="{{ request()->routeIs('*companies.metrics') ? 'active' : '' }}">
@@ -2321,7 +2338,10 @@
         </div>
       @endif
 
+      @include('partials.page-back-navigation')
+      <div data-live-records data-live-identity="@include('partials.live-records-identity')" style="display:contents">
       @yield('content')
+      </div>
     </div>
   </div>
 
@@ -2348,6 +2368,24 @@
         sidebarOverlay.classList.remove('open');
       });
     }
+
+    // Auto-close sidebar on mobile when navigating
+    document.querySelectorAll('#sidebar .nav-item').forEach(function(link) {
+      link.addEventListener('click', function() {
+        if (window.innerWidth <= 992) {
+          if (sidebar) sidebar.classList.remove('open');
+          if (sidebarOverlay) sidebarOverlay.classList.remove('open');
+        }
+      });
+    });
+
+    // Close on Escape key
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        if (sidebar) sidebar.classList.remove('open');
+        if (sidebarOverlay) sidebarOverlay.classList.remove('open');
+      }
+    });
 
     // Notification Dropdown Toggle
     const notifWrapper = document.getElementById('notifWrapper');
@@ -2526,6 +2564,10 @@
 
   @include('admin.layout.toasts')
 
-  @stack('scripts')
+  @include('partials.phone-fields')
+@stack('scripts')
+  <script src="{{ asset('admin/assets/js/pms-live-records.js') }}?v={{ @filemtime(public_path('admin/assets/js/pms-live-records.js')) }}" data-session-url="{{ route('company.session-status') }}" data-login-url="{{ route('login') }}" defer></script>
+  @include('partials.ai-assistant-launcher')
+  @include('partials.responsive-workspace', ['responsiveShell' => 'platform'])
 </body>
 </html>

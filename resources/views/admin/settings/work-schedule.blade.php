@@ -464,10 +464,17 @@
         position: relative;
     }
 
+    /* Visually hidden: the pill label is the control. Kept !important so theme-wide disabled/readonly
+       input rules (read-only settings mode) can never reveal the native checkbox. */
     .day-pill-input {
-        position: absolute;
-        opacity: 0;
-        pointer-events: none;
+        position: absolute !important;
+        width: 1px !important;
+        height: 1px !important;
+        margin: 0 !important;
+        opacity: 0 !important;
+        overflow: hidden !important;
+        clip: rect(0 0 0 0) !important;
+        pointer-events: none !important;
     }
 
     .day-pill-label {
@@ -1102,7 +1109,7 @@
 @endpush
 
 @section('content')
-<div class="work-schedule-page">
+<div class="pms-settings-page work-schedule-page">
     <div class="work-schedule-shell">
         <div class="ambient-orb orb-1"></div>
         <div class="ambient-orb orb-2"></div>
@@ -1217,29 +1224,40 @@
                     <form method="POST" action="{{ route('admin.settings.work-schedule.update') }}">
                         @csrf
 
-                        <!-- Section 1: Company Working Days -->
-                        <div class="section-badge">
-                            <i class="fas fa-calendar-week"></i> Company Operating Days
-                        </div>
-
-                        <div class="mb-5">
-                            <label class="form-label-custom mb-3">
-                                Select Operating Working Days <span class="req-asterisk">*</span>
-                            </label>
-                            <div class="days-pill-grid">
+                        <!-- Weekly company attendance schedule -->
+                        <section class="mb-5" data-weekly-schedule aria-labelledby="weeklyScheduleTitle">
+                            <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-3">
+                                <div>
+                                    <h5 id="weeklyScheduleTitle" class="mb-1">Weekly Attendance Schedule</h5>
+                                    <p class="text-muted small mb-0">Choose Office, Work From Home or Weekend for each day. Applies only to this company's staff.</p>
+                                </div>
+                                @if($isAdmin)
+                                    <button type="button" class="btn btn-outline-primary" data-weekly-preset><i class="fas fa-calendar-check me-1" aria-hidden="true"></i>Saturday WFH · Sunday weekend</button>
+                                @endif
+                            </div>
+                            <div class="row g-3">
                                 @foreach(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] as $day)
-                                    @php $isChecked = in_array($day, $settings['working_days'] ?? []); @endphp
-                                    <div class="day-pill-item">
-                                        <input class="day-pill-input" type="checkbox" name="working_days[]" value="{{ $day }}" id="day_{{ $day }}"
-                                            {{ $isChecked ? 'checked' : '' }} {{ ! $isAdmin ? 'disabled' : '' }}>
-                                        <label class="day-pill-label" for="day_{{ $day }}">
-                                            <i class="fas {{ $isChecked ? 'fa-check-circle' : 'fa-circle' }}" style="font-size: 0.85rem;"></i> {{ $day }}
-                                        </label>
+                                    @php
+                                        $mode = !in_array($day, $settings['working_days'] ?? [], true) ? 'weekend' : (in_array($day, $settings['weekly_wfh_days'] ?? [], true) ? 'wfh' : 'office');
+                                        $mode = old('weekly_modes.'.$day, $mode);
+                                    @endphp
+                                    <div class="col-12 col-sm-6 col-lg-3">
+                                        <div class="border rounded-3 p-3 h-100">
+                                            <label for="weekly-{{ $day }}" class="form-label fw-bold">{{ $day }}</label>
+                                            <select id="weekly-{{ $day }}" name="weekly_modes[{{ $day }}]" class="form-select" required data-weekly-day="{{ $day }}" @disabled(!$isAdmin)>
+                                                <option value="office" @selected($mode === 'office')>Office</option>
+                                                <option value="wfh" @selected($mode === 'wfh')>Work From Home</option>
+                                                <option value="weekend" @selected($mode === 'weekend')>Weekend / Day off</option>
+                                            </select>
+                                            @error('weekly_modes.'.$day)<small class="text-danger">{{ $message }}</small>@enderror
+                                        </div>
                                     </div>
                                 @endforeach
                             </div>
-                        </div>
-
+                            <div class="d-flex flex-wrap gap-2 mt-3" aria-live="polite" data-weekly-summary></div>
+                            @error('working_days')<p class="text-danger mt-2">Choose at least one Office or WFH day.</p>@enderror
+                            <div class="alert alert-info mt-3 mb-0">WFH days are working days. Attendance records are saved as WFH when staff clock in on those days. Weekend days show as OFF and are excluded from required working days. Scheduled WFH appears in calendars even before a clock-in; attendance and hours still require a real record. Save below to apply your schedule.</div>
+                        </section>
                         <!-- Section 2: Shift Hours & Break Duration -->
                         <div class="section-badge">
                             <i class="fas fa-clock"></i> Shift Schedule & Break Policy
@@ -1434,7 +1452,142 @@
                 </div>
             </div>
 
-            <!-- Section 3: Employee Work Location Settings (Office vs. Work From Home) -->
+            <!-- Section 3: Employee Specific Work From Home (WFH) Date Assignment -->
+            <div class="address-card-elevated mt-5">
+                <div class="card-header-custom d-flex justify-content-between align-items-center flex-wrap gap-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="card-header-avatar shadow-sm" style="background: linear-gradient(135deg, #6366f1, #3b82f6);">
+                            <i class="fas fa-laptop-house text-white"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-0 fw-bold fs-5" style="color: #0F172A;">Assign Employee Specific Work From Home (WFH) Days</h5>
+                            <small class="text-muted">Assign a particular day as Work From Home for an Employee, HR, or Manager. Clock-in on that day will be recorded as Work From Home (not half day or full day).</small>
+                        </div>
+                    </div>
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3 py-2 fw-semibold">
+                        <i class="fas fa-home me-1"></i> Date-Specific Remote Work
+                    </span>
+                </div>
+
+                <div class="p-4 p-md-5">
+                    @if($isAdmin)
+                        <form method="POST" action="{{ route('admin.settings.work-schedule.employee-wfh-date.store') }}" class="mb-4">
+                            @csrf
+                            <div class="row g-3 align-items-end">
+                                <div class="col-md-4">
+                                    <label class="form-label-custom">Select Employee / HR / Manager <span class="req-asterisk">*</span></label>
+                                    <div class="input-group input-group-custom">
+                                        <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                        <select name="user_id" class="form-select" required>
+                                            <option value="">-- Choose Staff Member --</option>
+                                            @foreach($employees ?? [] as $emp)
+                                                <option value="{{ $emp->id }}">
+                                                    {{ $emp->name }} ({{ ucfirst($emp->role) }}{{ $emp->designation ? ' - ' . $emp->designation : '' }})
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label-custom">Target WFH Date <span class="req-asterisk">*</span></label>
+                                    <div class="input-group input-group-custom">
+                                        <span class="input-group-text"><i class="fas fa-calendar-day"></i></span>
+                                        <input type="date" name="date" class="form-control" value="{{ date('Y-m-d') }}" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label-custom">Reason / Memo (Optional)</label>
+                                    <div class="input-group input-group-custom">
+                                        <span class="input-group-text"><i class="fas fa-comment-alt"></i></span>
+                                        <input type="text" name="reason" class="form-control" placeholder="e.g. Remote work approved / Family duty">
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <button type="submit" class="btn btn-primary w-100 py-2.5 rounded-3 fw-bold d-flex align-items-center justify-content-center gap-2" style="background: linear-gradient(135deg, #6366f1, #3b82f6); border: none; box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);">
+                                        <i class="fas fa-plus-circle"></i> Assign & Notify
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    @endif
+
+                    @php
+                        $employeeWfhDates = $settings['employee_wfh_dates'] ?? [];
+                        $employeesById = collect($employees ?? [])->keyBy('id');
+                    @endphp
+                    @if(count($employeeWfhDates) > 0)
+                        <div class="table-responsive rounded-4 border border-primary-subtle shadow-sm mt-4">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead style="background: linear-gradient(90deg, #EEF2FF, #F8FAFC); color: #0F172A;">
+                                    <tr>
+                                        <th class="py-3 px-4 fw-bold">Employee</th>
+                                        <th class="py-3 px-4 fw-bold">Role</th>
+                                        <th class="py-3 px-4 fw-bold">Assigned WFH Date</th>
+                                        <th class="py-3 px-4 fw-bold">Reason / Memo</th>
+                                        <th class="py-3 px-4 fw-bold">Assigned On</th>
+                                        @if($isAdmin)
+                                            <th class="py-3 px-4 fw-bold text-end">Action</th>
+                                        @endif
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($employeeWfhDates as $ewfh)
+                                        @php
+                                            $assignedUser = $employeesById->get($ewfh['user_id'] ?? null);
+                                        @endphp
+                                        <tr>
+                                            <td class="py-3 px-4 fw-bold text-dark">
+                                                <div class="d-flex align-items-center gap-2.5">
+                                                    <div style="width: 34px; height: 34px; border-radius: 10px; background: linear-gradient(135deg, #6366f1, #3b82f6); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem;">
+                                                        {{ strtoupper(substr($assignedUser->name ?? 'U', 0, 2)) }}
+                                                    </div>
+                                                    <div>
+                                                        <div>{{ $assignedUser->name ?? 'User #' . ($ewfh['user_id'] ?? '') }}</div>
+                                                        <small class="text-muted fw-normal">{{ $assignedUser->email ?? '' }}</small>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="py-3 px-4">
+                                                <span class="badge bg-light text-dark border px-2.5 py-1 rounded-pill fw-medium">
+                                                    <i class="fas fa-briefcase text-primary me-1"></i> {{ ucfirst($assignedUser->role ?? 'Staff') }}
+                                                </span>
+                                            </td>
+                                            <td class="py-3 px-4 fw-bold text-primary">
+                                                <i class="fas fa-calendar-check me-1.5"></i>
+                                                {{ date('D, M d, Y', strtotime($ewfh['date'])) }}
+                                            </td>
+                                            <td class="py-3 px-4 text-secondary">
+                                                {{ $ewfh['reason'] ?? 'Work From Home Approved' }}
+                                            </td>
+                                            <td class="py-3 px-4 text-muted small">
+                                                {{ !empty($ewfh['created_at']) ? date('M d, Y', strtotime($ewfh['created_at'])) : '-' }}
+                                            </td>
+                                            @if($isAdmin)
+                                                <td class="py-3 px-4 text-end">
+                                                    <form method="POST" action="{{ route('admin.settings.work-schedule.employee-wfh-date.destroy', $ewfh['id']) }}" class="d-inline" onsubmit="return confirm('Remove this WFH date assignment?');">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="btn btn-sm btn-outline-danger rounded-circle p-2" title="Remove WFH Assignment">
+                                                            <i class="fas fa-trash-alt"></i>
+                                                        </button>
+                                                    </form>
+                                                </td>
+                                            @endif
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    @else
+                        <div class="p-4 text-center rounded-4 border border-dashed text-muted" style="background: rgba(238, 242, 255, 0.4);">
+                            <i class="fas fa-laptop-house fs-2 mb-2 text-primary"></i>
+                            <p class="mb-0 fw-medium">No individual employee WFH days scheduled. Select an employee and a date above to assign Work From Home.</p>
+                        </div>
+                    @endif
+                </div>
+            </div>
+
+            <!-- Section 4: Employee Work Location Settings (Office vs. Work From Home) -->
             <div class="address-card-elevated mt-5 mb-5">
                 <div class="card-header-custom d-flex justify-content-between align-items-center flex-wrap gap-3">
                     <div class="d-flex align-items-center gap-3">
@@ -1660,3 +1813,7 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 @endsection
+
+@push('scripts')
+<script src="{{ asset('admin/assets/js/pms-weekly-schedule.js') }}" defer></script>
+@endpush

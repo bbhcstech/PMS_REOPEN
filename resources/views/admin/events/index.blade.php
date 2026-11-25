@@ -3,7 +3,6 @@
 @section('title', 'Events - Company Events & Activities')
 
 @push('styles')
-<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet" />
 <style>
     /* =========================================================================
      | EVENT CARD MODERN DESIGN SYSTEM
@@ -225,10 +224,134 @@
 
     #eventCalendar {
         background: #ffffff;
-        padding: 20px;
+        padding: 24px;
         border-radius: 16px;
         border: 1px solid rgba(47, 107, 255, 0.12);
         box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+        min-height: 720px;
+        box-sizing: border-box;
+    }
+
+    /* FullCalendar Toolbar Header & Gap Spacing */
+    #eventCalendar .fc-header-toolbar {
+        margin-bottom: 1.5rem !important;
+        display: flex !important;
+        flex-wrap: wrap !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 12px !important;
+    }
+
+    #eventCalendar .fc-header-toolbar .fc-toolbar-chunk {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+    }
+
+    #eventCalendar .fc-toolbar-title {
+        font-size: 1.35rem !important;
+        font-weight: 700 !important;
+        color: #1e293b;
+        letter-spacing: -0.02em;
+    }
+
+    /* Distinct Gap between Month, Week, and List buttons, and rounded pill design */
+    #eventCalendar .fc-header-toolbar .fc-button-group {
+        display: inline-flex !important;
+        gap: 8px !important;
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    #eventCalendar .fc-header-toolbar .fc-button {
+        border-radius: 8px !important;
+        margin: 0 !important;
+        padding: 0.45rem 1.1rem !important;
+        font-weight: 600 !important;
+        font-size: 0.85rem !important;
+        line-height: 1.35 !important;
+        text-transform: capitalize !important;
+        border: 1.5px solid #2F6BFF !important;
+        background-color: #2F6BFF !important;
+        color: #ffffff !important;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+        transition: all 0.2s ease !important;
+        cursor: pointer !important;
+    }
+
+    #eventCalendar .fc-header-toolbar .fc-button:hover {
+        background-color: #1e52db !important;
+        border-color: #1e52db !important;
+        transform: translateY(-1px);
+        box-shadow: 0 3px 8px rgba(47, 107, 255, 0.25) !important;
+    }
+
+    #eventCalendar .fc-header-toolbar .fc-button:not(:disabled):is(:active, .fc-button-active) {
+        background-color: #143ca3 !important;
+        border-color: #143ca3 !important;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+    }
+
+    #eventCalendar .fc-header-toolbar .fc-button:disabled {
+        opacity: 0.55 !important;
+        cursor: not-allowed !important;
+    }
+
+    #eventCalendar .fc-header-toolbar .fc-prev-button,
+    #eventCalendar .fc-header-toolbar .fc-next-button {
+        padding: 0.45rem 0.75rem !important;
+    }
+
+    /* Banner previews are confined to events in the month calendar. */
+    #eventCalendar .event-calendar-has-banner {
+        display: block;
+        white-space: normal;
+        overflow: hidden;
+    }
+    #eventCalendar .event-calendar-banner-content {
+        width: 100%;
+        min-width: 0;
+        padding: 3px;
+        box-sizing: border-box;
+    }
+    #eventCalendar .event-calendar-banner {
+        display: block;
+        width: 100%;
+        height: 56px;
+        object-fit: contain;
+        border-radius: 4px;
+        margin-bottom: 4px;
+    }
+    #eventCalendar .event-calendar-banner-label {
+        display: block;
+        font-size: 0.75rem;
+        line-height: 1.3;
+        font-weight: 600;
+        overflow-wrap: anywhere;
+        color: inherit;
+    }
+
+    .event-description-panel, .event-memories-empty {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+    }
+    .event-memories-panel {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+    }
+    .event-memories-empty { border-style: dashed; }
+    .event-description-panel, .event-memories-panel, .rsvp-summary-card { padding: 20px; }
+    .event-description-panel > h6, .rsvp-summary-card > h6 { gap: 8px; }
+    .event-details-actions { flex-wrap: wrap; }
+    .rsvp-stat-going { background: #f0fdf4; border: 1px solid #d1fae5; }
+    .rsvp-stat-maybe { background: #fffbeb; border: 1px solid #fef3c7; }
+    .rsvp-stat-not_going { background: #fef2f2; border: 1px solid #fee2e2; }
+    @media (max-width: 767px) {
+        #eventCalendar { padding: 12px; }
+        #eventCalendar .fc-header-toolbar { flex-wrap: wrap; gap: 12px; }
+        #eventCalendar .fc-toolbar-title { font-size: 1.1rem; }
+        #eventCalendar .event-calendar-banner { height: 42px; }
     }
 
     /* Filter Bar Improvements */
@@ -793,11 +916,29 @@
         background-color: rgba(239, 68, 68, 0.12) !important;
         border-color: rgba(248, 113, 113, 0.25) !important;
     }
+    /* Keep native Organizer options and role group labels readable in dark mode. */
+    :is([data-pms-theme="dark"], [data-theme="dark"], [data-bs-theme="dark"], .dark, .dark-mode) #eventOrganizerInput {
+        color-scheme: dark;
+    }
+    :is([data-pms-theme="dark"], [data-theme="dark"], [data-bs-theme="dark"], .dark, .dark-mode) #eventOrganizerInput :is(option, optgroup) {
+        background-color: #151c3b !important;
+        color: #eef1fb !important;
+        -webkit-text-fill-color: #eef1fb !important;
+    }
+    :is([data-pms-theme="dark"], [data-theme="dark"], [data-bs-theme="dark"], .dark, .dark-mode) #eventOrganizerInput optgroup {
+        font-weight: 600;
+    }
+    :is([data-pms-theme="dark"], [data-theme="dark"], [data-bs-theme="dark"], .dark, .dark-mode) #eventOrganizerInput option:checked {
+        background-color: #2f6bff !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
 </style>
+@include('admin.events.dark-theme')
 @endpush
 
 @section('content')
-<div class="container-xxl flex-grow-1 container-p-y">
+<div class="container-xxl flex-grow-1 container-p-y events-section">
 
     {{-- HEADER BLOCK --}}
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
@@ -817,6 +958,15 @@
     </div>
 
     {{-- FLASH MESSAGES --}}
+    @if($errors->any())
+        <div class="alert alert-danger" role="alert">
+            <ul class="mb-0">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
     @if(session('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
             <i class="bx bx-check-circle me-1"></i> {{ session('success') }}
@@ -1118,7 +1268,7 @@
         @else
             {{-- EMPTY STATE --}}
             <div class="card border-0 shadow-sm p-5 text-center my-4">
-                <div class="avatar avatar-xl bg-label-success rounded-circle mx-auto mb-3" style="width: 70px; height: 70px; display: flex; align-items: center; justify-content: center;">
+                <div class="avatar avatar-xl bg-label-success rounded-circle mx-auto mb-3 event-empty-icon" style="width: 70px; height: 70px; display: flex; align-items: center; justify-content: center;">
                     <i class="bx bx-calendar-event fs-1 text-success"></i>
                 </div>
                 <h5 class="fw-bold text-dark mb-1">No upcoming events</h5>
@@ -1136,7 +1286,7 @@
 
     {{-- CALENDAR VIEW SECTION --}}
     <div id="eventsCalendarView" class="d-none">
-        <div id="eventCalendar"></div>
+        <div id="eventCalendar" data-pms-export="off"></div>
     </div>
 
     {{-- GALLERY VIEW SECTION (NEW) --}}
@@ -1225,7 +1375,7 @@
 {{-- ========================================================================= --}}
 {{-- CREATE / EDIT EVENT MODAL (PREMIUM DESIGN) --}}
 {{-- ========================================================================= --}}
-<div class="modal fade" id="eventModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade events-section" id="eventModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content border-0" style="border-radius: 20px; overflow: hidden; box-shadow: 0 15px 50px rgba(0,0,0,0.18);">
             <div class="modal-header py-3.5 px-4 text-white" style="background: linear-gradient(135deg, #4F83FF 0%, #2F6BFF 100%);">
@@ -1237,7 +1387,7 @@
                 </button>
             </div>
 
-            <form id="eventForm" enctype="multipart/form-data" method="POST" action="{{ route('events.store') }}" onsubmit="return validateEventDateTime();">
+            <form id="eventForm" enctype="multipart/form-data" method="POST" action="{{ route('events.store') }}" onsubmit="return submitEventForm();">
                 @csrf
                 <input type="hidden" name="_method" id="formMethod" value="POST">
                 <input type="hidden" name="event_id" id="eventId" value="">
@@ -1273,11 +1423,13 @@
                         <div class="col-md-6">
                             <label class="form-label premium-label">Organizer</label>
                             <select name="organizer_id" id="eventOrganizerInput" class="form-select premium-select">
-                                <option value="">Select Organizer</option>
-                                @foreach($users as $usr)
-                                    <option value="{{ $usr->id }}" {{ auth()->id() == $usr->id ? 'selected' : '' }}>
-                                        {{ $usr->name }} ({{ ucfirst($usr->role) }})
-                                    </option>
+                                <option value="">Current HR / Admin</option>
+                                @foreach(['hr' => 'HR', 'admin' => 'ADMIN'] as $organizerRole => $organizerLabel)
+                                    <optgroup label="{{ $organizerLabel }}">
+                                        @foreach($users->filter(fn ($usr) => in_array(strtolower(trim((string) $usr->role)), $organizerRole === 'admin' ? ['admin', 'administrator'] : ['hr'], true)) as $usr)
+                                            <option value="{{ $usr->id }}">{{ $usr->name }} ({{ $organizerLabel }})</option>
+                                        @endforeach
+                                    </optgroup>
                                 @endforeach
                             </select>
                         </div>
@@ -1374,7 +1526,7 @@
 {{-- ========================================================================= --}}
 {{-- EVENT DETAILS & EVENT MEMORIES MODAL --}}
 {{-- ========================================================================= --}}
-<div class="modal fade" id="eventDetailsModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade events-section" id="eventDetailsModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content border-0" style="border-radius: 18px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.15);">
             <div class="modal-header bg-light py-3 border-bottom">
@@ -1399,7 +1551,7 @@
 {{-- ========================================================================= --}}
 {{-- MULTI-PHOTO UPLOADER MODAL (FACEBOOK-LIKE DRAG & DROP) --}}
 {{-- ========================================================================= --}}
-<div class="modal fade" id="photoUploadModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade events-section" id="photoUploadModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content border-0" style="border-radius: 20px; overflow: hidden; box-shadow: 0 15px 50px rgba(0,0,0,0.2);">
             <div class="modal-header text-white" style="background: linear-gradient(135deg, #4F83FF 0%, #2F6BFF 100%);">
@@ -1470,7 +1622,7 @@
 {{-- ========================================================================= --}}
 {{-- FULLSCREEN PHOTO LIGHTBOX MODAL --}}
 {{-- ========================================================================= --}}
-<div class="modal fade" id="photoLightboxModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade events-section" id="photoLightboxModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content lightbox-modal-content">
             <div class="modal-header border-bottom py-3 px-4 bg-light">
@@ -1498,7 +1650,7 @@
                 </div>
 
                 {{-- Photo Meta & Caption --}}
-                <div class="mt-3 px-3 py-2.5 rounded-3" style="background: #f8fafc; border: 1px solid #e2e8f0;">
+                <div class="lightbox-photo-meta mt-3 px-3 py-2.5 rounded-3" style="background: #f8fafc; border: 1px solid #e2e8f0;">
                     <p class="text-dark fw-bold small mb-1.5 fs-6" id="lightboxCaption"></p>
                     <div class="d-flex align-items-center justify-content-between text-muted small">
                         <span id="lightboxUploader" class="fw-semibold text-dark"><i class="bx bx-user text-primary me-1"></i> Uploaded by Admin</span>
@@ -1512,9 +1664,17 @@
 @endsection
 
 @section('js')
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+<script src="{{ asset('admin/assets/vendor/libs/fullcalendar/index.global.min.js') }}"></script>
+<script>
+    if (typeof FullCalendar === 'undefined') {
+        document.write('<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"><\/script>');
+    }
+</script>
 <script>
     let calendarInstance = null;
+    let calendarRendered = false;
+    let activeCalendarView = 'dayGridMonth';
+    const eventViewStorageKey = 'events-view:{{ $companyId }}:{{ auth()->id() }}';
     let selectedUploadFiles = [];
     let currentLightboxPhotos = [];
     let currentLightboxIndex = 0;
@@ -1532,6 +1692,26 @@
     document.addEventListener('DOMContentLoaded', function () {
         initCalendar();
         setupDragAndDrop();
+        try {
+            const savedView = sessionStorage.getItem(eventViewStorageKey);
+            if (['list', 'calendar', 'gallery'].includes(savedView)) {
+                switchView(savedView);
+            } else {
+                switchView('list');
+            }
+        } catch (error) {
+            switchView('list');
+        }
+
+        // Window resize ensures FullCalendar grid never collapses
+        window.addEventListener('resize', function() {
+            if (calendarInstance) {
+                const calDiv = document.getElementById('eventsCalendarView');
+                if (calDiv && !calDiv.classList.contains('d-none')) {
+                    calendarInstance.updateSize();
+                }
+            }
+        });
 
         // Keyboard navigation for Lightbox
         document.addEventListener('keydown', function(e) {
@@ -1544,6 +1724,7 @@
     });
 
     function switchView(view) {
+        try { sessionStorage.setItem(eventViewStorageKey, view); } catch (error) {}
         const listDiv = document.getElementById('eventsListView');
         const calDiv = document.getElementById('eventsCalendarView');
         const galDiv = document.getElementById('eventsGalleryView');
@@ -1552,45 +1733,148 @@
         const btnCal = document.getElementById('btnCalendarView');
         const btnGal = document.getElementById('btnGalleryView');
 
-        listDiv.classList.add('d-none');
-        calDiv.classList.add('d-none');
-        galDiv.classList.add('d-none');
+        if (listDiv) listDiv.classList.add('d-none');
+        if (calDiv) calDiv.classList.add('d-none');
+        if (galDiv) galDiv.classList.add('d-none');
 
-        btnList.classList.remove('active');
-        btnCal.classList.remove('active');
-        btnGal.classList.remove('active');
+        if (btnList) btnList.classList.remove('active');
+        if (btnCal) btnCal.classList.remove('active');
+        if (btnGal) btnGal.classList.remove('active');
 
         if (view === 'calendar') {
-            calDiv.classList.remove('d-none');
-            btnCal.classList.add('active');
-            if (calendarInstance) calendarInstance.render();
+            if (calDiv) calDiv.classList.remove('d-none');
+            if (btnCal) btnCal.classList.add('active');
+
+            if (!calendarInstance) {
+                initCalendar();
+            } else {
+                if (!calendarRendered) {
+                    calendarInstance.render();
+                    calendarRendered = true;
+                }
+                calendarInstance.updateSize();
+                calendarInstance.refetchEvents();
+            }
+
+            // Guarantee size recalculation after browser layout cycle
+            setTimeout(function() {
+                if (calendarInstance) calendarInstance.updateSize();
+            }, 50);
+            setTimeout(function() {
+                if (calendarInstance) calendarInstance.updateSize();
+            }, 200);
         } else if (view === 'gallery') {
-            galDiv.classList.remove('d-none');
-            btnGal.classList.add('active');
+            if (galDiv) galDiv.classList.remove('d-none');
+            if (btnGal) btnGal.classList.add('active');
         } else {
-            listDiv.classList.remove('d-none');
-            btnList.classList.add('active');
+            if (listDiv) listDiv.classList.remove('d-none');
+            if (btnList) btnList.classList.add('active');
         }
+    }
+
+    function renderCalendarEventContent(info) {
+        const bannerUrl = info.event.extendedProps.banner_url;
+        if (info.view.type !== 'dayGridMonth' || !bannerUrl) return true;
+
+        const content = document.createElement('div');
+        content.className = 'event-calendar-banner-content';
+
+        const banner = document.createElement('img');
+        banner.className = 'event-calendar-banner';
+        banner.src = bannerUrl;
+        banner.alt = info.event.title;
+        banner.loading = 'lazy';
+        banner.addEventListener('error', function() { banner.remove(); }, { once: true });
+        content.appendChild(banner);
+
+        const label = document.createElement('span');
+        label.className = 'event-calendar-banner-label';
+        const timeText = info.timeText || info.event.extendedProps.display_time || '';
+        label.textContent = (timeText ? timeText + ' ' : '') + info.event.title;
+        content.appendChild(label);
+
+        return { domNodes: [content] };
     }
 
     function initCalendar() {
         const calendarEl = document.getElementById('eventCalendar');
         if (!calendarEl) return;
 
-        calendarInstance = new FullCalendar.Calendar(calendarEl, {
-            initialView: 'dayGridMonth',
-            height: 700,
-            headerToolbar: {
-                left: 'prev,next today',
-                center: 'title',
-                right: 'dayGridMonth,timeGridWeek,listMonth'
-            },
-            events: '{{ route("events.calendar-data") }}',
-            eventClick: function(info) {
-                info.jsEvent.preventDefault();
-                showEventDetails(info.event.id);
+        if (typeof FullCalendar === 'undefined') {
+            setTimeout(initCalendar, 100);
+            return;
+        }
+
+        if (typeof calendarInstance !== 'undefined' && calendarInstance) {
+            calendarInstance.updateSize();
+            return;
+        }
+
+        let initialDate = undefined;
+        try {
+            const storedDate = sessionStorage.getItem(eventViewStorageKey + ':date');
+            if (storedDate && !isNaN(Date.parse(storedDate))) {
+                initialDate = storedDate;
             }
-        });
+        } catch (error) {}
+
+        try {
+            calendarInstance = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                initialDate: initialDate,
+                height: 700,
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,listMonth'
+                },
+                events: {
+                    url: '{{ route("events.calendar-data") }}',
+                    extraParams: function() { return { view: activeCalendarView }; }
+                },
+                datesSet: function(info) {
+                    const changedView = activeCalendarView !== info.view.type;
+                    activeCalendarView = info.view.type;
+                    if (calendarInstance) {
+                        const date = calendarInstance.getDate();
+                        const localDate = date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
+                        try { sessionStorage.setItem(eventViewStorageKey + ':date', localDate); } catch (error) {}
+                        if (changedView) calendarInstance.refetchEvents();
+                    }
+                },
+                eventContent: renderCalendarEventContent,
+                eventClassNames: function(info) {
+                    return info.view.type === 'dayGridMonth' && info.event.extendedProps.banner_url
+                        ? ['event-calendar-has-banner'] : [];
+                },
+                eventClick: function(info) {
+                    info.jsEvent.preventDefault();
+                    showEventDetails(info.event.id);
+                }
+            });
+
+            const calDiv = document.getElementById('eventsCalendarView');
+            if (calDiv && !calDiv.classList.contains('d-none')) {
+                calendarInstance.render();
+                calendarRendered = true;
+                setTimeout(function() {
+                    if (calendarInstance) calendarInstance.updateSize();
+                }, 50);
+            }
+        } catch (err) {
+            console.error('Error initializing FullCalendar:', err);
+        }
+    }
+
+    function submitEventForm() {
+        if (!validateEventDateTime()) return false;
+        if (!document.getElementById('eventsCalendarView').classList.contains('d-none')) {
+            const startDateVal = document.getElementById('eventStartDateInput')?.value;
+            if (startDateVal && !isNaN(Date.parse(startDateVal))) {
+                try { sessionStorage.setItem(eventViewStorageKey + ':date', startDateVal); } catch (error) {}
+            }
+        }
+        return true;
     }
 
     function toggleLocationFields() {
@@ -1797,7 +2081,7 @@
                 photosHtml += `</div>`;
             } else {
                 photosHtml = `
-                    <div class="text-center py-4 rounded-3" style="background: #f8fafc; border: 1.5px dashed #cbd5e1;">
+                    <div class="event-memories-empty text-center py-4 rounded-3">
                         <i class="bx bx-images fs-2 text-muted mb-1"></i>
                         <p class="text-dark fw-bold small mb-1">No Event Memories Yet</p>
                         <p class="text-muted small mb-3">Upload photographs from this event to preserve the celebration for your team.</p>
@@ -1837,7 +2121,7 @@
 
                     <div class="col-sm-6">
                         <div class="event-meta-card p-3 rounded-3 d-flex align-items-center gap-3">
-                            <div class="meta-icon-box rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 42px; height: 42px; background: #fef2f2; border: 1px solid rgba(239, 68, 68, 0.25);">
+                            <div class="event-venue-icon meta-icon-box rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 42px; height: 42px; background: #fef2f2; border: 1px solid rgba(239, 68, 68, 0.25);">
                                 <i class="${e.location_type === 'online' ? 'bx bx-video text-info' : 'bx bx-map-pin text-danger'} fs-4"></i>
                             </div>
                             <div class="overflow-hidden">
@@ -1849,7 +2133,7 @@
                 </div>
 
                 {{-- ABOUT EVENT DESCRIPTION --}}
-                <div class="mb-4 p-3.5 rounded-3" style="background: #f8fafc; border: 1px solid #e2e8f0;">
+                <div class="event-description-panel mb-4 p-3.5 rounded-3">
                     <h6 class="fw-bold text-dark mb-2 d-flex align-items-center gap-1.5" style="font-size: 0.95rem;">
                         <i class="bx bx-align-left text-primary"></i> About Event
                     </h6>
@@ -1857,7 +2141,7 @@
                 </div>
 
                 {{-- EVENT MEMORIES / PHOTO GALLERY SECTION --}}
-                <div class="mb-4 p-3.5 rounded-3" style="background: #ffffff; border: 1px solid #e2e8f0; box-shadow: 0 2px 10px rgba(0,0,0,0.02);">
+                <div class="event-memories-panel mb-4 p-3.5 rounded-3">
                     <div class="d-flex align-items-center justify-content-between mb-3">
                         <div>
                             <h6 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2 fs-6">
@@ -1877,25 +2161,25 @@
 
                 {{-- RSVP SUMMARY METRICS --}}
                 ${e.rsvp_required ? `
-                <div class="card border-0 p-3.5 mb-3 rsvp-summary-card" style="border-radius: 16px; background: #f8fafc; border: 1px solid #e2e8f0 !important;">
+                <div class="card p-3.5 mb-3 rsvp-summary-card" style="border-radius: 16px;">
                     <h6 class="fw-bold text-dark mb-3 d-flex align-items-center gap-1.5" style="font-size: 0.95rem;">
                         <i class="bx bx-pie-chart-alt-2 text-primary"></i> RSVP Summary
                     </h6>
                     <div class="row g-3 text-center">
                         <div class="col-4">
-                            <div class="p-3 rounded-3 rsvp-stat-going" style="border: 1px solid #d1fae5; background-color: #f0fdf4 !important;">
+                            <div class="p-3 rounded-3 rsvp-stat-going">
                                 <span class="d-block small text-success fw-bold uppercase-label" style="font-size: 11px; letter-spacing: 0.5px;">Going</span>
                                 <h3 class="fw-extrabold text-success mb-0 mt-1">${rsvp.going}</h3>
                             </div>
                         </div>
                         <div class="col-4">
-                            <div class="p-3 rounded-3 rsvp-stat-maybe" style="border: 1px solid #fef3c7; background-color: #fffbeb !important;">
+                            <div class="p-3 rounded-3 rsvp-stat-maybe">
                                 <span class="d-block small text-warning fw-bold uppercase-label" style="font-size: 11px; letter-spacing: 0.5px;">Maybe</span>
                                 <h3 class="fw-extrabold text-warning mb-0 mt-1">${rsvp.maybe}</h3>
                             </div>
                         </div>
                         <div class="col-4">
-                            <div class="p-3 rounded-3 rsvp-stat-not_going" style="border: 1px solid #fee2e2; background-color: #fef2f2 !important;">
+                            <div class="p-3 rounded-3 rsvp-stat-not_going">
                                 <span class="d-block small text-danger fw-bold uppercase-label" style="font-size: 11px; letter-spacing: 0.5px;">Not Going</span>
                                 <h3 class="fw-extrabold text-danger mb-0 mt-1">${rsvp.not_going}</h3>
                             </div>
@@ -1905,7 +2189,7 @@
 
                 {{-- ACTION BUTTONS --}}
                 ${canManage ? `
-                <div class="d-flex justify-content-end gap-2 pt-3 border-top mt-4">
+                <div class="event-details-actions d-flex justify-content-end gap-2 pt-3 border-top mt-4">
                     <button type="button" class="btn btn-outline-primary btn-sm px-3 fw-bold d-inline-flex align-items-center gap-1" onclick="bootstrap.Modal.getInstance(document.getElementById('eventDetailsModal')).hide(); editEvent(${e.id});">
                         <i class="bx bx-edit"></i> Edit
                     </button>
@@ -2123,7 +2407,7 @@
         }
 
         document.getElementById('lightboxUploader').innerHTML = `<i class="bx bx-user me-1"></i> Uploaded by ${escapeHtml(photo.uploader ? photo.uploader.name : 'Admin')}`;
-        document.getElementById('lightboxDate').innerHTML = `<div class="d-flex align-items-center gap-2"><span><i class="bx bx-calendar text-success me-1"></i> ${new Date(photo.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</span>${deleteBtnHtml}</div>`;
+        document.getElementById('lightboxDate').innerHTML = `<div class="d-flex align-items-center gap-2"><span><i class="bx bx-calendar text-success me-1"></i> ${new Date(photo.created_at).toLocaleDateString('en-GB', { timeZone: 'Asia/Kolkata',  day: '2-digit', month: 'short', year: 'numeric' })}</span>${deleteBtnHtml}</div>`;
     }
 
     function deletePhotoFromLightbox(photoId) {

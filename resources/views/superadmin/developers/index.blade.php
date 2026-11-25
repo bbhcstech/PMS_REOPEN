@@ -1493,11 +1493,11 @@
                                     <i class="bx bx-send"></i>
                                 </button>
                                 <!-- WHATSAPP SHARE -->
-                                <button class="btn-action-secondary" onclick="shareDevWhatsApp('{{ addslashes($dev->name) }}', '{{ $dev->email }}', '{{ $dev->personal_email ?: $dev->email }}', '{{ $dev->phone_number }}', 'DEV-{{ str_pad($dev->id, 3, '0', STR_PAD_LEFT) }}', '{{ $dev->active_tasks_count }}', '{{ addslashes($dev->raw_password ?: 'Developer@123') }}')" style="padding: 5px 8px; font-size: 14px; color: #2F6BFF; border-color: #C7D2FE; background: #EEF2FF;" title="Share Credentials & Tasks via WhatsApp">
+                                <button class="btn-action-secondary" onclick="shareDevWhatsApp('{{ addslashes($dev->name) }}', '{{ $dev->email }}', '{{ $dev->personal_email ?: $dev->email }}', '{{ $dev->phone_number }}', 'DEV-{{ str_pad($dev->id, 3, '0', STR_PAD_LEFT) }}', '{{ $dev->active_tasks_count }}', '{{ addslashes($dev->raw_password ?: '') }}')" style="padding: 5px 8px; font-size: 14px; color: #2F6BFF; border-color: #C7D2FE; background: #EEF2FF;" title="Share Credentials & Tasks via WhatsApp">
                                     <i class="bx bxl-whatsapp"></i>
                                 </button>
                                 <!-- EMAIL CREDENTIALS & NOTIFICATION -->
-                                <button class="btn-action-secondary" onclick="openDevCredentialsModal('{{ $dev->id }}', '{{ addslashes($dev->name) }}', '{{ $dev->email }}', '{{ $dev->personal_email ?: $dev->email }}', '{{ $dev->phone_number }}', 'DEV-{{ str_pad($dev->id, 3, '0', STR_PAD_LEFT) }}', '{{ $dev->active_tasks_count }}', '{{ addslashes($dev->raw_password ?: 'Developer@123') }}')" style="padding: 5px 8px; font-size: 14px; color: #2563eb; border-color: #bfdbfe; background: #eff6ff;" title="Developer Credentials & Email Notification">
+                                <button class="btn-action-secondary" onclick="openDevCredentialsModal('{{ $dev->id }}', '{{ addslashes($dev->name) }}', '{{ $dev->email }}', '{{ $dev->personal_email ?: $dev->email }}', '{{ $dev->phone_number }}', 'DEV-{{ str_pad($dev->id, 3, '0', STR_PAD_LEFT) }}', '{{ $dev->active_tasks_count }}', '{{ addslashes($dev->raw_password ?: '') }}')" style="padding: 5px 8px; font-size: 14px; color: #2563eb; border-color: #bfdbfe; background: #eff6ff;" title="Developer Credentials & Email Notification">
                                     <i class="bx bx-envelope"></i>
                                 </button>
                                 <button class="btn-action-secondary" onclick="openEditDeveloperModal('{{ $dev->id }}')" style="padding: 5px 8px; font-size: 12px;" title="Edit Profile">
@@ -1792,15 +1792,12 @@
                     <div>
                         <label style="display: block; font-size: 12px; font-weight: 700; color: var(--slate-dark); margin-bottom: 6px;">Phone Number</label>
                         <div style="display: flex;">
-                            <select id="devFormCountryCode" class="country-code-select" style="width: 95px; flex-shrink: 0; padding: 9px; border: 1px solid var(--border-color); border-right: 0; border-top-left-radius: var(--radius-md); border-bottom-left-radius: var(--radius-md); font-size: 13px; outline: none;">
-                                <option value="+91">+91 (IN)</option>
-                                <option value="+1">+1 (US)</option>
-                                <option value="+44">+44 (UK)</option>
-                                <option value="+61">+61 (AU)</option>
-                                <option value="+971">+971 (AE)</option>
-                                <option value="+81">+81 (JP)</option>
-                                <option value="+49">+49 (DE)</option>
-                                <option value="+33">+33 (FR)</option>
+                            <select id="devFormCountryCode" class="country-code-select" style="width: 110px; flex-shrink: 0; padding: 9px; border: 1px solid var(--border-color); border-right: 0; border-top-left-radius: var(--radius-md); border-bottom-left-radius: var(--radius-md); font-size: 13px; outline: none;">
+                                @foreach(\App\Models\Country::getAllWithPhoneCodes() as $c)
+                                    <option value="{{ $c->phone_code }}">
+                                        {{ $c->iso_code ? $c->iso_code . ' ' : '' }}({{ $c->phone_code }})
+                                    </option>
+                                @endforeach
                             </select>
                             <input type="text" id="devFormMobileDisplay" style="width: 100%; padding: 9px 12px; border: 1px solid var(--border-color); border-top-right-radius: var(--radius-md); border-bottom-right-radius: var(--radius-md); font-size: 13px;" placeholder="98765 43210">
                             <input type="hidden" name="mobile" id="devFormMobile">
@@ -1878,7 +1875,7 @@
 
                 <!-- RULE EXPLANATION BANNER -->
                 <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: var(--radius-md); padding: 12px 14px; margin-bottom: 16px; color: #166534; font-size: 12px; display: flex; align-items: center; gap: 10px;">
-                    <i class="bx bx-shield-check" style="font-size: 20px; color: #16a34a; flex-shrink: 0;"></i>
+                    <i class="bx bx-check-shield" style="font-size: 20px; color: #16a34a; flex-shrink: 0;"></i>
                     <span><strong>1 Developer = 1 Account Rule:</strong> If the selected developer already exists, the task will be assigned to their existing account. No new account, password, or login credentials email will be generated.</span>
                 </div>
 
@@ -1991,7 +1988,7 @@
                     </div>
                     <div>
                         <label style="display: block; font-size: 12px; font-weight: 700; color: var(--slate-dark); margin-bottom: 6px;">Deadline *</label>
-                        <input type="date" name="due_date" value="{{ date('Y-m-d', strtotime('+3 days')) }}" required style="width: 100%; padding: 9px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 13px;">
+                        <input type="date" min="{{ date('Y-m-d') }}" name="due_date" value="{{ date('Y-m-d', strtotime('+3 days')) }}" required style="width: 100%; padding: 9px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 13px;">
                     </div>
                 </div>
 
@@ -2057,7 +2054,7 @@
                     <div>
                         <span style="color: var(--slate-muted); font-weight: 700; display: block; font-size: 11px; margin-bottom: 2px;">DEVELOPER LOGIN PASSWORD</span>
                         <div style="display: flex; align-items: center; gap: 6px;">
-                            <input type="password" id="credModalLoginPasswordInput" readonly value="Developer@123" style="font-family: monospace; font-size: 13px; font-weight: 700; color: #2F6BFF; border: 1px solid #cbd5e1; border-radius: 6px; padding: 3px 8px; width: 135px; background: #ffffff;">
+                            <input type="password" id="credModalLoginPasswordInput" readonly value="" placeholder="Reset required" style="font-family: monospace; font-size: 13px; font-weight: 700; color: #2F6BFF; border: 1px solid #cbd5e1; border-radius: 6px; padding: 3px 8px; width: 135px; background: #ffffff;">
                             <button type="button" onclick="togglePasswordVisibility('credModalLoginPasswordInput', this)" class="btn-action-secondary" style="padding: 3px 6px; font-size: 13px; border-color: #cbd5e1;" title="Show/Hide Password">
                                 <i class="bx bx-show"></i>
                             </button>
@@ -2083,7 +2080,7 @@
                     </div>
                     <div>
                         <span style="color: var(--slate-muted); font-weight: 700; font-size: 11px;">PASSWORD SYNC:</span>
-                        <span style="background: #EEF2FF; color: #065f46; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; margin-left: 4px;">Live Auto-Updated</span>
+                        <span id="credModalPasswordStatus" style="background: #EEF2FF; color: #065f46; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; margin-left: 4px;">Verified</span>
                     </div>
                 </div>
             </div>
@@ -2115,7 +2112,7 @@
                                 <i class="bx bx-show"></i>
                             </button>
                         </div>
-                        <div style="font-size: 11px; color: var(--slate-muted); margin-top: 3px;">If provided, must be 8–128 characters.</div>
+                        <div style="font-size: 11px; color: var(--slate-muted); margin-top: 3px;">8–128 characters with at least one uppercase letter, lowercase letter, number, and special character.</div>
                         <div id="devResetPassword_error" style="display: none; color: #ef4444; font-size: 12px; margin-top: 3px; font-weight: 600;"></div>
                     </div>
                     <button type="submit" class="btn-action-primary" style="width: 100%; padding: 10px; justify-content: center; font-size: 13px;">
@@ -2141,6 +2138,7 @@
 </div>
 
 @push('scripts')
+<script src="{{ asset('admin/assets/js/pms-assignment-dates.js') }}?v={{ @filemtime(public_path('admin/assets/js/pms-assignment-dates.js')) }}" defer></script>
 <script>
     const devData = @json($paginatedDevs->items());
 
@@ -2358,7 +2356,7 @@
             return;
         }
 
-        const nowStr = new Date().toLocaleString();
+        const nowStr = window.PMSTime.format(window.PMSTime.now(), { year: 'numeric', month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' });
         printWin.document.write(`
             <!DOCTYPE html>
             <html>
@@ -2774,7 +2772,7 @@
                     body.innerHTML = `
                         <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 16px; margin-bottom: 16px;">
                             <strong style="font-size: 13.5px; color: var(--slate-dark); display: block; margin-bottom: 4px;">Task Initialized: ${data.task.title}</strong>
-                            <span style="font-size: 12px; color: var(--slate-muted);">Created on ${new Date(data.task.created_at).toLocaleString()} · Initial Status: ${data.task.status.toUpperCase()}</span>
+                            <span style="font-size: 12px; color: var(--slate-muted);">Created on ${window.PMSTime.format(data.task.created_at, { year: 'numeric', month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' })} · Initial Status: ${data.task.status.toUpperCase()}</span>
                         </div>
                         <div style="text-align:center; padding: 20px; color: var(--slate-muted); font-size: 13px;">No further activity logs recorded yet.</div>
                     `;
@@ -2783,7 +2781,7 @@
 
                 let html = '<div style="display: flex; flex-direction: column; gap: 14px;">';
                 data.history.forEach((h, idx) => {
-                    const dateStr = new Date(h.created_at).toLocaleString();
+                    const dateStr = window.PMSTime.format(h.created_at, { year: 'numeric', month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' });
                     html += `
                         <div style="display: flex; gap: 14px; position: relative;">
                             <div style="width: 34px; height: 34px; border-radius: 50%; background: #EEF2FF; color: #2F6BFF; display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; border: 1px solid #C7D2FE;">
@@ -2817,7 +2815,7 @@
             cleanPhone = '919876543210';
         }
 
-        const pwdText = password || 'Developer@123';
+        const pwdText = password || 'Reset required';
         const loginUrl = '{{ url('/login') }}';
         const msgText = `*PMS Developer Portal Credentials & Task Info*\n` +
             `Hello ${name},\n\n` +
@@ -2838,12 +2836,13 @@
     let activeCredDevId = null;
     function openDevCredentialsModal(devId, name, email, personalEmail, phone, devCode, activeTasks, password) {
         activeCredDevId = devId;
-        const pwdText = password || 'Developer@123';
+        const pwdText = password || 'Reset required';
 
         document.getElementById('credModalDevName').innerText = name + ' - Credentials';
         document.getElementById('credModalDevId').innerText = devCode + ' · ' + (personalEmail || email);
         document.getElementById('credModalLoginEmail').innerText = email;
-        document.getElementById('credModalLoginPasswordInput').value = pwdText;
+        document.getElementById('credModalLoginPasswordInput').value = password || '';
+        document.getElementById('credModalPasswordStatus').innerText = password ? 'Verified' : 'Reset required';
         document.getElementById('credModalPersonalEmail').innerText = personalEmail || email;
         document.getElementById('credModalPhone').innerText = phone || 'N/A';
         document.getElementById('credModalActiveTasks').innerText = (activeTasks || 0) + ' Active Tasks';
@@ -2854,9 +2853,21 @@
         const msgText = `PMS Developer Portal Credentials for ${name}:\nLogin Email: ${email}\nLogin Password: ${pwdText}\nLogin Portal: ${loginUrl}\nActive Tasks: ${activeTasks || 0}`;
         const encodedText = encodeURIComponent(msgText);
 
+        // mailto: needs a desktop mail app; without one the browser only opens a blank tab.
+        // Open a pre-filled web compose window instead (recipient, subject and credentials body).
         document.getElementById('credMailtoBtn').onclick = function() {
-            const subject = encodeURIComponent(`Developer Workspace Credentials - ${name}`);
-            window.location.href = `mailto:${personalEmail || email}?subject=${subject}&body=${encodedText}`;
+            const recipient = (personalEmail || email || '').trim();
+            const composeUrl = 'https://mail.google.com/mail/?view=cm&fs=1'
+                + '&to=' + encodeURIComponent(recipient)
+                + '&su=' + encodeURIComponent(`Developer Workspace Credentials - ${name}`)
+                + '&body=' + encodedText;
+            const composeWindow = window.open(composeUrl, '_blank');
+            if (composeWindow) {
+                composeWindow.opener = null;
+            } else {
+                // Popup blocked: fall back to the system mail app.
+                window.location.href = `mailto:${encodeURIComponent(recipient)}?subject=${encodeURIComponent(`Developer Workspace Credentials - ${name}`)}&body=${encodedText}`;
+            }
         };
 
         document.getElementById('credWhatsappBtn').onclick = function() {
@@ -2889,9 +2900,9 @@
             const errorDiv = document.getElementById('devResetPassword_error');
             if (pwdInput && pwdInput.value) {
                 const val = pwdInput.value;
-                if (val.length < 8) {
+                if (val.length < 8 || !/[A-Z]/.test(val) || !/[a-z]/.test(val) || !/[0-9]/.test(val) || !/[^A-Za-z0-9\s]/.test(val)) {
                     e.preventDefault();
-                    if (errorDiv) { errorDiv.textContent = 'Password must be at least 8 characters long.'; errorDiv.style.display = 'block'; }
+                    if (errorDiv) { errorDiv.textContent = 'Use at least 8 characters with uppercase, lowercase, a number, and a special character.'; errorDiv.style.display = 'block'; }
                     pwdInput.focus();
                     return false;
                 }

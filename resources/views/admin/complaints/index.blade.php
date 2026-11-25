@@ -25,6 +25,13 @@
     </div>
   @endif
 
+  @if(session('info'))
+    <div class="alert alert-info alert-dismissible fade show border-0 shadow-sm mb-4" role="alert" style="border-radius: 12px;">
+      <i class="bx bx-info-circle me-2 fs-5 align-middle"></i> {{ session('info') }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  @endif
+
   <!-- KPI Stat Cards -->
   <div class="row g-3 mb-4">
     <div class="col-md-2 col-sm-6">
@@ -87,18 +94,18 @@
     <div class="card-body p-3">
       <form method="GET" action="{{ route('admin.company-complaints.index') }}" class="row g-2 align-items-center">
         
-        <div class="col-md-2 d-flex align-items-center gap-2">
-          <label class="form-label mb-0 fw-bold text-dark fs-7">Show</label>
-          <select name="per_page" class="form-select form-select-sm fw-bold" style="border-radius: 8px;" onchange="this.form.submit()">
+        <div class="col-md-auto d-flex align-items-center gap-2 flex-nowrap">
+          <label for="complaints_per_page" class="form-label mb-0 fw-bold text-dark fs-7 text-nowrap flex-shrink-0">Show</label>
+          <select id="complaints_per_page" name="per_page" class="form-select form-select-sm fw-bold w-auto flex-shrink-0" style="border-radius: 8px; min-width: 76px;" onchange="this.form.submit()">
             <option value="10" {{ request('per_page', 10) == 10 ? 'selected' : '' }}>10</option>
             <option value="25" {{ request('per_page') == 25 ? 'selected' : '' }}>25</option>
             <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50</option>
             <option value="100" {{ request('per_page') == 100 ? 'selected' : '' }}>100</option>
           </select>
-          <span class="fs-7 text-muted fw-bold">entries</span>
+          <span class="fs-7 text-muted fw-bold text-nowrap flex-shrink-0">entries</span>
         </div>
 
-        <div class="col-md-4">
+        <div class="col-md">
           <input type="text" name="search" value="{{ request('search') }}" placeholder="Search Ticket ID, Subject, Category..." class="form-control form-control-sm" style="border-radius: 8px;" />
         </div>
 
@@ -216,7 +223,10 @@
           @empty
             <tr>
               <td colspan="9" class="text-center py-5 text-muted">
-                <i class="bx bx-inbox fs-1 d-block mb-2 opacity-50"></i>
+                {{-- Flex wrapper keeps the icon centred above the message whatever display the theme gives <i>. --}}
+                <div class="complaints-empty-icon" aria-hidden="true">
+                  <i class="bx bx-archive-in"></i>
+                </div>
                 <div class="fw-bold fs-6 text-dark">No support complaints found</div>
                 <p class="fs-7 mb-0">Have an issue or need assistance? Click "Raise a Complaint" above to submit a ticket to Super Admin.</p>
               </td>
@@ -237,6 +247,41 @@
   </div>
 
 </div>
+
+<style>
+  /* Empty state icon: centred tile above "No support complaints found" in both themes. */
+  .complaints-empty-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 14px;
+    border-radius: 18px;
+    background: rgba(47, 107, 255, 0.08);
+    border: 1px solid rgba(47, 107, 255, 0.18);
+  }
+  .complaints-empty-icon i {
+    display: inline-block !important;
+    width: auto !important;
+    height: auto !important;
+    margin: 0 !important;
+    background: transparent !important;
+    font-size: 2rem !important;
+    line-height: 1 !important;
+    color: #2F6BFF !important;
+    -webkit-text-fill-color: #2F6BFF !important;
+    filter: none !important;
+  }
+  :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) .complaints-empty-icon {
+    background: rgba(79, 131, 255, 0.16);
+    border-color: rgba(96, 165, 250, 0.35);
+  }
+  :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) .complaints-empty-icon i {
+    color: #93c5fd !important;
+    -webkit-text-fill-color: #93c5fd !important;
+  }
+</style>
 
 <script>
 function toggleSelectAllCompany(master) {

@@ -1,166 +1,187 @@
 @extends('admin.layout.app')
 
-@section('title', 'Payslips')
+@section('title', 'Payslips — Admin Workspace')
 
 @section('content')
-<div class="container-xxl flex-grow-1 container-p-y">
+<div class="payroll-container" id="payslipsPage">
+    <div class="payroll-page-body">
+        @include('admin.payroll.partials.styles')
+        <style>
+            #payslipsTable .payslip-selection { width:48px; min-width:48px; padding:12px!important; text-align:center; vertical-align:middle; }
+            #payslipsTable .payslip-selection input { position:static!important; width:18px; height:18px; margin:0!important; cursor:pointer; accent-color:var(--pr-primary); }
+            #payslipsTable .payslip-selection input:disabled { cursor:not-allowed; opacity:.4; }
+            #payslipsTable .payslip-selection input:focus-visible { outline:2px solid var(--pr-primary); outline-offset:3px; }
+            #payslipsTable td[colspan] { white-space:normal; }
+            #payslipsTable td[colspan] i { text-align:center; }
+            #payslipsPage .pr-filters .form-control, #payslipsPage .pr-filters .form-select { min-height:38px; }
+            @media (max-width:575px) { #payslipsPage .pr-filters .field { flex-basis:100%; min-width:0; } }
+        </style>
 
-    @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm mb-4">
-            <i class="bx bx-check-circle me-2"></i>{{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    @endif
+        @include('admin.payroll.partials.tabs')
 
-    {{-- Header --}}
-    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
-        <div>
-            <h4 class="fw-bold mb-1"><i class="bx bx-receipt text-primary me-2"></i>Payslips</h4>
-            <p class="text-muted mb-0">View, print and distribute employee payslips</p>
-        </div>
-        <a href="{{ route('payroll.processing') }}" class="btn btn-primary fw-bold shadow-sm">
-            <i class="bx bx-calculator me-1"></i> Generate Payslips
-        </a>
-    </div>
+        @if(session('success'))
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="bx bx-check-circle me-1"></i> {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+        @if(session('error'))
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bx bx-error me-1"></i> {{ session('error') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
 
-    {{-- Summary Cards --}}
-    <div class="row g-3 mb-4">
-        <div class="col-md-3 col-6">
-            <div class="card border-0 shadow-sm text-center p-3" style="border-radius:12px;">
-                <div class="fs-3 fw-bold text-primary">{{ $payslips->count() }}</div>
-                <div class="small text-muted">Total Payslips</div>
+        <div class="card">
+            <div class="card-head d-flex align-items-center justify-content-between p-3 border-bottom flex-wrap gap-2">
+                <h5 class="mb-0">🧾 Employee Payslips</h5>
+                <div class="text-muted small">Generated for approved and finalized payroll periods</div>
             </div>
-        </div>
-        <div class="col-md-3 col-6">
-            <div class="card border-0 shadow-sm text-center p-3" style="border-radius:12px;">
-                <div class="fs-3 fw-bold text-success">{{ $payslips->where('status','sent')->count() }}</div>
-                <div class="small text-muted">Sent</div>
-            </div>
-        </div>
-        <div class="col-md-3 col-6">
-            <div class="card border-0 shadow-sm text-center p-3" style="border-radius:12px;">
-                <div class="fs-3 fw-bold text-warning">{{ $payslips->where('status','generated')->count() }}</div>
-                <div class="small text-muted">Generated</div>
-            </div>
-        </div>
-        <div class="col-md-3 col-6">
-            <div class="card border-0 shadow-sm text-center p-3" style="border-radius:12px;">
-                <div class="fs-3 fw-bold text-info">₹{{ number_format($payslips->sum('net_salary'), 0) }}</div>
-                <div class="small text-muted">Total Net Pay</div>
-            </div>
-        </div>
-    </div>
 
-    {{-- Payslips Table --}}
-    <div class="card border-0 shadow-sm" style="border-radius:14px;">
-        <div class="card-header bg-transparent border-0 pt-4 px-4 pb-2">
-            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
-                <h5 class="fw-bold mb-0">All Payslips</h5>
-                <div class="d-flex gap-2">
-                    <input type="text" id="payslipSearch" class="form-control form-control-sm" placeholder="Search employee..." style="width:200px;">
-                    <select id="monthFilter" class="form-select form-select-sm" style="width:140px;">
+            <!-- Filters -->
+            <form method="GET" action="{{ route('payroll.payslips.index') }}" class="pr-filters">
+                <div class="field search-field">
+                    <label for="payslipSearch">Employee</label>
+                    <input id="payslipSearch" type="search" name="search" class="form-control form-control-sm" placeholder="Search employee..." value="{{ request('search') }}">
+                </div>
+                <div class="field">
+                    <label class="form-label small mb-1">Month</label>
+                    <select name="month" class="form-select form-select-sm">
                         <option value="">All Months</option>
                         @for($m = 1; $m <= 12; $m++)
-                            <option value="{{ $m }}">{{ date('F', mktime(0,0,0,$m,1)) }}</option>
+                            @php $mName = date('F', mktime(0, 0, 0, $m, 1)); @endphp
+                            <option value="{{ $m }}" {{ request('month') == $m ? 'selected' : '' }}>{{ $mName }}</option>
                         @endfor
                     </select>
                 </div>
+                <div class="field">
+                    <label class="form-label small mb-1">Year</label>
+                    <select name="year" class="form-select form-select-sm">
+                        <option value="">All Years</option>
+                        @for($y = date('Y') + 1; $y >= 2023; $y--)
+                            <option value="{{ $y }}" {{ request('year') == $y ? 'selected' : '' }}>{{ $y }}</option>
+                        @endfor
+                    </select>
+                </div>
+                <div class="field">
+                    <label class="form-label small mb-1">Department</label>
+                    <select name="department_id" class="form-select form-select-sm">
+                        <option value="">All Departments</option>
+                        @foreach($departments as $dept)
+                            <option value="{{ $dept->id }}" {{ request('department_id') == $dept->id ? 'selected' : '' }}>{{ $dept->dpt_name ?? $dept->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="d-flex align-items-end gap-1">
+                    <button type="submit" class="btn btn-sm btn-primary">Filter</button>
+                    <a href="{{ route('payroll.payslips.index') }}" class="btn btn-sm btn-outline-secondary">Reset</a>
+                </div>
+            </form>
+
+            <div class="table-wrap">
+                <table class="table pr-table table-hover mb-0" id="payslipsTable">
+                    <thead>
+                        <tr>
+                            <th data-pms-selection-column class="payslip-selection"><input type="checkbox" class="form-check-input" aria-label="Select all payslips on this page" @disabled($payslips->isEmpty())></th>
+                            <th>Month</th>
+                            <th>Employee</th>
+                            <th>Emp ID</th>
+                            <th>Designation / Dept</th>
+                            <th class="num text-end">In Hand</th>
+                            <th class="num text-end">CTC</th>
+                            <th>Status</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($payslips as $ps)
+                            @php
+                                $u = $ps->user;
+                                $empDetail = $u?->employeeDetail;
+                                $period = $ps->payroll?->period_start;
+                                $monthName = $period ? \Carbon\Carbon::parse($period)->format('M') : '—';
+                                $yearVal = $period ? \Carbon\Carbon::parse($period)->format('Y') : '';
+                                $pStatus = strtolower($ps->payroll?->status ?? '');
+                            @endphp
+                            <tr>
+                                <td data-pms-selection-column class="payslip-selection"><input type="checkbox" class="form-check-input" aria-label="Select payslip for {{ $u->name ?? 'employee' }}" value="{{ $ps->id }}"></td>
+                                <td><span class="badge bg-label-primary">{{ $monthName }} {{ $yearVal }}</span></td>
+                                <td>
+                                    <div class="cell-employee d-flex align-items-center gap-2">
+                                        <div class="avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width:30px;height:30px;font-size:11px;font-weight:700;">
+                                            {{ strtoupper(substr($u->name ?? 'U', 0, 2)) }}
+                                        </div>
+                                        <div>
+                                            <div class="fw-semibold">{{ $u->name ?? 'N/A' }}</div>
+                                            <div class="meta text-muted small">{{ $u->email ?? '' }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><span class="badge bg-light text-dark">{{ $empDetail->employee_id ?? ($ps->employee_snapshot['employee_id'] ?? '—') }}</span></td>
+                                <td>
+                                    @php $designationDetails = \App\Services\PayslipDesignation::details($ps->employee_snapshot ?? [], $empDetail?->designation); @endphp
+                                    <div class="small fw-semibold">{{ $designationDetails['name'] }}</div>
+                                    <div class="meta text-muted small">{{ $designationDetails['level'] }}</div>
+                                    <div class="meta text-muted small">{{ $empDetail->department->name ?? '—' }}</div>
+                                </td>
+                                @php
+                                    $snap = $ps->employee_snapshot ?? [];
+                                    $totalInHand = $snap['total_in_hand'] ?? ($ps->net_salary ?? 0);
+                                    $totalCtc = $snap['ctc'] ?? ($ps->gross_salary ?? 0);
+                                @endphp
+                                <td class="num text-end text-success fw-bold">
+                                    ₹{{ number_format((float)$totalInHand, 2) }}
+                                </td>
+                                <td class="num text-end text-primary fw-semibold">
+                                    ₹{{ number_format((float)$totalCtc, 2) }}
+                                </td>
+                                <td>
+                                    @if($pStatus == 'finalized')
+                                        <span class="pill finalized">🔒 Finalized</span>
+                                    @else
+                                        <span class="pill approved">✅ Approved</span>
+                                    @endif
+                                </td>
+                                <td class="text-end">
+                                    <a href="{{ route('payroll.payslips.view', $ps->id) }}" class="btn btn-sm btn-outline-info">
+                                        👁 View
+                                    </a>
+                                    @if(auth()->user()?->hasModulePermission('payslips', 'export'))
+<a href="{{ route('payroll.payslips.print', $ps->id) }}" target="_blank" class="btn btn-sm btn-outline-secondary">
+                                        🖨 Print
+                                    </a>
+@endif
+                                    @if(auth()->user()?->hasModulePermission('payslips', 'export'))
+<a href="{{ route('payroll.payslips.pdf', $ps->id) }}" class="btn btn-sm btn-primary">
+                                        📥 PDF
+                                    </a>
+@endif
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="9" class="text-center py-4 text-muted">
+                                    <i class="bx bx-receipt fs-1 d-block mb-1"></i>
+                                    No payslips available for the selected criteria.
+                                    <br><small>Payslips are generated once payroll is approved or finalized.</small>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
-        </div>
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0" id="payslipsTable">
-                <thead style="background:#f8fafc;font-size:12px;">
-                    <tr class="text-muted">
-                        <th class="px-4 fw-semibold">#</th>
-                        <th class="fw-semibold text-uppercase">Employee</th>
-                        <th class="fw-semibold text-uppercase">Pay Period</th>
-                        <th class="fw-semibold text-uppercase text-end">Gross</th>
-                        <th class="fw-semibold text-uppercase text-end">Deductions</th>
-                        <th class="fw-semibold text-uppercase text-end">Net Pay</th>
-                        <th class="fw-semibold text-uppercase">Status</th>
-                        <th class="fw-semibold text-uppercase text-end pe-4">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($payslips as $ps)
-                        @php
-                            $net = $ps->net_salary ?? $ps->net_pay ?? 0;
-                            $gross = $ps->gross_salary ?? 0;
-                            $ded = $ps->total_deductions ?? 0;
-                            $sc = match($ps->status ?? 'generated') {
-                                'sent' => 'success', 'viewed' => 'info', 'failed' => 'danger', default => 'warning'
-                            };
-                        @endphp
-                        <tr>
-                            <td class="px-4 text-muted small">{{ $loop->iteration }}</td>
-                            <td>
-                                <div class="d-flex align-items-center gap-2">
-                                    <div class="avatar avatar-sm rounded-circle d-flex align-items-center justify-content-center text-white fw-bold"
-                                         style="background:{{ ['#4f46e5','#10b981','#f59e0b','#ef4444','#8b5cf6'][$loop->index % 5] }};font-size:12px;width:34px;height:34px;">
-                                        {{ strtoupper(substr($ps->user?->name ?? 'E', 0, 1)) }}
-                                    </div>
-                                    <div>
-                                        <div class="fw-semibold small">{{ $ps->user?->name ?? 'Employee #'.$ps->user_id }}</div>
-                                        <div class="text-muted" style="font-size:11px;">{{ $ps->user?->employee_id ?? '' }}</div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="small">
-                                @if($ps->pay_period_start)
-                                    {{ \Carbon\Carbon::parse($ps->pay_period_start)->format('M Y') }}
-                                @elseif($ps->period_month)
-                                    {{ date('F', mktime(0,0,0,$ps->period_month,1)) }} {{ $ps->period_year }}
-                                @else
-                                    {{ $ps->created_at?->format('M Y') ?? '—' }}
-                                @endif
-                            </td>
-                            <td class="text-end fw-semibold small">₹{{ number_format($gross, 0) }}</td>
-                            <td class="text-end small text-danger">₹{{ number_format($ded, 0) }}</td>
-                            <td class="text-end fw-bold text-success">₹{{ number_format($net, 0) }}</td>
-                            <td>
-                                <span class="badge bg-label-{{ $sc }}" style="font-size:11px;">
-                                    {{ ucfirst($ps->status ?? 'generated') }}
-                                </span>
-                            </td>
-                            <td class="text-end pe-4">
-                                <div class="d-flex gap-1 justify-content-end">
-                                    <a href="{{ route('payroll.payslips.view', $ps) }}" class="btn btn-xs btn-primary" title="View" style="font-size:11px;padding:3px 8px;">
-                                        <i class="bx bx-show"></i>
-                                    </a>
-                                    <a href="{{ route('payroll.payslips.print', $ps) }}" target="_blank" class="btn btn-xs btn-outline-secondary" title="Print" style="font-size:11px;padding:3px 8px;">
-                                        <i class="bx bx-printer"></i>
-                                    </a>
-                                    <form method="POST" action="{{ route('payroll.payslips.send', $ps) }}" class="d-inline">
-                                        @csrf
-                                        <button type="submit" class="btn btn-xs btn-outline-success" title="Send Email" style="font-size:11px;padding:3px 8px;"
-                                            onclick="return confirm('Send payslip to {{ $ps->user?->email }}?')">
-                                            <i class="bx bx-envelope"></i>
-                                        </button>
-                                    </form>
-                                </div>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="8" class="text-center py-5 text-muted">
-                                <i class="bx bx-receipt fs-1 d-block mb-2 opacity-30"></i>
-                                No payslips found. Process a payroll cycle to generate payslips.
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
+
+            @if($payslips->hasPages())
+                <div class="pagination p-3 border-top d-flex justify-content-between align-items-center">
+                    <span class="text-muted small">
+                        Showing {{ $payslips->firstItem() }} to {{ $payslips->lastItem() }} of {{ $payslips->total() }} entries
+                    </span>
+                    <div>
+                        {{ $payslips->links() }}
+                    </div>
+                </div>
+            @endif
         </div>
     </div>
-
 </div>
-
-<script>
-document.getElementById('payslipSearch').addEventListener('input', function() {
-    const q = this.value.toLowerCase();
-    document.querySelectorAll('#payslipsTable tbody tr').forEach(row => {
-        row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
-    });
-});
-</script>
 @endsection

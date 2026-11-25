@@ -3,6 +3,7 @@
 @section('title', 'Edit Sub Department')
 
 @section('content')
+@include('admin.settings.partials.workforce-navigation')
 
 <div class="sub-department-form-page">
     <!-- Breadcrumb -->
@@ -22,7 +23,7 @@
             </div>
         </div>
         <div class="btn-group">
-            <a href="{{ route('departments.index') }}" class="btn btn-light">
+            <a href="{{ \App\Support\WorkforceSettings::route('departments.index') }}" class="btn btn-light">
                 <i class="fas fa-arrow-left"></i> Back to List
             </a>
         </div>
@@ -30,7 +31,7 @@
 
     <!-- Form Card -->
     <div class="form-card">
-        <form method="POST" action="{{ route('departments.update', $department->id) }}" class="form-content">
+        <form method="POST" action="{{ \App\Support\WorkforceSettings::route('departments.update', $department->id) }}" class="form-content">
             @csrf
             @method('PUT')
 
@@ -108,7 +109,7 @@
 
             <!-- Form Actions -->
             <div class="form-actions">
-                <a href="{{ route('departments.index') }}" class="btn btn-secondary">
+                <a href="{{ \App\Support\WorkforceSettings::route('departments.index') }}" class="btn btn-secondary">
                     <i class="fas fa-times"></i> Cancel
                 </a>
                 <button type="submit" class="btn btn-primary">
@@ -203,6 +204,15 @@
         transition: all 0.3s ease;
         background: linear-gradient(145deg, #fbbf24, #f59e0b);
         color: white;
+    }
+
+    /* Header tile icon stays white as designed; the theme rule ".content-wrapper .fas:not(.btn *)" turned it blue. */
+    .sub-department-form-page .header-card .header-icon > i.fas {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        background: transparent !important;
+        filter: none !important;
+        opacity: 1 !important;
     }
 
     .header-card:hover .header-icon {

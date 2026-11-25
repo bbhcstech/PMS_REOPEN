@@ -89,7 +89,7 @@ class CollaboratingCompanyController extends Controller
     public function update(Request $request, CollaboratingCompany $collaboratingCompany)
     {
         $this->ensureAdmin();
-        $data = $this->validatedData($request);
+        $data = $this->validatedData($request, $collaboratingCompany);
         $imagePath = $this->storeCompanyImage($request, $collaboratingCompany->image_path);
 
         if ($imagePath) {
@@ -112,30 +112,50 @@ class CollaboratingCompanyController extends Controller
             ->with('success', 'Collaborating company removed successfully.');
     }
 
-    private function validatedData(Request $request): array
+    private function validatedData(Request $request, ?CollaboratingCompany $company = null): array
     {
+        $phoneRules = \App\Support\CountryPhone::getDigitRules((string) $request->input('contact_phone_country_code', '+91'));
+        $minDigits = $phoneRules['min_digits'];
+        $maxDigits = $phoneRules['max_digits'];
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'company_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
-            'industry' => ['nullable', 'string', 'max:255'],
-            'collaboration_type' => ['nullable', 'string', 'max:255'],
-            'description' => ['nullable', 'string', 'max:3000'],
-            'services' => ['nullable', 'string', 'max:3000'],
-            'contact_person' => ['nullable', 'string', 'max:255'],
-            'contact_email' => ['nullable', 'email', 'max:255'],
-            'contact_phone' => ['nullable', 'string', 'max:30'],
-            'website' => ['nullable', 'url', 'max:255'],
+            'industry' => ['required', 'string', 'max:255'],
+            'collaboration_type' => ['required', 'string', 'max:255'],
+            'description' => ['required', 'string', 'max:3000'],
+            'services' => ['required', 'string', 'max:3000'],
+            'contact_person' => ['required', 'string', 'max:255'],
+            'contact_email' => [
+                'required',
+                'string',
+                'email:filter',
+                'max:255',
+                'regex:/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/',
+            ],
+            'contact_phone_country_code' => ['required', \Illuminate\Validation\Rule::in(array_column(\App\Support\CountryPhone::formMap(), 'dial_code'))],
+            'contact_phone' => ['bail', 'required', 'string', 'regex:/^[1-9][0-9]*$/', 'min:' . $minDigits, 'max:' . $maxDigits],
+            'website' => ['required', 'url', 'max:255'],
             'status' => ['required', 'in:active,inactive'],
-            'started_on' => ['nullable', 'date'],
+            'started_on' => ['required', 'date'],
             'notes' => ['nullable', 'string', 'max:3000'],
             'social_links.linkedin' => ['nullable', 'url', 'max:255'],
             'social_links.facebook' => ['nullable', 'url', 'max:255'],
             'social_links.instagram' => ['nullable', 'url', 'max:255'],
             'social_links.x' => ['nullable', 'url', 'max:255'],
             'social_links.youtube' => ['nullable', 'url', 'max:255'],
+        ], [
+            'contact_phone_country_code.required' => 'Please select a contact phone country code.',
+            'contact_phone_country_code.in' => 'Please select a valid contact phone country code.',
+            'contact_phone.regex' => 'Contact phone must contain digits only and cannot start with zero.',
+            'contact_phone.min' => "Contact phone must contain {$minDigits} to {$maxDigits} digits for the selected country code.",
+            'contact_phone.max' => "Contact phone must contain {$minDigits} to {$maxDigits} digits for the selected country code.",
+            'contact_email.required' => 'The contact email is required.',
+            'contact_email.email' => 'Please provide a valid email address with an @ symbol and a domain.',
+            'contact_email.regex' => 'The contact email must contain an @ symbol and a valid domain (e.g. name@company.com).',
         ]);
 
-        unset($data['company_image']);
+        $data['contact_phone'] = $data['contact_phone_country_code'] . ' ' . $data['contact_phone'];
+        unset($data['company_image'], $data['contact_phone_country_code']);
 
         $socialLinks = array_filter($data['social_links'] ?? [], fn ($value) => filled($value));
         $data['social_links'] = $socialLinks ?: null;

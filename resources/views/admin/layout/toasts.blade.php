@@ -179,6 +179,9 @@
         show: function (message, type, title) {
             var stack = document.getElementById('pmsToastStack');
             if (!stack || !message) return;
+            // The stack is rendered inside the page wrapper, whose stacking context sits below the sticky
+            // top bar; at body level its fixed position and z-index always place toasts above the header.
+            if (stack.parentNode !== document.body && document.body) document.body.appendChild(stack);
 
             type = (type || 'info').toLowerCase();
             if (type === 'danger') type = 'error';

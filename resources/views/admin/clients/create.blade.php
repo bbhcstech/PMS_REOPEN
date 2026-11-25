@@ -164,8 +164,8 @@
                         <!-- Email -->
                         <div class="col-md-3">
                             <label class="form-label fw-semibold text-secondary">Email <sup class="text-danger">*</sup></label>
-                            <input name="email" id="client_email" type="email" class="form-control form-control-custom" placeholder="e.g. admin@bloodlife.com" value="{{ old('email') }}" required>
-                            <div class="invalid-feedback">Please enter a valid email address.</div>
+                            <input name="email" id="client_email" type="email" class="form-control form-control-custom @error('email') is-invalid @enderror" placeholder="e.g. admin@bloodlife.com" value="{{ old('email') }}" required>
+                            <div class="invalid-feedback">{{ $errors->first('email') ?: 'Please enter a valid email address.' }}</div>
                         </div>
 
                         <!-- Password -->
@@ -208,7 +208,17 @@
                         <!-- Mobile -->
                         <div class="col-md-4">
                             <label class="form-label fw-semibold text-secondary">Mobile <sup class="text-danger">*</sup></label>
-                            <input name="mobile" id="client_mobile" type="text" class="form-control form-control-custom" placeholder="e.g. +919876543210" value="{{ old('mobile', '+91') }}" required>
+                            <div class="input-group">
+                                <select name="mobile_country_code" id="mobile_country_code" class="form-select form-control-custom" style="max-width: 115px; flex-shrink: 0;">
+                                    @php $selMobCode = old('mobile_country_code', '+91'); @endphp
+                                    @foreach ($countries as $country)
+                                        <option value="{{ $country->phone_code }}" data-country="{{ $country->name }}" data-min-digits="{{ $country->min_digits ?? 10 }}" data-max-digits="{{ $country->max_digits ?? 10 }}" {{ $selMobCode == $country->phone_code ? 'selected' : '' }}>
+                                            {{ $country->iso_code ? $country->iso_code . ' ' : '' }}({{ $country->phone_code }})
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <input name="mobile" id="client_mobile" type="text" class="form-control form-control-custom" placeholder="e.g. +919876543210" value="{{ old('mobile', '+91') }}" required>
+                            </div>
                             <div class="invalid-feedback" id="mobile_feedback">Please enter a valid 10-digit mobile number starting with +91.</div>
                             <small class="text-muted d-block" id="mobile_format_hint">Format: +91XXXXXXXXXX (10 digits)</small>
                         </div>
@@ -234,11 +244,7 @@
                         <div class="col-md-4">
                             <label class="form-label fw-semibold text-secondary">Change Language</label>
                             <select name="language" id="language" class="form-select form-control-custom select2">
-                                <option value="en" data-flag="https://flagcdn.com/w20/gb.png" {{ old('language', 'en') == 'en' ? 'selected' : '' }}>English</option>
-                                <option value="bn" data-flag="https://flagcdn.com/w20/bd.png" {{ old('language', 'bn') == 'bn' ? 'selected' : '' }}>Bengali</option>
-                                <option value="hi" data-flag="https://flagcdn.com/w20/in.png" {{ old('language', 'hi') == 'hi' ? 'selected' : '' }}>Hindi</option>
-                                <option value="fr" data-flag="https://flagcdn.com/w20/fr.png" {{ old('language', 'fr') == 'fr' ? 'selected' : '' }}>French</option>
-                                <option value="de" data-flag="https://flagcdn.com/w20/de.png" {{ old('language', 'de') == 'de' ? 'selected' : '' }}>German</option>
+                                @include('admin.clients.partials.language-options', ['selectedLanguage' => old('language', 'en')])
                             </select>
                         </div>
 
@@ -379,7 +385,18 @@
                         <!-- Office Phone -->
                         <div class="col-md-3">
                             <label class="form-label fw-semibold text-secondary">Office Phone</label>
-                            <input name="office_phone" id="office_phone" type="text" class="form-control form-control-custom" placeholder="e.g. +919876543210" value="{{ old('office_phone') }}">
+                            <div class="input-group">
+                                <select name="office_country_code" id="office_country_code" class="form-select form-control-custom" style="max-width: 115px; flex-shrink: 0;">
+                                    @php $selOffCode = old('office_country_code', '+91'); @endphp
+                                    @foreach ($countries as $country)
+                                        <option value="{{ $country->phone_code }}" data-country="{{ $country->name }}" data-min-digits="{{ $country->min_digits ?? 10 }}" data-max-digits="{{ $country->max_digits ?? 10 }}" {{ $selOffCode == $country->phone_code ? 'selected' : '' }}>
+                                            {{ $country->iso_code ? $country->iso_code . ' ' : '' }}({{ $country->phone_code }})
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @php $oldOfficePhone = (string) old('office_phone', ''); if ($selOffCode !== '' && str_starts_with($oldOfficePhone, $selOffCode)) { $oldOfficePhone = substr($oldOfficePhone, strlen($selOffCode)); } @endphp
+                                <input name="office_phone" id="office_phone" type="text" inputmode="numeric" class="form-control form-control-custom" placeholder="e.g. 9876543210" value="{{ $oldOfficePhone }}">
+                            </div>
                             <div class="invalid-feedback" id="office_phone_feedback"></div>
                             <small class="text-muted d-block" id="office_phone_format_hint">Format: +91XXXXXXXXXX (10 digits)</small>
                         </div>
@@ -539,6 +556,8 @@
                                 <i class="fas fa-tag text-primary me-1"></i> Project Name
                             </label>
                             <input type="text" name="project_name" id="project_name" class="form-control form-control-custom" placeholder="e.g. Website Redesign & Branding" value="{{ old('project_name') }}">
+                            <div id="project_name_feedback" class="invalid-feedback">Project Name is required for Save and Continue.</div>
+                            @error('project_name')<div class="text-danger small">{{ $message }}</div>@enderror
                         </div>
 
                         <!-- Start Date -->
@@ -647,9 +666,13 @@
                     <button type="button" class="btn btn-outline-secondary px-4 rounded-pill prev-step-btn" onclick="goToStep(2)">
                         <i class="fas fa-arrow-left me-2"></i> Previous
                     </button>
-                    <button type="button" class="btn btn-primary px-5 py-2 rounded-pill shadow-sm next-step-btn" onclick="goToStep(4)">
+                    <div class="d-flex gap-2 flex-wrap justify-content-end">
+                    <input type="hidden" name="project_submit_mode" id="project_submit_mode" value="{{ old('project_submit_mode', 'final') }}">
+                    <button type="button" class="btn btn-outline-secondary px-4 py-2 rounded-pill" onclick="continueProjectStep('later')">Add Later and Continue</button>
+                    <button type="button" class="btn btn-primary px-5 py-2 rounded-pill shadow-sm next-step-btn" onclick="continueProjectStep('final')">
                         Save and Continue <i class="fas fa-arrow-right ms-2"></i>
                     </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -685,8 +708,9 @@
                                     <i class="fas fa-file-invoice-dollar me-1"></i> Deal Information
                                 </h6>
                                 <div class="mb-3">
-                                    <label class="form-label fw-semibold text-secondary">Deal Name</label>
-                                    <input type="text" class="form-control form-control-custom" id="deal_name" name="deal_name" placeholder="e.g. Annual Software License & Retainer" value="{{ old('deal_name') }}">
+                                    <label class="form-label fw-semibold text-secondary">Deal Name <sup class="text-danger">*</sup></label>
+                                    <input type="text" class="form-control form-control-custom @error('deal_name') is-invalid @enderror" id="deal_name" name="deal_name" placeholder="e.g. Annual Software License & Retainer" value="{{ old('deal_name') }}">
+                                    <div class="invalid-feedback">{{ $errors->first('deal_name') ?: 'Deal Name is required for Final Submit. Use "Add Later and Submit" to skip the deal.' }}</div>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label fw-semibold text-secondary" id="deal_value_label">Deal Value (<span id="deal_currency_symbol_label">{{ ($currencies ?? collect())->where('currency_code', old('deal_currency', 'INR'))->first()?->currency_symbol ?? '₹' }}</span>)</label>
@@ -817,9 +841,15 @@
                     <button type="button" class="btn btn-outline-secondary px-4 rounded-pill prev-step-btn" onclick="goToStep(3)">
                         <i class="fas fa-arrow-left me-2"></i> Previous
                     </button>
-                    <button type="button" class="btn btn-success btn-lg px-5 py-2 rounded-pill shadow" id="finalSubmitBtn">
-                        <i class="fas fa-check-circle me-2"></i> Final Submit
-                    </button>
+                    <input type="hidden" name="deal_submit_mode" id="deal_submit_mode" value="{{ old('deal_submit_mode', 'final') }}">
+                    <div class="d-flex flex-wrap align-items-center justify-content-end gap-3">
+                        <button type="button" class="btn btn-outline-primary btn-lg px-4 py-2 rounded-pill" id="addLaterSubmitBtn">
+                            <i class="fas fa-clock me-2"></i> Add Later and Submit
+                        </button>
+                        <button type="button" class="btn btn-success btn-lg px-5 py-2 rounded-pill shadow" id="finalSubmitBtn">
+                            <i class="fas fa-check-circle me-2"></i> Final Submit
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -869,7 +899,7 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-semibold">Parent Category <span class="text-danger">*</span></label>
-                            <select name="client_category_id" class="form-select form-control-custom" required>
+                            <select name="client_category_id" id="modal_parent_category_id" class="form-select form-control-custom" required>
                                 <option value="">Select Category</option>
                                 @foreach($categories as $category)
                                     <option value="{{ $category->id }}">{{ $category->name }}</option>
@@ -1103,6 +1133,58 @@ html[data-pms-theme="dark"] .step-item.completed .step-title {
     }
 }
 
+/* Scoped project department and employee multi-selects. */
+#clientWizardForm .client-project-members .select2-selection--multiple {
+    background: var(--bx-surface, #fff) !important;
+    border: 1px solid var(--bx-border-strong, #cbd5e1) !important;
+    border-radius: 8px !important;
+    min-height: 48px;
+    padding: 5px 8px;
+}
+#clientWizardForm .client-project-members .select2-selection__rendered {
+    display: inline !important;
+    padding: 0 !important;
+    line-height: 1.5 !important;
+}
+#clientWizardForm .client-project-members .select2-selection__choice {
+    background: var(--bx-surface-2, rgba(59, 130, 246, .15)) !important;
+    color: var(--bx-ink, #1e293b) !important;
+    border: 1px solid var(--bx-border-strong, #94a3b8) !important;
+    border-radius: 6px !important;
+    line-height: 1.5 !important;
+    margin: 3px 5px 3px 0 !important;
+    padding: 3px 8px 3px 28px !important;
+    max-width: 100%;
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+#clientWizardForm .client-project-members .select2-selection__choice__remove {
+    color: inherit !important;
+    background: transparent !important;
+    border-color: var(--bx-border-strong, #94a3b8) !important;
+    height: 100%;
+}
+#clientWizardForm .client-project-members .select2-search__field {
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    color: var(--bx-ink, #1e293b) !important;
+    -webkit-text-fill-color: var(--bx-ink, #1e293b) !important;
+    height: 26px !important;
+    padding: 0 !important;
+    margin-top: 5px;
+}
+.client-project-options {
+    background: var(--bx-surface, #fff) !important;
+    color: var(--bx-ink, #1e293b) !important;
+    border-color: var(--bx-border-strong, #cbd5e1) !important;
+}
+.client-project-options .select2-results__option {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    padding: 8px 12px;
+}
 /* Select2 Dark Mode & Visibility Fixes */
 .select2-container .select2-selection--single,
 .select2-container--classic .select2-selection--single,
@@ -1331,20 +1413,20 @@ function updateStepperUI(step) {
 }
 
 function getSelectedCountryPhoneRules() {
-    const $opt = $('#country option:selected');
-    const dialCode = $opt.data('dial-code') || '+91';
-    const minDigits = parseInt($opt.data('min-digits')) || 10;
-    const maxDigits = parseInt($opt.data('max-digits')) || 10;
-    const countryName = $opt.val() || 'India';
+    const $mOpt = $('#mobile_country_code option:selected');
+    const dialCode = $mOpt.val() || $('#country option:selected').data('dial-code') || '+91';
+    const minDigits = parseInt($mOpt.data('min-digits')) || parseInt($('#country option:selected').data('min-digits')) || 10;
+    const maxDigits = parseInt($mOpt.data('max-digits')) || parseInt($('#country option:selected').data('max-digits')) || 10;
+    const countryName = $mOpt.data('country') || $('#country').val() || 'India';
     return { dialCode, minDigits, maxDigits, countryName };
 }
 
 function getCompanyCountryPhoneRules() {
-    const $opt = $('#company_country option:selected');
-    let dialCode = $opt.data('dial-code');
-    let minDigits = parseInt($opt.data('min-digits'));
-    let maxDigits = parseInt($opt.data('max-digits'));
-    let countryName = $opt.val();
+    const $oOpt = $('#office_country_code option:selected');
+    let dialCode = $oOpt.val() || $('#company_country option:selected').data('dial-code');
+    let minDigits = parseInt($oOpt.data('min-digits')) || parseInt($('#company_country option:selected').data('min-digits'));
+    let maxDigits = parseInt($oOpt.data('max-digits')) || parseInt($('#company_country option:selected').data('max-digits'));
+    let countryName = $oOpt.data('country') || $('#company_country').val();
 
     if (!dialCode) {
         return getSelectedCountryPhoneRules();
@@ -1380,10 +1462,9 @@ function updateOfficePhoneFormatHint(rules) {
         $('#office_phone_format_hint').text(helpMsg);
     }
 
-    const totalMaxLen = dialCode.length + maxDigits;
     $('#office_phone').attr({
-        'placeholder': 'e.g. ' + dialCode + '9876543210',
-        'maxlength': totalMaxLen
+        'placeholder': 'e.g. 9876543210',
+        'maxlength': maxDigits
     });
 }
 
@@ -1497,13 +1578,13 @@ function performPincodeLookup(pincode) {
     $('#pincode_spinner').show();
     $('#pincode_feedback_pill').html('<span class="text-primary small"><i class="fas fa-spinner fa-spin me-1"></i> Checking location...</span>').show();
 
-    const lookupUrl = "{{ route('clients.lookup-pincode') }}";
+    const lookupUrl = "{{ Route::has('clients.lookup-pincode') ? route('clients.lookup-pincode') : url('/clients/lookup-pincode') }}";
     
     currentPincodeAjax = $.ajax({
         url: lookupUrl,
         type: 'GET',
         data: { pincode: pincode, country: country },
-        timeout: 3500,
+        timeout: 15000, // the server may try a second location provider
         success: function(res) {
             if (res && res.success) {
                 applyPincodeLocationData(res, country);
@@ -1634,7 +1715,8 @@ function sanitizePhoneNumber(inputElement) {
         cleanDigits = cleanDigits.substring(0, maxDigits);
     }
 
-    const newVal = dialCode + cleanDigits;
+    // Office phone has its own country-code dropdown, so its box holds only the local digits.
+    const newVal = (isOffice ? '' : dialCode) + cleanDigits;
     if ($input.val() !== newVal) {
         $input.val(newVal);
     }
@@ -1659,7 +1741,7 @@ function handlePhoneKeyDown(e, inputElement) {
         if (e.keyCode === 8) {
             const start = inputElement.selectionStart;
             const end = inputElement.selectionEnd;
-            if (start <= dialCode.length && end <= dialCode.length) {
+            if (!isOffice && start <= dialCode.length && end <= dialCode.length) {
                 e.preventDefault();
             }
         }
@@ -1723,7 +1805,7 @@ function validateMobileInput(inputId = 'client_mobile', isRequired = true) {
     const digitCount = cleanDigits.length;
     let errorMsg = '';
 
-    if (!val.startsWith(dialCode)) {
+    if (!isOffice && !val.startsWith(dialCode)) {
         errorMsg = `${fieldLabel} must start with country code ${dialCode}.`;
     } else if (minDigits === maxDigits) {
         if (digitCount !== minDigits) {
@@ -1883,6 +1965,12 @@ function validateStep(step) {
     }
 
     if (step === 3) {
+        if ($('#project_submit_mode').val() === 'later') return true;
+        if (!$('#project_name').val().trim()) {
+            $('#project_name').addClass('is-invalid').focus();
+            return false;
+        }
+        $('#project_name').removeClass('is-invalid');
         if (!validateProjectDates()) {
             isValid = false;
             $('#project_deadline').focus();
@@ -1897,6 +1985,15 @@ function validateStep(step) {
     }
 
     return isValid;
+}
+
+function continueProjectStep(mode) {
+    $('#project_submit_mode').val(mode);
+    if (mode === 'later') {
+        $('#project_name, #project_deadline').removeClass('is-invalid');
+        $('#project_deadline_feedback').hide();
+    }
+    return goToStep(4);
 }
 
 function goToStep(targetStep) {
@@ -2117,7 +2214,7 @@ $(document).ready(function () {
         $input.on('focus', function() {
             const isOffice = $(this).attr('id') === 'office_phone';
             const { dialCode } = isOffice ? getCompanyCountryPhoneRules() : getSelectedCountryPhoneRules();
-            if (!$(this).val() || $(this).val().trim() === '') {
+            if (!isOffice && (!$(this).val() || $(this).val().trim() === '')) {
                 $(this).val(dialCode);
             }
         });
@@ -2163,6 +2260,10 @@ $(document).ready(function () {
         if ($(this).val()) {
             $(this).removeClass('is-invalid');
         }
+        const selDial = $(this).find('option:selected').data('dial-code');
+        if (selDial && $('#mobile_country_code').val() !== selDial) {
+            $('#mobile_country_code').val(selDial);
+        }
         const rules = getSelectedCountryPhoneRules();
         updateMobileFormatHint(rules);
 
@@ -2197,6 +2298,23 @@ $(document).ready(function () {
         }
     });
 
+    $('#mobile_country_code').on('change', function() {
+        const selCountry = $(this).find('option:selected').data('country');
+        if (selCountry && $('#country').val() !== selCountry) {
+            $('#country').val(selCountry).trigger('change');
+        } else {
+            const rules = getSelectedCountryPhoneRules();
+            updateMobileFormatHint(rules);
+            const $mobile = $('#client_mobile');
+            let currentVal = $mobile.val().trim();
+            let nationalDigits = currentVal.replace(/^\+\d*/, '').replace(/\D/g, '').substring(0, rules.maxDigits);
+            $mobile.val(rules.dialCode + nationalDigits);
+            if ($mobile.val() && $mobile.val() !== rules.dialCode) {
+                validateMobileInput('client_mobile', true);
+            }
+        }
+    });
+
     // Step 2: Company Country dropdown Select2
     $('#company_country').select2({
         theme: "classic",
@@ -2209,6 +2327,10 @@ $(document).ready(function () {
             companyCountryTouchedByUser = true;
         }
         const countryVal = $(this).val();
+        const selOfficeDial = $(this).find('option:selected').data('dial-code');
+        if (selOfficeDial && $('#office_country_code').val() !== selOfficeDial) {
+            $('#office_country_code').val(selOfficeDial);
+        }
         const rules = getCompanyCountryPhoneRules();
         updateOfficePhoneFormatHint(rules);
 
@@ -2223,7 +2345,7 @@ $(document).ready(function () {
             }
             officeDigits = officeDigits.substring(0, rules.maxDigits);
             if (officeDigits) {
-                $office.val(rules.dialCode + officeDigits);
+                $office.val(officeDigits);
                 validateMobileInput('office_phone', false);
             } else {
                 $office.val('');
@@ -2237,6 +2359,18 @@ $(document).ready(function () {
 
         if (!dealCurrencyManuallyChanged) {
             syncDealCurrencyWithCountry(countryVal);
+        }
+    });
+
+    $('#office_country_code').on('change', function() {
+        const rules = getCompanyCountryPhoneRules();
+        updateOfficePhoneFormatHint(rules);
+        const $office = $('#office_phone');
+        let currentVal = $office.val().trim();
+        if (currentVal && currentVal !== '+') {
+            let nationalDigits = currentVal.replace(/^\+\d*/, '').replace(/\D/g, '').substring(0, rules.maxDigits);
+            $office.val(nationalDigits);
+            validateMobileInput('office_phone', false);
         }
     });
 
@@ -2342,6 +2476,8 @@ $(document).ready(function () {
     // Multi-select Select2
     $('#project_department_ids, #project_employee_ids').select2({
         width: '100%',
+        selectionCssClass: 'client-project-members',
+        dropdownCssClass: 'client-project-options',
         placeholder: "Select options"
     });
 
@@ -2350,27 +2486,125 @@ $(document).ready(function () {
         $(this).removeClass('is-invalid');
     });
 
+    function closeModalSafely(modalId) {
+        const modalEl = document.getElementById(modalId);
+        if (modalEl && typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+            const bsModal = bootstrap.Modal.getInstance(modalEl) || bootstrap.Modal.getOrCreateInstance(modalEl);
+            if (bsModal) {
+                bsModal.hide();
+            }
+        }
+        $('#' + modalId).modal('hide');
+        setTimeout(function() {
+            $('.modal-backdrop').remove();
+            $('body').removeClass('modal-open').css({
+                overflow: '',
+                paddingRight: ''
+            });
+        }, 150);
+    }
+
+    $('.modal').on('hidden.bs.modal', function() {
+        $('body').removeClass('modal-open').css({
+            overflow: '',
+            paddingRight: ''
+        });
+        $('.modal-backdrop').remove();
+    });
+
     // AJAX Form: Add Client Category
     $('#addCategoryForm').submit(function(e) {
         e.preventDefault();
         const name = $('#categoryName').val().trim();
         if (!name) return;
 
+        const form = $(this);
+        const submitBtn = form.find('button[type="submit"]');
+        submitBtn.prop('disabled', true);
+
         $.ajax({
             type: 'POST',
             url: "{{ route('client-categories.store') }}",
-            data: $(this).serialize(),
+            data: form.serialize(),
             success: function(data) {
-                $('#client_category_id').append(
-                    `<option value="${data.id}" selected>${data.name}</option>`
-                );
-                $('#addCategoryModal').modal('hide');
-                $('#addCategoryForm')[0].reset();
+                const newId = String(data.id);
+                const newName = data.name;
+
+                // 1. Add and select in main form Client Category dropdown
+                if ($('#client_category_id option[value="' + newId + '"]').length === 0) {
+                    $('#client_category_id').append(
+                        $('<option>', { value: newId, text: newName })
+                    );
+                }
+                $('#client_category_id').val(newId).trigger('change');
+
+                // 2. Add and select in Add Sub Category Modal's Parent Category dropdown
+                const $subCatParent = $('#modal_parent_category_id, #addSubCategoryModal select[name="client_category_id"]');
+                if ($subCatParent.find('option[value="' + newId + '"]').length === 0) {
+                    $subCatParent.append(
+                        $('<option>', { value: newId, text: newName })
+                    );
+                }
+                $subCatParent.val(newId).trigger('change');
+
+                closeModalSafely('addCategoryModal');
+                form[0].reset();
             },
             error: function(xhr) {
-                alert('Error: ' + (xhr.responseJSON?.message || 'Failed to add category'));
+                if (xhr.status === 422 && xhr.responseJSON?.errors?.name) {
+                    alert(xhr.responseJSON.errors.name[0]);
+                } else {
+                    alert('Error: ' + (xhr.responseJSON?.message || 'Failed to add category'));
+                }
+            },
+            complete: function() {
+                submitBtn.prop('disabled', false);
             }
         });
+    });
+
+    // Ensure Parent Category dropdown in Add Sub Category Modal is always fresh and synchronized
+    $('#addSubCategoryModal').on('show.bs.modal', function() {
+        const $subCatParent = $('#modal_parent_category_id, #addSubCategoryModal select[name="client_category_id"]');
+        const selectedMainCategory = $('#client_category_id').val();
+
+        // Synchronize options from main form
+        $('#client_category_id option').each(function() {
+            const val = $(this).val();
+            const text = $(this).text();
+            if (val && $subCatParent.find('option[value="' + val + '"]').length === 0) {
+                $subCatParent.append($('<option>', { value: val, text: text }));
+            }
+        });
+
+        // Fetch fresh categories list from server as fail-safe
+        $.ajax({
+            type: 'GET',
+            url: "{{ route('client-categories.index') }}",
+            dataType: 'json',
+            success: function(categories) {
+                if (Array.isArray(categories)) {
+                    categories.forEach(function(cat) {
+                        const catId = String(cat.id);
+                        if ($subCatParent.find('option[value="' + catId + '"]').length === 0) {
+                            $subCatParent.append($('<option>', { value: catId, text: cat.name }));
+                        }
+                        if ($('#client_category_id option[value="' + catId + '"]').length === 0) {
+                            $('#client_category_id').append($('<option>', { value: catId, text: cat.name }));
+                        }
+                    });
+                    const activeCat = $('#client_category_id').val();
+                    if (activeCat && (!$subCatParent.val() || $subCatParent.val() === '')) {
+                        $subCatParent.val(activeCat);
+                    }
+                }
+            }
+        });
+
+        // Pre-select parent category if chosen in main form
+        if (selectedMainCategory && (!$subCatParent.val() || $subCatParent.val() === '')) {
+            $subCatParent.val(selectedMainCategory);
+        }
     });
 
     // AJAX Form: Add Client Sub-Category
@@ -2379,19 +2613,42 @@ $(document).ready(function () {
         const name = $('#subcategoryName').val().trim();
         if (!name) return;
 
+        const form = $(this);
+        const submitBtn = form.find('button[type="submit"]');
+        submitBtn.prop('disabled', true);
+
         $.ajax({
             type: 'POST',
             url: "{{ route('client-sub-categories.store') }}",
-            data: $(this).serialize(),
+            data: form.serialize(),
             success: function(data) {
-                $('#client_sub_category_id').append(
-                    `<option value="${data.id}" selected>${data.name}</option>`
-                );
-                $('#addSubCategoryModal').modal('hide');
-                $('#addSubCategoryForm')[0].reset();
+                const newSubId = String(data.id);
+                const newSubName = data.name;
+                const parentId = data.client_category_id || $('#modal_parent_category_id').val() || form.find('select[name="client_category_id"]').val();
+
+                if ($('#client_sub_category_id option[value="' + newSubId + '"]').length === 0) {
+                    $('#client_sub_category_id').append(
+                        $('<option>', { value: newSubId, text: newSubName })
+                    );
+                }
+                $('#client_sub_category_id').val(newSubId).trigger('change');
+
+                if (parentId && (!$('#client_category_id').val() || $('#client_category_id').val() !== String(parentId))) {
+                    $('#client_category_id').val(String(parentId)).trigger('change');
+                }
+
+                closeModalSafely('addSubCategoryModal');
+                form[0].reset();
             },
             error: function(xhr) {
-                alert('Error: ' + (xhr.responseJSON?.message || 'Failed to add subcategory'));
+                if (xhr.status === 422 && xhr.responseJSON?.errors?.name) {
+                    alert(xhr.responseJSON.errors.name[0]);
+                } else {
+                    alert('Error: ' + (xhr.responseJSON?.message || 'Failed to add subcategory'));
+                }
+            },
+            complete: function() {
+                submitBtn.prop('disabled', false);
             }
         });
     });
@@ -2402,21 +2659,30 @@ $(document).ready(function () {
         const name = $('#projectCategoryName').val().trim();
         if (!name) return;
 
+        const form = $(this);
+        const submitBtn = form.find('button[type="submit"]');
+        submitBtn.prop('disabled', true);
+
         $.ajax({
             type: 'POST',
             url: "{{ route('project-categories.store') }}",
-            data: $(this).serialize(),
+            data: form.serialize(),
             success: function(data) {
-                if (data.id && data.category_name) {
+                const category = data.cat;
+                if (category && category.id && category.category_name) {
                     $('#project_category_id').append(
-                        `<option value="${data.id}" selected>${data.category_name}</option>`
+                        new Option(category.category_name, category.id, true, true)
                     );
+                    $('#project_category_id').val(category.id).trigger('change');
                 }
-                $('#addProjectCategoryModal').modal('hide');
-                $('#addProjectCategoryForm')[0].reset();
+                closeModalSafely('addProjectCategoryModal');
+                form[0].reset();
             },
             error: function(xhr) {
                 alert('Error: ' + (xhr.responseJSON?.message || 'Failed to add project category'));
+            },
+            complete: function() {
+                submitBtn.prop('disabled', false);
             }
         });
     });
@@ -2475,10 +2741,33 @@ $(document).ready(function () {
     // Initialize date constraints on page load
     syncProjectDateConstraints();
 
-    // Direct Final Submit click handler
+    // Submit handlers: "final" creates the client with a deal, "later" creates the client without a deal
     $('#finalSubmitBtn').on('click', function(e) {
         e.preventDefault();
+        submitClientWizard('final', $(this));
+    });
 
+    $('#addLaterSubmitBtn').on('click', function(e) {
+        e.preventDefault();
+        submitClientWizard('later', $(this));
+    });
+
+    $('#deal_name').on('input', function() {
+        if ($(this).val().trim()) {
+            $(this).removeClass('is-invalid');
+        }
+    });
+
+    // Server rejected a missing deal name: reopen the deal step so the user sees it
+    @if($errors->has('project_name'))
+        goToStep(3);
+        $('#project_name').addClass('is-invalid').focus();
+    @elseif($errors->has('deal_name'))
+        goToStep(4);
+        $('#deal_name').focus();
+    @endif
+
+    function submitClientWizard(mode, submitBtn) {
         // Validate Step 1 (Mandatory client fields)
         if (!validateStep(1)) {
             goToStep(1);
@@ -2497,11 +2786,26 @@ $(document).ready(function () {
             return false;
         }
 
-        // Validate Step 4 (Deal dates)
-        if (!validateStep(4)) {
-            goToStep(4);
-            return false;
+        if (mode === 'final') {
+            // Validate Step 4 (Deal Name is mandatory for Final Submit)
+            if (!$('#deal_name').val().trim()) {
+                goToStep(4);
+                $('#deal_name').addClass('is-invalid').focus();
+                return false;
+            }
+
+            // Validate Step 4 (Deal dates)
+            if (!validateStep(4)) {
+                goToStep(4);
+                return false;
+            }
+        } else {
+            // Deal is skipped entirely: clear any deal validation state
+            $('#deal_name, #deal_next_follow_up').removeClass('is-invalid');
+            $('#deal_next_follow_up_feedback').hide();
         }
+
+        $('#deal_submit_mode').val(mode);
 
         // If without_deadline is checked, ensure deadline input value is cleared
         if ($('#project_without_deadline').is(':checked')) {
@@ -2509,13 +2813,13 @@ $(document).ready(function () {
         }
         $('#project_deadline').prop('disabled', false);
 
-        // Show loading state
-        const submitBtn = $(this);
-        submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i> Submitting...');
+        // Show loading state on both submit buttons
+        $('#finalSubmitBtn, #addLaterSubmitBtn').prop('disabled', true);
+        submitBtn.html('<i class="fas fa-spinner fa-spin me-2"></i> Submitting...');
 
         // Submit form directly to server
         document.getElementById('clientWizardForm').submit();
-    });
+    }
 });
 </script>
 

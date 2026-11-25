@@ -494,6 +494,14 @@
         flex: 1;
     }
 
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark,
+        body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode)
+        .project-members-add-page .project-info-card .project-info-icon > i.fa-folder-open {
+        color: #2F6BFF !important;
+        -webkit-text-fill-color: #2F6BFF !important;
+        background: transparent !important;
+    }
+
     .project-info-label {
         font-size: 0.8rem;
         font-weight: 700;

@@ -444,15 +444,12 @@
               }
             @endphp
             <div style="display: flex;">
-              <select id="profile_country_code" class="profile-control country-code-select" style="width: 100px; flex-shrink: 0; border-top-right-radius: 0; border-bottom-right-radius: 0; border-right: 0; background-position: right 0.25rem center; padding-right: 20px; outline: none;">
-                <option value="+91" {{ $countryCode == '+91' ? 'selected' : '' }}>+91 (IN)</option>
-                <option value="+1" {{ $countryCode == '+1' ? 'selected' : '' }}>+1 (US)</option>
-                <option value="+44" {{ $countryCode == '+44' ? 'selected' : '' }}>+44 (UK)</option>
-                <option value="+61" {{ $countryCode == '+61' ? 'selected' : '' }}>+61 (AU)</option>
-                <option value="+971" {{ $countryCode == '+971' ? 'selected' : '' }}>+971 (AE)</option>
-                <option value="+81" {{ $countryCode == '+81' ? 'selected' : '' }}>+81 (JP)</option>
-                <option value="+49" {{ $countryCode == '+49' ? 'selected' : '' }}>+49 (DE)</option>
-                <option value="+33" {{ $countryCode == '+33' ? 'selected' : '' }}>+33 (FR)</option>
+              <select id="profile_country_code" class="profile-control country-code-select" style="width: 110px; flex-shrink: 0; border-top-right-radius: 0; border-bottom-right-radius: 0; border-right: 0; background-position: right 0.25rem center; padding-right: 20px; outline: none;">
+                @foreach(\App\Models\Country::getAllWithPhoneCodes() as $c)
+                  <option value="{{ $c->phone_code }}" {{ $countryCode == $c->phone_code ? 'selected' : '' }}>
+                    {{ $c->iso_code ? $c->iso_code . ' ' : '' }}({{ $c->phone_code }})
+                  </option>
+                @endforeach
               </select>
               <input type="text" id="profile_mobile_number" class="profile-control" value="{{ $mobileNum }}" placeholder="Enter mobile number" style="border-top-left-radius: 0; border-bottom-left-radius: 0; width: 100%;" />
               <input type="hidden" name="mobile" id="profile_mobile_hidden" value="{{ $fullMobile }}">
@@ -465,16 +462,16 @@
             <label class="profile-label">Gender</label>
             <select name="gender" class="profile-control">
               <option value="">Select gender</option>
-              <option value="Male" {{ old('gender', $user->gender ?? '') == 'Male' ? 'selected' : '' }}>Male</option>
-              <option value="Female" {{ old('gender', $user->gender ?? '') == 'Female' ? 'selected' : '' }}>Female</option>
-              <option value="Other" {{ old('gender', $user->gender ?? '') == 'Other' ? 'selected' : '' }}>Other</option>
+              <option value="Male" {{ strtolower(old('gender', $user->gender ?? '')) == 'male' ? 'selected' : '' }}>Male</option>
+              <option value="Female" {{ strtolower(old('gender', $user->gender ?? '')) == 'female' ? 'selected' : '' }}>Female</option>
+              <option value="Other" {{ strtolower(old('gender', $user->gender ?? '')) == 'other' ? 'selected' : '' }}>Other</option>
             </select>
           </div>
 
           <!-- DATE OF BIRTH -->
           <div>
             <label class="profile-label">Date of Birth</label>
-            <input type="date" name="date_of_birth" class="profile-control" value="{{ old('date_of_birth', isset($user->date_of_birth) ? \Carbon\Carbon::parse($user->date_of_birth)->format('Y-m-d') : '') }}" />
+            <input type="date" name="date_of_birth" class="profile-control" value="{{ old('date_of_birth', ($user->date_of_birth ?? $user->dob ?? null) ? \Carbon\Carbon::parse($user->date_of_birth ?? $user->dob)->format('Y-m-d') : '') }}" />
           </div>
 
           <!-- GOVERNMENT ID CARD -->
@@ -482,7 +479,7 @@
             <label class="profile-label">Government ID Card</label>
             <div class="file-input-box" onclick="document.getElementById('govtIdInput').click();">
               <label for="govtIdInput">Choose File</label>
-              <span id="govtIdFileName">No file chosen</span>
+              <span id="govtIdFileName">{{ ($user->govt_id_card ?? $user->government_id_card) ? basename($user->govt_id_card ?? $user->government_id_card) : 'No file chosen' }}</span>
               <input type="file" name="govt_id_card" id="govtIdInput" accept=".pdf,image/*" onchange="updateFileName(this, 'govtIdFileName')" />
             </div>
             <div class="field-help-text">Required when changing date of birth.</div>
@@ -493,9 +490,9 @@
             <label class="profile-label">Marital Status</label>
             <select name="marital_status" class="profile-control">
               <option value="">Select status</option>
-              <option value="Single" {{ old('marital_status', $user->marital_status ?? '') == 'Single' ? 'selected' : '' }}>Single</option>
-              <option value="Married" {{ old('marital_status', $user->marital_status ?? '') == 'Married' ? 'selected' : '' }}>Married</option>
-              <option value="Other" {{ old('marital_status', $user->marital_status ?? '') == 'Other' ? 'selected' : '' }}>Other</option>
+              <option value="Single" {{ strtolower(old('marital_status', $user->marital_status ?? '')) == 'single' ? 'selected' : '' }}>Single</option>
+              <option value="Married" {{ strtolower(old('marital_status', $user->marital_status ?? '')) == 'married' ? 'selected' : '' }}>Married</option>
+              <option value="Other" {{ strtolower(old('marital_status', $user->marital_status ?? '')) == 'other' ? 'selected' : '' }}>Other</option>
             </select>
           </div>
 

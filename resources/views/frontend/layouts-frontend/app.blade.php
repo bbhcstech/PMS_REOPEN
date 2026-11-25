@@ -112,7 +112,12 @@
     @include('frontend.layouts-frontend.header')
 
     <!-- Main Content -->
+    @include('partials.page-back-navigation')
+    @auth
+    <div data-live-records data-live-identity="@include('partials.live-records-identity')" style="display:contents">
+    @endauth
     @yield('content')
+    @auth </div> @endauth
 
     <!-- Footer -->
     @include('frontend.layouts-frontend.footer')
@@ -130,6 +135,9 @@
 
     @include('admin.layout.toasts')
 
-    @stack('scripts')
+    @include('partials.phone-fields')
+@stack('scripts')
+    @auth <script src="{{ asset('admin/assets/js/pms-live-records.js') }}?v={{ @filemtime(public_path('admin/assets/js/pms-live-records.js')) }}" data-session-url="{{ route('company.session-status') }}" data-login-url="{{ route('login') }}" defer></script> @endauth
+@include('partials.responsive-workspace', ['responsiveShell' => 'public'])
 </body>
 </html>

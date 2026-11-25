@@ -9,3 +9,4 @@ Artisan::command('inspire', function () {
 
 use Illuminate\Support\Facades\Schedule;
 Schedule::command('subscriptions:check-expirations')->daily();
+Schedule::command('attendance:auto-clock-out')->everyMinute()->withoutOverlapping();

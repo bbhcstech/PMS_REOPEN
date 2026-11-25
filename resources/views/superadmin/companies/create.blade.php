@@ -818,7 +818,7 @@
     box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
   }
 
-  .subscription-card.selected {
+  .subscription-card:has(> input:checked) {
     border-color: var(--brand-emerald);
     background: var(--tier-card-selected-bg);
     box-shadow: 0 12px 28px var(--brand-glow), 0 0 0 1px var(--brand-emerald);
@@ -897,8 +897,23 @@
     animation: cardPop 0.3s ease;
   }
 
-  .subscription-card.selected .check-mark {
+  .subscription-card:has(> input:checked) .check-mark {
     display: block;
+  }
+
+  .subscription-card > input[type="radio"] {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 2;
+  }
+  .subscription-card:has(> input:focus-visible) {
+    outline: 3px solid var(--brand-emerald);
+    outline-offset: 4px;
   }
 
   /* ACTION FOOTER BAR WITH SHIMMER CTA */
@@ -1160,15 +1175,12 @@
           @endphp
           <div class="input-with-icon" style="display: flex; position: relative;">
             <i class="bx bx-phone" style="z-index: 10;"></i>
-            <select id="company_create_country_code" class="country-code-select" style="width: 105px; flex-shrink: 0; padding-left: 36px; border: 1px solid var(--border-subtle, #cbd5e1); border-right: 0; border-top-left-radius: 8px; border-bottom-left-radius: 8px; font-size: 14px; outline: none;">
-                <option value="+91" {{ $countryCode == '+91' ? 'selected' : '' }}>+91 (IN)</option>
-                <option value="+1" {{ $countryCode == '+1' ? 'selected' : '' }}>+1 (US)</option>
-                <option value="+44" {{ $countryCode == '+44' ? 'selected' : '' }}>+44 (UK)</option>
-                <option value="+61" {{ $countryCode == '+61' ? 'selected' : '' }}>+61 (AU)</option>
-                <option value="+971" {{ $countryCode == '+971' ? 'selected' : '' }}>+971 (AE)</option>
-                <option value="+81" {{ $countryCode == '+81' ? 'selected' : '' }}>+81 (JP)</option>
-                <option value="+49" {{ $countryCode == '+49' ? 'selected' : '' }}>+49 (DE)</option>
-                <option value="+33" {{ $countryCode == '+33' ? 'selected' : '' }}>+33 (FR)</option>
+            <select id="company_create_country_code" class="country-code-select" style="width: 115px; flex-shrink: 0; padding-left: 36px; border: 1px solid var(--border-subtle, #cbd5e1); border-right: 0; border-top-left-radius: 8px; border-bottom-left-radius: 8px; font-size: 14px; outline: none;">
+                @foreach(\App\Models\Country::getAllWithPhoneCodes() as $c)
+                    <option value="{{ $c->phone_code }}" {{ $countryCode == $c->phone_code ? 'selected' : '' }}>
+                        {{ $c->iso_code ? $c->iso_code . ' ' : '' }}({{ $c->phone_code }})
+                    </option>
+                @endforeach
             </select>
             <input type="text" id="company_create_phone_display" value="{{ $phoneNum }}" placeholder="555 019 2831" class="input-control" style="border-top-left-radius: 0; border-bottom-left-radius: 0; padding-left: 12px; width: 100%;" />
             <input type="hidden" name="phone" id="company_create_phone_hidden" value="{{ $fullPhone }}">
@@ -1304,11 +1316,10 @@
         </div>
       </div>
 
-      <input type="hidden" name="subscription_plan" id="selectedPlanInput" value="free" />
-
       <div class="subscription-tier-grid">
         <!-- FREE PLAN -->
-        <div class="subscription-card selected" data-plan="free">
+        <div class="subscription-card" data-plan="free">
+          <input type="radio" name="subscription_plan" value="free" aria-label="Free plan" required @checked(old('subscription_plan', 'free') === 'free')>
           <i class="bx bx-check-circle check-mark"></i>
           <span class="plan-tag free">FREE</span>
           <div class="plan-price">₹0 <span style="font-size: 11px; color: var(--slate-muted); font-weight: 500;">/mo</span></div>
@@ -1321,6 +1332,7 @@
 
         <!-- GOLD PLAN -->
         <div class="subscription-card" data-plan="gold">
+          <input type="radio" name="subscription_plan" value="gold" aria-label="Gold plan" required @checked(old('subscription_plan', 'free') === 'gold')>
           <i class="bx bx-check-circle check-mark"></i>
           <span class="plan-tag gold">GOLD</span>
           <div class="plan-price">₹4,999 <span style="font-size: 11px; color: var(--slate-muted); font-weight: 500;">/mo</span></div>
@@ -1333,6 +1345,7 @@
 
         <!-- PLATINUM PLAN -->
         <div class="subscription-card" data-plan="platinum">
+          <input type="radio" name="subscription_plan" value="platinum" aria-label="Platinum plan" required @checked(old('subscription_plan', 'free') === 'platinum')>
           <i class="bx bx-check-circle check-mark"></i>
           <span class="plan-tag platinum">PLATINUM</span>
           <div class="plan-price">₹9,999 <span style="font-size: 11px; color: var(--slate-muted); font-weight: 500;">/mo</span></div>
@@ -1345,6 +1358,7 @@
 
         <!-- DIAMOND PLAN -->
         <div class="subscription-card" data-plan="diamond">
+          <input type="radio" name="subscription_plan" value="diamond" aria-label="Diamond plan" required @checked(old('subscription_plan', 'free') === 'diamond')>
           <i class="bx bx-check-circle check-mark"></i>
           <span class="plan-tag diamond">DIAMOND</span>
           <div class="plan-price">₹19,999 <span style="font-size: 11px; color: var(--slate-muted); font-weight: 500;">/mo</span></div>
@@ -1582,18 +1596,6 @@ document.addEventListener('DOMContentLoaded', function() {
   bindUploader('avatar_drop_box', 'admin_profile_input', 'default-upload-state', 'admin_profile_preview_bar', 'admin_profile_img', 'admin_profile_filename', 'btn_remove_avatar');
 
   // 6. Subscription Tier Cards Selection
-  const planCards = document.querySelectorAll('.subscription-card');
-  const selectedPlanInput = document.getElementById('selectedPlanInput');
-
-  planCards.forEach(card => {
-    card.addEventListener('click', function() {
-      planCards.forEach(c => c.classList.remove('selected'));
-      this.classList.add('selected');
-      const plan = this.getAttribute('data-plan');
-      if (selectedPlanInput) selectedPlanInput.value = plan;
-    });
-  });
-
   // 7. Strict Email and Phone Validation
   function getPhoneRule(countryCode) {
     switch (countryCode) {

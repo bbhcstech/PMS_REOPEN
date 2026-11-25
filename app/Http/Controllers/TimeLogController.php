@@ -25,7 +25,7 @@ class TimeLogController extends Controller
         $canReviewTimeLogs = $this->canManageTimelogs();
 
         // Query all tasks of all projects (or specific project if provided)
-        $query = Task::with(['project', 'assignee', 'assignees', 'timers.user', 'activeTimer']);
+        $query = Task::with(['project', 'assignee', 'assignees', 'timers.user', 'finishedTimers', 'activeTimer']);
 
         // Project filter
         if ($project) {

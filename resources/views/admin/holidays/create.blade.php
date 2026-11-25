@@ -437,6 +437,12 @@
         box-shadow: 0 12px 24px -12px rgba(47, 107, 255, 0.35);
     }
 
+    :is([data-pms-theme="dark"], [data-bs-theme="dark"], [data-theme="dark"], .dark, .dark-mode) .holiday-page .bulk-upload-card .bulk-icon > i.fa-file-excel,
+    :is([data-pms-theme="dark"], [data-bs-theme="dark"], [data-theme="dark"], .dark, .dark-mode) .holiday-page .bulk-upload-card .bulk-icon > i.fa-file-excel::before {
+        color: #2563eb !important;
+        -webkit-text-fill-color: #2563eb !important;
+    }
+
     .bulk-upload-card h5 {
         margin: 0 0 6px;
         color: #0F172A;

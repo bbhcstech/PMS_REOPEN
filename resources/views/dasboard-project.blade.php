@@ -1,6 +1,7 @@
 @extends('admin.layout.app')
 
 @section('content')
+@include('partials.company-employee-total')
 
 @php
     $startDateFormatted = \Carbon\Carbon::parse($startDate)->format('Y-m-d');

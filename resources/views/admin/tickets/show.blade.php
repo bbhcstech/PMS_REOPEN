@@ -16,15 +16,15 @@
             <div class="d-flex align-items-center gap-2 mb-1">
                 <h3 class="fw-bold mb-0 text-dark">Ticket #{{ $ticket->id }}: {{ Str::limit($ticket->subject, 50) }}</h3>
                 @if(strtolower((string)$ticket->status) == 'open')
-                    <span class="badge bg-warning text-dark px-3 py-2 fs-6">Open</span>
+                    <span class="badge bg-warning text-dark px-3 py-2 fs-6">Start</span>
                 @elseif(strtolower((string)$ticket->status) == 'reopened')
                     <span class="badge bg-danger px-3 py-2 fs-6 animate-pulse"><i class="bx bx-redo me-1"></i> REOPENED</span>
                 @elseif(strtolower((string)$ticket->status) == 'resolved')
-                    <span class="badge bg-success px-3 py-2 fs-6">Resolved</span>
+                    <span class="badge bg-success px-3 py-2 fs-6">Finished</span>
                 @elseif(strtolower((string)$ticket->status) == 'closed')
                     <span class="badge bg-secondary px-3 py-2 fs-6">Closed</span>
                 @else
-                    <span class="badge bg-info px-3 py-2 fs-6">{{ ucfirst($ticket->status) }}</span>
+                    <span class="badge bg-info px-3 py-2 fs-6">{{ \App\Models\Ticket::statusLabel($ticket->status) }}</span>
                 @endif
 
                 @php
@@ -44,16 +44,20 @@
         </div>
 
         <div class="d-flex align-items-center gap-2">
+            @if(\App\Support\TicketAccess::canManage())
             <a href="{{ route('tickets.edit', $ticket->id) }}" class="btn btn-outline-primary rounded-pill px-3 shadow-sm">
                 <i class="bx bx-edit me-1"></i> Edit Ticket
             </a>
+            @endif
 
             <!-- Log Time Modal Trigger -->
+            @if($ticket->project_id && (\App\Support\TicketAccess::canManage() || (int) $ticket->agent_id === (int) auth()->id()))
             <button type="button" class="btn btn-primary rounded-pill px-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#logTimeModal">
                 <i class="bx bx-time me-1"></i> Log Time (Timesheet)
             </button>
+            @endif
 
-            @if(in_array(strtolower((string)auth()->user()->role), ['admin', 'hr', 'manager'], true))
+            @if(\App\Support\TicketAccess::canManage())
                 <!-- Reopen Ticket Modal Trigger -->
                 <button type="button" class="btn btn-outline-danger rounded-pill px-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#reopenTicketModal">
                     <i class="bx bx-redo me-1"></i> Reopen Ticket
@@ -251,10 +255,11 @@
                 </div>
             </div>
 
-            <!-- Assigned Developer & Ticket Management Card -->
+            <!-- Assigned Employee & Ticket Management Card -->
+            @if(\App\Support\TicketAccess::canManage())
             <div class="card border-0 shadow-sm rounded-4 mb-4">
                 <div class="card-header bg-white border-bottom py-3">
-                    <h5 class="fw-bold mb-0 text-dark"><i class="bx bx-user-check text-success me-2"></i> Assigned Developer</h5>
+                    <h5 class="fw-bold mb-0 text-dark"><i class="bx bx-user-check text-success me-2"></i> Assigned Employee</h5>
                 </div>
                 <div class="card-body p-4">
                     <form method="POST" action="{{ route('tickets.updateDetails', $ticket->id) }}">
@@ -262,9 +267,9 @@
                         @method('PUT')
 
                         <div class="mb-3">
-                            <label class="form-label fw-semibold">Assigned Developer / Agent</label>
+                            <label class="form-label fw-semibold">Assigned Employee / Agent</label>
                             <select name="agent_id" class="form-select rounded-3">
-                                <option value="">-- Select Developer --</option>
+                                <option value="">-- Select Employee --</option>
                                 @foreach($agents as $agent)
                                     <option value="{{ $agent->id }}" {{ $ticket->agent_id == $agent->id ? 'selected' : '' }}>
                                         {{ $agent->name }} ({{ $agent->email }})
@@ -299,9 +304,9 @@
                         <div class="mb-4">
                             <label class="form-label fw-semibold">Status</label>
                             <select name="status" class="form-select rounded-3">
-                                @foreach(['open', 'pending', 'resolved', 'closed', 'reopened'] as $st)
+                                @foreach(array_keys(\App\Models\Ticket::STATUSES) as $st)
                                     <option value="{{ $st }}" {{ strtolower($ticket->status) == $st ? 'selected' : '' }}>
-                                        {{ ucfirst($st) }}
+                                        {{ \App\Models\Ticket::statusLabel($st) }}
                                     </option>
                                 @endforeach
                             </select>
@@ -313,6 +318,24 @@
                     </form>
                 </div>
             </div>
+            @elseif((int) $ticket->agent_id === (int) auth()->id())
+            <div class="card border-0 shadow-sm rounded-4 mb-4">
+                <div class="card-header"><h5 class="mb-0">Work progress</h5></div>
+                <div class="card-body">
+                    <form method="POST" action="{{ route('tickets.change-status') }}">
+                        @csrf
+                        <input type="hidden" name="ticketId" value="{{ $ticket->id }}">
+                        <label class="form-label" for="ticket-progress">Status</label>
+                        <select id="ticket-progress" name="status" class="form-select mb-3">
+                            @foreach(\App\Models\Ticket::STATUSES as $value => $label)
+                            <option value="{{ $value }}" @selected($ticket->status === $value)>{{ $label }}</option>
+                            @endforeach
+                        </select>
+                        <button class="btn btn-primary" type="submit">Update progress</button>
+                    </form>
+                </div>
+            </div>
+            @endif
         </div>
     </div>
 </div>
@@ -361,7 +384,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body p-4">
-                    <p class="text-secondary mb-3">Reopening this ticket will mark the status as <strong>REOPENED</strong> and send an instant notification to the assigned developer <strong>({{ $ticket->agent?->name ?? 'Assigned Developer' }})</strong> on their notification menu and Personal Dashboard.</p>
+                    <p class="text-secondary mb-3">Reopening this ticket will mark the status as <strong>REOPENED</strong> and send an instant notification to the assigned developer <strong>({{ $ticket->agent?->name ?? 'Assigned Employee' }})</strong> on their notification menu and Personal Dashboard.</p>
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Reason / Client Feedback Statement</label>
                         <textarea name="reason" class="form-control rounded-3" rows="3" placeholder="Enter reason for reopening (e.g. Client reported issue still occurs on checkout page)..." required></textarea>

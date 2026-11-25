@@ -7,44 +7,60 @@ use Illuminate\Http\Request;
 use App\Models\AppSetting;
 use App\Models\User;
 use App\Services\SystemNotificationService;
+use App\Services\WorkScheduleService;
 
 class WorkScheduleController extends Controller
 {
     public function index()
     {
-        $settings = [
-            'working_days' => json_decode(AppSetting::valueFor('work_working_days', '["Monday","Tuesday","Wednesday","Thursday","Friday"]'), true) ?? ["Monday","Tuesday","Wednesday","Thursday","Friday"],
-            'work_start_time' => AppSetting::valueFor('work_start_time', '09:00'),
-            'work_end_time' => AppSetting::valueFor('work_end_time', '18:00'),
-            'break_duration' => AppSetting::valueFor('work_break_duration', '60'),
-            'shift_enabled' => AppSetting::valueFor('work_shift_enabled', '0'),
-            'special_days' => json_decode(AppSetting::valueFor('work_special_days', '[]'), true) ?? [],
-            'employee_modes' => json_decode(AppSetting::valueFor('work_employee_modes', '{}'), true) ?? [],
-        ];
+        $settings = WorkScheduleService::getSettings();
 
         $employees = User::whereIn('role', ['employee', 'hr', 'manager'])
+            ->where('company_id', auth()->user()?->company_id)
             ->where(function ($q) {
                 $q->where('is_active', true)->orWhereNull('is_active');
             })
             ->orderBy('name', 'asc')
             ->get();
-        $isAdmin = auth()->user()?->role === 'admin';
+        $isAdmin = \App\Services\WorkforceAccess::isAdmin(auth()->user());
 
         return view('admin.settings.work-schedule', compact('settings', 'employees', 'isAdmin'));
     }
 
     public function update(Request $request)
     {
-        if (auth()->user()?->role !== 'admin') {
-            return back()->with('error', 'Unauthorized. Only Administrators can update the Work Schedule.');
+        abort_unless(\App\Services\WorkforceAccess::isAdmin(auth()->user()) && auth()->user()?->company_id, 403);
+        $weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+        $weekly = null;
+        if ($request->has('weekly_modes')) {
+            $rules = ['weekly_modes' => ['required', 'array:'.implode(',', $weekdays)]];
+            foreach ($weekdays as $day) $rules['weekly_modes.'.$day] = ['required', 'in:office,wfh,weekend'];
+            $weekly = $request->validate($rules)['weekly_modes'];
+            $request->merge(['working_days' => array_keys(array_filter($weekly, fn ($mode) => $mode !== 'weekend'))]);
         }
         $request->validate([
-            'working_days' => 'required|array',
-            'work_start_time' => 'required',
-            'work_end_time' => 'required',
-            'break_duration' => 'required|numeric',
+            'working_days' => 'required|array|min:1|max:7',
+            'working_days.*' => ['required', 'distinct', \Illuminate\Validation\Rule::in($weekdays)],
+            'work_start_time' => 'required|date_format:H:i',
+            'work_end_time' => 'required|date_format:H:i',
+            'break_duration' => 'required|integer|between:0,240',
         ]);
 
+        \Illuminate\Support\Facades\DB::connection('tenant')->transaction(function () use ($request, $weekly) {
+        if (isset($weekly)) {
+            AppSetting::updateOrCreate(['key' => 'work_weekly_wfh_days'], [
+                'label' => 'Recurring Weekly WFH Days',
+                'value' => json_encode(array_keys(array_filter($weekly, fn ($mode) => $mode === 'wfh'))),
+                'page' => 'work-schedule', 'section' => 'Work Schedule', 'type' => 'json',
+            ]);
+        } else {
+            // Legacy working-day forms must not leave WFH assigned to a day off.
+            $wfh = array_values(array_intersect(WorkScheduleService::getSettings()['weekly_wfh_days'], $request->working_days));
+            AppSetting::updateOrCreate(['key' => 'work_weekly_wfh_days'], [
+                'label' => 'Recurring Weekly WFH Days', 'value' => json_encode($wfh),
+                'page' => 'work-schedule', 'section' => 'Work Schedule', 'type' => 'json',
+            ]);
+        }
         AppSetting::updateOrCreate(['key' => 'work_working_days'], [
             'label' => 'Working Days',
             'value' => json_encode($request->working_days),
@@ -84,6 +100,7 @@ class WorkScheduleController extends Controller
             'section' => 'Work Schedule',
             'type' => 'checkbox'
         ]);
+        });
 
         // Broadcast notification about company working days schedule update
         try {
@@ -320,5 +337,48 @@ class WorkScheduleController extends Controller
         ]);
 
         return back()->with('success', "Employee work location settings updated successfully. Notifications sent for {$updatedCount} updated employee schedule(s).");
+    }
+
+    public function addEmployeeWfhDate(Request $request)
+    {
+        if (auth()->user()?->role !== 'admin') {
+            if ($request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => 'Unauthorized. Only Administrators can assign WFH dates.'], 403);
+            }
+            return back()->with('error', 'Unauthorized. Only Administrators can assign WFH dates.');
+        }
+
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'date' => 'required|date',
+            'reason' => 'nullable|string|max:255',
+        ]);
+
+        $entry = WorkScheduleService::assignEmployeeWfhDate((int)$request->user_id, $request->date, $request->reason ?? '');
+
+        $targetUser = User::find($request->user_id);
+        $name = $targetUser ? $targetUser->name : 'Employee';
+        $formattedDate = date('M d, Y', strtotime($request->date));
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => "Assigned Work From Home to {$name} on {$formattedDate}. Notifications sent.",
+                'entry' => $entry
+            ]);
+        }
+
+        return back()->with('success', "Assigned Work From Home to {$name} on {$formattedDate}. Notifications sent to employee and HR.");
+    }
+
+    public function deleteEmployeeWfhDate($id)
+    {
+        if (auth()->user()?->role !== 'admin') {
+            return back()->with('error', 'Unauthorized. Only Administrators can remove WFH date assignments.');
+        }
+
+        WorkScheduleService::deleteEmployeeWfhDate($id);
+
+        return back()->with('success', 'Employee Work From Home date assignment removed successfully.');
     }
 }

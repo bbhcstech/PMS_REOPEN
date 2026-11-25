@@ -1,6 +1,7 @@
 @extends('admin.layout.app')
 
 @section('content')
+<script src="{{ asset('admin/assets/js/pms-lead-phone-length.js') }}?v={{ filemtime(public_path('admin/assets/js/pms-lead-phone-length.js')) }}" defer></script>
 
 <style>
 .form-card-modern {
@@ -204,24 +205,80 @@ html[data-pms-theme="dark"] .btn-cancel-modern:hover {
                         @error('email')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
 
+                    @php
+                        $leadPCode = '+91';
+                        $leadPNum = old('phone', $lead->phone);
+                        if ($leadPNum && str_starts_with($leadPNum, '+')) {
+                            foreach($countries ?? [] as $c) {
+                                if (str_starts_with($leadPNum, $c->phone_code)) {
+                                    $leadPCode = $c->phone_code;
+                                    $leadPNum = trim(substr($leadPNum, strlen($c->phone_code)));
+                                    break;
+                                }
+                            }
+                        }
+                        $selPCode = old('phone_country_code', $leadPCode);
+
+                        $leadMCode = '+91';
+                        $leadMNum = old('mobile', $lead->mobile);
+                        if ($leadMNum && str_starts_with($leadMNum, '+')) {
+                            foreach($countries ?? [] as $c) {
+                                if (str_starts_with($leadMNum, $c->phone_code)) {
+                                    $leadMCode = $c->phone_code;
+                                    $leadMNum = trim(substr($leadMNum, strlen($c->phone_code)));
+                                    break;
+                                }
+                            }
+                        }
+                        $selMCode = old('mobile_country_code', $leadMCode);
+                    @endphp
+
                     <div class="col-md-4">
                         <label class="form-label-modern">Primary Phone</label>
-                        <input type="text" name="phone" class="form-control form-control-modern" value="{{ old('phone', $lead->phone) }}" placeholder="e.g. +1 234 567 890">
+                        <div class="input-group">
+                            <select name="phone_country_code" class="form-select form-control-modern" style="max-width: 115px; flex-shrink: 0;">
+                                @foreach($countries ?? [] as $c)
+                                    <option value="{{ $c->phone_code }}" {{ $selPCode === $c->phone_code ? 'selected' : '' }}>
+                                        {{ $c->iso_code ? $c->iso_code . ' ' : '' }}({{ $c->phone_code }})
+                                    </option>
+                                @endforeach
+                            </select>
+                            <input type="tel" name="phone" class="form-control form-control-modern @error('phone') is-invalid @enderror" value="{{ $leadPNum }}" placeholder="Phone number" maxlength="30">
+                        </div>
+                        @error('phone')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                        @error('phone_country_code')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                     </div>
 
                     <div class="col-md-4">
                         <label class="form-label-modern">Mobile / Cell</label>
-                        <input type="text" name="mobile" class="form-control form-control-modern" value="{{ old('mobile', $lead->mobile) }}" placeholder="e.g. +1 987 654 321">
+                        <div class="input-group">
+                            <select name="mobile_country_code" class="form-select form-control-modern" style="max-width: 115px; flex-shrink: 0;">
+                                @foreach($countries ?? [] as $c)
+                                    <option value="{{ $c->phone_code }}" {{ $selMCode === $c->phone_code ? 'selected' : '' }}>
+                                        {{ $c->iso_code ? $c->iso_code . ' ' : '' }}({{ $c->phone_code }})
+                                    </option>
+                                @endforeach
+                            </select>
+                            <input type="tel" name="mobile" class="form-control form-control-modern @error('mobile') is-invalid @enderror" value="{{ $leadMNum }}" placeholder="Mobile number" maxlength="30">
+                        </div>
+                        @error('mobile')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                        @error('mobile_country_code')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                     </div>
 
                     <div class="col-md-4">
                         <label class="form-label-modern">Alternate Phone</label>
-                        <input type="text" name="alternate_phone" class="form-control form-control-modern" value="{{ old('alternate_phone', $lead->alternate_phone) }}" placeholder="e.g. Office Ext 102">
+                        <div class="pms-phone-group">
+@include('partials.phone-country-select', ['phoneField' => 'alternate_phone', 'phoneValue' => $lead->alternate_phone])
+<input type="text" name="alternate_phone" class="form-control form-control-modern" value="{{ old('alternate_phone', $lead->alternate_phone) }}" placeholder="Alternate phone number">
+</div>
                     </div>
 
                     <div class="col-md-4">
                         <label class="form-label-modern">WhatsApp Number</label>
-                        <input type="text" name="whatsapp" class="form-control form-control-modern" value="{{ old('whatsapp', $lead->whatsapp) }}" placeholder="e.g. +1 234 567 890">
+                        <div class="pms-phone-group">
+@include('partials.phone-country-select', ['phoneField' => 'whatsapp', 'phoneValue' => $lead->whatsapp])
+<input type="text" name="whatsapp" class="form-control form-control-modern" value="{{ old('whatsapp', $lead->whatsapp) }}" placeholder="e.g. +1 234 567 890">
+</div>
                     </div>
 
                     <div class="col-md-4">

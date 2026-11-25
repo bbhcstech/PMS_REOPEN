@@ -137,11 +137,11 @@
                             </td>
                             <td style="white-space: nowrap;">{{ \Carbon\Carbon::parse($client->created_at)->format('d-m-Y') }}</td>
                             <td>
-                                <div class="dropdown">
-                                    <button class="btn btn-sm btn-light" type="button" id="dropdownMenuButton{{ $client->id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                                <div class="dropdown dropup">
+                                    <button class="btn btn-sm btn-light" type="button" id="dropdownMenuButton{{ $client->id }}" data-bs-toggle="dropdown" data-bs-boundary="viewport" data-bs-popper-config='{"strategy":"fixed"}' aria-expanded="false">
                                         <i class="bi bi-three-dots-vertical"></i>
                                     </button>
-                                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton{{ $client->id }}">
+                                    <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="dropdownMenuButton{{ $client->id }}">
                                         <li><a class="dropdown-item" href="{{ route('clients.show', $client->id) }}"><i class="bi bi-eye me-2"></i> View</a></li>
                                         <li><a class="dropdown-item" href="{{ route('clients.edit', $client->id) }}"><i class="bi bi-pencil-square me-2"></i> Edit</a></li>
                                         <li>

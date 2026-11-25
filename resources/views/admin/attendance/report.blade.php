@@ -923,12 +923,13 @@
                                         $status = $record->status ?? null;
                                         $symbol = match($status) {
                                             'present' => '✔️',
+                                            'wfh' => '🏠',
                                             'absent' => '❌',
                                             'holiday' => '⭐',
                                             'late' => '⚠️',
                                             'half_day' => '⏳',
                                             'leave' => '🛫',
-                                            'dayoff' => '📅',
+                                            'day_off', 'dayoff' => '📅',
                                             default => '—'
                                         };
                                         $class = $status ? str_replace('_', '-', $status) : 'default';

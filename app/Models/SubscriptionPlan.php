@@ -9,6 +9,11 @@ class SubscriptionPlan extends Model
     protected $connection = 'central';
     protected $table = 'plans';
 
+    public function scopeStandard($query)
+    {
+        return $query->whereIn('slug', \App\Support\SupportedPlans::SLUGS);
+    }
+
     protected $fillable = [
         'name', 'slug', 'description', 'monthly_price', 'yearly_price',
         'max_users', 'max_projects', 'max_clients', 'max_storage_mb',
@@ -24,8 +29,9 @@ class SubscriptionPlan extends Model
 
     public function modules(): BelongsToMany
     {
-        return $this->belongsToMany(Module::class, 'plan_modules', 'plan_id', 'module_id')
-            ->withTimestamps();
+        $relation = $this->belongsToMany(Module::class, 'plan_modules', 'plan_id', 'module_id')->withTimestamps();
+        if (\Illuminate\Support\Facades\Schema::connection('central')->hasColumn('plan_modules', 'is_enabled')) $relation->wherePivot('is_enabled', true);
+        return $relation;
     }
 
     public function companySubscriptions()

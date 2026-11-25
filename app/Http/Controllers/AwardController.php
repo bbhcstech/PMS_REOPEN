@@ -104,6 +104,7 @@ class AwardController extends Controller
 
     public function create()
     {
+        abort_unless(Auth::user()?->hasModulePermission('awards', 'create'), 403);
         $employees = \App\Models\User::where('role', 'employee')->get();
         $appreciations = Appreciations::where('status', 'active')->get();
         return view('admin.awards.create', compact('employees', 'appreciations'));
@@ -111,11 +112,13 @@ class AwardController extends Controller
 
     public function appreciationCreate()
     {
+        abort_unless(Auth::user()?->hasModulePermission('awards', 'create'), 403);
         return view('admin.awards.appreciation-create');
     }
 
     public function store(Request $request)
     {
+        abort_unless(Auth::user()?->hasModulePermission('awards', 'create'), 403);
         $request->validate([
             'user_id' => 'required|exists:users,id',
             'appreciation_id' => 'required|exists:appreciations,id',
@@ -134,6 +137,7 @@ class AwardController extends Controller
         Award::create([
             'user_id' => $request->user_id,
             'appreciation_id' => $request->appreciation_id,
+            'title' => Appreciations::findOrFail($request->appreciation_id)->title,
             'award_date' => $request->award_date,
             'photo' => $photoPath,
         ]);
@@ -143,17 +147,8 @@ class AwardController extends Controller
 
     public function appreciationStore(Request $request)
     {
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'color_code' => 'required|string|max:7',
-            'status' => 'required|in:active,inactive',
-        ]);
-
-        Appreciations::create([
-            'title' => $request->title,
-            'color_code' => $request->color_code,
-            'status' => $request->status,
-        ]);
+        abort_unless(Auth::user()?->hasModulePermission('awards', 'create'), 403);
+        Appreciations::create($this->appreciationData($request));
 
         return redirect()->route('awards.appreciation-index')->with('success', 'Appreciation created successfully.');
     }
@@ -161,9 +156,9 @@ class AwardController extends Controller
     public function edit($id)
     {
         $award = Award::findOrFail($id);
-        $users = \App\Models\User::where('role', 'employee')->get();
+        $employees = \App\Models\User::where('role', 'employee')->get();
         $appreciations = Appreciations::where('status', 'active')->get();
-        return view('admin.awards.edit', compact('award', 'users', 'appreciations'));
+        return view('admin.awards.edit', compact('award', 'employees', 'appreciations'));
     }
 
     public function appreciationEdit($id)
@@ -198,6 +193,7 @@ class AwardController extends Controller
         $award->update([
             'user_id' => $request->user_id,
             'appreciation_id' => $request->appreciation_id,
+            'title' => Appreciations::findOrFail($request->appreciation_id)->title,
             'award_date' => $request->award_date,
             'photo' => $photoPath,
         ]);
@@ -207,17 +203,26 @@ class AwardController extends Controller
 
     public function appreciationUpdate(Request $request, $id)
     {
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'given_to' => 'nullable|string|max:255',
-            'given_on' => 'nullable|date',
-            'status' => 'required|in:active,inactive',
-        ]);
-
+        $data = $this->appreciationData($request);
         $appreciation = Appreciations::findOrFail($id);
-        $appreciation->update($request->all());
+        $appreciation->update($data);
 
         return redirect()->route('awards.appreciation-index')->with('success', 'Appreciation updated successfully.');
+    }
+
+    private function appreciationData(Request $request): array
+    {
+        $data = $request->validate([
+            'title' => 'required|string|max:255',
+            'color_code' => 'required|string|max:7',
+            'status' => 'nullable|in:active,inactive',
+            'given_to' => 'nullable|string|max:255',
+            'given_on' => 'nullable|date_format:Y-m-d',
+            'summary' => 'nullable|string|max:255',
+            'icon' => 'nullable|string|max:255',
+        ]);
+        $data['status'] = $data['status'] ?? 'active';
+        return $data;
     }
 
     public function destroy($id)

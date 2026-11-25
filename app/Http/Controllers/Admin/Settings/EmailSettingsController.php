@@ -12,11 +12,12 @@ class EmailSettingsController extends Controller
     public function index()
     {
         $settings = [
-            'mail_mailer' => AppSetting::valueFor('mail_mailer', config('mail.default', 'smtp')),
+            'mail_mailer' => AppSetting::valueFor('mail_mailer', 'smtp'),
             'mail_host' => AppSetting::valueFor('mail_host', config('mail.mailers.smtp.host', 'smtp.gmail.com')),
             'mail_port' => AppSetting::valueFor('mail_port', config('mail.mailers.smtp.port', '587')),
             'mail_username' => AppSetting::valueFor('mail_username', config('mail.mailers.smtp.username', '')),
-            'mail_password' => AppSetting::valueFor('mail_password', ''),
+            'mail_password' => '',
+            'has_mail_password' => (bool) AppSetting::valueFor('mail_password', ''),
             'mail_encryption' => AppSetting::valueFor('mail_encryption', config('mail.mailers.smtp.encryption', 'tls')),
             'mail_from_address' => AppSetting::valueFor('mail_from_address', config('mail.from.address', 'noreply@company.com')),
             'mail_from_name' => AppSetting::valueFor('mail_from_name', config('mail.from.name', 'PMS Application')),
@@ -27,16 +28,19 @@ class EmailSettingsController extends Controller
 
     public function update(Request $request)
     {
-        if (auth()->user()?->role !== 'admin') {
+        if (! \App\Services\WorkforceAccess::isAdmin(auth()->user())) {
             abort(403, 'Unauthorized. Only administrators can update email settings.');
         }
 
         $request->validate([
-            'mail_mailer' => 'required|string',
-            'mail_host' => 'required|string',
-            'mail_port' => 'required|numeric',
-            'mail_from_address' => 'required|email',
-            'mail_from_name' => 'required|string',
+            'mail_mailer' => 'required|in:smtp,sendmail,log',
+            'mail_host' => 'required|string|max:255',
+            'mail_port' => 'required|integer|between:1,65535',
+            'mail_username' => 'nullable|string|max:255',
+            'mail_password' => 'nullable|string|max:4096',
+            'mail_encryption' => 'required|in:tls,ssl,none',
+            'mail_from_address' => 'required|email|max:255',
+            'mail_from_name' => 'required|string|max:255',
         ]);
 
         $fields = ['mail_mailer', 'mail_host', 'mail_port', 'mail_username', 'mail_encryption', 'mail_from_address', 'mail_from_name'];
@@ -59,13 +63,15 @@ class EmailSettingsController extends Controller
                 ['key' => 'mail_password'],
                 [
                     'label' => 'Mail Password',
-                    'value' => $request->mail_password,
+                    'value' => 'encrypted:'.\Illuminate\Support\Facades\Crypt::encryptString($request->mail_password),
                     'page' => 'email-settings',
                     'section' => 'Email',
                     'type' => 'password'
                 ]
             );
         }
+
+        app(\App\Services\CompanyMailSettings::class)->apply();
 
         // Broadcast notification to Admin, HR, Manager, and Employees
         \App\Services\SystemNotificationService::notifyAllRoles(
@@ -85,19 +91,24 @@ class EmailSettingsController extends Controller
 
     public function testEmail(Request $request)
     {
+        abort_unless(\App\Services\WorkforceAccess::isAdmin(auth()->user()), 403);
         $request->validate([
             'test_email' => 'required|email'
         ]);
 
         try {
+            app(\App\Services\CompanyMailSettings::class)->requireDelivery();
             Mail::raw('This is a test email sent from your PMS Admin Settings.', function ($message) use ($request) {
                 $message->to($request->test_email)
                     ->subject('PMS SMTP Settings Test');
             });
 
             return back()->with('success', 'Test email sent successfully to ' . $request->test_email);
-        } catch (\Exception $e) {
-            return back()->with('error', 'Failed to send test email: ' . $e->getMessage());
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return back()->with('error', $e->errors()['email'][0]);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('SMTP test failed', ['exception' => get_class($e)]);
+            return back()->with('error', 'Test email could not be sent. Check the SMTP host, port, encryption, credentials and sender address, then try again.');
         }
     }
 }

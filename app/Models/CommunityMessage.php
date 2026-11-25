@@ -91,11 +91,7 @@ class CommunityMessage extends TenantModel
             return null;
         }
 
-        if (str_starts_with($this->attachment_path, 'http://') || str_starts_with($this->attachment_path, 'https://')) {
-            return $this->attachment_path;
-        }
-
-        return asset($this->attachment_path);
+        return route('community.attachment', ['id' => $this->id]);
     }
 
     public function getFormattedTimeAttribute()

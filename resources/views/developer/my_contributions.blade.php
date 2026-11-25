@@ -50,7 +50,7 @@
     </div>
 
     <!-- MODULE & PLATFORM SECTION CONTRIBUTIONS BREAKDOWN -->
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+    <div class="dev-split-grid">
 
         <!-- BREAKDOWN BY PROJECT / MODULE -->
         <div class="dev-card" style="margin-bottom: 0; padding: 26px;">

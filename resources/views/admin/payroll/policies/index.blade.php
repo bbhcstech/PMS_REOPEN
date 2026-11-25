@@ -177,7 +177,7 @@
                             <i class="bx bx-chevron-right text-muted fs-6 flex-shrink-0"></i>
                         </a>
                         <a class="list-group-item list-group-item-action rounded-3 py-2.5 fw-semibold d-flex align-items-center justify-content-between" id="tab-compliance-tab" data-bs-toggle="list" href="#tab-compliance" role="tab" style="min-width:0;">
-                            <span class="text-truncate me-2"><i class="bx bx-shield-check me-2 text-primary"></i>12. Compliance</span>
+                            <span class="text-truncate me-2"><i class="bx bx-check-shield me-2 text-primary"></i>12. Compliance</span>
                             <i class="bx bx-chevron-right text-muted fs-6 flex-shrink-0"></i>
                         </a>
                     </div>
@@ -682,7 +682,7 @@
                     <div class="tab-pane fade" id="tab-compliance" role="tabpanel">
                         <div class="card border-0 shadow-sm mb-4" style="border-radius: 12px;">
                             <div class="card-header bg-white py-3 border-bottom d-flex align-items-center justify-content-between">
-                                <h6 class="mb-0 fw-bold text-dark"><i class="bx bx-shield-check text-primary me-2 fs-5"></i>12. Statutory Compliance Rules</h6>
+                                <h6 class="mb-0 fw-bold text-dark"><i class="bx bx-check-shield text-primary me-2 fs-5"></i>12. Statutory Compliance Rules</h6>
                                 <span class="badge bg-primary-subtle text-primary">Compliance</span>
                             </div>
                             <div class="card-body p-4">

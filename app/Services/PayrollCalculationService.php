@@ -6,14 +6,17 @@ use App\Models\Attendance;
 use App\Models\BusinessAddress;
 use App\Models\Company;
 use App\Models\EmployeeDetail;
+use App\Models\EmployeeSalaryAssignment;
 use App\Models\Leave;
 use App\Models\LeaveBalance;
 use App\Models\Payroll;
 use App\Models\PayrollAuditLog;
+use App\Models\PayrollFormula;
 use App\Models\PayrollHistory;
 use App\Models\Payslip;
 use App\Models\SalaryComponent;
 use App\Models\SalaryStructure;
+use App\Models\TaskTimer;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -24,17 +27,81 @@ class PayrollCalculationService
     /**
      * Get eligible employees for payroll calculation based on filters.
      */
-    public function getEligibleEmployees(?int $companyId = null, ?string $office = null, ?string $employeeType = null)
+    /**
+     * Best Employee Bonus amount per rank for a payroll month, exactly as calculateEmployeePayrollLine()
+     * pays it: Rank 1 -> 400, Rank 2 -> 200 unless an active BEST_EMPLOYEE_BONUS formula overrides it.
+     *
+     * @return array<int, float> [rank => amount] for ranks 1 and 2
+     */
+    public function bestEmployeeBonusRates(int $year, int $month): array
+    {
+        $start = Carbon::createFromDate($year, $month, 1)->startOfMonth()->format('Y-m-d');
+        $formula = PayrollFormula::where('is_active', true)->where('code', 'BEST_EMPLOYEE_BONUS')
+            ->where(fn ($q) => $q->whereNull('effective_from')->orWhere('effective_from', '<=', $start))
+            ->where(fn ($q) => $q->whereNull('effective_to')->orWhere('effective_to', '>=', $start))
+            ->first();
+        $rates = [];
+        foreach ([1 => 400.0, 2 => 200.0] as $rank => $default) {
+            $amount = $default;
+            if ($formula) {
+                $eval = PayrollFormula::evaluate($formula->formula, ['BE_RANK' => $rank]);
+                if ($eval !== false && $eval >= 0) $amount = round((float) $eval, 2);
+            }
+            $rates[$rank] = $amount;
+        }
+        return $rates;
+    }
+
+    /**
+     * Working days of a payroll month from the company's Work Schedule: calendar days minus weekly
+     * offs, company holidays and special holidays.
+     */
+    public function workingDaysInMonth(int $year, int $month, ?int $companyId = null): int
+    {
+        $start = Carbon::createFromDate($year, $month, 1)->startOfMonth();
+        $end = $start->copy()->endOfMonth();
+        try {
+            return max(1, $start->daysInMonth - count(\App\Services\WorkScheduleService::getHolidaysAndOffDays($start, $end, $companyId)));
+        } catch (\Throwable $e) {
+            report($e);
+            return max(1, $start->daysInMonth - (int) floor($start->daysInMonth / 7) * 2);
+        }
+    }
+
+    public function getEligibleEmployees(?int $companyId = null, ?string $office = null, ?string $employeeType = null, ?int $departmentId = null, ?int $year = null, ?int $month = null)
     {
         $query = User::query()
-            ->with(['employeeDetail.salaryStructure.components', 'employeeDetail.designation', 'employeeDetail.department'])
+            ->with([
+                'employeeDetail.designation',
+                'employeeDetail.department',
+                'salaryAssignment.salaryStructure',
+            ])
             ->where(function ($q) {
                 $q->where('role', '!=', 'superadmin')
                   ->orWhereNull('role');
             });
 
+        // Only employees registered under Employee Salary are paid: an active assignment that is in
+        // force at some point of the payroll month (or currently, when no period is given).
+        $periodStart = $year && $month ? Carbon::createFromDate($year, $month, 1)->startOfMonth()->toDateString() : date('Y-m-d');
+        $periodEnd = $year && $month ? Carbon::createFromDate($year, $month, 1)->endOfMonth()->toDateString() : date('Y-m-d');
+        $query->whereIn('id', EmployeeSalaryAssignment::query()
+            ->select('user_id')
+            ->where('status', 'active')
+            ->where(fn ($q) => $q->whereNull('effective_from')->orWhere('effective_from', '<=', $periodEnd))
+            ->where(fn ($q) => $q->whereNull('effective_to')->orWhere('effective_to', '>=', $periodStart))
+            ->pluck('user_id')
+            ->unique()
+            ->all());
+
         if ($companyId) {
             $query->where('company_id', $companyId);
+        }
+
+        if ($departmentId) {
+            $query->whereHas('employeeDetail', function ($empQuery) use ($departmentId) {
+                $empQuery->where('department_id', $departmentId);
+            });
         }
 
         if (!empty($office) && $office !== 'all') {
@@ -45,12 +112,78 @@ class PayrollCalculationService
 
         if (!empty($employeeType) && $employeeType !== 'all') {
             $query->whereHas('employeeDetail', function ($empQuery) use ($employeeType) {
-                $empQuery->where('employment_type', $employeeType)
-                         ->orWhere('employment_type', str_replace(' ', '_', strtolower($employeeType)));
+                $empQuery->where(fn ($t) => $t->where('employment_type', $employeeType)
+                         ->orWhere('employment_type', str_replace(' ', '_', strtolower($employeeType))));
             });
         }
 
-        return $query->orderBy('id', 'asc')->get();
+        return $query->orderBy('name', 'asc')->get();
+    }
+
+    /**
+     * Leave requests of this month that are still waiting for approval.
+     */
+    public function getPendingLeaveData(User $user, int $year, int $month): array
+    {
+        $start = Carbon::createFromDate($year, $month, 1)->startOfMonth();
+        $end = $start->copy()->endOfMonth();
+        try {
+            $leaves = Leave::withoutGlobalScope('workforce_company')->where('user_id', $user->id)
+                ->whereIn('status', ['pending', 'Pending'])
+                ->where(fn ($q) => $q->whereBetween('date', [$start->toDateString(), $end->toDateString()])
+                    ->orWhere(fn ($r) => $r->whereDate('start_date', '<=', $end)->whereDate('end_date', '>=', $start)))
+                ->get();
+        } catch (\Throwable $e) {
+            return ['requests' => 0, 'days' => 0.0];
+        }
+        $days = 0.0;
+        foreach ($leaves as $leave) {
+            $from = Carbon::parse($leave->start_date ?: $leave->date)->startOfDay()->max($start);
+            $to = Carbon::parse($leave->end_date ?: $leave->date ?: $leave->start_date)->startOfDay()->min($end);
+            if ($to->lt($from)) continue;
+            $isHalf = $leave->half_day_flag || strtolower((string) $leave->duration) === 'half_day';
+            $days += $isHalf ? 0.5 : $this->leaveWorkingDays($from, $to, $user);
+        }
+        return ['requests' => $leaves->count(), 'days' => round($days, 2)];
+    }
+
+    /**
+     * Working days between two dates (inclusive), skipping weekly offs and holidays.
+     */
+    private function leaveWorkingDays(Carbon $from, Carbon $to, User $user): float
+    {
+        if ($to->lt($from)) {
+            return 0.0;
+        }
+        try {
+            $offDays = WorkScheduleService::getHolidaysAndOffDays($from->copy()->startOfDay(), $to->copy()->endOfDay(), $user->company_id ? (int) $user->company_id : null);
+        } catch (\Throwable $e) {
+            $offDays = [];
+        }
+        $days = 0;
+        for ($day = $from->copy()->startOfDay(); $day->lte($to); $day->addDay()) {
+            if (! isset($offDays[$day->toDateString()])) $days++;
+        }
+        return (float) $days;
+    }
+
+    /**
+     * Hours of work logged this month in timesheets (time logs) and task timers.
+     */
+    public function getWorkData(User $user, int $year, int $month): array
+    {
+        $start = Carbon::createFromDate($year, $month, 1)->startOfMonth()->toDateString();
+        $end = Carbon::createFromDate($year, $month, 1)->endOfMonth()->toDateString();
+        $sum = function (string $model) use ($user, $start, $end) {
+            try {
+                return (float) $model::where('user_id', $user->id)->whereBetween('start_date', [$start, $end])->sum('total_hours');
+            } catch (\Throwable $e) {
+                return 0.0;
+            }
+        };
+        $timesheet = round($sum(\App\Models\TimeLog::class), 2);
+        $timer = round($sum(TaskTimer::class), 2);
+        return ['timesheet_hours' => $timesheet, 'task_timer_hours' => $timer, 'work_hours' => round($timesheet + $timer, 2)];
     }
 
     /**
@@ -62,13 +195,12 @@ class PayrollCalculationService
         $endDate = $startDate->copy()->endOfMonth();
 
         // 1. Initial Leave Balance
+        $leaveYear = (new LeaveService)->leaveYearDates($startDate);
         $leaveBalanceRecord = LeaveBalance::where('user_id', $user->id)
-            ->where(function ($q) use ($year) {
-                $q->where('year', $year)->orWhere('leave_year', $year);
-            })
+            ->where('year', $leaveYear['year'])
             ->first();
 
-        $initialBalance = 18.0; // Standard default annual leave quota
+        $initialBalance = (float) (\App\Models\LeavePolicy::first()?->annual_leaves ?? 18);
         if ($leaveBalanceRecord) {
             $initialBalance = (float) ($leaveBalanceRecord->allocated_leaves ?? $leaveBalanceRecord->remaining_leaves ?? 18.0);
         } elseif (isset($user->annual_leave_balance) && $user->annual_leave_balance > 0) {
@@ -76,35 +208,57 @@ class PayrollCalculationService
         }
 
         // 2. Fetch Leaves in period
-        $leaves = Leave::where('user_id', $user->id)
+        $leaves = Leave::withoutGlobalScope('workforce_company')->where('user_id', $user->id)
             ->where(function ($q) use ($startDate, $endDate) {
                 $q->whereBetween('date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
-                  ->orWhereBetween('start_date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')]);
+                  ->orWhereBetween('start_date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
+                  ->orWhere(function ($sub) use ($startDate, $endDate) {
+                      $sub->where('start_date', '<=', $endDate->format('Y-m-d'))
+                          ->where('end_date', '>=', $startDate->format('Y-m-d'));
+                  });
             })
             ->whereIn('status', ['approved', 'active', 'Approved'])
             ->get();
 
         $fullLeaveCount = 0.0;
         $halfLeaveCount = 0.0;
+        $paidLeaveDays = 0.0;
+        $unpaidLeaveDays = 0.0;
 
         foreach ($leaves as $leave) {
             $isHalf = $leave->half_day_flag || strtolower((string)$leave->type) === 'half_day' || strtolower((string)$leave->duration) === 'half_day';
+            $leaveStart = Carbon::parse($leave->start_date ?: $leave->date)->startOfDay();
+            $leaveEnd = Carbon::parse($leave->end_date ?: $leave->date ?: $leave->start_date)->startOfDay();
+            $overlapStart = $leaveStart->copy()->max($startDate);
+            $overlapEnd = $leaveEnd->copy()->min($endDate);
+            if ($overlapEnd->lt($overlapStart)) continue;
+            // Weekly offs and holidays inside a leave are not leave days (a Fri–Mon leave is 2 days, not 4).
+            $days = $isHalf ? 0.5 : $this->leaveWorkingDays($overlapStart, $overlapEnd, $user);
+
             if ($isHalf) {
                 $halfLeaveCount += 1.0;
             } else {
-                $days = (float) ($leave->total_days ?: 1.0);
                 $fullLeaveCount += $days;
             }
+
+            // Paid days occupy the beginning of the request; only count this month's portion.
+            $paidTotal = $leave->paid_days !== null ? (float) $leave->paid_days : ($leave->is_unpaid ? 0 : (float) ($leave->total_days ?: $days));
+            $offset = $overlapStart->gt($leaveStart) ? $this->leaveWorkingDays($leaveStart, $overlapStart->copy()->subDay(), $user) : 0.0;
+            $paidInMonth = min($days, max(0, $paidTotal - $offset));
+            $paidLeaveDays += $paidInMonth;
+            $unpaidLeaveDays += max(0, $days - $paidInMonth);
         }
 
         $totalLeaveUsed = $fullLeaveCount + ($halfLeaveCount * 0.5);
-        $currentBalance = max(0.0, $initialBalance - $totalLeaveUsed);
+        $currentBalance = (float) ($leaveBalanceRecord?->remaining_leaves ?? max(0.0, $initialBalance - $paidLeaveDays));
 
         return [
             'initial_balance' => round($initialBalance, 2),
             'full_leave' => round($fullLeaveCount, 2),
             'half_leave' => round($halfLeaveCount, 2),
             'total_leave' => round($totalLeaveUsed, 2),
+            'paid_leave' => round($paidLeaveDays, 2),
+            'unpaid_leave' => round($unpaidLeaveDays, 2),
             'current_balance' => round($currentBalance, 2),
         ];
     }
@@ -117,196 +271,624 @@ class PayrollCalculationService
         $startDate = Carbon::createFromDate($year, $month, 1)->startOfMonth();
         $endDate = $startDate->copy()->endOfMonth();
 
-        $attendances = Attendance::where('user_id', $user->id)
+        $attendances = Attendance::withoutGlobalScope('workforce_company')->where('user_id', $user->id)
             ->whereBetween('date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
             ->get();
+
+        $leaveData = $this->getLeaveData($user, $year, $month);
+        $approvedLeaveDates = Leave::withoutGlobalScope('workforce_company')->where('user_id', $user->id)->where('status', 'approved')
+            ->where(fn ($q) => $q->whereBetween('date', [$startDate->toDateString(), $endDate->toDateString()])
+                ->orWhere(fn ($range) => $range->whereDate('start_date', '<=', $endDate)->whereDate('end_date', '>=', $startDate)))
+            ->get(['date', 'start_date', 'end_date']);
 
         $fullAbsent = 0.0;
         $halfAbsent = 0.0;
         $presentDays = 0.0;
+        $wfhDays = 0.0;
+        $workingHours = 0.0;
+        $overtimeHours = 0.0;
+        $unrecordedDays = 0.0;
+        $attendanceSource = 'records';
 
         if ($attendances->count() > 0) {
             foreach ($attendances as $att) {
                 $status = strtolower((string)$att->status);
-                $isHalfDay = $att->half_day || $status === 'half_day' || str_contains($status, 'half');
+                $isHalfDay = in_array(strtolower((string) $att->half_day), ['yes', '1', 'true'], true) || $status === 'half_day' || str_contains($status, 'half');
+                $isWfh = ($att->work_from_type === 'work_from_home' || in_array($status, ['work_from_home', 'wfh']));
 
+                // Calculate daily hours
+                $hours = 0.0;
                 if ($status === 'absent') {
+                    $hours = 0.0;
+                } elseif ($att->clock_in) {
+                    $hours = round((int) $att->total_seconds / 3600, 2);
+                } elseif ($att->total_hours !== null && is_numeric($att->total_hours)) {
+                    $hours = (float) $att->total_hours;
+                } else {
+                    $hours = $isHalfDay ? 4.0 : 8.0;
+                }
+
+                $workingHours += $hours;
+                if ($hours > 8.0) {
+                    $overtimeHours += ($hours - 8.0);
+                }
+
+                // Approved leave is accounted for separately, even when its attendance is marked absent.
+                $attendanceDate = Carbon::parse($att->date)->startOfDay();
+                $isApprovedLeave = $approvedLeaveDates->contains(function ($leave) use ($attendanceDate) {
+                    $start = Carbon::parse($leave->start_date ?: $leave->date)->startOfDay();
+                    $end = Carbon::parse($leave->end_date ?: $leave->date ?: $leave->start_date)->endOfDay();
+                    return $attendanceDate->betweenIncluded($start, $end);
+                });
+                if ($status === 'absent' && ! $isApprovedLeave) {
                     $fullAbsent += 1.0;
-                } elseif ($isHalfDay) {
+                } elseif ($isHalfDay && ! $isApprovedLeave) {
                     $halfAbsent += 1.0;
                     $presentDays += 0.5;
-                } elseif (in_array($status, ['present', 'late', 'work_from_home', 'wfh'])) {
+                } elseif ($isWfh) {
+                    $wfhDays += 1.0;
+                    $presentDays += 1.0;
+                } elseif (in_array($status, ['present', 'late'])) {
                     $presentDays += 1.0;
                 }
             }
+
+            // The attendance register shows a working day without any record as absent, so payroll does too.
+            // Approved leave and holidays are not absences, and days still to come this month are not counted.
+            $recordedDays = $attendances->pluck('date')->filter()->map(fn ($d) => Carbon::parse($d)->toDateString())->unique()->count();
+            $holidayDays = 0;
+            try {
+                $holidayDays = \App\Models\Holiday::whereBetween('date', [$startDate->toDateString(), $endDate->toDateString()])
+                    ->where(fn ($q) => $q->whereNull('type')->orWhere('type', '!=', 'weekend'))
+                    ->pluck('date')
+                    ->map(fn ($d) => Carbon::parse($d))
+                    ->reject(fn (Carbon $d) => $d->isWeekend())
+                    ->unique(fn (Carbon $d) => $d->toDateString())
+                    ->count();
+            } catch (\Throwable) {
+                // No holiday calendar for this company.
+            }
+            $expectedDays = (float) $workingDays;
+            if ($endDate->isFuture()) {
+                $monthWeekdays = max(1, $startDate->diffInWeekdays($endDate->copy()->addDay()));
+                $elapsedWeekdays = $startDate->isFuture() ? 0 : $startDate->diffInWeekdays(now()->startOfDay()); // today is not over yet
+                $expectedDays = $workingDays * min(1, $elapsedWeekdays / $monthWeekdays);
+            }
+            $unrecordedDays = max(0.0, floor($expectedDays - $recordedDays - $leaveData['total_leave'] - $holidayDays));
+            $fullAbsent += $unrecordedDays;
         } else {
-            // Default assumes full attendance if no explicit negative marks recorded
-            $presentDays = (float) $workingDays;
+            // Check TaskTimer for logged hours
+            $timerHours = TaskTimer::where('user_id', $user->id)
+                ->whereBetween('start_date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
+                ->sum('total_hours');
+
+            if ($timerHours > 0) {
+                $workingHours = (float) $timerHours;
+                $attendanceSource = 'timesheet';
+            } else {
+                $attendanceSource = 'assumed';
+                // Standard default: full attendance * 8 hours
+                $workingHours = (float) ($workingDays * 8);
+            }
+
+            // Assumed full attendance, minus the days the employee was on approved leave.
+            $presentDays = max(0.0, (float) $workingDays - (float) $leaveData['paid_leave'] - (float) $leaveData['unpaid_leave']);
         }
 
-        $totalAbsent = $fullAbsent + ($halfAbsent * 0.5);
-        $presents = max(0.0, min((float)$workingDays, $workingDays - $totalAbsent));
-        $payableDays = max(0.0, $workingDays - $totalAbsent);
+        // Add leaves to absent consideration
+        $unpaidLeave = $leaveData['unpaid_leave'];
+        $paidLeave = $leaveData['paid_leave'];
+
+        $totalAbsent = $fullAbsent + ($halfAbsent * 0.5) + $unpaidLeave;
+
+        // Current Basic pro-rata payable days formula:
+        // Working Days - Absent - Unpaid Leaves - (Half Days / 2)
+        // Note: Paid leave does NOT deduct salary!
+        $unpaidPercentage = max(0, min(100, (float) \App\Models\AppSetting::valueFor('leave_unpaid_deduction_percentage', '3.33')));
+        $unpaidSalaryDays = $unpaidLeave * $workingDays * $unpaidPercentage / 100;
+        $payableDays = max(0.0, min((float)$workingDays, $workingDays - $fullAbsent - ($halfAbsent * 0.5) - $unpaidSalaryDays));
 
         return [
             'full_absent' => round($fullAbsent, 2),
             'half_absent' => round($halfAbsent, 2),
             'total_absent' => round($totalAbsent, 2),
-            'presents' => round($presents, 2),
+            'presents' => round($presentDays, 2),
+            'wfh_days' => round($wfhDays, 2),
+            'paid_leave' => round($paidLeave, 2),
+            'unpaid_leave' => round($unpaidLeave, 2),
+            'working_hours' => round($workingHours, 1),
+            'overtime_hours' => round($overtimeHours, 1),
             'payable_days' => round($payableDays, 2),
+            'unrecorded_days' => round($unrecordedDays, 2),
+            'attendance_source' => $attendanceSource,
+            'unpaid_deduction_percentage' => $unpaidPercentage,
+            'unpaid_salary_deduction_percent' => min(100, round($unpaidLeave * $unpaidPercentage, 2)),
         ];
     }
 
     /**
      * Fetch active Salary Structure & components for an employee.
+     * Priority:
+     * 1. EmployeeSalaryAssignment (specific to employee, effective date range)
+     * 2. SalaryStructure linked to employee's Designation (and grade)
+     * 3. Custom salary fields on EmployeeDetail
+     * 4. Fallback default structure
      */
-    public function getSalaryStructure(User $user): array
+    public function getSalaryStructure(User $user, ?Carbon $periodDate = null): array
     {
-        $basic = 0.0;
-        $hra = 0.0;
-        $special = 0.0;
-        $hasStructure = false;
-
+        $date = $periodDate ? $periodDate->format('Y-m-d') : date('Y-m-d');
         $empDetail = $user->employeeDetail;
+        $designationId = $empDetail?->designation_id;
 
-        // 1. Check custom values on EmployeeDetail
-        if ($empDetail && ($empDetail->basic_salary > 0 || $empDetail->hra_amount > 0 || $empDetail->special_allowance > 0)) {
+        $basic = 0.0;
+        $hraType = 'percentage';
+        $hraValue = 50.0;
+        $specialType = 'percentage';
+        $specialValue = 50.0;
+        $designationLevel = $empDetail?->designation?->level;
+        $grade = $designationLevel !== null ? 'L'.$designationLevel : null;
+        $source = 'default';
+        $structureId = null;
+
+        // 1. Check EmployeeSalaryAssignment
+        $periodEndDate = $periodDate ? $periodDate->copy()->endOfMonth()->format('Y-m-d') : $date;
+        $assignment = EmployeeSalaryAssignment::where('user_id', $user->id)
+            ->where('status', 'active')
+            ->where(function ($q) use ($periodEndDate) {
+                $q->whereNull('effective_from')
+                  ->orWhere('effective_from', '<=', $periodEndDate);
+            })
+            ->where(function ($q) use ($date) {
+                $q->whereNull('effective_to')
+                  ->orWhere('effective_to', '>=', $date);
+            })
+            ->latest('effective_from')
+            ->first();
+
+        if ($assignment) {
+            $basic = (float) $assignment->actual_basic_salary;
+            $struct = $assignment->salaryStructure;
+            $hraType = $assignment->hra_type ?: ($struct?->hra_type ?: 'percentage');
+            $hraValue = (float) ($assignment->hra_value !== null ? $assignment->hra_value : ($struct?->hra_value ?? 50.0));
+            $specialType = $assignment->special_allowance_type ?: ($struct?->special_allowance_type ?: 'percentage');
+            $specialValue = (float) ($assignment->special_allowance_value !== null ? $assignment->special_allowance_value : ($struct?->special_allowance_value ?? 50.0));
+            $structureId = $assignment->salary_structure_id;
+            $source = 'assignment';
+        }
+
+        // 2. Check Designation Salary Structure
+        if ($source === 'default' && $designationId) {
+            $structure = SalaryStructure::where('designation_id', $designationId)
+                ->where('status', 'active')
+                ->where(function ($q) use ($date) {
+                    $q->whereNull('effective_from')
+                      ->orWhere('effective_from', '<=', $date);
+                })
+                ->where(function ($q) use ($date) {
+                    $q->whereNull('effective_to')
+                      ->orWhere('effective_to', '>=', $date);
+                })
+                ->first();
+
+            if ($structure) {
+                $basic = (float) $structure->basic_salary;
+                $hraType = $structure->hra_type ?: 'percentage';
+                $hraValue = (float) ($structure->hra_value ?? 50.0);
+                $specialType = $structure->special_allowance_type ?: 'percentage';
+                $specialValue = (float) ($structure->special_allowance_value ?? 50.0);
+                $structureId = $structure->id;
+                $source = 'designation_structure';
+            }
+        }
+
+        // 3. Check EmployeeDetail custom fields
+        if ($source === 'default' && $empDetail && ($empDetail->basic_salary > 0 || $empDetail->hra_amount > 0 || $empDetail->special_allowance > 0)) {
             $basic = (float) ($empDetail->basic_salary ?? 0);
-            $hra = (float) ($empDetail->hra_amount ?? 0);
-            $special = (float) ($empDetail->special_allowance ?? 0);
-            $hasStructure = true;
+            $hraType = 'fixed';
+            $hraValue = (float) ($empDetail->hra_amount ?? 0);
+            $specialType = 'fixed';
+            $specialValue = (float) ($empDetail->special_allowance ?? 0);
+            $source = 'employee_detail';
         }
 
-        // 2. Check explicitly assigned SalaryStructure
-        if (! $hasStructure && $empDetail && $empDetail->salary_structure_id) {
-            $structure = SalaryStructure::with('components')->find($empDetail->salary_structure_id);
-            if ($structure && $structure->components->count() > 0) {
-                foreach ($structure->components as $comp) {
-                    $code = strtolower((string)$comp->code);
-                    $val = (float) ($comp->value ?? 0);
-                    if (str_contains($code, 'basic')) {
-                        $basic += $val;
-                    } elseif (str_contains($code, 'hra')) {
-                        $hra += $val;
-                    } else {
-                        $special += $val;
-                    }
-                }
-                $hasStructure = true;
-            }
+        // 4. Fallback defaults when no structure, assignment, or detail salary is configured
+        if ($basic <= 0) {
+            $basic = 0.00;
+            $hraType = 'percentage';
+            $hraValue = 0.0;
+            $specialType = 'percentage';
+            $specialValue = 0.0;
+            $source = 'unassigned';
         }
 
-        // 3. Fallback to active global salary structures in tenant database
-        if (! $hasStructure) {
-            $defaultStructure = SalaryStructure::with('components')->where('is_active', true)->first();
-            if ($defaultStructure && $defaultStructure->components->count() > 0) {
-                foreach ($defaultStructure->components as $comp) {
-                    $code = strtolower((string)$comp->code);
-                    $val = (float) ($comp->value ?? 0);
-                    if (str_contains($code, 'basic')) {
-                        $basic += $val;
-                    } elseif (str_contains($code, 'hra')) {
-                        $hra += $val;
-                    } else {
-                        $special += $val;
-                    }
-                }
-                $hasStructure = true;
-            }
-        }
-
-        // 4. Default demo salary fallback if no structure defined anywhere
-        if (! $hasStructure) {
-            $basic = 6000.00;
-            $hra = 3000.00;
-            $special = 3000.00;
-            $hasStructure = false; // flag warning
-        }
-
-        $gross = $basic + $hra + $special;
+        // Calculate standard monthly components
+        $hra = ($hraType === 'percentage') ? round($basic * ($hraValue / 100), 2) : round($hraValue, 2);
+        $special = ($specialType === 'percentage') ? round($basic * ($specialValue / 100), 2) : round($specialValue, 2);
+        $gross = round($basic + $hra + $special, 2);
 
         return [
             'basic' => round($basic, 2),
+            'hra_type' => $hraType,
+            'hra_value' => round($hraValue, 2),
             'hra' => round($hra, 2),
+            'special_type' => $specialType,
+            'special_value' => round($specialValue, 2),
             'special' => round($special, 2),
             'gross' => round($gross, 2),
-            'has_structure' => $hasStructure,
+            'grade' => $grade,
+            'source' => $source,
+            'salary_structure_id' => $structureId,
+            'has_structure' => ($source !== 'unassigned' && $source !== 'default'),
         ];
     }
 
     /**
      * Calculate entire single employee payroll line item.
      */
-    public function calculateEmployeePayrollLine(User $user, int $year, int $month, int $workingDays, int $srNo = 1): array
+    public function calculateEmployeePayrollLine(User $user, int $year, int $month, int $workingDays, int $srNo = 1, array $lineInputs = []): array
     {
+        $startDate = Carbon::createFromDate($year, $month, 1)->startOfMonth();
         $policyService = app(PayrollPolicyService::class);
-        $policy = $policyService->getActivePolicy($user->company_id);
+        $policy = $policyService->getActivePolicy($user->company_id, $startDate->toDateString());
+
+        $formulaRules = app(\App\Services\PayrollFormulaRules::class);
+        $activeFormulas = $formulaRules->effective((int) $user->company_id, $startDate);
 
         $leaveData = $this->getLeaveData($user, $year, $month);
         $attData = $this->getAttendanceData($user, $year, $month, $workingDays);
-        $salaryData = $this->getSalaryStructure($user);
+        $salaryData = $this->getSalaryStructure($user, $startDate);
+        $appraisalVariables = $formulaRules->appraisalVariables($user, $startDate);
 
         $payableDays = $attData['payable_days'];
         $ratio = $workingDays > 0 ? ($payableDays / $workingDays) : 1.0;
 
-        $acBasic = round($salaryData['basic'] * $ratio, 2);
-        $acHra = round($salaryData['hra'] * $ratio, 2);
-        $acSpecial = round($salaryData['special'] * $ratio, 2);
-        $acGross = round($acBasic + $acHra + $acSpecial, 2);
-
-        // Deductions & Rounding via active Policy Rules
-        $dedRules = $policy->deductions_rules ?? [];
-        $pfAmt = (!empty($dedRules['pf_enabled']))
-            ? min((float)($dedRules['pf_max_limit'] ?? 1800), round($acBasic * (($dedRules['pf_percentage'] ?? 12) / 100), 2))
-            : min(1800.0, round($acBasic * 0.12, 2));
-        $esiAmt = (!empty($dedRules['esi_enabled']) && $acGross <= 21000)
-            ? round($acGross * (($dedRules['esi_percentage'] ?? 0.75) / 100), 2)
-            : ($acGross <= 21000 ? round($acGross * 0.0075, 2) : 0.0);
-        $ptAmt = (!empty($dedRules['pt_enabled']))
-            ? (float) ($dedRules['pt_fixed_amount'] ?? 200)
-            : ($acGross > 10000 ? 200.0 : 0.0);
-        $tdsAmt = (float) ($dedRules['tds_amount'] ?? 0.0);
-        $totalDeductions = round($pfAmt + $esiAmt + $ptAmt + $tdsAmt, 2);
-
-        // Employer / Company Contributions (Statutory)
-        $cpfAmt = min(1800.0, round($acBasic * 0.12, 2));
-        $cesiAmt = ($acGross <= 21000) ? round($acGross * 0.0325, 2) : 0.0;
-        $edliAmt = min(75.0, round($acBasic * 0.005, 2));
-        $companyContribution = round($cpfAmt + $cesiAmt + $edliAmt, 2);
-
-        // Bonuses & Allowances
-        $bonusRules = $policy->bonus_rules ?? [];
-        $attendanceBonus = ($attData['total_absent'] == 0 && $attData['presents'] >= $workingDays && !empty($bonusRules['attendance_bonus']))
-            ? (float) $bonusRules['attendance_bonus']
-            : 0.0;
-        $bestEmpBonus = (float) ($bonusRules['best_employee_bonus'] ?? 0.0);
-        $travelAllowance = (float) ($bonusRules['travel_allowance'] ?? 0.0);
-        $overtimePay = (float) ($bonusRules['overtime_pay'] ?? 0.0);
-        $commissionAmt = (float) ($bonusRules['commission'] ?? 0.0);
-        $adjustmentAmt = (float) ($bonusRules['adjustment'] ?? 0.0);
-        $totalBonus = round($attendanceBonus + $bestEmpBonus + $travelAllowance + $overtimePay + $commissionAmt + $adjustmentAmt, 2);
-
-        // Net Salary calculation
-        $netSalary = max(0.0, round(($acGross + $totalBonus) - $totalDeductions, 2));
-
-        // Apply Rounding Policy
-        $roundRules = $policy->rounding_rules ?? [];
-        $mode = $roundRules['rounding_mode'] ?? 'nearest_rupee';
-        if ($mode === 'nearest_rupee') {
-            $netSalary = round($netSalary);
-        } elseif ($mode === 'nearest_5') {
-            $netSalary = round($netSalary / 5) * 5;
-        } elseif ($mode === 'nearest_10') {
-            $netSalary = round($netSalary / 10) * 10;
+        // Current Basic calculation:
+        // Formula: Basic Salary * (Payable Days / Total Working Days)
+        $basic = $salaryData['basic'];
+        $acBasic = round($basic * $ratio, 2);
+        if ($activeFormulas->has('CURRENT_BASIC')) {
+            $eval = $formulaRules->evaluate($activeFormulas['CURRENT_BASIC'], array_merge($appraisalVariables, [
+                'BASIC' => $basic,
+                'PAYABLE_DAYS' => $payableDays,
+                'WORKING_DAYS' => $workingDays,
+            ]));
+            if ($eval !== false && $eval >= 0) {
+                $acBasic = round((float) $eval, 2);
+            }
         }
 
-        $totalInHand = $netSalary;
-        $ctc = round($acGross + $totalBonus + $companyContribution, 2);
+        // HRA calculation:
+        // Configurable percentage of current basic or fixed amount
+        $hraType = $salaryData['hra_type'];
+        $hraValue = $salaryData['hra_value'];
+        $acHra = ($hraType === 'percentage')
+            ? round($acBasic * ($hraValue / 100), 2)
+            : round($hraValue * $ratio, 2);
 
+        // Special Allowance calculation:
+        // Configurable percentage of current basic or fixed amount
+        $specialType = $salaryData['special_type'];
+        $specialValue = $salaryData['special_value'];
+        $acSpecial = ($specialType === 'percentage')
+            ? round($acBasic * ($specialValue / 100), 2)
+            : round($specialValue * $ratio, 2);
+
+        $formulaContext = array_merge($appraisalVariables, [
+            'BASIC' => $basic, 'CURRENT_BASIC' => $acBasic, 'HRA' => $acHra, 'SPECIAL_ALLOWANCE' => $acSpecial,
+            'PAYABLE_DAYS' => $payableDays, 'WORKING_DAYS' => $workingDays, 'WORKING_HOURS' => $attData['working_hours'],
+        ]);
+        $customEarnings = $formulaRules->custom($activeFormulas, ['earnings'], $formulaContext);
+        $otherAllowances = (float) ($lineInputs['other_allowances'] ?? 0.0);
+        $otherAllowances += array_sum($customEarnings);
+        $acGross = round($acBasic + $acHra + $acSpecial + $otherAllowances, 2);
+        if ($activeFormulas->has('GROSS_SALARY')) {
+            $eval = $formulaRules->evaluate($activeFormulas['GROSS_SALARY'], [
+                'CURRENT_BASIC' => $acBasic,
+                'HRA' => $acHra,
+                'SPECIAL_ALLOWANCE' => $acSpecial,
+                'OTHER_ALLOWANCES' => $otherAllowances,
+            ]);
+            if ($eval !== false && $eval >= 0) {
+                $acGross = round((float) $eval, 2);
+            }
+        }
+
+        // ── Statutory Employee Deductions ───────────────────────────────────
+        $dedRules = $policy->deductions_rules ?? [];
+        $pfEnabled = isset($dedRules['pf_enabled']) ? (bool)$dedRules['pf_enabled'] : true;
+        $esiEnabled = isset($dedRules['esi_enabled']) ? (bool)$dedRules['esi_enabled'] : true;
+
+        // PF: 12% of Current Basic (standard max cap 1800 if limit enabled)
+        $pfRate = (float) ($dedRules['pf_percentage'] ?? 12.0);
+        $pfAmt = $pfEnabled ? round($acBasic * ($pfRate / 100), 2) : 0.0;
+        if ($pfEnabled && $activeFormulas->has('PF_EMPLOYEE')) {
+            $eval = $formulaRules->evaluate($activeFormulas['PF_EMPLOYEE'], [
+                'CURRENT_BASIC' => $acBasic,
+                'GROSS_SALARY' => $acGross,
+            ]);
+            if ($eval !== false && $eval >= 0) {
+                $pfAmt = round((float) $eval, 2);
+            }
+        }
+
+        // ESI: 0.75% of Gross Salary (applicable if Gross <= 21000 or enabled)
+        $esiRate = (float) ($dedRules['esi_percentage'] ?? 0.75);
+        $esiAmt = ($esiEnabled && ($acGross <= 21000 || !empty($dedRules['esi_all'])))
+            ? round($acGross * ($esiRate / 100), 2)
+            : 0.0;
+        if ($esiEnabled && ($acGross <= 21000 || !empty($dedRules['esi_all'])) && $activeFormulas->has('ESI_EMPLOYEE')) {
+            $eval = $formulaRules->evaluate($activeFormulas['ESI_EMPLOYEE'], [
+                'GROSS_SALARY' => $acGross,
+                'CURRENT_BASIC' => $acBasic,
+            ]);
+            if ($eval !== false && $eval >= 0) {
+                $esiAmt = round((float) $eval, 2);
+            }
+        }
+
+        $ptEnabled = array_key_exists('pt_enabled', $dedRules) ? (bool) $dedRules['pt_enabled'] : true;
+        $ptAmt = $ptEnabled && $acGross > 0 ? (array_key_exists('pt_fixed_amount', $dedRules)
+            ? (float) $dedRules['pt_fixed_amount'] : ($acGross > 15000 ? 200.0 : 0.0)) : 0.0;
+        if ($ptEnabled && $activeFormulas->has('PROFESSIONAL_TAX')) {
+            $eval = $formulaRules->evaluate($activeFormulas['PROFESSIONAL_TAX'], [
+                'GROSS_SALARY' => $acGross,
+                'CURRENT_BASIC' => $acBasic,
+            ]);
+            if ($eval !== false && $eval >= 0) {
+                $ptAmt = round((float) $eval, 2);
+            }
+        }
+
+        $tdsAmt = (float) ($lineInputs['tds'] ?? ($acGross > 0 ? ($dedRules['tds_amount'] ?? 0.0) : 0.0));
+        $formulaContext['GROSS_SALARY'] = $acGross;
+        $customDeductions = $formulaRules->custom($activeFormulas, ['deduction', 'tax'], $formulaContext);
+        $otherDeductions = (float) ($lineInputs['other_deductions'] ?? 0.0) + array_sum($customDeductions);
+
+        $totalEmployeeDeductions = round($pfAmt + $esiAmt + $ptAmt + $tdsAmt + $otherDeductions, 2);
+        if ($activeFormulas->has('TOTAL_DEDUCTIONS')) {
+            $eval = $formulaRules->evaluate($activeFormulas['TOTAL_DEDUCTIONS'], [
+                'PF' => $pfAmt,
+                'ESI' => $esiAmt,
+                'PT' => $ptAmt,
+                'TDS' => $tdsAmt,
+                'OTHER_DEDUCTIONS' => $otherDeductions,
+            ]);
+            if ($eval !== false && $eval >= 0) {
+                $totalEmployeeDeductions = round((float) $eval, 2);
+            }
+        }
+
+        // ── Net Pay (Gross - Total Employee Deductions) ─────────────────────
+        $netPay = max(0.0, round($acGross - $totalEmployeeDeductions, 2));
+        if ($activeFormulas->has('NET_PAY')) {
+            $eval = $formulaRules->evaluate($activeFormulas['NET_PAY'], [
+                'GROSS_SALARY' => $acGross,
+                'TOTAL_DEDUCTIONS' => $totalEmployeeDeductions,
+            ]);
+            if ($eval !== false && $eval >= 0) {
+                $netPay = max(0.0, round((float) $eval, 2));
+            }
+        }
+
+        // ── Additional Earnings & Bonuses ──────────────────────────────────
+        // Attendance Bonus rule:
+        // Working Hours > 180 -> 400; > 162 -> 200; else 0
+        $workingHours = $attData['working_hours'];
+        $calcAttendanceBonus = 0.0;
+        if ($acGross > 0) {
+            if ($workingHours > 180) {
+                $calcAttendanceBonus = 400.0;
+            } elseif ($workingHours > 162) {
+                $calcAttendanceBonus = 200.0;
+            }
+        }
+        if ($activeFormulas->has('ATTENDANCE_BONUS')) {
+            $eval = $formulaRules->evaluate($activeFormulas['ATTENDANCE_BONUS'], [
+                'WORKING_HOURS' => $workingHours,
+            ]);
+            if ($eval !== false && $eval >= 0) {
+                $calcAttendanceBonus = round((float) $eval, 2);
+            }
+        }
+
+        $attendanceBonus = isset($lineInputs['attendance_bonus'])
+            ? (float) $lineInputs['attendance_bonus']
+            : $calcAttendanceBonus;
+
+        // Best Employee Bonus: Rank 1 -> 400; Rank 2 -> 200; else 0
+        $beRank = (int) ($lineInputs['be_rank'] ?? 0);
+        $bestEmpBonus = 0.0;
+        if ($acGross > 0) {
+            if ($beRank === 1) {
+                $bestEmpBonus = 400.0;
+            } elseif ($beRank === 2) {
+                $bestEmpBonus = 200.0;
+            }
+        }
+        if ($activeFormulas->has('BEST_EMPLOYEE_BONUS')) {
+            $eval = $formulaRules->evaluate($activeFormulas['BEST_EMPLOYEE_BONUS'], [
+                'BE_RANK' => $beRank,
+            ]);
+            if ($eval !== false && $eval >= 0) {
+                $bestEmpBonus = round((float) $eval, 2);
+            }
+        }
+        if (isset($lineInputs['best_employee_bonus'])) {
+            $bestEmpBonus = (float) $lineInputs['best_employee_bonus'];
+        }
+
+        // Travel Allowance (TA) - admin manual / approved
+        $travelAllowance = (float) ($lineInputs['ta'] ?? 0.0);
+
+        // Overtime Amount: Overtime Hours * Overtime Rate
+        $overtimeHours = (float) ($lineInputs['overtime_hours'] ?? $attData['overtime_hours']);
+        $hourlyRate = ($workingDays > 0 && $basic > 0) ? round($basic / ($workingDays * 8), 2) : 0.0;
+        $overtimeRate = (float) ($lineInputs['overtime_rate'] ?? ($basic > 0 ? max(150.0, $hourlyRate * 1.5) : 0.0));
+        $overtimePay = isset($lineInputs['overtime'])
+            ? (float) $lineInputs['overtime']
+            : round($overtimeHours * $overtimeRate, 2);
+
+        // Commission
+        $commissionAmt = (float) ($lineInputs['commission'] ?? 0.0);
+
+        // Adjustments (+ / -)
+        $rawAdj = (float) ($lineInputs['adjustment'] ?? 0.0);
+        $positiveAdjustment = (float) ($lineInputs['positive_adjustment'] ?? ($rawAdj > 0 ? $rawAdj : 0.0));
+        $negativeAdjustment = (float) ($lineInputs['negative_adjustment'] ?? ($rawAdj < 0 ? abs($rawAdj) : 0.0));
+        $netAdjustment = round($positiveAdjustment - $negativeAdjustment, 2);
+
+        $formulaContext = array_merge($formulaContext, ['NET_PAY' => $netPay, 'BE_RANK' => $beRank,
+            'OVERTIME_HOURS' => $overtimeHours, 'OVERTIME_RATE' => $overtimeRate]);
+        $customBonuses = $formulaRules->custom($activeFormulas, ['bonus'], $formulaContext);
+        $totalAdditionalEarnings = round(
+            $attendanceBonus
+            + $bestEmpBonus
+            + $travelAllowance
+            + $overtimePay
+            + $commissionAmt
+            + $netAdjustment
+            + array_sum($customBonuses),
+            2
+        );
+        if ($activeFormulas->has('TOTAL_ADDITIONAL_EARNINGS')) {
+            $eval = $formulaRules->evaluate($activeFormulas['TOTAL_ADDITIONAL_EARNINGS'], [
+                'ATTENDANCE_BONUS' => $attendanceBonus,
+                'BEST_EMPLOYEE_BONUS' => $bestEmpBonus,
+                'TA' => $travelAllowance,
+                'OVERTIME' => $overtimePay,
+                'COMMISSION' => $commissionAmt,
+                'ADJUSTMENTS' => $netAdjustment,
+                'CUSTOM_BONUSES' => array_sum($customBonuses),
+            ]);
+            if ($eval !== false && $eval >= 0) {
+                $includesCustom = in_array('CUSTOM_BONUSES', app(\App\Services\PayrollExpression::class)->variables($activeFormulas['TOTAL_ADDITIONAL_EARNINGS']->formula), true);
+                $totalAdditionalEarnings = round((float) $eval + ($includesCustom ? 0 : array_sum($customBonuses)), 2);
+            }
+        }
+
+        // ── Total In Hand (Net Pay + Additional Earnings) ───────────────────
+        $totalInHand = max(0.0, round($netPay + $totalAdditionalEarnings, 2));
+        if ($activeFormulas->has('TOTAL_IN_HAND')) {
+            $eval = $formulaRules->evaluate($activeFormulas['TOTAL_IN_HAND'], [
+                'NET_PAY' => $netPay,
+                'TOTAL_ADDITIONAL_EARNINGS' => $totalAdditionalEarnings,
+            ]);
+            if ($eval !== false && $eval >= 0) {
+                $totalInHand = max(0.0, round((float) $eval, 2));
+            }
+        }
+
+        // ── Employer Contributions (Statutory - strictly NOT deducted from employee) ──
+        // Employer PF: 12% of Current Basic
+        $cpfAmt = $pfEnabled ? round($acBasic * 0.12, 2) : 0.0;
+        if ($pfEnabled && $activeFormulas->has('PF_EMPLOYER')) {
+            $eval = $formulaRules->evaluate($activeFormulas['PF_EMPLOYER'], [
+                'CURRENT_BASIC' => $acBasic,
+                'GROSS_SALARY' => $acGross,
+            ]);
+            if ($eval !== false && $eval >= 0) {
+                $cpfAmt = round((float) $eval, 2);
+            }
+        }
+
+        // Employer ESI: 3.25% of Gross
+        $cesiAmt = ($esiEnabled && ($acGross <= 21000 || !empty($dedRules['esi_all'])))
+            ? round($acGross * 0.0325, 2)
+            : 0.0;
+        if ($esiEnabled && ($acGross <= 21000 || !empty($dedRules['esi_all'])) && $activeFormulas->has('ESI_EMPLOYER')) {
+            $eval = $formulaRules->evaluate($activeFormulas['ESI_EMPLOYER'], [
+                'GROSS_SALARY' => $acGross,
+                'CURRENT_BASIC' => $acBasic,
+            ]);
+            if ($eval !== false && $eval >= 0) {
+                $cesiAmt = round((float) $eval, 2);
+            }
+        }
+
+        // EDLI: 0.5% of Current Basic
+        $edliAmt = $pfEnabled ? round($acBasic * 0.005, 2) : 0.0;
+        if ($pfEnabled && $activeFormulas->has('EDLI_EMPLOYER')) {
+            $eval = $formulaRules->evaluate($activeFormulas['EDLI_EMPLOYER'], [
+                'CURRENT_BASIC' => $acBasic,
+            ]);
+            if ($eval !== false && $eval >= 0) {
+                $edliAmt = round((float) $eval, 2);
+            }
+        }
+
+        $customEmployer = $formulaRules->custom($activeFormulas, ['custom', 'statutory'], $formulaContext);
+        $otherEmployerContribution = (float) ($lineInputs['other_employer_contribution'] ?? 0.0) + array_sum($customEmployer);
+
+        $totalEmployerContribution = round($cpfAmt + $cesiAmt + $edliAmt + $otherEmployerContribution, 2);
+        if ($activeFormulas->has('TOTAL_EMPLOYER_CONTRIBUTIONS')) {
+            $eval = $formulaRules->evaluate($activeFormulas['TOTAL_EMPLOYER_CONTRIBUTIONS'], [
+                'EMPLOYER_PF' => $cpfAmt,
+                'EMPLOYER_ESI' => $cesiAmt,
+                'EDLI' => $edliAmt,
+                'OTHER_EMPLOYER' => $otherEmployerContribution,
+            ]);
+            if ($eval !== false && $eval >= 0) {
+                $totalEmployerContribution = round((float) $eval, 2);
+            }
+        }
+
+        // ── Total CTC (Gross + Additional Earnings + Employer Contributions) ──
+        $ctc = round($acGross + $totalAdditionalEarnings + $totalEmployerContribution, 2);
+        if ($activeFormulas->has('CTC')) {
+            $eval = $formulaRules->evaluate($activeFormulas['CTC'], [
+                'GROSS_SALARY' => $acGross,
+                'TOTAL_ADDITIONAL_EARNINGS' => $totalAdditionalEarnings,
+                'TOTAL_EMPLOYER_CONTRIBUTION' => $totalEmployerContribution,
+                'TOTAL_EMPLOYER_CONTRIBUTIONS' => $totalEmployerContribution,
+            ]);
+            if ($eval !== false && $eval >= 0) {
+                $ctc = round((float) $eval, 2);
+            }
+        }
+
+        // Leave requests still awaiting approval and work logged this month (shown on Processing and the payslip).
+        $pendingLeave = $this->getPendingLeaveData($user, $year, $month);
+        $workData = $this->getWorkData($user, $year, $month);
+
+        // Loss of pay: what the employee did not earn this month because of absence / unpaid leave.
+        $fullMonthGross = (float) ($salaryData['gross'] ?? 0);
+        $lossOfPayDays = round(max(0.0, $workingDays - $payableDays), 2);
+        $lossOfPayAmount = round(max(0.0, $fullMonthGross - ($acBasic + $acHra + $acSpecial)), 2);
+        $deductionReasons = [];
+        if ((float) $attData['full_absent'] > 0) {
+            $unmarked = (float) ($attData['unrecorded_days'] ?? 0);
+            $deductionReasons[] = $attData['full_absent'] . ' day(s) absent' . ($unmarked > 0 ? " ({$unmarked} without any attendance entry)" : '') . ' – not paid';
+        }
+        if ((float) $attData['half_absent'] > 0) {
+            $deductionReasons[] = $attData['half_absent'] . ' half day(s) – half pay for each';
+        }
+        if ((float) $attData['unpaid_leave'] > 0) {
+            $deductionReasons[] = $attData['unpaid_leave'] . ' unpaid leave day(s) – ' . $attData['unpaid_deduction_percentage'] . '% of monthly salary per day';
+        }
+        if ($pfAmt > 0) {
+            $deductionReasons[] = 'Provident Fund: ' . rtrim(rtrim(number_format($pfRate, 2), '0'), '.') . '% of earned basic';
+        }
+        if ($esiAmt > 0) {
+            $deductionReasons[] = 'ESI: ' . rtrim(rtrim(number_format($esiRate, 2), '0'), '.') . '% of earned gross';
+        }
+        if ($ptAmt > 0) {
+            $deductionReasons[] = 'Professional Tax as per state slab';
+        }
+        if ($tdsAmt > 0) {
+            $deductionReasons[] = 'Income tax deducted at source (TDS)';
+        }
+        if (($negativeAdjustment ?? 0) > 0) {
+            $deductionReasons[] = 'Salary recovery / negative adjustment of ₹' . number_format($negativeAdjustment, 2) . (! empty($lineInputs['remarks']) ? ' – ' . $lineInputs['remarks'] : '');
+        }
         $empDetail = $user->employeeDetail;
-        $empId = $empDetail?->employee_id ?: ('EMP-' . str_pad($user->id, 3, '0', STR_PAD_LEFT));
-        $office = $empDetail?->business_address ?: 'Main Office';
-        $employmentType = $empDetail?->employment_type ?: 'Full Time';
+        foreach ($customDeductions as $code => $amount) {
+            if ($amount > 0) $deductionReasons[] = $activeFormulas[$code]->name.' ('.$code.'): ₹'.number_format($amount, 2);
+        }
+        $empId = $empDetail?->employee_id ?: ('EMP' . str_pad($user->id, 3, '0', STR_PAD_LEFT));
+        $branch = $empDetail?->business_address ?: ($user->business_address ?? '-');
+        $departmentName = $empDetail?->department?->dpt_name ?? ($empDetail?->department?->name ?? ($user->department ?? '-'));
+        $designationName = $empDetail?->designation?->name ?: ($user->designation ?: '-');
+        $joiningDate = $empDetail?->joining_date ? Carbon::parse($empDetail->joining_date)->format('d M Y') : ($user->joining_date ? Carbon::parse($user->joining_date)->format('d M Y') : '-');
 
         return [
             'sr_no' => $srNo,
@@ -314,73 +896,127 @@ class PayrollCalculationService
             'employee_id' => $empId,
             'employee_name' => $user->name,
             'email' => $user->email,
-            'office' => $office,
-            'employment_type' => ucwords(str_replace('_', ' ', $employmentType)),
-            'designation' => $empDetail?->designation?->name ?: 'Staff',
-            'department' => $empDetail?->department?->name ?: 'General',
-            
-            // Leave
-            'initial_leave_balance' => $leaveData['initial_balance'],
-            'full_leave' => $leaveData['full_leave'],
-            'half_leave' => $leaveData['half_leave'],
-            'total_leave' => $leaveData['total_leave'],
-            'current_leave_balance' => $leaveData['current_balance'],
+            'branch' => $branch,
+            'office' => $branch,
+            'department' => $departmentName,
+            'designation' => $designationName,
+            'designation_id' => $empDetail?->designation_id,
+            'designation_level' => $empDetail?->designation?->level,
+            'grade' => $salaryData['grade'],
+            'joining_date' => $joiningDate,
 
-            // Attendance
+            // Attendance Summary
+            'working_days' => $workingDays,
+            'present' => $attData['presents'],
+            'presents' => $attData['presents'],
+            'paid_leave' => $attData['paid_leave'],
+            'unpaid_leave' => $attData['unpaid_leave'],
+            'unpaid_deduction_percentage' => $attData['unpaid_deduction_percentage'],
+            'unpaid_salary_deduction_percent' => $attData['unpaid_salary_deduction_percent'],
             'full_absent' => $attData['full_absent'],
             'half_absent' => $attData['half_absent'],
+            'absent' => $attData['total_absent'],
             'total_absent' => $attData['total_absent'],
-            'presents' => $attData['presents'],
+            'half_day' => $attData['half_absent'],
+            'wfh' => $attData['wfh_days'],
+            'working_hours' => $attData['working_hours'],
+            'overtime_hours' => $overtimeHours,
             'payable_days' => $payableDays,
+            'unrecorded_days' => $attData['unrecorded_days'] ?? 0,
+            'attendance_source' => $attData['attendance_source'] ?? 'records',
 
-            // Salary Structure
-            'basic' => $salaryData['basic'],
+            // Leave Balances
+            'initial_leave_balance' => $leaveData['initial_balance'],
+            'current_leave_balance' => $leaveData['current_balance'],
+            'total_leave' => $leaveData['total_leave'],
+            'paid_leave_taken' => $leaveData['paid_leave'] ?? $attData['paid_leave'],
+            'pending_leave_requests' => $pendingLeave['requests'],
+            'pending_leave_days' => $pendingLeave['days'],
+
+            // Work logged (timesheets + task timers)
+            'timesheet_hours' => $workData['timesheet_hours'],
+            'task_timer_hours' => $workData['task_timer_hours'],
+            'work_hours' => $workData['work_hours'],
+            'employment_type' => $empDetail?->employment_type ? ucwords(str_replace('_', ' ', (string) $empDetail->employment_type)) : '-',
+
+            // Loss of pay & reasons for every deduction (payslip)
+            'full_month_gross' => round($fullMonthGross, 2),
+            'loss_of_pay_days' => $lossOfPayDays,
+            'loss_of_pay_amount' => $lossOfPayAmount,
+            'deduction_reasons' => $deductionReasons,
+
+            // Base Salary Structure
+            'basic' => $basic,
             'hra' => $salaryData['hra'],
+            'hra_type' => $hraType,
+            'hra_value' => $hraValue,
             'special' => $salaryData['special'],
+            'special_type' => $specialType,
+            'special_value' => $specialValue,
+            'other_allowances' => $otherAllowances,
             'gross' => $salaryData['gross'],
+            'salary_source' => $salaryData['source'],
             'has_salary_structure' => $salaryData['has_structure'],
 
-            // Actual Pro-rata Base
+            // Actual / Current Pro-Rata Earnings
+            'current_basic' => $acBasic,
             'ac_basic' => $acBasic,
+            'current_hra' => $acHra,
             'ac_hra' => $acHra,
+            'current_special' => $acSpecial,
             'ac_special' => $acSpecial,
+            'current_gross' => $acGross,
             'ac_gross' => $acGross,
+            'gross_salary' => $acGross,
 
-            // Statutory Employee Deductions
+            'custom_formula_amounts' => array_merge($customEarnings, $customDeductions, $customBonuses, $customEmployer),
+            // Employee Deductions
             'pf' => $pfAmt,
             'esi' => $esiAmt,
             'pt' => $ptAmt,
             'tds' => $tdsAmt,
-            'total_deductions' => $totalDeductions,
-            'total_deduction' => $totalDeductions,
+            'other_deductions' => $otherDeductions,
+            'total_deductions' => $totalEmployeeDeductions,
+            'total_deduction' => $totalEmployeeDeductions,
 
-            // Statutory Employer Contributions
-            'cpf' => $cpfAmt,
-            'cesi' => $cesiAmt,
-            'edli' => $edliAmt,
-            'company_contribution' => $companyContribution,
+            // Net Pay
+            'net_pay' => $netPay,
+            'net_salary' => $netPay,
 
-            // Bonuses & Allowances
+            // Additional Earnings
             'attendance_bonus' => $attendanceBonus,
+            'be_rank' => $beRank,
             'best_employee_bonus' => $bestEmpBonus,
             'ta' => $travelAllowance,
             'overtime' => $overtimePay,
+            'overtime_rate' => $overtimeRate,
             'commission' => $commissionAmt,
-            'adjustment' => $adjustmentAmt,
-            'total_bonus' => $totalBonus,
+            'positive_adjustment' => $positiveAdjustment,
+            'negative_adjustment' => $negativeAdjustment,
+            'adjustment' => $netAdjustment,
+            'total_additional_earnings' => $totalAdditionalEarnings,
+            'additional_earnings' => $totalAdditionalEarnings,
+            'total_bonus' => $totalAdditionalEarnings,
 
-            // Final Totals
-            'net_salary' => $netSalary,
-            'net_pay' => $netSalary,
+            // Final Payouts
             'total_in_hand' => $totalInHand,
+
+            // Employer Contributions
+            'employer_pf' => $cpfAmt,
+            'cpf' => $cpfAmt,
+            'employer_esi' => $cesiAmt,
+            'cesi' => $cesiAmt,
+            'edli' => $edliAmt,
+            'other_employer_contribution' => $otherEmployerContribution,
+            'total_employer_contribution' => $totalEmployerContribution,
+            'company_contribution' => $totalEmployerContribution,
+
+            // Cost to Company
             'ctc' => $ctc,
 
-            'policy_id' => $policy->id,
-            'policy_version' => $policy->version,
-            'status' => 'Calculated',
+            'status' => ($salaryData['has_structure'] ? 'Calculated' : 'Unassigned'),
         ];
     }
-
 
     /**
      * Check if payroll exists for a given period & filters.
@@ -411,22 +1047,40 @@ class PayrollCalculationService
     }
 
     /**
+     * Check if duplicate finalized payroll exists for employee in period.
+     */
+    public function hasDuplicateFinalizedPayroll(int $userId, int $year, int $month): bool
+    {
+        $startDate = Carbon::createFromDate($year, $month, 1)->startOfMonth()->format('Y-m-d');
+        $endDate = Carbon::createFromDate($year, $month, 1)->endOfMonth()->format('Y-m-d');
+
+        return PayrollHistory::where('user_id', $userId)
+            ->where('period_start', '>=', $startDate)
+            ->where('period_end', '<=', $endDate)
+            ->where('payroll_status', 'finalized')
+            ->exists();
+    }
+
+    /**
      * Generate or recalculate a full payroll run.
      */
-    public function processPayrollRun(?int $companyId, int $year, int $month, int $workingDays, ?string $office = 'all', ?string $employeeType = 'all', ?int $createdBy = null): Payroll
+    public function processPayrollRun(?int $companyId, int $year, int $month, int $workingDays, ?string $office = 'all', ?string $employeeType = 'all', ?int $createdBy = null, ?int $departmentId = null): Payroll
     {
-        return DB::transaction(function () use ($companyId, $year, $month, $workingDays, $office, $employeeType, $createdBy) {
+        return DB::transaction(function () use ($companyId, $year, $month, $workingDays, $office, $employeeType, $createdBy, $departmentId) {
             $startDate = Carbon::createFromDate($year, $month, 1)->startOfMonth();
             $endDate = $startDate->copy()->endOfMonth();
 
             // 1. Fetch eligible employees
-            $employees = $this->getEligibleEmployees($companyId, $office, $employeeType);
+            $employees = $this->getEligibleEmployees($companyId, $office, $employeeType, $departmentId, $year, $month);
+            if ($employees->isEmpty()) {
+                throw new \Exception('No employees have an active Employee Salary assignment for ' . $startDate->format('F Y') . '. Assign salaries under Payroll > Employee Salary first.');
+            }
 
             // 2. Check existing payroll run
             $payroll = $this->checkExistingPayroll($companyId, $year, $month, $office, $employeeType);
 
             if ($payroll && $payroll->status === 'finalized') {
-                throw new \Exception("Payroll for " . $startDate->format('F Y') . " is already finalized and cannot be overwritten without recalculation approval.");
+                throw new \Exception("Payroll for " . $startDate->format('F Y') . " is already finalized and cannot be overwritten. Historical payroll is protected.");
             }
 
             $validUser = User::find($createdBy ?: auth()->id());
@@ -438,7 +1092,7 @@ class PayrollCalculationService
                     'status' => 'calculated',
                     'period_start' => $startDate->format('Y-m-d'),
                     'period_end' => $endDate->format('Y-m-d'),
-                    'pay_date' => $endDate->copy()->addDays(5)->format('Y-m-d'),
+                    'pay_date' => $endDate->format('Y-m-d'),
                     'generated_by' => $creatorId,
                     'metadata' => [
                         'year' => $year,
@@ -450,7 +1104,7 @@ class PayrollCalculationService
                     ],
                 ]);
             } else {
-                // Delete previous draft items to recalculate clean
+                // Delete previous non-finalized items to recalculate clean
                 PayrollHistory::where('payroll_id', $payroll->id)->delete();
                 $payroll->update([
                     'status' => 'calculated',
@@ -462,7 +1116,12 @@ class PayrollCalculationService
             }
 
             $totalGross = 0.0;
-            $totalActualGross = 0.0;
+            $totalDeductions = 0.0;
+            $totalNetPay = 0.0;
+            $totalInHand = 0.0;
+            $totalEmployerContribution = 0.0;
+            $totalCtc = 0.0;
+
             $totalAbsent = 0.0;
             $totalPresent = 0.0;
             $totalLeave = 0.0;
@@ -471,8 +1130,13 @@ class PayrollCalculationService
             foreach ($employees as $employee) {
                 $line = $this->calculateEmployeePayrollLine($employee, $year, $month, $workingDays, $srNo++);
 
-                $totalGross += $line['gross'];
-                $totalActualGross += $line['ac_gross'];
+                $totalGross += $line['gross_salary'];
+                $totalDeductions += $line['total_deductions'];
+                $totalNetPay += $line['net_pay'];
+                $totalInHand += $line['total_in_hand'];
+                $totalEmployerContribution += $line['total_employer_contribution'];
+                $totalCtc += $line['ctc'];
+
                 $totalAbsent += $line['total_absent'];
                 $totalPresent += $line['presents'];
                 $totalLeave += $line['total_leave'];
@@ -481,24 +1145,33 @@ class PayrollCalculationService
                     'payroll_id' => $payroll->id,
                     'user_id' => $employee->id,
                     'snapshot' => $line,
-                    'gross_salary' => $line['gross'],
-                    'total_deductions' => round($line['gross'] - $line['ac_gross'], 2),
-                    'net_salary' => $line['ac_gross'],
+                    'gross_salary' => $line['gross_salary'],
+                    'total_deductions' => $line['total_deductions'],
+                    'net_salary' => $line['net_pay'],
+                    'total_in_hand' => $line['total_in_hand'],
+                    'ctc' => $line['ctc'],
                     'payroll_status' => 'calculated',
                     'period_start' => $startDate->format('Y-m-d'),
                     'period_end' => $endDate->format('Y-m-d'),
-                    'immutable_hash' => md5($payroll->id . '_' . $employee->id . '_' . $line['ac_gross']),
+                    'immutable_hash' => md5($payroll->id . '_' . $employee->id . '_' . $line['total_in_hand']),
                 ]);
             }
 
             $payroll->update([
                 'gross_total' => round($totalGross, 2),
-                'deduction_total' => round($totalGross - $totalActualGross, 2),
-                'net_total' => round($totalActualGross, 2),
+                'deduction_total' => round($totalDeductions, 2),
+                'net_total' => round($totalNetPay, 2),
+                'total_in_hand' => round($totalInHand, 2),
+                'total_employer_contribution' => round($totalEmployerContribution, 2),
+                'total_ctc' => round($totalCtc, 2),
                 'attendance_summary' => [
                     'total_employees' => $employees->count(),
                     'total_gross' => round($totalGross, 2),
-                    'total_actual_gross' => round($totalActualGross, 2),
+                    'total_deductions' => round($totalDeductions, 2),
+                    'total_net_pay' => round($totalNetPay, 2),
+                    'total_in_hand' => round($totalInHand, 2),
+                    'total_employer_contribution' => round($totalEmployerContribution, 2),
+                    'total_ctc' => round($totalCtc, 2),
                     'total_absent' => round($totalAbsent, 2),
                     'total_present' => round($totalPresent, 2),
                     'total_leave' => round($totalLeave, 2),
@@ -518,7 +1191,8 @@ class PayrollCalculationService
                     'year' => $year,
                     'month' => $month,
                     'employees_count' => $employees->count(),
-                    'net_total' => $payroll->net_total,
+                    'total_in_hand' => $payroll->total_in_hand,
+                    'total_ctc' => $payroll->total_ctc,
                 ],
             ]);
 
@@ -527,7 +1201,56 @@ class PayrollCalculationService
     }
 
     /**
+     * Mark payroll as reviewed.
+     */
+    public function reviewPayroll(Payroll $payroll, ?int $userId = null): Payroll
+    {
+        if ($payroll->status === 'finalized') {
+            throw new \Exception("Finalized payroll cannot be changed.");
+        }
+
+        $payroll->update([
+            'status' => 'reviewed',
+            'reviewed_at' => now(),
+        ]);
+
+        PayrollHistory::where('payroll_id', $payroll->id)->update([
+            'payroll_status' => 'reviewed',
+        ]);
+
+        return $payroll;
+    }
+
+    /**
+     * Mark payroll as approved.
+     */
+    public function approvePayroll(Payroll $payroll, ?int $userId = null): Payroll
+    {
+        if ($payroll->status === 'finalized') {
+            throw new \Exception("Finalized payroll cannot be changed.");
+        }
+
+        $validUser = User::find($userId ?: auth()->id());
+
+        $payroll->update([
+            'status' => 'approved',
+            'approved_at' => now(),
+            'approved_by_admin' => $validUser?->id,
+        ]);
+
+        PayrollHistory::where('payroll_id', $payroll->id)->update([
+            'payroll_status' => 'approved',
+        ]);
+
+        // Payslips are available from approval onwards (finalizing regenerates them with the final figures).
+        $this->generatePayslips($payroll, $validUser?->id);
+
+        return $payroll;
+    }
+
+    /**
      * Finalize payroll run.
+     * Prevents future modifications & duplicate finalized payroll.
      */
     public function finalizePayroll(Payroll $payroll, ?int $userId = null): Payroll
     {
@@ -540,11 +1263,15 @@ class PayrollCalculationService
                 'approved_by_admin' => $actorId,
                 'locked_by' => $actorId,
                 'locked_at' => now(),
+                'finalized_at' => now(),
             ]);
 
             PayrollHistory::where('payroll_id', $payroll->id)->update([
                 'payroll_status' => 'finalized',
             ]);
+
+            // Auto-generate payslips for finalized run
+            $this->generatePayslips($payroll, $actorId);
 
             PayrollAuditLog::create([
                 'user_id' => $actorId,
@@ -553,7 +1280,11 @@ class PayrollCalculationService
                 'auditable_type' => Payroll::class,
                 'auditable_id' => $payroll->id,
                 'ip_address' => request()->ip(),
-                'new_value' => ['payroll_id' => $payroll->id, 'status' => 'finalized'],
+                'new_value' => [
+                    'payroll_id' => $payroll->id,
+                    'status' => 'finalized',
+                    'finalized_at' => now()->toDateTimeString(),
+                ],
             ]);
 
             return $payroll;
@@ -561,35 +1292,149 @@ class PayrollCalculationService
     }
 
     /**
-     * Generate Payslips for a finalized payroll run.
+     * Update manual line inputs (TA, commission, best employee bonus, adjustments)
      */
-    public function generatePayslips(Payroll $payroll, ?int $userId = null): int
+    public function updatePayrollHistoryLine(PayrollHistory $history, array $inputs): PayrollHistory
+    {
+        if ($history->payroll_status === 'finalized') {
+            throw new \Exception("Cannot edit finalized payroll record.");
+        }
+
+        $snap = $history->snapshot;
+        $user = User::find($history->user_id);
+        if (! $user) {
+            throw new \Exception("Employee not found.");
+        }
+
+        $meta = $history->payroll?->metadata ?? [];
+        $year = (int) ($meta['year'] ?? date('Y', strtotime($history->period_start)));
+        $month = (int) ($meta['month'] ?? date('n', strtotime($history->period_start)));
+        $workingDays = (int) ($meta['working_days'] ?? $snap['working_days'] ?? $this->workingDaysInMonth($year, $month, $user->company_id));
+
+        $mergedInputs = array_merge($snap, $inputs);
+        $recalculatedLine = $this->calculateEmployeePayrollLine($user, $year, $month, $workingDays, $snap['sr_no'] ?? 1, $mergedInputs);
+
+        $history->update([
+            'snapshot' => $recalculatedLine,
+            'gross_salary' => $recalculatedLine['gross_salary'],
+            'total_deductions' => $recalculatedLine['total_deductions'],
+            'net_salary' => $recalculatedLine['net_pay'],
+            'total_in_hand' => $recalculatedLine['total_in_hand'],
+            'ctc' => $recalculatedLine['ctc'],
+        ]);
+
+        // Recalculate parent payroll totals
+        $this->refreshPayrollTotals($history->payroll);
+
+        return $history;
+    }
+
+    /**
+     * Recalculate total summary on parent payroll run.
+     */
+    public function refreshPayrollTotals(Payroll $payroll): void
+    {
+        $items = PayrollHistory::where('payroll_id', $payroll->id)->get();
+        $totalGross = 0.0;
+        $totalDeductions = 0.0;
+        $totalNetPay = 0.0;
+        $totalInHand = 0.0;
+        $totalEmployer = 0.0;
+        $totalCtc = 0.0;
+
+        foreach ($items as $item) {
+            $s = $item->snapshot;
+            $totalGross += (float) ($s['gross_salary'] ?? $item->gross_salary ?? 0);
+            $totalDeductions += (float) ($s['total_deductions'] ?? $item->total_deductions ?? 0);
+            $totalNetPay += (float) ($s['net_pay'] ?? $item->net_salary ?? 0);
+            $totalInHand += (float) ($s['total_in_hand'] ?? $item->total_in_hand ?? 0);
+            $totalEmployer += (float) ($s['total_employer_contribution'] ?? 0);
+            $totalCtc += (float) ($s['ctc'] ?? $item->ctc ?? 0);
+        }
+
+        $payroll->update([
+            'gross_total' => round($totalGross, 2),
+            'deduction_total' => round($totalDeductions, 2),
+            'net_total' => round($totalNetPay, 2),
+            'total_in_hand' => round($totalInHand, 2),
+            'total_employer_contribution' => round($totalEmployer, 2),
+            'total_ctc' => round($totalCtc, 2),
+        ]);
+    }
+
+    /**
+     * Payslip number prefix configured for the company (Company settings), "PS" by default.
+     */
+    private function payslipPrefix(?int $companyId, array &$cache): string
+    {
+        if (! $companyId) {
+            return 'PS';
+        }
+        if (! array_key_exists($companyId, $cache)) {
+            try {
+                $prefix = Company::find($companyId)?->payslip_prefix;
+            } catch (\Throwable) {
+                $prefix = null;
+            }
+            $cache[$companyId] = trim(preg_replace('/[^A-Za-z0-9_-]+/', '', (string) $prefix), '-') ?: 'PS';
+        }
+
+        return $cache[$companyId];
+    }
+
+    /**
+     * Generate Payslips for a payroll run.
+     */
+    public function generatePayslips(Payroll $payroll, ?int $userId = null, bool $missingOnly = false): int
+    {
+        return DB::connection($payroll->getConnectionName())->transaction(function () use ($payroll, $userId, $missingOnly) {
+            $run = Payroll::whereKey($payroll->id)->lockForUpdate()->firstOrFail();
+            if (!in_array($run->status, ['approved', 'finalized'], true)) {
+                throw \Illuminate\Validation\ValidationException::withMessages(['payroll' => 'Approve or finalize the saved payroll run before generating payslips.']);
+            }
+            return $this->persistPayslips($run, $userId, $missingOnly);
+        });
+    }
+
+    private function persistPayslips(Payroll $payroll, ?int $userId, bool $missingOnly): int
     {
         $histories = PayrollHistory::where('payroll_id', $payroll->id)->get();
         $count = 0;
+        $hasPayslipCompany = \Illuminate\Support\Facades\Schema::connection((new Payslip)->getConnectionName())->hasColumn('payslips', 'company_id');
         $validUser = User::find($userId ?: auth()->id());
         $actorId = $validUser?->id;
+        $prefixes = [];
 
         foreach ($histories as $history) {
             $snap = $history->snapshot;
             $empUser = User::find($history->user_id);
             if (! $empUser) continue;
+            if (($payroll->company_id && (int) $empUser->company_id !== (int) $payroll->company_id)
+                || ($history->company_id && (int) $history->company_id !== (int) $empUser->company_id)) continue;
+            // A payslip must have an actual saved calculation, not a zero-filled placeholder.
+            if (!is_array($snap) || !is_numeric($snap['gross_salary'] ?? $snap['ac_gross'] ?? null)) continue;
 
-            $payslipNo = 'PS-' . date('Ym', strtotime($payroll->period_start)) . '-' . str_pad($history->user_id, 4, '0', STR_PAD_LEFT);
+            $existingPayslip = Payslip::withTrashed()->where('payroll_id', $payroll->id)->where('user_id', $history->user_id)->first();
+            if ($existingPayslip?->trashed()) continue;
+            if ($existingPayslip && ($missingOnly || $existingPayslip->locked_at)) continue;
+            $payslipNo = $existingPayslip?->payslip_number ?: ($this->payslipPrefix($payroll->company_id ?: $empUser->company_id, $prefixes) . '-' . date('Ym', strtotime($payroll->period_start)) . '-' . str_pad($payroll->id, 3, '0', STR_PAD_LEFT) . '-' . str_pad($history->user_id, 4, '0', STR_PAD_LEFT));
 
             $earnings = [
-                'Basic Salary' => (float) ($snap['ac_basic'] ?? $snap['basic'] ?? 0),
-                'House Rent Allowance (HRA)' => (float) ($snap['ac_hra'] ?? $snap['hra'] ?? 0),
-                'Special Allowance' => (float) ($snap['ac_special'] ?? $snap['special'] ?? 0),
+                'Basic Salary' => (float) ($snap['current_basic'] ?? $snap['ac_basic'] ?? $snap['basic'] ?? 0),
+                'House Rent Allowance (HRA)' => (float) ($snap['current_hra'] ?? $snap['ac_hra'] ?? $snap['hra'] ?? 0),
+                'Special Allowance' => (float) ($snap['current_special'] ?? $snap['ac_special'] ?? $snap['special'] ?? 0),
             ];
+            if (!empty($snap['other_allowances']) && (float)$snap['other_allowances'] > 0) {
+                $earnings['Other Allowances'] = (float) $snap['other_allowances'];
+            }
             if (!empty($snap['attendance_bonus']) && (float)$snap['attendance_bonus'] > 0) {
                 $earnings['Attendance Bonus'] = (float) $snap['attendance_bonus'];
             }
             if (!empty($snap['best_employee_bonus']) && (float)$snap['best_employee_bonus'] > 0) {
-                $earnings['Performance Bonus'] = (float) $snap['best_employee_bonus'];
+                $earnings['Best Employee Bonus'] = (float) $snap['best_employee_bonus'];
             }
             if (!empty($snap['ta']) && (float)$snap['ta'] > 0) {
-                $earnings['Travel Allowance'] = (float) $snap['ta'];
+                $earnings['Travel Allowance (TA)'] = (float) $snap['ta'];
             }
             if (!empty($snap['overtime']) && (float)$snap['overtime'] > 0) {
                 $earnings['Overtime Pay'] = (float) $snap['overtime'];
@@ -597,17 +1442,16 @@ class PayrollCalculationService
             if (!empty($snap['commission']) && (float)$snap['commission'] > 0) {
                 $earnings['Commission'] = (float) $snap['commission'];
             }
-
-            $attendanceDeduction = round(max(0.0, ($snap['gross'] ?? 0) - ($snap['ac_gross'] ?? 0)), 2);
-            $deductions = [];
-            if ($attendanceDeduction > 0) {
-                $deductions['Attendance Deduction'] = $attendanceDeduction;
+            if (!empty($snap['adjustment']) && (float)$snap['adjustment'] != 0) {
+                $earnings['Adjustments'] = (float) $snap['adjustment'];
             }
+
+            $deductions = [];
             if (!empty($snap['pf']) && (float)$snap['pf'] > 0) {
-                $deductions['Provident Fund (PF)'] = (float) $snap['pf'];
+                $deductions['Provident Fund (PF 12%)'] = (float) $snap['pf'];
             }
             if (!empty($snap['esi']) && (float)$snap['esi'] > 0) {
-                $deductions['Employee State Insurance (ESI)'] = (float) $snap['esi'];
+                $deductions['Employee State Insurance (ESI 0.75%)'] = (float) $snap['esi'];
             }
             if (!empty($snap['pt']) && (float)$snap['pt'] > 0) {
                 $deductions['Professional Tax (PT)'] = (float) $snap['pt'];
@@ -615,18 +1459,20 @@ class PayrollCalculationService
             if (!empty($snap['tds']) && (float)$snap['tds'] > 0) {
                 $deductions['TDS / Income Tax'] = (float) $snap['tds'];
             }
+            if (!empty($snap['other_deductions']) && (float)$snap['other_deductions'] > 0) {
+                $deductions['Other Deductions'] = (float) $snap['other_deductions'];
+            }
 
-            $grossSalary = (float) ($snap['ac_gross'] ?? $snap['gross'] ?? 0) + (float) ($snap['total_bonus'] ?? 0);
-            $totalDed = round(array_sum(array_values($deductions)), 2);
-            $netSalary = (float) ($snap['net_salary'] ?? $snap['net_pay'] ?? max(0.0, $grossSalary - $totalDed));
+            $grossSalary = (float) ($snap['gross_salary'] ?? $snap['ac_gross'] ?? 0);
+            $totalDed = round((float) ($snap['total_deductions'] ?? $history->total_deductions ?? array_sum(array_values($deductions))), 2);
+            $netSalary = (float) ($snap['net_pay'] ?? max(0.0, $grossSalary - $totalDed));
 
             Payslip::updateOrCreate(
                 [
                     'payroll_id' => $payroll->id,
                     'user_id' => $history->user_id,
                 ],
-                [
-                    'company_id' => $payroll->company_id,
+                array_merge($hasPayslipCompany ? ['company_id' => $payroll->company_id ?: $empUser->company_id] : [], [
                     'payroll_history_id' => $history->id,
                     'payslip_number' => $payslipNo,
                     'employee_snapshot' => $snap,
@@ -641,13 +1487,13 @@ class PayrollCalculationService
                     'net_salary' => round($netSalary, 2),
                     'status' => 'generated',
                     'generated_by' => $actorId,
-                ]
+                    'generated_at' => $existingPayslip?->generated_at ?? now(),
+                    'locked_at' => $payroll->status === 'finalized' ? ($payroll->finalized_at ?? $payroll->locked_at ?? now()) : null,
+                ])
             );
 
             $count++;
         }
-
-        $payroll->update(['status' => 'payslip_generated']);
 
         return $count;
     }
@@ -663,7 +1509,6 @@ class PayrollCalculationService
         }
 
         try {
-            // Update payslip status to sent
             $payslip->update(['status' => 'sent']);
 
             $validUser = User::find(auth()->id());

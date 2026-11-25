@@ -5,7 +5,7 @@
     <!-- Header -->
     <div class="d-flex align-items-center justify-content-between mb-4">
         <div>
-            <h3 class="fw-bold mb-0 text-dark"><i class="bx bx-edit text-warning me-2"></i> Edit Support Ticket #{{ $ticket->id }}</h3>
+            <h3 class="fw-bold mb-0 text-dark"><i class="bx bx-edit text-warning me-2"></i> Edit Internal Ticket #{{ $ticket->id }}</h3>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0">
                     <li class="breadcrumb-item"><a href="{{ route('dashboard') }}" class="text-decoration-none">Dashboard</a></li>
@@ -87,8 +87,8 @@
                     <div class="card-body p-4">
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label for="project_id" class="form-label fw-semibold text-dark">Delivered Project / Product <span class="text-danger">*</span></label>
-                                <select name="project_id" id="project_id" class="form-select rounded-3" required>
+                                <label for="project_id" class="form-label fw-semibold text-dark">Related Project (optional)</label>
+                                <select name="project_id" id="project_id" class="form-select rounded-3">
                                     <option value="">-- Select Project --</option>
                                     @foreach($projects as $project)
                                         <option value="{{ $project->id }}" {{ $ticket->project_id == $project->id ? 'selected' : '' }}>
@@ -106,7 +106,7 @@
 
                             <div class="col-md-6">
                                 <label for="ticket_type_id" class="form-label fw-semibold text-dark">Issue Classification / Type <span class="text-danger">*</span></label>
-                                <select name="type_id" id="ticket_type_id" class="form-select rounded-3" required>
+                                <select name="type_id" id="ticket_type_id" class="form-select rounded-3">
                                     <option value="">-- Select Type --</option>
                                     @php
                                         $types = ['1'=>'Bug / Defect','2'=>'Suggestion','3'=>'Question','4'=>'Sales Inquiry','5'=>'Code Issue','6'=>'Management','7'=>'Critical Problem','8'=>'Production Incident','9'=>'Feature Enhancement'];
@@ -162,9 +162,9 @@
                     </div>
                     <div class="card-body p-4">
                         <div class="mb-3">
-                            <label for="agent_id" class="form-label fw-semibold text-dark">Assigned Developer / Employee <span class="text-danger">*</span></label>
-                            <select name="agent_id" id="agent_id" class="form-select rounded-3" required>
-                                <option value="">-- Select Developer --</option>
+                            <label for="agent_id" class="form-label fw-semibold text-dark">Assigned Employee / Employee <span class="text-danger">*</span></label>
+                            <select name="agent_id" id="agent_id" class="form-select rounded-3">
+                                <option value="">-- Select Employee --</option>
                                 @foreach($agents as $agent)
                                     <option value="{{ $agent->id }}" {{ $ticket->agent_id == $agent->id ? 'selected' : '' }}>
                                         {{ $agent->name }}

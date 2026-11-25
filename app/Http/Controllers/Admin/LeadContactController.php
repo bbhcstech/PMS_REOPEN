@@ -10,6 +10,8 @@ use App\Models\Client;
 use App\Models\CrmActivity;
 use App\Models\CrmFollowUp;
 use App\Models\User;
+use App\Models\Country;
+use App\Support\LeadContactValidation;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\LeadsExport;
 use App\Imports\LeadsImport;
@@ -198,23 +200,22 @@ class LeadContactController extends Controller
         $this->authorizeLeadAccess('create');
 
         $users = User::select('id', 'name')->get();
-        return view('admin.leads.contacts.create', compact('users'));
+        $countries = Country::forForms();
+        return view('admin.leads.contacts.create', compact('users', 'countries'));
     }
 
     public function store(Request $request)
     {
         $this->authorizeLeadAccess('create');
 
+        $request->merge(LeadContactValidation::prepare($request->all()));
+
         $data = $request->validate([
             // Section: Basic Information
             'salutation' => 'nullable|string|max:20',
             'contact_name' => 'required|string|max:255',
             'job_title' => 'nullable|string|max:255',
-            'email' => 'required|email|max:255',
-            'phone' => 'nullable|string|max:30',
-            'mobile' => 'nullable|string|max:30',
-            'alternate_phone' => 'nullable|string|max:30',
-            'whatsapp' => 'nullable|string|max:30',
+            ...LeadContactValidation::rules(),
             'company_name' => 'nullable|string|max:255',
             'website' => 'nullable|url|max:255',
 
@@ -251,6 +252,7 @@ class LeadContactController extends Controller
             'description' => 'nullable|string',
         ]);
 
+        unset($data['phone_country_code'], $data['mobile_country_code']);
         $data['create_deal'] = $request->has('create_deal');
         $data['added_by'] = auth()->id();
         $data['status'] = $data['status'] ?? 'new';
@@ -356,13 +358,16 @@ class LeadContactController extends Controller
 
         $lead = LeadContact::findOrFail($id);
         $users = User::select('id', 'name')->get();
+        $countries = Country::forForms();
 
-        return view('admin.leads.contacts.edit', compact('lead', 'users'));
+        return view('admin.leads.contacts.edit', compact('lead', 'users', 'countries'));
     }
 
     public function update(Request $request, $id)
     {
         $this->authorizeLeadAccess('edit');
+
+        $request->merge(LeadContactValidation::prepare($request->all()));
 
         $lead = LeadContact::findOrFail($id);
         $oldStatus = $lead->status;
@@ -373,11 +378,7 @@ class LeadContactController extends Controller
             'salutation' => 'nullable|string|max:20',
             'contact_name' => 'required|string|max:255',
             'job_title' => 'nullable|string|max:255',
-            'email' => 'required|email|max:255',
-            'phone' => 'nullable|string|max:30',
-            'mobile' => 'nullable|string|max:30',
-            'alternate_phone' => 'nullable|string|max:30',
-            'whatsapp' => 'nullable|string|max:30',
+            ...LeadContactValidation::rules(),
             'company_name' => 'nullable|string|max:255',
             'website' => 'nullable|url|max:255',
 
@@ -403,6 +404,7 @@ class LeadContactController extends Controller
             'description' => 'nullable|string',
         ]);
 
+        unset($data['phone_country_code'], $data['mobile_country_code']);
         if ($request->has('products') && is_array($request->products)) {
             $data['products'] = json_encode($request->products);
         }
@@ -675,10 +677,6 @@ class LeadContactController extends Controller
     {
         $this->authorizeLeadAccess('view');
 
-        $template = [
-            ['contact_name', 'email', 'company_name', 'phone', 'lead_source', 'status', 'lead_owner_id']
-        ];
-
-        return Excel::download(new LeadsExport($template), 'leads-template.xlsx');
+        return Excel::download(new \App\Exports\LeadsTemplateExport(), 'leads-template.xlsx');
     }
 }

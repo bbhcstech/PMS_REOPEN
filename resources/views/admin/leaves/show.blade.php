@@ -26,7 +26,7 @@
                 </form>
                 <button type="button" class="btn btn-danger btn-reject-trigger" data-bs-toggle="modal" data-bs-target="#rejectModal{{ $leave->id }}" data-toggle="modal" data-target="#rejectModal{{ $leave->id }}" title="Reject Leave"><i class="fas fa-times me-1"></i> Reject</button>
             @endif
-            <a href="{{ route('leaves.index') }}" class="btn btn-light"><i class="fas fa-arrow-left me-1"></i> Back</a>
+            <a href="{{ route((int) $leave->user_id === (int) auth()->id() && \App\Services\WorkforceAccess::isAuthority(auth()->user()) ? 'leaves.mine' : 'leaves.index') }}" class="btn btn-light"><i class="fas fa-arrow-left me-1"></i> Back</a>
         </div>
     </div>
 

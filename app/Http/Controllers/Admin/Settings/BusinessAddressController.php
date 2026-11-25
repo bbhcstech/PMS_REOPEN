@@ -9,22 +9,51 @@ use Illuminate\Support\Facades\File;
 
 class BusinessAddressController extends Controller
 {
+    private const ADMIN_ROLES = ['admin', 'administrator', 'superadmin'];
+    private const VIEWER_ROLES = ['admin', 'administrator', 'superadmin', 'hr', 'manager'];
+
+    private function currentRole(): string
+    {
+        return strtolower((string) auth()->user()?->role);
+    }
+
+    private function isSuperAdminGuard(): bool
+    {
+        return \Illuminate\Support\Facades\Auth::guard('super_admin')->check();
+    }
+
+    private function ensureCanView(): void
+    {
+        if (! $this->isSuperAdminGuard() && ! in_array($this->currentRole(), self::VIEWER_ROLES, true)) {
+            abort(403, 'Unauthorized. You do not have access to business addresses.');
+        }
+    }
+
+    private function ensureAdmin(string $message): void
+    {
+        if (! $this->isSuperAdminGuard() && ! in_array($this->currentRole(), self::ADMIN_ROLES, true)) {
+            abort(403, $message);
+        }
+    }
+
     public function index()
     {
+        $this->ensureCanView();
+
         $addresses = BusinessAddress::all();
         return view('admin.settings.business-address.index', compact('addresses'));
     }
 
     public function create()
     {
+        $this->ensureAdmin('Unauthorized. Only administrators can add branch addresses.');
+
         return view('admin.settings.business-address.create');
     }
 
     public function store(Request $request)
     {
-        if (auth()->user()?->role !== 'admin') {
-            abort(403, 'Unauthorized. Only administrators can add branch addresses.');
-        }
+        $this->ensureAdmin('Unauthorized. Only administrators can add branch addresses.');
 
         $validated = $request->validate([
             'branch_name' => 'required|string|max:255',
@@ -78,15 +107,15 @@ class BusinessAddressController extends Controller
 
     public function edit(BusinessAddress $businessAddress)
     {
+        $this->ensureAdmin('Unauthorized. Only administrators can update branch addresses.');
+
         $addresses = BusinessAddress::all();
         return view('admin.settings.business-address.edit', compact('businessAddress', 'addresses'));
     }
 
     public function update(Request $request, BusinessAddress $businessAddress)
     {
-        if (auth()->user()?->role !== 'admin') {
-            abort(403, 'Unauthorized. Only administrators can update branch addresses.');
-        }
+        $this->ensureAdmin('Unauthorized. Only administrators can update branch addresses.');
 
         $validated = $request->validate([
             'branch_name' => 'required|string|max:255',
@@ -151,9 +180,7 @@ class BusinessAddressController extends Controller
 
     public function destroy(BusinessAddress $businessAddress)
     {
-        if (auth()->user()?->role !== 'admin') {
-            abort(403, 'Unauthorized. Only administrators can delete branch addresses.');
-        }
+        $this->ensureAdmin('Unauthorized. Only administrators can delete branch addresses.');
 
         if (BusinessAddress::count() <= 1) {
             return redirect()->route('admin.settings.business-address.index')
@@ -193,9 +220,7 @@ class BusinessAddressController extends Controller
 
     public function makeDefault(Request $request, BusinessAddress $businessAddress)
     {
-        if (auth()->user()?->role !== 'admin') {
-            abort(403, 'Unauthorized. Only administrators can change default branch address.');
-        }
+        $this->ensureAdmin('Unauthorized. Only administrators can change default branch address.');
 
         BusinessAddress::where('is_default', true)->update(['is_default' => false]);
 

@@ -4,1567 +4,7 @@
 
 @php $userId = Auth::id(); @endphp
 
-<style>
-   /* ======================================================
-      BITROXIA ADMIN WORKSPACE — SIDEBAR & NAVBAR SYSTEM
-      Derived from https://pms.thesmartservice.in/
-      Color Direction:
-        • Primary:    #2F6BFF (Professional Blue)
-        • Secondary:  #06B6D4 (Cyan / Teal)
-        • Supporting: #8B5CF6 (Violet / Purple)
-        • Success:    #10B981 (Emerald)
-        • Text:       #0F172A (Headings) / #334155 (Body) / #64748B (Muted)
-        • Background: #F8FAFC / Surface: #FFFFFF
-        • Border:     #E2E8F0 (Subtle Cool Gray)
-      ====================================================== */
-
-   :root {
-       --bx-blue-primary: #2F6BFF;
-       --bx-blue-hover: #1E4FCC;
-       --bx-blue-soft: rgba(47, 107, 255, 0.08);
-       --bx-blue-subtle: rgba(47, 107, 255, 0.04);
-       --bx-cyan: #06B6D4;
-       --bx-violet: #8B5CF6;
-       --bx-emerald: #10B981;
-       --bx-amber: #F59E0B;
-       --bx-red: #EF4444;
-
-       --bx-surface: #FFFFFF;
-       --bx-surface-soft: #F8FAFC;
-       --bx-surface-subtle: #F1F5F9;
-
-       --bx-text-heading: #0F172A;
-       --bx-text-body: #1E293B;
-       --bx-text-secondary: #475569;
-       --bx-text-muted: #64748B;
-       --bx-text-faint: #94A3B8;
-
-       --bx-border-subtle: #E2E8F0;
-       --bx-border-soft: #CBD5E1;
-       --bx-border-focus: rgba(47, 107, 255, 0.35);
-
-       --bx-shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05), 0 1px 2px rgba(15, 23, 42, 0.03);
-       --bx-shadow-md: 0 4px 12px -2px rgba(15, 23, 42, 0.06), 0 2px 6px -1px rgba(15, 23, 42, 0.03);
-       --bx-shadow-lg: 0 12px 24px -4px rgba(15, 23, 42, 0.08), 0 4px 8px -2px rgba(15, 23, 42, 0.03);
-   }
-
-   /* ===================== GLOBAL MODALS ===================== */
-   .modal-backdrop.show {
-       opacity: 0.45 !important;
-   }
-
-   body.modal-open {
-       opacity: 1 !important;
-   }
-
-   .modal-backdrop {
-       z-index: 10040 !important;
-   }
-
-   .modal {
-       z-index: 10050 !important;
-       padding-top: 0 !important;
-   }
-
-   .modal-dialog {
-       z-index: 10051 !important;
-       margin-top: 1.75rem !important;
-       margin-bottom: 1.75rem !important;
-   }
-
-   .modal-dialog-centered {
-       min-height: calc(100% - 3.5rem) !important;
-       margin-top: 1.75rem !important;
-       margin-bottom: 1.75rem !important;
-   }
-
-   .modal-content {
-       background-color: var(--bx-surface) !important;
-       box-shadow: 0 16px 36px -4px rgba(15, 23, 42, 0.14) !important;
-       border-radius: 16px !important;
-       border: 1px solid var(--bx-border-subtle) !important;
-       color: var(--bx-text-body);
-   }
-
-   .modal-header {
-       border-bottom: 1px solid var(--bx-border-subtle) !important;
-       color: var(--bx-text-heading);
-       padding: 1.25rem 1.5rem;
-   }
-
-   .modal-title {
-       color: var(--bx-text-heading) !important;
-       font-weight: 700;
-       font-size: 1.125rem;
-   }
-
-   .btn-close:hover {
-       background-color: var(--bx-surface-subtle);
-       border-radius: 8px;
-   }
-
-   .modal-footer {
-       border-top: 1px solid var(--bx-border-subtle) !important;
-       padding: 1rem 1.5rem;
-   }
-
-   /* ===================== TOP NAVBAR ===================== */
-   #layout-navbar {
-       position: absolute !important;
-       top: 0.75rem !important;
-       z-index: 1035 !important;
-       display: flex;
-       flex-wrap: nowrap !important;
-       align-items: center;
-       background: var(--bx-navbar-bg, rgba(255, 255, 255, 0.94)) !important;
-       backdrop-filter: blur(16px);
-       -webkit-backdrop-filter: blur(16px);
-       box-shadow: var(--bx-shadow-sm) !important;
-       border-radius: 16px;
-       border: 1px solid var(--bx-border-subtle) !important;
-       padding: 0.75rem 1.25rem;
-       font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
-       min-height: 64px;
-       margin: 0 !important;
-       transition: left 0.25s ease, width 0.25s ease, max-width 0.25s ease, background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
-   }
-
-   @media (min-width: 1200px) {
-       html.layout-menu-fixed:not(.layout-menu-collapsed) #layout-navbar,
-       .layout-menu-fixed:not(.layout-menu-collapsed) #layout-navbar {
-           left: calc(var(--bs-menu-width, 16.25rem) + 1.25rem) !important;
-           right: 1.25rem !important;
-           width: calc(100% - var(--bs-menu-width, 16.25rem) - 2.5rem) !important;
-           max-width: calc(100% - var(--bs-menu-width, 16.25rem) - 2.5rem) !important;
-       }
-
-       html.layout-menu-fixed.layout-menu-collapsed #layout-navbar,
-       .layout-menu-fixed.layout-menu-collapsed #layout-navbar {
-           left: calc(var(--bs-menu-collapsed-width, 5.25rem) + 1.25rem) !important;
-           right: 1.25rem !important;
-           width: calc(100% - var(--bs-menu-collapsed-width, 5.25rem) - 2.5rem) !important;
-           max-width: calc(100% - var(--bs-menu-collapsed-width, 5.25rem) - 2.5rem) !important;
-       }
-
-       html.layout-navbar-fixed .layout-wrapper:not(.layout-horizontal) .layout-page,
-       .layout-page {
-           padding-top: calc(72px + 1.75rem) !important;
-       }
-   }
-
-   @media (max-width: 1199.98px) {
-       #layout-navbar {
-           left: 0.75rem !important;
-           right: 0.75rem !important;
-           width: calc(100% - 1.5rem) !important;
-           max-width: calc(100% - 1.5rem) !important;
-           top: 0.75rem !important;
-       }
-
-       html.layout-navbar-fixed .layout-wrapper:not(.layout-horizontal) .layout-page,
-       .layout-page {
-           padding-top: calc(68px + 1.5rem) !important;
-       }
-   }
-
-   @media (max-width: 767.98px) {
-       #layout-navbar {
-           left: 0.5rem !important;
-           right: 0.5rem !important;
-           width: calc(100% - 1rem) !important;
-           max-width: calc(100% - 1rem) !important;
-           top: 0.5rem !important;
-       }
-
-       html.layout-navbar-fixed .layout-wrapper:not(.layout-horizontal) .layout-page,
-       .layout-page {
-           padding-top: calc(60px + 1.25rem) !important;
-       }
-   }
-
-   .layout-navbar-fixed .layout-wrapper:not(.layout-horizontal) .layout-page::before,
-   .layout-page::before {
-       display: none !important;
-       content: none !important;
-   }
-
-   #layout-navbar .nav-item,
-   #layout-navbar .fw-bold,
-   #layout-navbar .navbar-brand {
-       font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
-       font-size: 1rem !important;
-       font-weight: 700 !important;
-       letter-spacing: -0.01em;
-       color: var(--bx-text-heading) !important;
-   }
-
-   #layout-navbar .navbar-nav {
-       display: flex;
-       flex-direction: row;
-       flex-wrap: nowrap !important;
-       align-items: center;
-   }
-
-   #layout-navbar .navbar-nav > * {
-       flex: 0 0 auto;
-       white-space: nowrap;
-   }
-
-   .navbar-nav > div {
-       display: contents;
-   }
-
-   .navbar-nav-right,
-   #layout-navbar .navbar-nav-right {
-       display: flex;
-       flex-direction: row !important;
-       flex-wrap: nowrap !important;
-       align-items: center;
-       gap: 10px;
-   }
-
-   /* Search Box */
-   #layout-navbar .nav-item input[type="text"] {
-       background: var(--bx-surface-soft) !important;
-       border: 1px solid var(--bx-border-subtle) !important;
-       border-radius: 10px !important;
-       color: var(--bx-text-body) !important;
-       font-size: 0.875rem !important;
-       font-weight: 500;
-       transition: all 0.2s ease;
-   }
-
-   #layout-navbar .nav-item input[type="text"]::placeholder {
-       color: var(--bx-text-muted) !important;
-       opacity: 0.85;
-   }
-
-   #layout-navbar .nav-item input[type="text"]:focus,
-   #layout-navbar .nav-item:hover input[type="text"] {
-       border-color: var(--bx-blue-primary) !important;
-       background: var(--bx-surface) !important;
-       box-shadow: 0 0 0 3px rgba(47, 107, 255, 0.12) !important;
-   }
-
-   /* Header Action Buttons / Icons */
-   .header-icon-box {
-       display: flex;
-       align-items: center;
-       justify-content: center;
-       min-width: 38px;
-       height: 38px;
-       border-radius: 10px;
-       background: var(--bx-surface-soft);
-       border: 1px solid var(--bx-border-subtle);
-       color: var(--bx-text-secondary);
-       transition: all 0.2s ease;
-       text-decoration: none;
-   }
-
-   .header-icon-box:hover {
-       color: var(--bx-blue-primary);
-       background: var(--bx-blue-soft);
-       border-color: rgba(47, 107, 255, 0.2);
-       transform: translateY(-1px);
-       box-shadow: 0 2px 6px rgba(47, 107, 255, 0.08);
-   }
-
-   .header-icon-box i {
-       color: inherit;
-       font-size: 1.15rem;
-   }
-
-   /* ===================== SEARCH FIELD CONTROL ===================== */
-   @media (max-width: 992px) {
-       #layout-navbar input[type="text"] {
-           display: none !important;
-       }
-   }
-
-   /* ===================== MOBILE / TABLET FINAL FIX ===================== */
-   @media (max-width: 992px) {
-
-       #layout-navbar {
-           padding: 0.5rem 0.75rem;
-       }
-
-       #layout-navbar .navbar-nav,
-       #layout-navbar .navbar-nav-right {
-           flex-direction: row !important;
-           flex-wrap: nowrap !important;
-           align-items: center;
-       }
-
-       #layout-navbar .navbar-nav > *,
-       #layout-navbar .navbar-nav-right > * {
-           flex: 0 0 auto;
-       }
-
-       /* hide username only, keep avatar */
-       .dropdown-user .d-md-block {
-           display: none !important;
-       }
-   }
-
-   /* Cleaned legacy purple conflict block */
-
-   .theme-toggle-btn {
-       width: 38px;
-       height: 38px;
-       border-radius: 10px;
-       border: 1px solid var(--bx-border-subtle);
-       background: var(--bx-surface-soft);
-       color: var(--bx-text-secondary);
-       display: inline-flex;
-       align-items: center;
-       justify-content: center;
-       cursor: pointer;
-       transition: all 0.2s ease;
-   }
-
-   .theme-toggle-btn:hover {
-       color: var(--bx-blue-primary);
-       background: var(--bx-blue-soft);
-       border-color: rgba(47, 107, 255, 0.2);
-       transform: translateY(-1px);
-   }
-
-   /* ===================== SIDEBAR ===================== */
-   .layout-menu {
-       transition: transform 0.3s ease, width 0.3s ease;
-       background: var(--bx-surface) !important;
-       border-right: 1px solid var(--bx-border-subtle) !important;
-       box-shadow: none !important;
-   }
-
-   .bg-menu-theme {
-       background: var(--bx-surface) !important;
-   }
-
-   .app-brand {
-       background: var(--bx-surface) !important;
-       border-bottom: 1px solid var(--bx-border-subtle);
-       padding: 1.125rem 1.25rem !important;
-       min-height: 68px;
-       display: flex;
-       align-items: center;
-   }
-
-   .app-brand-logo.demo {
-       width: 38px;
-       height: 38px;
-       border-radius: 10px;
-       overflow: hidden;
-       display: inline-flex;
-       align-items: center;
-       justify-content: center;
-       flex: 0 0 auto;
-       background: transparent;
-   }
-
-   .app-brand-logo.demo img {
-       width: 100%;
-       height: 100%;
-       object-fit: contain;
-       display: block;
-   }
-
-   .app-brand-text.demo {
-       font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif !important;
-       font-size: 1.125rem !important;
-       font-weight: 800 !important;
-       letter-spacing: -0.02em !important;
-       color: var(--bx-text-heading) !important;
-       -webkit-text-fill-color: initial !important;
-   }
-
-   .menu-divider {
-       border-color: var(--bx-border-subtle) !important;
-       margin: 0 !important;
-   }
-
-   /* Menu Item Styling */
-   .menu-inner {
-       padding: 0.75rem 0.5rem !important;
-   }
-
-   .menu-inner .menu-item {
-       margin-bottom: 2px;
-   }
-
-   .menu-inner .menu-item .menu-link {
-       color: var(--bx-text-body) !important;
-       font-size: 0.875rem !important;
-       font-weight: 600 !important;
-       padding: 0.6rem 0.875rem !important;
-       border-radius: 10px !important;
-       transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
-       position: relative;
-   }
-
-   .menu-inner .menu-item .menu-link i,
-   .menu-inner .menu-item .menu-link .menu-icon {
-       color: var(--bx-text-muted) !important;
-       font-size: 1.18rem !important;
-       margin-right: 0.75rem !important;
-       transition: color 0.18s ease, transform 0.18s ease;
-   }
-
-   /* Hover State */
-   .menu-inner .menu-item:hover > .menu-link {
-       background-color: var(--bx-blue-soft) !important;
-       color: var(--bx-blue-primary) !important;
-   }
-
-   .menu-inner .menu-item:hover > .menu-link i,
-   .menu-inner .menu-item:hover > .menu-link .menu-icon {
-       color: var(--bx-blue-primary) !important;
-       transform: translateX(1px);
-   }
-
-   /* Active State — Modern SaaS Accent */
-   .menu-inner .menu-item.active > .menu-link {
-       background: var(--bx-blue-soft) !important;
-       color: var(--bx-blue-primary) !important;
-       font-weight: 700 !important;
-       box-shadow: inset 3px 0 0 var(--bx-blue-primary) !important;
-   }
-
-   .menu-inner .menu-item.active > .menu-link i,
-   .menu-inner .menu-item.active > .menu-link .menu-icon {
-       color: var(--bx-blue-primary) !important;
-   }
-
-   /* Open state for parent menus */
-   .menu-inner .menu-item.open > .menu-link {
-       background-color: var(--bx-surface-soft) !important;
-       color: var(--bx-text-heading) !important;
-       font-weight: 650 !important;
-   }
-
-   .menu-inner .menu-item.open > .menu-link i {
-       color: var(--bx-blue-primary) !important;
-   }
-
-   /* Submenus */
-   .menu-sub {
-       background: transparent !important;
-       padding-left: 0.5rem !important;
-   }
-
-   .menu-sub .menu-item .menu-link {
-       color: var(--bx-text-secondary) !important;
-       font-weight: 550 !important;
-       font-size: 0.84rem !important;
-       padding: 0.48rem 0.875rem !important;
-       border-radius: 8px !important;
-   }
-
-   .menu-sub .menu-item:hover .menu-link {
-       color: var(--bx-blue-primary) !important;
-       background-color: var(--bx-blue-soft) !important;
-   }
-
-   .menu-sub .menu-item.active .menu-link {
-       color: var(--bx-blue-primary) !important;
-       font-weight: 700 !important;
-       background: var(--bx-blue-soft) !important;
-       box-shadow: inset 2px 0 0 var(--bx-blue-primary) !important;
-   }
-
-   /* Section Headers */
-   .menu-header {
-       padding: 1.25rem 1rem 0.4rem !important;
-   }
-
-   .menu-header-text {
-       font-size: 0.7rem !important;
-       font-weight: 750 !important;
-       text-transform: uppercase !important;
-       letter-spacing: 0.06em !important;
-       color: var(--bx-text-faint) !important;
-   }
-
-   /* ===================== DROPDOWNS ===================== */
-   .dropdown-menu {
-       background: var(--bx-surface) !important;
-       border: 1px solid var(--bx-border-subtle) !important;
-       border-radius: 14px !important;
-       box-shadow: var(--bx-shadow-lg) !important;
-       padding: 0.5rem !important;
-   }
-
-   .dropdown-item {
-       color: var(--bx-text-body) !important;
-       font-weight: 550;
-       border-radius: 8px;
-       padding: 0.55rem 0.85rem;
-       transition: all 0.15s ease;
-   }
-
-   .dropdown-item:hover {
-       background-color: var(--bx-blue-soft) !important;
-       color: var(--bx-blue-primary) !important;
-   }
-
-   .dropdown-item i {
-       color: var(--bx-text-muted);
-       transition: color 0.15s ease;
-   }
-
-   .dropdown-item:hover i {
-       color: var(--bx-blue-primary);
-   }
-
-   .dropdown-divider {
-       border-color: var(--bx-border-subtle) !important;
-       margin: 0.4rem 0 !important;
-   }
-
-   /* ===================== NOTIFICATIONS ===================== */
-   .notification-bell {
-       position: relative;
-       width: 38px;
-       height: 38px;
-       border-radius: 10px;
-       display: inline-flex;
-       align-items: center;
-       justify-content: center;
-       background: var(--bx-surface-soft);
-       border: 1px solid var(--bx-border-subtle);
-       color: var(--bx-text-secondary);
-       transition: all 0.2s ease;
-       text-decoration: none;
-   }
-
-   .notification-bell:hover {
-       background: var(--bx-blue-soft);
-       border-color: rgba(47, 107, 255, 0.2);
-       color: var(--bx-blue-primary);
-       transform: translateY(-1px);
-   }
-
-   .notification-bell.has-unread {
-       color: var(--bx-blue-primary);
-   }
-
-   .notification-bell.has-unread i {
-       animation: pmsBellShake 1.25s ease-in-out infinite;
-       transform-origin: top center;
-   }
-
-   .notification-bell .badge {
-       position: absolute;
-       top: -5px;
-       right: -5px;
-       min-width: 18px;
-       height: 18px;
-       border-radius: 999px;
-       background: var(--bx-red) !important;
-       color: #FFFFFF !important;
-       font-size: 10px;
-       font-weight: 800;
-       display: inline-flex;
-       align-items: center;
-       justify-content: center;
-       border: 2px solid var(--bx-surface);
-       padding: 0 4px;
-   }
-
-   .notification-dropdown {
-       width: min(420px, calc(100vw - 24px)) !important;
-       max-height: 540px;
-       overflow: hidden;
-       border-radius: 16px;
-       border: 1px solid var(--bx-border-subtle) !important;
-       box-shadow: var(--bx-shadow-lg) !important;
-       padding: 0 !important;
-   }
-
-   .notification-dropdown-head {
-       padding: 14px 18px;
-       background: var(--bx-surface-soft);
-       border-bottom: 1px solid var(--bx-border-subtle);
-   }
-
-   .notification-dropdown-body {
-       max-height: 380px;
-       overflow-y: auto;
-       padding: 6px;
-   }
-
-   .notification-card-link {
-       display: grid;
-       grid-template-columns: 40px 1fr auto;
-       gap: 12px;
-       align-items: start;
-       padding: 10px 12px;
-       border-radius: 10px;
-       text-decoration: none;
-       color: var(--bx-text-body);
-       border: 1px solid transparent;
-       transition: all 0.15s ease;
-   }
-
-   .notification-card-link:hover {
-       background: var(--bx-surface-soft);
-       border-color: var(--bx-border-subtle);
-   }
-
-   .notification-card-link.is-unread {
-       background: var(--bx-blue-soft);
-       border-color: rgba(47, 107, 255, 0.12);
-   }
-
-   .notification-avatar-icon {
-       width: 40px;
-       height: 40px;
-       border-radius: 10px;
-       display: inline-flex;
-       align-items: center;
-       justify-content: center;
-       color: #fff;
-       font-size: 16px;
-       background: var(--bx-blue-primary);
-   }
-
-   .notification-avatar-icon.color-warning { background: var(--bx-amber); }
-   .notification-avatar-icon.color-success { background: var(--bx-emerald); }
-   .notification-avatar-icon.color-danger { background: var(--bx-red); }
-   .notification-avatar-icon.color-info { background: var(--bx-cyan); }
-
-   .notification-title {
-       display: block;
-       font-size: 13.5px;
-       font-weight: 700;
-       color: var(--bx-text-heading);
-       line-height: 1.25;
-       margin-bottom: 3px;
-   }
-
-   .notification-message {
-       display: block;
-       font-size: 12px;
-       color: var(--bx-text-muted);
-       line-height: 1.35;
-       margin-bottom: 4px;
-   }
-
-   .notification-time {
-       display: inline-flex;
-       align-items: center;
-       gap: 4px;
-       font-size: 11px;
-       color: var(--bx-text-faint);
-       font-weight: 600;
-   }
-
-   .notification-unread-dot {
-       width: 8px;
-       height: 8px;
-       margin-top: 14px;
-       border-radius: 50%;
-       background: var(--bx-blue-primary);
-   }
-
-   .notification-dropdown-foot {
-       display: flex;
-       justify-content: space-between;
-       gap: 10px;
-       padding: 10px 16px;
-       border-top: 1px solid var(--bx-border-subtle);
-       background: var(--bx-surface);
-   }
-
-   @keyframes pmsBellShake {
-       0%, 100% { transform: rotate(0); }
-       15% { transform: rotate(10deg); }
-       30% { transform: rotate(-8deg); }
-       45% { transform: rotate(6deg); }
-       60% { transform: rotate(-4deg); }
-       75% { transform: rotate(2deg); }
-   }
-
-   /* ===================== BADGES & BUTTONS ===================== */
-   .btn-primary {
-       background: var(--bx-blue-primary) !important;
-       border-color: var(--bx-blue-primary) !important;
-       color: #FFFFFF !important;
-       font-weight: 600 !important;
-       border-radius: 10px !important;
-       box-shadow: 0 1px 3px rgba(47, 107, 255, 0.25) !important;
-       transition: all 0.2s ease !important;
-   }
-
-   .btn-primary:hover {
-       background: var(--bx-blue-hover) !important;
-       border-color: var(--bx-blue-hover) !important;
-       box-shadow: 0 4px 12px rgba(47, 107, 255, 0.3) !important;
-       transform: translateY(-1px);
-   }
-
-   .btn-outline-primary {
-       border-color: var(--bx-blue-primary) !important;
-       color: var(--bx-blue-primary) !important;
-       font-weight: 600 !important;
-       border-radius: 10px !important;
-       background: transparent !important;
-       transition: all 0.2s ease !important;
-   }
-
-   .btn-outline-primary:hover {
-       background: var(--bx-blue-primary) !important;
-       color: #FFFFFF !important;
-       box-shadow: 0 2px 8px rgba(47, 107, 255, 0.25) !important;
-   }
-
-   .badge.bg-primary {
-       background: var(--bx-blue-primary) !important;
-       color: #FFFFFF !important;
-   }
-
-   .badge.bg-success {
-       background: var(--bx-emerald) !important;
-       color: #FFFFFF !important;
-   }
-
-   .badge.bg-warning {
-       background: var(--bx-amber) !important;
-       color: #FFFFFF !important;
-   }
-
-   .badge.bg-danger {
-       background: var(--bx-red) !important;
-       color: #FFFFFF !important;
-   }
-
-   /* ===================== USER AVATAR ===================== */
-   .avatar-online img,
-   .navbar-profile-avatar {
-       width: 38px !important;
-       height: 38px !important;
-       border-radius: 50% !important;
-       border: 2px solid var(--bx-blue-primary) !important;
-       object-fit: cover;
-   }
-
-   /* Sticky Note Trigger */
-   .sticky-note-trigger {
-       position: relative;
-   }
-
-   .sticky-note-count {
-       position: absolute;
-       top: -6px;
-       right: -6px;
-       min-width: 18px;
-       height: 18px;
-       padding: 0 5px;
-       border-radius: 999px;
-       background: var(--bx-red);
-       color: #fff;
-       font-size: 10px;
-       font-weight: 800;
-       display: inline-flex;
-       align-items: center;
-       justify-content: center;
-       border: 2px solid var(--bx-surface);
-   }
-
-   .sidebar-notification-badge {
-       margin-left: auto;
-       min-width: 18px;
-       height: 18px;
-       padding: 0 5px;
-       border-radius: 999px;
-       display: none;
-       align-items: center;
-       justify-content: center;
-       font-size: 10px;
-       font-weight: 800;
-       line-height: 1;
-       color: #fff;
-       background: var(--bx-blue-primary);
-   }
-
-   .sidebar-notification-badge.is-visible {
-       display: inline-flex;
-   }
-
-   .sidebar-notification-badge.type-new { background: var(--bx-blue-primary); }
-   .sidebar-notification-badge.type-pending { background: var(--bx-amber); }
-   .sidebar-notification-badge.type-issue { background: var(--bx-red); }
-   .sidebar-notification-badge.type-warning { background: var(--bx-amber); }
-   .sidebar-notification-badge.type-unread { background: var(--bx-blue-primary); }
-
-   /* Sticky Notes System Styling */
-   .sticky-note-dock {
-       position: fixed;
-       right: 20px;
-       bottom: 20px;
-       z-index: 1030;
-   }
-
-   .sticky-note-card {
-       position: relative;
-       padding: 16px 14px 12px;
-       border-radius: 12px;
-       box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
-       color: #1e293b;
-       overflow: hidden;
-       transition: transform 0.2s ease, box-shadow 0.2s ease;
-   }
-
-   .sticky-note-card:hover {
-       transform: translateY(-2px) rotate(0deg) !important;
-       box-shadow: 0 12px 28px rgba(15, 23, 42, 0.16);
-   }
-
-   .sticky-note-card.yellow { background: linear-gradient(135deg, #fffbeb, #fef3c7); border: 1px solid #fde68a; }
-   .sticky-note-card.blue { background: linear-gradient(135deg, #eff6ff, #dbeafe); border: 1px solid #bfdbfe; }
-   .sticky-note-card.red { background: linear-gradient(135deg, #fef2f2, #fee2e2); border: 1px solid #fecaca; }
-   .sticky-note-card.gray { background: linear-gradient(135deg, #f8fafc, #f1f5f9); border: 1px solid #e2e8f0; }
-   .sticky-note-card.purple { background: linear-gradient(135deg, #faf5ff, #f3e8ff); border: 1px solid #e9d5ff; }
-   .sticky-note-card.green { background: linear-gradient(135deg, #f0fdf4, #dcfce7); border: 1px solid #bbf7d0; }
-
-   .sticky-note-card p {
-       margin: 0 0 8px;
-       font-size: 0.9rem;
-       font-weight: 600;
-       line-height: 1.4;
-       white-space: pre-line;
-   }
-
-   .sticky-note-meta {
-       font-size: 0.72rem;
-       font-weight: 650;
-       color: #64748b;
-   }
-
-   /* Sticky Notes Dark Mode Styling */
-   html[data-pms-theme="dark"] .sticky-note-card,
-   html[data-theme="dark"] .sticky-note-card,
-   [data-pms-theme="dark"] .sticky-note-card {
-       color: #EEF1FB !important;
-       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35) !important;
-   }
-
-   html[data-pms-theme="dark"] .sticky-note-card p,
-   html[data-theme="dark"] .sticky-note-card p,
-   [data-pms-theme="dark"] .sticky-note-card p {
-       color: #F8FAFC !important;
-   }
-
-   html[data-pms-theme="dark"] .sticky-note-card .sticky-note-meta,
-   html[data-theme="dark"] .sticky-note-card .sticky-note-meta,
-   [data-pms-theme="dark"] .sticky-note-card .sticky-note-meta {
-       color: rgba(248, 250, 252, 0.75) !important;
-   }
-
-   html[data-pms-theme="dark"] .sticky-note-card.yellow,
-   html[data-theme="dark"] .sticky-note-card.yellow,
-   [data-pms-theme="dark"] .sticky-note-card.yellow {
-       background: linear-gradient(135deg, rgba(245, 158, 11, 0.22), rgba(180, 83, 9, 0.35)) !important;
-       border: 1px solid rgba(245, 158, 11, 0.5) !important;
-   }
-
-   html[data-pms-theme="dark"] .sticky-note-card.blue,
-   html[data-theme="dark"] .sticky-note-card.blue,
-   [data-pms-theme="dark"] .sticky-note-card.blue {
-       background: linear-gradient(135deg, rgba(59, 130, 246, 0.22), rgba(29, 78, 216, 0.35)) !important;
-       border: 1px solid rgba(59, 130, 246, 0.5) !important;
-   }
-
-   html[data-pms-theme="dark"] .sticky-note-card.red,
-   html[data-theme="dark"] .sticky-note-card.red,
-   [data-pms-theme="dark"] .sticky-note-card.red {
-       background: linear-gradient(135deg, rgba(239, 68, 68, 0.22), rgba(185, 28, 28, 0.35)) !important;
-       border: 1px solid rgba(239, 68, 68, 0.5) !important;
-   }
-
-   html[data-pms-theme="dark"] .sticky-note-card.gray,
-   html[data-theme="dark"] .sticky-note-card.gray,
-   [data-pms-theme="dark"] .sticky-note-card.gray {
-       background: linear-gradient(135deg, rgba(148, 163, 184, 0.2), rgba(71, 85, 105, 0.35)) !important;
-       border: 1px solid rgba(148, 163, 184, 0.5) !important;
-   }
-
-   html[data-pms-theme="dark"] .sticky-note-card.purple,
-   html[data-theme="dark"] .sticky-note-card.purple,
-   [data-pms-theme="dark"] .sticky-note-card.purple {
-       background: linear-gradient(135deg, rgba(168, 85, 247, 0.22), rgba(126, 34, 206, 0.35)) !important;
-       border: 1px solid rgba(168, 85, 247, 0.5) !important;
-   }
-
-   html[data-pms-theme="dark"] .sticky-note-card.green,
-   html[data-theme="dark"] .sticky-note-card.green,
-   [data-pms-theme="dark"] .sticky-note-card.green {
-       background: linear-gradient(135deg, rgba(47, 107, 255, 0.22), rgba(4, 120, 87, 0.35)) !important;
-       border: 1px solid rgba(47, 107, 255, 0.5) !important;
-   }
-
-   html[data-pms-theme="dark"] .sticky-note-actions button,
-   html[data-theme="dark"] .sticky-note-actions button,
-   [data-pms-theme="dark"] .sticky-note-actions button {
-       background: rgba(255, 255, 255, 0.15) !important;
-       color: #F8FAFC !important;
-       border: 1px solid rgba(255, 255, 255, 0.25) !important;
-   }
-
-   html[data-pms-theme="dark"] .sticky-note-actions button:hover,
-   html[data-theme="dark"] .sticky-note-actions button:hover,
-   [data-pms-theme="dark"] .sticky-note-actions button:hover {
-       background: rgba(255, 255, 255, 0.35) !important;
-       color: #FFFFFF !important;
-   }
-
-   html[data-pms-theme="dark"] #addNoteModal .form-control,
-   html[data-theme="dark"] #addNoteModal .form-control,
-   [data-pms-theme="dark"] #addNoteModal .form-control,
-   html[data-pms-theme="dark"] #addNoteModal .form-select,
-   html[data-theme="dark"] #addNoteModal .form-select,
-   [data-pms-theme="dark"] #addNoteModal .form-select {
-       background-color: #141B3D !important;
-       color: #EEF1FB !important;
-       border-color: rgba(238, 241, 251, 0.16) !important;
-   }
-
-   html[data-pms-theme="dark"] #addNoteModal .form-label,
-   html[data-theme="dark"] #addNoteModal .form-label,
-   [data-pms-theme="dark"] #addNoteModal .form-label,
-   html[data-pms-theme="dark"] #addNoteModal h6,
-   html[data-theme="dark"] #addNoteModal h6,
-   [data-pms-theme="dark"] #addNoteModal h6 {
-       color: #EEF1FB !important;
-   }
-
-   html[data-pms-theme="dark"] #addNoteModal .btn-close,
-   html[data-theme="dark"] #addNoteModal .btn-close,
-   [data-pms-theme="dark"] #addNoteModal .btn-close {
-       filter: invert(1) grayscale(100%) brightness(200%) !important;
-   }
-
-   .sticky-note-actions {
-       position: absolute;
-       top: 8px;
-       right: 8px;
-       display: flex;
-       gap: 4px;
-   }
-
-   .sticky-note-actions button {
-       width: 24px;
-       height: 24px;
-       border: 0;
-       border-radius: 6px;
-       background: rgba(255, 255, 255, 0.75);
-       color: #1e293b;
-       display: inline-flex;
-       align-items: center;
-       justify-content: center;
-       cursor: pointer;
-   }
-
-   .sticky-notes-grid {
-       display: grid;
-       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-       gap: 14px;
-   }
-
-   /* ===================== DARK MODE SUPPORT ===================== */
-   html[data-pms-theme="dark"],
-   html[data-theme="dark"],
-   html[data-bs-theme="dark"],
-   body[data-pms-theme="dark"],
-   body.dark-mode,
-   [data-pms-theme="dark"],
-   [data-theme="dark"] {
-       --bx-blue-primary: #2F6BFF;
-       --bx-blue-hover: #4F83FF;
-       --bx-blue-soft: rgba(47, 107, 255, 0.18);
-       --bx-blue-subtle: rgba(47, 107, 255, 0.08);
-       --bx-surface: #0F1530;
-       --bx-surface-soft: #141B3D;
-       --bx-surface-subtle: #1A2247;
-       --bx-text-heading: #EEF1FB;
-       --bx-text-body: #CBD5E1;
-       --bx-text-secondary: #9AA3C7;
-       --bx-text-muted: #6B739A;
-       --bx-text-faint: #4B5578;
-       --bx-border-subtle: rgba(238, 241, 251, 0.09);
-       --bx-border-soft: rgba(238, 241, 251, 0.16);
-       --bx-border-focus: rgba(47, 107, 255, 0.5);
-       --bx-navbar-bg: rgba(15, 21, 48, 0.94);
-   }
-
-   /* Layout & Navbar */
-   html[data-pms-theme="dark"] #layout-navbar,
-   html[data-theme="dark"] #layout-navbar,
-   html[data-bs-theme="dark"] #layout-navbar,
-   [data-pms-theme="dark"] #layout-navbar,
-   body.dark-mode #layout-navbar {
-       background: rgba(15, 21, 48, 0.94) !important;
-       border-color: rgba(238, 241, 251, 0.09) !important;
-       color: #CBD5E1 !important;
-   }
-
-   html[data-pms-theme="dark"] #layout-navbar .fw-bold,
-   html[data-theme="dark"] #layout-navbar .fw-bold,
-   [data-pms-theme="dark"] #layout-navbar .fw-bold {
-       color: #EEF1FB !important;
-   }
-
-   html[data-pms-theme="dark"] #layout-navbar .navbar-search-wrapper,
-   [data-pms-theme="dark"] #layout-navbar .navbar-search-wrapper {
-       color: #CBD5E1 !important;
-   }
-
-   html[data-pms-theme="dark"] #layout-navbar .navbar-search-wrapper input,
-   [data-pms-theme="dark"] #layout-navbar .navbar-search-wrapper input {
-       background: #141B3D !important;
-       border: 1px solid rgba(238, 241, 251, 0.1) !important;
-       color: #EEF1FB !important;
-   }
-
-   html[data-pms-theme="dark"] #layout-navbar .navbar-search-wrapper input::placeholder,
-   [data-pms-theme="dark"] #layout-navbar .navbar-search-wrapper input::placeholder {
-       color: #9AA3C7 !important;
-   }
-
-   /* Header Icons */
-   html[data-pms-theme="dark"] .header-icon-box,
-   html[data-theme="dark"] .header-icon-box,
-   html[data-pms-theme="dark"] .theme-toggle-btn,
-   html[data-theme="dark"] .theme-toggle-btn,
-   html[data-pms-theme="dark"] .notification-bell,
-   html[data-theme="dark"] .notification-bell,
-   [data-pms-theme="dark"] .header-icon-box,
-   [data-pms-theme="dark"] .theme-toggle-btn,
-   [data-pms-theme="dark"] .notification-bell,
-   body.dark-mode .header-icon-box,
-   body.dark-mode .theme-toggle-btn,
-   body.dark-mode .notification-bell {
-       background: #141B3D !important;
-       border-color: rgba(238, 241, 251, 0.1) !important;
-       color: #CBD5E1 !important;
-   }
-
-   html[data-pms-theme="dark"] .header-icon-box:hover,
-   html[data-theme="dark"] .header-icon-box:hover,
-   html[data-pms-theme="dark"] .theme-toggle-btn:hover,
-   html[data-theme="dark"] .theme-toggle-btn:hover,
-   html[data-pms-theme="dark"] .notification-bell:hover,
-   html[data-theme="dark"] .notification-bell:hover,
-   [data-pms-theme="dark"] .header-icon-box:hover,
-   [data-pms-theme="dark"] .theme-toggle-btn:hover,
-   [data-pms-theme="dark"] .notification-bell:hover {
-       background: #1A2247 !important;
-       border-color: rgba(47, 107, 255, 0.35) !important;
-       color: #2F6BFF !important;
-   }
-
-   html[data-pms-theme="dark"] .header-icon-box i,
-   html[data-pms-theme="dark"] .header-icon-box i.text-dark,
-   html[data-pms-theme="dark"] .header-icon-box i.text-dark-grey,
-   [data-pms-theme="dark"] .header-icon-box i,
-   [data-pms-theme="dark"] .header-icon-box i.text-dark,
-   [data-pms-theme="dark"] .header-icon-box i.text-dark-grey,
-   body.dark-mode .header-icon-box i,
-   body.dark-mode .header-icon-box i.text-dark,
-   body.dark-mode .header-icon-box i.text-dark-grey {
-       color: #CBD5E1 !important;
-   }
-
-   html[data-pms-theme="dark"] .header-icon-box:hover i,
-   html[data-pms-theme="dark"] .header-icon-box:hover i.text-dark,
-   [data-pms-theme="dark"] .header-icon-box:hover i {
-       color: #2F6BFF !important;
-   }
-
-   /* Sidebar Menu */
-   html[data-pms-theme="dark"] .layout-menu,
-   html[data-theme="dark"] .layout-menu,
-   html[data-bs-theme="dark"] .layout-menu,
-   [data-pms-theme="dark"] .layout-menu,
-   body.dark-mode .layout-menu {
-       background: #0B1026 !important;
-       border-color: rgba(238, 241, 251, 0.09) !important;
-   }
-
-   html[data-pms-theme="dark"] .bg-menu-theme,
-   html[data-theme="dark"] .bg-menu-theme,
-   [data-pms-theme="dark"] .bg-menu-theme,
-   body.dark-mode .bg-menu-theme {
-       background: #0B1026 !important;
-   }
-
-   html[data-pms-theme="dark"] .app-brand,
-   html[data-theme="dark"] .app-brand,
-   [data-pms-theme="dark"] .app-brand,
-   body.dark-mode .app-brand {
-       background: #0B1026 !important;
-       border-color: rgba(238, 241, 251, 0.09) !important;
-   }
-
-   html[data-pms-theme="dark"] .app-brand-text.demo,
-   html[data-theme="dark"] .app-brand-text.demo,
-   [data-pms-theme="dark"] .app-brand-text.demo {
-       color: #EEF1FB !important;
-   }
-
-   html[data-pms-theme="dark"] .menu-inner .menu-item .menu-link,
-   html[data-theme="dark"] .menu-inner .menu-item .menu-link,
-   [data-pms-theme="dark"] .menu-inner .menu-item .menu-link,
-   body.dark-mode .menu-inner .menu-item .menu-link {
-       color: #CBD5E1 !important;
-   }
-
-   html[data-pms-theme="dark"] .menu-inner .menu-item .menu-link i,
-   html[data-pms-theme="dark"] .menu-inner .menu-item .menu-link .menu-icon,
-   [data-pms-theme="dark"] .menu-inner .menu-item .menu-link i,
-   [data-pms-theme="dark"] .menu-inner .menu-item .menu-link .menu-icon {
-       color: #9AA3C7 !important;
-   }
-
-   html[data-pms-theme="dark"] .menu-inner .menu-item:hover > .menu-link,
-   [data-pms-theme="dark"] .menu-inner .menu-item:hover > .menu-link {
-       background-color: #141B3D !important;
-       color: #EEF1FB !important;
-   }
-
-   html[data-pms-theme="dark"] .menu-inner .menu-item:hover > .menu-link i,
-   html[data-pms-theme="dark"] .menu-inner .menu-item:hover > .menu-link .menu-icon,
-   [data-pms-theme="dark"] .menu-inner .menu-item:hover > .menu-link i {
-       color: #2F6BFF !important;
-   }
-
-   html[data-pms-theme="dark"] .menu-inner .menu-item.active > .menu-link,
-   [data-pms-theme="dark"] .menu-inner .menu-item.active > .menu-link {
-       background: rgba(47, 107, 255, 0.18) !important;
-       color: #60A5FA !important;
-       font-weight: 700 !important;
-       box-shadow: inset 3px 0 0 #2F6BFF !important;
-   }
-
-   html[data-pms-theme="dark"] .menu-inner .menu-item.active > .menu-link i,
-   html[data-pms-theme="dark"] .menu-inner .menu-item.active > .menu-link .menu-icon,
-   [data-pms-theme="dark"] .menu-inner .menu-item.active > .menu-link i {
-       color: #2F6BFF !important;
-   }
-
-   html[data-pms-theme="dark"] .menu-inner .menu-item.open > .menu-link,
-   [data-pms-theme="dark"] .menu-inner .menu-item.open > .menu-link {
-       background-color: #141B3D !important;
-       color: #EEF1FB !important;
-   }
-
-   html[data-pms-theme="dark"] .menu-inner .menu-item.open > .menu-link i,
-   [data-pms-theme="dark"] .menu-inner .menu-item.open > .menu-link i {
-       color: #2F6BFF !important;
-   }
-
-   html[data-pms-theme="dark"] .menu-sub,
-   [data-pms-theme="dark"] .menu-sub {
-       background: rgba(7, 11, 26, 0.5) !important;
-       border-radius: 8px;
-   }
-
-   html[data-pms-theme="dark"] .menu-sub .menu-item .menu-link,
-   [data-pms-theme="dark"] .menu-sub .menu-item .menu-link {
-       color: #9AA3C7 !important;
-   }
-
-   html[data-pms-theme="dark"] .menu-sub .menu-item:hover .menu-link,
-   [data-pms-theme="dark"] .menu-sub .menu-item:hover .menu-link {
-       color: #EEF1FB !important;
-       background-color: #141B3D !important;
-   }
-
-   html[data-pms-theme="dark"] .menu-sub .menu-item.active .menu-link,
-   [data-pms-theme="dark"] .menu-sub .menu-item.active .menu-link {
-       color: #2F6BFF !important;
-       background: rgba(47, 107, 255, 0.16) !important;
-       box-shadow: inset 2px 0 0 #2F6BFF !important;
-   }
-
-   html[data-pms-theme="dark"] .menu-header-text,
-   [data-pms-theme="dark"] .menu-header-text {
-       color: #6B739A !important;
-   }
-
-   /* Dropdowns in Dark Mode */
-   html[data-pms-theme="dark"] .dropdown-menu,
-   html[data-theme="dark"] .dropdown-menu,
-   html[data-bs-theme="dark"] .dropdown-menu,
-   [data-pms-theme="dark"] .dropdown-menu,
-   body.dark-mode .dropdown-menu {
-       background: #0F1530 !important;
-       border-color: rgba(238, 241, 251, 0.12) !important;
-       box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6) !important;
-       color: #CBD5E1 !important;
-   }
-
-   html[data-pms-theme="dark"] .dropdown-item,
-   html[data-pms-theme="dark"] .dropdown-item.text-dark,
-   [data-pms-theme="dark"] .dropdown-item,
-   [data-pms-theme="dark"] .dropdown-item.text-dark {
-       color: #CBD5E1 !important;
-   }
-
-   html[data-pms-theme="dark"] .dropdown-item:hover,
-   [data-pms-theme="dark"] .dropdown-item:hover {
-       background-color: #141B3D !important;
-       color: #2F6BFF !important;
-   }
-
-   html[data-pms-theme="dark"] .dropdown-item:hover i,
-   [data-pms-theme="dark"] .dropdown-item:hover i {
-       color: #2F6BFF !important;
-   }
-
-   html[data-pms-theme="dark"] .dropdown-header,
-   [data-pms-theme="dark"] .dropdown-header {
-       color: #9AA3C7 !important;
-   }
-
-   html[data-pms-theme="dark"] .dropdown-divider,
-   [data-pms-theme="dark"] .dropdown-divider {
-       border-color: rgba(238, 241, 251, 0.09) !important;
-   }
-
-   html[data-pms-theme="dark"] .dropdown-menu .bg-white,
-   html[data-pms-theme="dark"] .dropdown-menu li.bg-white,
-   [data-pms-theme="dark"] .dropdown-menu .bg-white,
-   [data-pms-theme="dark"] .dropdown-menu li.bg-white {
-       background-color: #141B3D !important;
-       color: #EEF1FB !important;
-   }
-
-   html[data-pms-theme="dark"] .dropdown-menu .text-dark,
-   [data-pms-theme="dark"] .dropdown-menu .text-dark {
-       color: #EEF1FB !important;
-   }
-
-   /* Modals in Dark Mode */
-   html[data-pms-theme="dark"] .modal-content,
-   html[data-theme="dark"] .modal-content,
-   html[data-bs-theme="dark"] .modal-content,
-   [data-pms-theme="dark"] .modal-content,
-   body.dark-mode .modal-content {
-       background-color: #0F1530 !important;
-       color: #CBD5E1 !important;
-       border-color: rgba(238, 241, 251, 0.12) !important;
-       box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.7) !important;
-   }
-
-   html[data-pms-theme="dark"] .modal-header,
-   html[data-theme="dark"] .modal-header,
-   html[data-pms-theme="dark"] .modal-footer,
-   html[data-theme="dark"] .modal-footer {
-       border-color: rgba(238, 241, 251, 0.09) !important;
-   }
-
-   html[data-pms-theme="dark"] .modal-title,
-   html[data-theme="dark"] .modal-title {
-       color: #EEF1FB !important;
-   }
-
-   html[data-pms-theme="dark"] .notification-dropdown-head,
-   html[data-theme="dark"] .notification-dropdown-head {
-       background: #141B3D !important;
-       border-color: rgba(238, 241, 251, 0.09) !important;
-   }
-
-   html[data-pms-theme="dark"] .notification-dropdown-foot,
-   html[data-theme="dark"] .notification-dropdown-foot {
-       background: #0F1530 !important;
-       border-color: rgba(238, 241, 251, 0.09) !important;
-   }
-
-   html[data-pms-theme="dark"] .notification-title,
-   html[data-theme="dark"] .notification-title {
-       color: #EEF1FB !important;
-   }
-
-   html[data-pms-theme="dark"] .notification-message,
-   html[data-theme="dark"] .notification-message {
-       color: #9AA3C7 !important;
-   }
-
-   html[data-pms-theme="dark"] .notification-card-link:hover,
-   html[data-theme="dark"] .notification-card-link:hover {
-       background: #141B3D !important;
-   }
-
-   @media (max-width: 992px) {
-       #layout-navbar {
-           padding: 0.5rem 0.75rem;
-       }
-       #layout-navbar input[type="text"] {
-           display: none !important;
-       }
-   }
-    /* Global Fix: Ensure all inline Add buttons (in input groups & flex containers) have ample size, minimum width, and never squish */
-    .d-flex > button,
-    .input-group > button,
-    .d-flex > .btn,
-    .input-group > .btn {
-        flex-shrink: 0 !important;
-        white-space: nowrap !important;
-        min-width: 76px;
-        padding-left: 0.9rem !important;
-        padding-right: 0.9rem !important;
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-    }
-
-    /* ===================== SUBSCRIPTION & SUSPENSION BANNERS ===================== */
-    .pms-suspended-banner {
-        background: linear-gradient(135deg, #fef2f2 0%, #ffe4e6 100%) !important;
-        border: 1px solid #fecaca !important;
-        border-left: 5px solid #ef4444 !important;
-        border-radius: 14px !important;
-        color: #991b1b !important;
-        padding: 16px 20px !important;
-        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.08) !important;
-    }
-    .pms-suspended-banner .pms-banner-icon {
-        width: 38px;
-        height: 38px;
-        border-radius: 50%;
-        background: #fee2e2 !important;
-        color: #ef4444 !important;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 20px;
-    }
-    .pms-suspended-banner .pms-banner-title {
-        color: #991b1b !important;
-        font-size: 15px !important;
-        font-weight: 700 !important;
-        letter-spacing: -0.01em;
-    }
-    .pms-suspended-banner .pms-banner-text {
-        color: #7f1d1d !important;
-        font-size: 13px !important;
-        font-weight: 500 !important;
-        opacity: 0.95 !important;
-        margin-top: 2px;
-    }
-    .pms-suspended-banner .pms-banner-btn {
-        font-size: 13px !important;
-        background: #ef4444 !important;
-        border-color: #ef4444 !important;
-        color: #ffffff !important;
-        box-shadow: 0 2px 8px rgba(239, 68, 68, 0.25) !important;
-    }
-    .pms-suspended-banner .pms-banner-btn:hover {
-        background: #dc2626 !important;
-        border-color: #dc2626 !important;
-        color: #ffffff !important;
-        box-shadow: 0 4px 14px rgba(239, 68, 68, 0.35) !important;
-    }
-
-    /* Expiring Banner - Light Mode */
-    .pms-expiring-banner {
-        border-radius: 14px !important;
-        padding: 16px 20px !important;
-    }
-    .pms-expiring-banner.is-urgent {
-        background: linear-gradient(135deg, #fff5f5 0%, #fef2f2 100%) !important;
-        border: 1px solid #fecaca !important;
-        border-left: 5px solid #ef4444 !important;
-        color: #991b1b !important;
-    }
-    .pms-expiring-banner.is-urgent .pms-banner-icon {
-        width: 38px;
-        height: 38px;
-        border-radius: 50%;
-        background: #fee2e2 !important;
-        color: #ef4444 !important;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 20px;
-    }
-    .pms-expiring-banner.is-urgent .pms-banner-title {
-        color: #991b1b !important;
-        font-size: 15px !important;
-        font-weight: 700 !important;
-    }
-    .pms-expiring-banner.is-urgent .pms-banner-text {
-        color: #7f1d1d !important;
-        font-size: 13px !important;
-        opacity: 0.95 !important;
-    }
-
-    .pms-expiring-banner.is-warning {
-        background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%) !important;
-        border: 1px solid #fde68a !important;
-        border-left: 5px solid #f59e0b !important;
-        color: #92400e !important;
-    }
-    .pms-expiring-banner.is-warning .pms-banner-icon {
-        width: 38px;
-        height: 38px;
-        border-radius: 50%;
-        background: #fde68a !important;
-        color: #d97706 !important;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 20px;
-    }
-    .pms-expiring-banner.is-warning .pms-banner-title {
-        color: #92400e !important;
-        font-size: 15px !important;
-        font-weight: 700 !important;
-    }
-    .pms-expiring-banner.is-warning .pms-banner-text {
-        color: #78350f !important;
-        font-size: 13px !important;
-        opacity: 0.95 !important;
-    }
-    .pms-expiring-banner .pms-banner-btn-secondary {
-        font-size: 12.5px !important;
-        background: transparent !important;
-        border: 1px solid rgba(0, 0, 0, 0.2) !important;
-        color: #1e293b !important;
-    }
-
-    /* ===================== SUSPENDED & EXPIRING BANNERS — DARK MODE ===================== */
-    html[data-pms-theme="dark"] .pms-suspended-banner,
-    html[data-theme="dark"] .pms-suspended-banner,
-    html[data-bs-theme="dark"] .pms-suspended-banner,
-    [data-pms-theme="dark"] .pms-suspended-banner,
-    [data-theme="dark"] .pms-suspended-banner,
-    body.dark-mode .pms-suspended-banner {
-        background: linear-gradient(135deg, rgba(239, 68, 68, 0.16) 0%, rgba(185, 28, 28, 0.28) 100%) !important;
-        border: 1px solid rgba(239, 68, 68, 0.38) !important;
-        border-left: 5px solid #ef4444 !important;
-        color: #fca5a5 !important;
-        box-shadow: 0 8px 24px rgba(239, 68, 68, 0.18) !important;
-        backdrop-filter: blur(12px) !important;
-        -webkit-backdrop-filter: blur(12px) !important;
-    }
-    html[data-pms-theme="dark"] .pms-suspended-banner .pms-banner-icon,
-    html[data-theme="dark"] .pms-suspended-banner .pms-banner-icon,
-    html[data-bs-theme="dark"] .pms-suspended-banner .pms-banner-icon,
-    [data-pms-theme="dark"] .pms-suspended-banner .pms-banner-icon,
-    [data-theme="dark"] .pms-suspended-banner .pms-banner-icon,
-    body.dark-mode .pms-suspended-banner .pms-banner-icon {
-        background: rgba(239, 68, 68, 0.25) !important;
-        color: #f87171 !important;
-        border: 1px solid rgba(239, 68, 68, 0.45) !important;
-    }
-    html[data-pms-theme="dark"] .pms-suspended-banner .pms-banner-title,
-    html[data-theme="dark"] .pms-suspended-banner .pms-banner-title,
-    html[data-bs-theme="dark"] .pms-suspended-banner .pms-banner-title,
-    [data-pms-theme="dark"] .pms-suspended-banner .pms-banner-title,
-    [data-theme="dark"] .pms-suspended-banner .pms-banner-title,
-    body.dark-mode .pms-suspended-banner .pms-banner-title {
-        color: #ffffff !important;
-        font-weight: 750 !important;
-        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
-    }
-    html[data-pms-theme="dark"] .pms-suspended-banner .pms-banner-text,
-    html[data-theme="dark"] .pms-suspended-banner .pms-banner-text,
-    html[data-bs-theme="dark"] .pms-suspended-banner .pms-banner-text,
-    [data-pms-theme="dark"] .pms-suspended-banner .pms-banner-text,
-    [data-theme="dark"] .pms-suspended-banner .pms-banner-text,
-    body.dark-mode .pms-suspended-banner .pms-banner-text {
-        color: #fecaca !important;
-        opacity: 1 !important;
-        font-weight: 500 !important;
-    }
-    html[data-pms-theme="dark"] .pms-suspended-banner .pms-banner-btn,
-    html[data-theme="dark"] .pms-suspended-banner .pms-banner-btn,
-    html[data-bs-theme="dark"] .pms-suspended-banner .pms-banner-btn,
-    [data-pms-theme="dark"] .pms-suspended-banner .pms-banner-btn,
-    [data-theme="dark"] .pms-suspended-banner .pms-banner-btn,
-    body.dark-mode .pms-suspended-banner .pms-banner-btn {
-        background: linear-gradient(135deg, #ef4444, #dc2626) !important;
-        border-color: #ef4444 !important;
-        color: #ffffff !important;
-        box-shadow: 0 4px 16px rgba(239, 68, 68, 0.45) !important;
-    }
-
-    /* Dark Mode Expiring Banners */
-    html[data-pms-theme="dark"] .pms-expiring-banner.is-urgent,
-    html[data-theme="dark"] .pms-expiring-banner.is-urgent,
-    html[data-bs-theme="dark"] .pms-expiring-banner.is-urgent,
-    [data-pms-theme="dark"] .pms-expiring-banner.is-urgent,
-    [data-theme="dark"] .pms-expiring-banner.is-urgent,
-    body.dark-mode .pms-expiring-banner.is-urgent {
-        background: linear-gradient(135deg, rgba(239, 68, 68, 0.16) 0%, rgba(185, 28, 28, 0.28) 100%) !important;
-        border: 1px solid rgba(239, 68, 68, 0.38) !important;
-        border-left: 5px solid #ef4444 !important;
-        color: #fca5a5 !important;
-        box-shadow: 0 8px 24px rgba(239, 68, 68, 0.18) !important;
-    }
-    html[data-pms-theme="dark"] .pms-expiring-banner.is-urgent .pms-banner-icon,
-    html[data-theme="dark"] .pms-expiring-banner.is-urgent .pms-banner-icon,
-    [data-pms-theme="dark"] .pms-expiring-banner.is-urgent .pms-banner-icon {
-        background: rgba(239, 68, 68, 0.25) !important;
-        color: #f87171 !important;
-        border: 1px solid rgba(239, 68, 68, 0.45) !important;
-    }
-    html[data-pms-theme="dark"] .pms-expiring-banner.is-urgent .pms-banner-title,
-    html[data-theme="dark"] .pms-expiring-banner.is-urgent .pms-banner-title,
-    [data-pms-theme="dark"] .pms-expiring-banner.is-urgent .pms-banner-title {
-        color: #ffffff !important;
-        font-weight: 750 !important;
-    }
-    html[data-pms-theme="dark"] .pms-expiring-banner.is-urgent .pms-banner-text,
-    html[data-theme="dark"] .pms-expiring-banner.is-urgent .pms-banner-text,
-    [data-pms-theme="dark"] .pms-expiring-banner.is-urgent .pms-banner-text {
-        color: #fecaca !important;
-        opacity: 1 !important;
-        font-weight: 500 !important;
-    }
-
-    html[data-pms-theme="dark"] .pms-expiring-banner.is-warning,
-    html[data-theme="dark"] .pms-expiring-banner.is-warning,
-    html[data-bs-theme="dark"] .pms-expiring-banner.is-warning,
-    [data-pms-theme="dark"] .pms-expiring-banner.is-warning,
-    [data-theme="dark"] .pms-expiring-banner.is-warning,
-    body.dark-mode .pms-expiring-banner.is-warning {
-        background: linear-gradient(135deg, rgba(245, 158, 11, 0.16) 0%, rgba(180, 83, 9, 0.28) 100%) !important;
-        border: 1px solid rgba(245, 158, 11, 0.38) !important;
-        border-left: 5px solid #f59e0b !important;
-        color: #fde68a !important;
-        box-shadow: 0 8px 24px rgba(245, 158, 11, 0.18) !important;
-    }
-    html[data-pms-theme="dark"] .pms-expiring-banner.is-warning .pms-banner-icon,
-    html[data-theme="dark"] .pms-expiring-banner.is-warning .pms-banner-icon,
-    [data-pms-theme="dark"] .pms-expiring-banner.is-warning .pms-banner-icon {
-        background: rgba(245, 158, 11, 0.25) !important;
-        color: #fbbf24 !important;
-        border: 1px solid rgba(245, 158, 11, 0.45) !important;
-    }
-    html[data-pms-theme="dark"] .pms-expiring-banner.is-warning .pms-banner-title,
-    html[data-theme="dark"] .pms-expiring-banner.is-warning .pms-banner-title,
-    [data-pms-theme="dark"] .pms-expiring-banner.is-warning .pms-banner-title {
-        color: #ffffff !important;
-        font-weight: 750 !important;
-    }
-    html[data-pms-theme="dark"] .pms-expiring-banner.is-warning .pms-banner-text,
-    html[data-theme="dark"] .pms-expiring-banner.is-warning .pms-banner-text,
-    [data-pms-theme="dark"] .pms-expiring-banner.is-warning .pms-banner-text {
-        color: #fef3c7 !important;
-        opacity: 1 !important;
-        font-weight: 500 !important;
-    }
-    html[data-pms-theme="dark"] .pms-expiring-banner .pms-banner-btn-secondary,
-    html[data-theme="dark"] .pms-expiring-banner .pms-banner-btn-secondary,
-    [data-pms-theme="dark"] .pms-expiring-banner .pms-banner-btn-secondary {
-        border-color: rgba(238, 241, 251, 0.25) !important;
-        color: #e2e8f0 !important;
-        background: rgba(255, 255, 255, 0.08) !important;
-    }
-</style>
+@include('admin.layout.partials.workspace-styles')
 @php
     $adminRefreshVersion = file_exists(public_path('admin/assets/css/pms-refresh.css')) ? filemtime(public_path('admin/assets/css/pms-refresh.css')) : time();
     $logoVersion = file_exists(public_path('logo.png')) ? filemtime(public_path('logo.png')) : time();
@@ -1731,7 +171,7 @@
 
                 <li class="menu-item {{ request()->routeIs('subscription.suspended') ? 'active' : '' }}">
                     <a href="{{ route('subscription.suspended') }}" class="menu-link text-danger fw-bold">
-                        <i class="menu-icon tf-icons bx bx-zap text-danger"></i>
+                        <i class="menu-icon tf-icons bx bxs-zap text-danger"></i>
                         <div class="text-truncate">Reactivate Plan</div>
                     </a>
                 </li>
@@ -1741,12 +181,14 @@
                         <div class="text-truncate">Notifications Center</div>
                     </a>
                 </li>
+                @if(\App\Support\PlatformSupportAccess::companyAdmin(auth()->user()))
                 <li class="menu-item {{ request()->routeIs('admin.company-complaints.*') ? 'active' : '' }}">
                     <a href="{{ route('admin.company-complaints.index') }}" class="menu-link">
                         <i class="menu-icon tf-icons bx bx-support"></i>
                         <div class="text-truncate">Platform Support</div>
                     </a>
                 </li>
+                @endif
                 <li class="menu-item">
                     <a href="{{ route('logout.get') }}" class="menu-link text-muted">
                         <i class="menu-icon tf-icons bx bx-log-out"></i>
@@ -1764,6 +206,14 @@
             </li>
             @endif
 
+            @if(auth()->user()?->company_id && !\App\Services\TenantScope::isPlatformAdmin() && auth()->user()->moduleToggleAllows('company-assistant'))
+            <li class="menu-item {{ request()->routeIs('company.ai.*') ? 'active' : '' }}">
+              <a href="{{ route('company.ai.index') }}" class="menu-link">
+                  <i class="menu-icon tf-icons bx bx-bot"></i>
+                  <div class="text-truncate">Company Assistant</div>
+              </a>
+            </li>
+            @endif
             @if($canSeeModule('notifications'))
             <li class="menu-item {{ request()->routeIs('notifications.*') ? 'active' : '' }}">
               <a href="{{ route('notifications.all') }}" class="menu-link" data-sidebar-key="notifications">
@@ -1779,6 +229,16 @@
               <a href="{{ route('my-documents.index') }}" class="menu-link" data-sidebar-key="my-documents">
                   <i class="menu-icon tf-icons bx bx-file"></i>
                   <div class="text-truncate" data-i18n="My Documents">My Documents</div>
+              </a>
+            </li>
+            @endif
+
+            @if(auth()->user()?->company_id && ! in_array(auth()->user()->normalizedRole(), ['admin', 'superadmin', 'client'], true) && auth()->user()->moduleToggleAllows('my-payslips'))
+            <!-- My Payslips: own released payslips (salary is set by the company Admin / HR) -->
+            <li class="menu-item {{ request()->routeIs('my-payslips.*') ? 'active' : '' }}">
+              <a href="{{ route('my-payslips.index') }}" class="menu-link">
+                  <i class="menu-icon tf-icons bx bx-receipt"></i>
+                  <div class="text-truncate" data-i18n="My Payslips">My Payslips</div>
               </a>
             </li>
             @endif
@@ -1814,144 +274,298 @@
 
 
 
-            <!-- Layouts -->
-            @if($canAnyModule(['employees', 'designations', 'departments', 'attendance', 'leaves', 'holidays', 'awards', 'recruitment', 'appraisal']))
-            <li class="menu-item {{ request()->routeIs('employees.*') ||
-                      request()->routeIs('designations.*') ||
-                      (request()->routeIs('attendance.*') && !request()->routeIs('attendance.report')) ||
-                      request()->routeIs('leaves.*') ||
-                      request()->routeIs('holidays.*') ||
-                      request()->routeIs('awards.*') ||
-                      request()->routeIs('employee.awards') ||
-                      request()->routeIs('recruitment.*') ||
-                      request()->routeIs('appraisal.*')
-                      ? 'active open' : '' }}">
+            @php
+                $isHrSidebarUser = strtolower((string)(auth()->user()?->role ?? '')) === 'hr';
+            @endphp
 
-              <a href="javascript:void(0);" class="menu-link menu-toggle" data-sidebar-key="hr">
-                <i class="menu-icon tf-icons bx bx-layout"></i>
-                <div class="text-truncate" data-i18n="Layouts">HR</div>
-              </a>
-
-
-
-              <ul class="menu-sub">
-                    @if($canSeeModule('employees'))
-                        <li class="menu-item {{ request()->routeIs('employees.*') ? 'active' : '' }}">
-                            <a href="{{ route('employees.index') }}" class="menu-link" data-sidebar-key="employees">
-                                <div class="text-truncate" data-i18n="Without menu">Employee</div>
-                            </a>
-                        </li>
-                    @endif
-
-                    @if($canSeeModule('recruitment'))
-                        <li class="menu-item {{ request()->routeIs('recruitment.*') ? 'active' : '' }}">
-                            <a href="{{ route('recruitment.index') }}" class="menu-link" data-sidebar-key="recruitment">
-                                <div class="text-truncate" data-i18n="Recruitment">Recruitment</div>
-                            </a>
-                        </li>
-                    @endif
-
-                    @if($canSeeModule('appraisal'))
-                        <li class="menu-item {{ request()->routeIs('appraisal.*') ? 'active' : '' }}">
-                            <a href="{{ route('appraisal.index') }}" class="menu-link" data-sidebar-key="appraisal">
-                                <div class="text-truncate" data-i18n="Appraisal">Appraisal</div>
-                            </a>
-                        </li>
-                    @endif
-
-                    @if($canSeeModule('designations'))
-                        <li class="menu-item {{ request()->routeIs('designations.*') ? 'active' : '' }}">
-                            <a href="{{ route('designations.index') }}" class="menu-link">
-                                <div class="text-truncate" data-i18n="Without menu">Designation</div>
-                            </a>
-                        </li>
-                    @endif
-
- <!-- Department with Submenu -->
-                  @if($canSeeModule('departments'))
-                  <li class="menu-item {{ request()->routeIs('parent-departments.*') || request()->routeIs('departments.*') ? 'active open' : '' }}">
-                    <a href="javascript:void(0);" class="menu-link menu-toggle">
-                      <div class="text-truncate">Department</div>
+            @if(in_array(strtolower((string) auth()->user()?->role), ['hr', 'manager'], true))
+                @if($canSeeModule('attendance'))
+                <li class="menu-item {{ request()->routeIs('attendance.index') && request('view') === 'personal' ? 'active' : '' }}">
+                    <a href="{{ route('attendance.index', ['view' => 'personal']) }}" class="menu-link">
+                        <i class="menu-icon tf-icons bx bx-calendar-check"></i><div>My Attendance</div>
                     </a>
-                    <ul class="menu-sub">
-                      <li class="menu-item {{ request()->routeIs('parent-departments.*') ? 'active' : '' }}">
-                        <a href="{{ route('parent-departments.index') }}" class="menu-link">
-                          <div class="text-truncate">Parent Department</div>
-                        </a>
-                      </li>
-                      <li class="menu-item {{ request()->routeIs('departments.*') ? 'active' : '' }}">
-                        <a href="{{ route('departments.index') }}" class="menu-link">
-                          <div class="text-truncate">Sub Department</div>
-                        </a>
-                      </li>
-                    </ul>
-                  </li>
-                  @endif
+                </li>
+                @endif
+                @if($canSeeModule('leaves'))
+                <li class="menu-item {{ request()->routeIs('leaves.mine') ? 'active' : '' }}">
+                    <a href="{{ route('leaves.mine') }}" class="menu-link">
+                        <i class="menu-icon tf-icons bx bx-user-check"></i><div>My Leave Requests</div>
+                    </a>
+                </li>
+                @endif
+            @endif
 
-
-                     @if($canSeeModule('attendance'))
-                    <li class="menu-item {{ (request()->routeIs('attendance.*') && !request()->routeIs('attendance.report')) ? 'active' : '' }}">
-                          <a href="{{ route('attendance.index') }}" class="menu-link" data-sidebar-key="attendance">
-                            <div class="text-truncate" data-i18n="Without menu">
-                              {{ in_array(strtolower((string)(auth()->user()->role ?? '')), ['admin', 'superadmin', 'administrator'], true) ? 'Attendance' : 'My Attendance' }}
-                            </div>
-                          </a>
+            @if(in_array(strtolower((string) auth()->user()?->role), ['admin', 'administrator'], true) && $canSeeModule('upper-level-employees'))
+                <li class="menu-item {{ request()->routeIs('admin.upper-level-employees.*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.upper-level-employees.index') }}" class="menu-link">
+                        <i class="menu-icon tf-icons bx bx-user-plus"></i><div>Add Upper Level Employee</div>
+                    </a>
+                </li>
+            @endif
+            @if($isHrSidebarUser)
+                {{-- HR Role: Show all HR features directly as top-level sidebar items without outer HR dropdown wrapper --}}
+                @if($canSeeModule('employees'))
+                    <li class="menu-item {{ request()->routeIs('employees.*') ? 'active' : '' }}">
+                        <a href="{{ route('employees.index') }}" class="menu-link" data-sidebar-key="employees">
+                            <i class="menu-icon tf-icons bx bx-user"></i>
+                            <div class="text-truncate" data-i18n="Without menu">Employee</div>
+                        </a>
                     </li>
-                    @endif
+                @endif
 
+                @if($canSeeModule('recruitment'))
+                    <li class="menu-item {{ request()->routeIs('recruitment.*') ? 'active' : '' }}">
+                        <a href="{{ route('recruitment.index') }}" class="menu-link" data-sidebar-key="recruitment">
+                            <i class="menu-icon tf-icons bx bx-user-plus"></i>
+                            <div class="text-truncate" data-i18n="Recruitment">Recruitment</div>
+                        </a>
+                    </li>
+                @endif
+
+                @if($canSeeModule('appraisal'))
+                    <li class="menu-item {{ request()->routeIs('appraisal.*') ? 'active' : '' }}">
+                        <a href="{{ route('appraisal.index') }}" class="menu-link" data-sidebar-key="appraisal">
+                            <i class="menu-icon tf-icons bx bx-trending-up"></i>
+                            <div class="text-truncate" data-i18n="Appraisal">Appraisal</div>
+                        </a>
+                    </li>
+                @endif
+
+                @if($canSeeModule('designations'))
+                    <li class="menu-item {{ request()->routeIs('designations.*') ? 'active' : '' }}">
+                        <a href="{{ route('designations.index') }}" class="menu-link" data-sidebar-key="designations">
+                            <i class="menu-icon tf-icons bx bx-id-card"></i>
+                            <div class="text-truncate" data-i18n="Without menu">Designation</div>
+                        </a>
+                    </li>
+                @endif
+
+                @if($canSeeModule('departments'))
+                    <li class="menu-item department-sidebar-menu {{ request()->routeIs('parent-departments.*') || request()->routeIs('departments.*') ? 'active open' : '' }}">
+                        <a href="javascript:void(0);" class="menu-link menu-toggle" data-sidebar-key="departments">
+                            <i class="menu-icon tf-icons bx bx-buildings"></i>
+                            <div class="text-truncate">Department</div>
+                        </a>
+                        <ul class="menu-sub">
+                            @if($canSeeModule('department-parent'))
+                            <li class="menu-item {{ request()->routeIs('parent-departments.*') ? 'active' : '' }}">
+                                <a href="{{ route('parent-departments.index') }}" class="menu-link">
+                                    <div class="text-truncate">Parent Department</div>
+                                </a>
+                            </li>
+                            @endif
+                            @if($canSeeModule('department-sub'))
+                            <li class="menu-item {{ request()->routeIs('departments.*') ? 'active' : '' }}">
+                                <a href="{{ route('departments.index') }}" class="menu-link">
+                                    <div class="text-truncate">Sub Department</div>
+                                </a>
+                            </li>
+                            @endif
+                        </ul>
+                    </li>
+                @endif
+
+                @if($canSeeModule('attendance') && (!\App\Services\WorkforceAccess::isAuthority(auth()->user()) || \App\Services\WorkforceAccess::canManageLeaves(auth()->user())))
+                    <li class="menu-item {{ (request()->routeIs('attendance.*') && !request()->routeIs('attendance.report')) ? 'active' : '' }}">
+                        <a href="{{ route('attendance.index') }}" class="menu-link" data-sidebar-key="attendance">
+                            <i class="menu-icon tf-icons bx bx-calendar-check"></i>
+                            <div class="text-truncate" data-i18n="Without menu">Attendance</div>
+                        </a>
+                    </li>
+                @endif
 
                 @if($canSeeModule('leaves'))
-                <li class="menu-item {{ (request()->routeIs('leaves.index') || request()->routeIs('leaves.show') || request()->routeIs('leaves.calendar') || request()->routeIs('leaves.archive') || request()->routeIs('leaves.apology-letters.*')) ? 'active' : '' }}">
-                <a href="{{ route('leaves.index') }}" class="menu-link" data-sidebar-key="leaves">
-                    <div class="text-truncate" data-i18n="Without navbar">My Leaves</div>
-                </a>
-                </li>
-                <li class="menu-item {{ request()->routeIs('leaves.create') ? 'active' : '' }}">
-                <a href="{{ route('leaves.create') }}" class="menu-link" data-sidebar-key="leaves-apply">
-                    <div class="text-truncate">Apply Leave</div>
-                </a>
-                </li>
+                    @if(!\App\Services\WorkforceAccess::isAuthority(auth()->user()) || \App\Services\WorkforceAccess::canManageLeaves(auth()->user()))
+<li class="menu-item {{ (request()->routeIs('leaves.index') || request()->routeIs('leaves.show') || request()->routeIs('leaves.calendar') || request()->routeIs('leaves.archive') || request()->routeIs('leaves.apology-letters.*')) ? 'active' : '' }}">
+                        <a href="{{ route('leaves.index') }}" class="menu-link" data-sidebar-key="leaves">
+                            <i class="menu-icon tf-icons bx bx-calendar-x"></i>
+                            <div class="text-truncate" data-i18n="Without navbar">My Leaves</div>
+                        </a>
+                    </li>
+@endif
+                    @if($canSeeModule('leaves-apply'))
+                    <li class="menu-item {{ request()->routeIs('leaves.create') ? 'active' : '' }}">
+                        <a href="{{ route('leaves.create') }}" class="menu-link" data-sidebar-key="leaves-apply">
+                            <i class="menu-icon tf-icons bx bx-calendar-plus"></i>
+                            <div class="text-truncate">Apply Leave</div>
+                        </a>
+                    </li>
+                    @endif
                 @endif
 
-
-                {{-- Employee Holiday View --}}
                 @if($canSeeModule('holidays'))
-                <li class="menu-item {{ request()->routeIs('holidays.*') ? 'active' : '' }}">
-                <a href="{{ route('holidays.calendar') }}" class="menu-link" data-sidebar-key="holidays">
-                    <div class="text-truncate">Holiday List</div>
-                </a>
-                </li>
+                    <li class="menu-item {{ request()->routeIs('holidays.*') ? 'active' : '' }}">
+                        <a href="{{ route('holidays.calendar') }}" class="menu-link" data-sidebar-key="holidays">
+                            <i class="menu-icon tf-icons bx bx-sun"></i>
+                            <div class="text-truncate">Holiday List</div>
+                        </a>
+                    </li>
                 @endif
 
-
-                    @if($canSeeModule('awards') && auth()->user()->role === 'admin')
-                    <!-- Admin sees Appreciation menu -->
-                    <li class="menu-item {{ request()->routeIs('awards.*') ? 'active' : '' }}">
-                        <a href="{{ route('awards.index') }}" class="menu-link">
+                @if($canSeeModule('awards'))
+                    <li class="menu-item {{ request()->routeIs('awards.*') || request()->routeIs('employee.awards') ? 'active' : '' }}">
+                        <a href="{{ route('awards.index') }}" class="menu-link" data-sidebar-key="awards">
+                            <i class="menu-icon tf-icons bx bx-award"></i>
                             <div class="text-truncate" data-i18n="Container">Recognition</div>
                         </a>
                     </li>
+                    @if(auth()->user()->moduleToggleAllows('letterhead'))
                     <li class="menu-item {{ request()->routeIs('letterhead.*') || request()->routeIs('admin.letterhead.*') ? 'active' : '' }}">
-                        <a href="{{ route('letterhead.index') }}" class="menu-link">
+                        <a href="{{ route('letterhead.index') }}" class="menu-link" data-sidebar-key="letterhead">
+                            <i class="menu-icon tf-icons bx bx-file-blank"></i>
                             <div class="text-truncate" data-i18n="Letter Head">Letter Head</div>
                         </a>
                     </li>
-                    @elseif($canSeeModule('awards') && auth()->user()->role === 'employee')
-                    <!-- Employee also sees Recognition menu but goes to filtered view -->
-                    <li class="menu-item {{ request()->routeIs('awards.*') || request()->routeIs('employee.awards') ? 'active' : '' }}">
-                        <a href="{{ route('awards.index') }}" class="menu-link">
-                            <div class="text-truncate" data-i18n="Container">My Awards</div>
-                        </a>
-                    </li>
-                    <li class="menu-item {{ request()->routeIs('letterhead.*') || request()->routeIs('admin.letterhead.*') ? 'active' : '' }}">
-                        <a href="{{ route('letterhead.index') }}" class="menu-link">
-                            <div class="text-truncate" data-i18n="Letter Head">Letter Head</div>
-                        </a>
-                    </li>
+                    @endif
                 @endif
+            @else
+                <!-- Layouts (Collapsible HR Menu for Admin, Manager, etc.) -->
+                @if($canAnyModule(['employees', 'designations', 'departments', 'attendance', 'leaves', 'holidays', 'awards', 'recruitment', 'appraisal']))
+                <li class="menu-item {{ request()->routeIs('employees.*') ||
+                          request()->routeIs('designations.*') ||
+                          (request()->routeIs('attendance.*') && !request()->routeIs('attendance.report')) ||
+                          request()->routeIs('leaves.*') ||
+                          request()->routeIs('holidays.*') ||
+                          request()->routeIs('awards.*') ||
+                          request()->routeIs('employee.awards') ||
+                          request()->routeIs('recruitment.*') ||
+                          request()->routeIs('appraisal.*')
+                          ? 'active open' : '' }}">
 
-              </ul>
-            </li>
+                  <a href="javascript:void(0);" class="menu-link menu-toggle" data-sidebar-key="hr">
+                    <i class="menu-icon tf-icons bx bx-layout"></i>
+                    <div class="text-truncate" data-i18n="Layouts">HR</div>
+                  </a>
+
+                  <ul class="menu-sub">
+                        @if($canSeeModule('employees'))
+                            <li class="menu-item {{ request()->routeIs('employees.*') ? 'active' : '' }}">
+                                <a href="{{ route('employees.index') }}" class="menu-link" data-sidebar-key="employees">
+                                    <div class="text-truncate" data-i18n="Without menu">Employee</div>
+                                </a>
+                            </li>
+                        @endif
+
+                        @if($canSeeModule('recruitment'))
+                            <li class="menu-item {{ request()->routeIs('recruitment.*') ? 'active' : '' }}">
+                                <a href="{{ route('recruitment.index') }}" class="menu-link" data-sidebar-key="recruitment">
+                                    <div class="text-truncate" data-i18n="Recruitment">Recruitment</div>
+                                </a>
+                            </li>
+                        @endif
+
+                        @if($canSeeModule('appraisal'))
+                            <li class="menu-item {{ request()->routeIs('appraisal.*') ? 'active' : '' }}">
+                                <a href="{{ route('appraisal.index') }}" class="menu-link" data-sidebar-key="appraisal">
+                                    <div class="text-truncate" data-i18n="Appraisal">Appraisal</div>
+                                </a>
+                            </li>
+                        @endif
+
+                        @if($canSeeModule('designations'))
+                            <li class="menu-item {{ request()->routeIs('designations.*') ? 'active' : '' }}">
+                                <a href="{{ route('designations.index') }}" class="menu-link">
+                                    <div class="text-truncate" data-i18n="Without menu">Designation</div>
+                                </a>
+                            </li>
+                        @endif
+
+     <!-- Department with Submenu -->
+                      @if($canSeeModule('departments'))
+                      <li class="menu-item department-sidebar-menu {{ request()->routeIs('parent-departments.*') || request()->routeIs('departments.*') ? 'active open' : '' }}">
+                        <a href="javascript:void(0);" class="menu-link menu-toggle">
+                          <div class="text-truncate">Department</div>
+                        </a>
+                        <ul class="menu-sub">
+                          @if($canSeeModule('department-parent'))
+                          <li class="menu-item {{ request()->routeIs('parent-departments.*') ? 'active' : '' }}">
+                            <a href="{{ route('parent-departments.index') }}" class="menu-link">
+                              <div class="text-truncate">Parent Department</div>
+                            </a>
+                          </li>
+                          @endif
+                          @if($canSeeModule('department-sub'))
+                          <li class="menu-item {{ request()->routeIs('departments.*') ? 'active' : '' }}">
+                            <a href="{{ route('departments.index') }}" class="menu-link">
+                              <div class="text-truncate">Sub Department</div>
+                            </a>
+                          </li>
+                          @endif
+                        </ul>
+                      </li>
+                      @endif
+
+
+                        @if(\App\Services\WorkforceAccess::isAdmin(auth()->user()))
+                        @if($canSeeModule('attendance') && (!\App\Services\WorkforceAccess::isAuthority(auth()->user()) || \App\Services\WorkforceAccess::canManageLeaves(auth()->user())))
+                        @if($canSeeModule('higher-level-attendance'))
+                        <li class="menu-item {{ request()->routeIs('admin.authority-attendance') ? 'active' : '' }}"><a href="{{ route('admin.authority-attendance', ['view' => 'team']) }}" class="menu-link"><div class="text-truncate">Higher-level attendance</div></a></li>
+                        @endif
+                        @endif
+                        @if($canSeeModule('leaves'))
+                        @if($canSeeModule('higher-level-leaves'))
+                        <li class="menu-item {{ request()->routeIs('admin.authority-leaves') ? 'active' : '' }}"><a href="{{ route('admin.authority-leaves') }}" class="menu-link"><div class="text-truncate">Higher-level leaves</div></a></li>
+                        @endif
+                        @endif
+                        @endif
+                         @if($canSeeModule('attendance') && (!\App\Services\WorkforceAccess::isAuthority(auth()->user()) || \App\Services\WorkforceAccess::canManageLeaves(auth()->user())))
+                        <li class="menu-item {{ (request()->routeIs('attendance.*') && !request()->routeIs('attendance.report')) ? 'active' : '' }}">
+                              <a href="{{ route('attendance.index') }}" class="menu-link" data-sidebar-key="attendance">
+                                <div class="text-truncate" data-i18n="Without menu">
+                                  {{ in_array(strtolower((string)(auth()->user()->role ?? '')), ['admin', 'superadmin', 'administrator'], true) ? 'Attendance' : 'My Attendance' }}
+                                </div>
+                              </a>
+                        </li>
+                        @endif
+
+
+                    @if($canSeeModule('leaves'))
+                    @if(!\App\Services\WorkforceAccess::isAuthority(auth()->user()) || \App\Services\WorkforceAccess::canManageLeaves(auth()->user()))
+<li class="menu-item {{ (request()->routeIs('leaves.index') || request()->routeIs('leaves.show') || request()->routeIs('leaves.calendar') || request()->routeIs('leaves.archive') || request()->routeIs('leaves.apology-letters.*')) ? 'active' : '' }}">
+                    <a href="{{ route('leaves.index') }}" class="menu-link" data-sidebar-key="leaves">
+                        <div class="text-truncate" data-i18n="Without navbar">My Leaves</div>
+                    </a>
+                    </li>
+@endif
+                    @if($canSeeModule('leaves-apply'))
+                    <li class="menu-item {{ request()->routeIs('leaves.create') ? 'active' : '' }}">
+                    <a href="{{ route('leaves.create') }}" class="menu-link" data-sidebar-key="leaves-apply">
+                        <div class="text-truncate">Apply Leave</div>
+                    </a>
+                    </li>
+                    @endif
+                    @endif
+
+
+                    {{-- Employee Holiday View --}}
+                    @if($canSeeModule('holidays'))
+                    <li class="menu-item {{ request()->routeIs('holidays.*') ? 'active' : '' }}">
+                    <a href="{{ route('holidays.calendar') }}" class="menu-link" data-sidebar-key="holidays">
+                        <div class="text-truncate">Holiday List</div>
+                    </a>
+                    </li>
+                    @endif
+
+
+                        @if($canSeeModule('awards'))
+                        {{-- Recognition follows the role permission for every role (employees see their own awards). --}}
+                        <li class="menu-item {{ request()->routeIs('awards.*') || request()->routeIs('employee.awards') ? 'active' : '' }}">
+                            <a href="{{ route('awards.index') }}" class="menu-link">
+                                <div class="text-truncate" data-i18n="Container">{{ auth()->user()->role === 'employee' ? 'My Awards' : 'Recognition' }}</div>
+                            </a>
+                        </li>
+                        @if(auth()->user()->moduleToggleAllows('letterhead'))
+                        <li class="menu-item {{ request()->routeIs('letterhead.*') || request()->routeIs('admin.letterhead.*') ? 'active' : '' }}">
+                            <a href="{{ route('letterhead.index') }}" class="menu-link">
+                                <div class="text-truncate" data-i18n="Letter Head">Letter Head</div>
+                            </a>
+                        </li>
+                        @endif
+                    @endif
+
+                  </ul>
+                </li>
+                @endif
             @endif
 
 
@@ -1965,59 +579,80 @@
               </a>
 
               <ul class="menu-sub">
+                  @if($canSeeModule('reports-task'))
                   <li class="menu-item {{ request()->routeIs('reports.task') ? 'active' : '' }}">
                     <a href="{{ route('reports.task') }}" class="menu-link">
                       <div class="text-truncate">Task Report</div>
                     </a>
                   </li>
+                  @endif
 
+                  @if($canSeeModule('reports-timelog'))
                   <li class="menu-item {{ request()->routeIs('reports.timelog') ? 'active' : '' }}">
                     <a href="{{ route('reports.timelog') }}" class="menu-link">
                       <div class="text-truncate">Time Log Report</div>
                     </a>
                   </li>
+                  @endif
 
+                  @if($canSeeModule('reports-finance'))
                   <li class="menu-item {{ request()->routeIs('reports.finance') ? 'active' : '' }}">
                     <a href="{{ route('reports.finance') }}" class="menu-link">
                       <div class="text-truncate">Finance Report</div>
+                      <span class="badge rounded-pill ms-auto" style="background: rgba(245, 158, 11, 0.18); color: #B45309; font-size: 0.62rem; font-weight: 800;">Soon</span>
                     </a>
                   </li>
+                  @endif
 
+                  @if($canSeeModule('reports-income-vs-expense'))
                   <li class="menu-item {{ request()->routeIs('reports.income-vs-expense') ? 'active' : '' }}">
                     <a href="{{ route('reports.income-vs-expense') }}" class="menu-link">
                       <div class="text-truncate">Income Vs Expense</div>
+                      <span class="badge rounded-pill ms-auto" style="background: rgba(245, 158, 11, 0.18); color: #B45309; font-size: 0.62rem; font-weight: 800;">Soon</span>
                     </a>
                   </li>
+                  @endif
 
+                  @if($canSeeModule('reports-leave'))
                   <li class="menu-item {{ request()->routeIs('admin.leave.report') ? 'active' : '' }}">
                     <a href="{{ route('admin.leave.report') }}" class="menu-link">
                       <div class="text-truncate">Leave Report</div>
                     </a>
                   </li>
+                  @endif
 
+                  @if($canSeeModule('reports-attendance'))
                   <li class="menu-item {{ request()->routeIs('attendance.report') ? 'active' : '' }}">
                     <a href="{{ route('attendance.report') }}" class="menu-link">
                       <div class="text-truncate">Attendance Report</div>
                     </a>
                   </li>
+                  @endif
 
+                  @if($canSeeModule('reports-expense'))
                   <li class="menu-item {{ request()->routeIs('reports.expense') ? 'active' : '' }}">
                     <a href="{{ route('reports.expense') }}" class="menu-link">
                       <div class="text-truncate">Expense Report</div>
+                      <span class="badge rounded-pill ms-auto" style="background: rgba(245, 158, 11, 0.18); color: #B45309; font-size: 0.62rem; font-weight: 800;">Soon</span>
                     </a>
                   </li>
+                  @endif
 
+                  @if($canSeeModule('reports-deal'))
                   <li class="menu-item {{ request()->routeIs('reports.deal') ? 'active' : '' }}">
                     <a href="{{ route('reports.deal') }}" class="menu-link">
                       <div class="text-truncate">Deal Report</div>
                     </a>
                   </li>
+                  @endif
 
+                  @if($canSeeModule('reports-sales'))
                   <li class="menu-item {{ request()->routeIs('reports.sales') ? 'active' : '' }}">
                     <a href="{{ route('reports.sales') }}" class="menu-link">
                       <div class="text-truncate">Sales Report</div>
                     </a>
                   </li>
+                  @endif
               </ul>
             </li>
             @endif
@@ -2082,115 +717,6 @@
             </li>
             @endif
 
-            @if($canSeeModule('payroll') && $canAnyModule(['payroll', 'payroll-architectures', 'payslips', 'salary-structures', 'payroll-policies', 'payroll-cycles', 'tax-rules', 'bonus-rules', 'deduction-rules', 'overtime-rules', 'payroll-reports', 'payroll-audit-logs', 'payroll-settings', 'payroll-import-export', 'payroll-archive', 'formula-builder']))
-            <li class="menu-item {{ request()->routeIs('payroll.*') ? 'active open' : '' }}">
-                <a href="javascript:void(0);" class="menu-link menu-toggle" data-sidebar-key="payroll">
-                    <i class="menu-icon tf-icons bx bx-wallet"></i>
-                    <div class="text-truncate">Payroll</div>
-                </a>
-
-                <ul class="menu-sub">
-                    @if($canSeeModule('payroll'))
-                        <li class="menu-item {{ request()->routeIs('payroll.index') ? 'active' : '' }}">
-                            <a href="{{ \Illuminate\Support\Facades\Route::has('payroll.index') ? route('payroll.index') : url('/payroll') }}" class="menu-link"><div>Dashboard</div></a>
-                        </li>
-                    @endif
-                    @if($canSeeModule('payroll'))
-                        <li class="menu-item {{ request()->routeIs('payroll.processing') ? 'active' : '' }}">
-                            <a href="{{ \Illuminate\Support\Facades\Route::has('payroll.processing') ? route('payroll.processing') : url('/payroll/processing') }}" class="menu-link"><div>Processing</div></a>
-                        </li>
-                    @endif
-                    @if($canSeeModule('payroll-architectures'))
-                        <li class="menu-item {{ request()->routeIs('payroll.architectures.*') ? 'active' : '' }}">
-                            <a href="{{ route('payroll.architectures.index') }}" class="menu-link"><div>Architectures</div></a>
-                        </li>
-                    @endif
-                    @if($canSeeModule('salary-structures'))
-                        <li class="menu-item {{ request()->routeIs('payroll.salary-structures.*') ? 'active' : '' }}">
-                            <a href="{{ route('payroll.salary-structures.index') }}" class="menu-link"><div>Salary Structures</div></a>
-                        </li>
-                    @endif
-                    @if($canSeeModule('payroll-cycles'))
-                        <li class="menu-item {{ request()->routeIs('payroll.cycles.*') ? 'active' : '' }}">
-                            <a href="{{ route('payroll.cycles.index') }}" class="menu-link"><div>Payroll Cycles</div></a>
-                        </li>
-                    @endif
-                    @if($canSeeModule('payslips'))
-                        <li class="menu-item {{ request()->routeIs('payroll.payslips.*') ? 'active' : '' }}">
-                            <a href="{{ route('payroll.payslips.index') }}" class="menu-link"><div>Payslips</div></a>
-                        </li>
-                    @endif
-
-                    {{-- ── Payroll Policies Nested Group ────────────────────── --}}
-                    @if($canAnyModule(['payroll-policies', 'deduction-rules', 'bonus-rules', 'tax-rules', 'overtime-rules', 'formula-builder', 'payroll-reports', 'payroll-import-export', 'payroll-archive', 'payroll-audit-logs']))
-                        <li class="menu-item {{ request()->routeIs('payroll.policies.*') || request()->routeIs('payroll.deduction-rules.*') || request()->routeIs('payroll.bonus-rules.*') || request()->routeIs('payroll.tax-rules.*') || request()->routeIs('payroll.overtime-rules.*') || request()->routeIs('payroll.formula-builder.*') || request()->routeIs('payroll.reports.*') || request()->routeIs('payroll.import-export.*') || request()->routeIs('payroll.archive.*') || request()->routeIs('payroll.audit-logs.*') ? 'active open' : '' }}">
-                            <a href="javascript:void(0);" class="menu-link menu-toggle">
-                                <i class="menu-icon tf-icons bx bx-shield-quarter" style="margin-left:4px;font-size:13px;"></i>
-                                <div class="text-truncate">Payroll Policies</div>
-                            </a>
-                            <ul class="menu-sub">
-                                @if($canSeeModule('payroll-policies'))
-                                    <li class="menu-item {{ request()->routeIs('payroll.policies.*') ? 'active' : '' }}">
-                                        <a href="{{ route('payroll.policies.index') }}" class="menu-link"><div>Policy Engine</div></a>
-                                    </li>
-                                @endif
-                                @if($canSeeModule('deduction-rules'))
-                                    <li class="menu-item {{ request()->routeIs('payroll.deduction-rules.*') ? 'active' : '' }}">
-                                        <a href="{{ route('payroll.deduction-rules.index') }}" class="menu-link"><div>Deduction Rules</div></a>
-                                    </li>
-                                @endif
-                                @if($canSeeModule('bonus-rules'))
-                                    <li class="menu-item {{ request()->routeIs('payroll.bonus-rules.*') ? 'active' : '' }}">
-                                        <a href="{{ route('payroll.bonus-rules.index') }}" class="menu-link"><div>Bonus Rules</div></a>
-                                    </li>
-                                @endif
-                                @if($canSeeModule('tax-rules'))
-                                    <li class="menu-item {{ request()->routeIs('payroll.tax-rules.*') ? 'active' : '' }}">
-                                        <a href="{{ route('payroll.tax-rules.index') }}" class="menu-link"><div>Tax Rules</div></a>
-                                    </li>
-                                @endif
-                                @if($canSeeModule('overtime-rules'))
-                                    <li class="menu-item {{ request()->routeIs('payroll.overtime-rules.*') ? 'active' : '' }}">
-                                        <a href="{{ route('payroll.overtime-rules.index') }}" class="menu-link"><div>Overtime Rules</div></a>
-                                    </li>
-                                @endif
-                                @if($canSeeModule('formula-builder'))
-                                    <li class="menu-item {{ request()->routeIs('payroll.formula-builder.*') ? 'active' : '' }}">
-                                        <a href="{{ route('payroll.formula-builder.index') }}" class="menu-link"><div>Formula Builder</div></a>
-                                    </li>
-                                @endif
-                                @if($canSeeModule('payroll-reports'))
-                                    <li class="menu-item {{ request()->routeIs('payroll.reports.*') ? 'active' : '' }}">
-                                        <a href="{{ route('payroll.reports.index') }}" class="menu-link"><div>Reports</div></a>
-                                    </li>
-                                @endif
-                                @if($canSeeModule('payroll-import-export'))
-                                    <li class="menu-item {{ request()->routeIs('payroll.import-export.*') ? 'active' : '' }}">
-                                        <a href="{{ route('payroll.import-export.index') }}" class="menu-link"><div>Import / Export</div></a>
-                                    </li>
-                                @endif
-                                @if($canSeeModule('payroll-archive'))
-                                    <li class="menu-item {{ request()->routeIs('payroll.archive.*') ? 'active' : '' }}">
-                                        <a href="{{ route('payroll.archive.index') }}" class="menu-link"><div>Archive</div></a>
-                                    </li>
-                                @endif
-                                @if($canSeeModule('payroll-audit-logs'))
-                                    <li class="menu-item {{ request()->routeIs('payroll.audit-logs.*') ? 'active' : '' }}">
-                                        <a href="{{ route('payroll.audit-logs.index') }}" class="menu-link"><div>Audit Logs</div></a>
-                                    </li>
-                                @endif
-                            </ul>
-                        </li>
-                    @endif
-
-                    @if($canSeeModule('payroll-settings'))
-                        <li class="menu-item {{ request()->routeIs('payroll.settings.*') ? 'active' : '' }}">
-                            <a href="{{ route('payroll.settings.index') }}" class="menu-link"><div>Settings</div></a>
-                        </li>
-                    @endif
-                </ul>
-            </li>
-            @endif
 
 <!--    //leads section -->
 
@@ -2203,23 +729,27 @@
 
                         <ul class="menu-sub">
                             {{-- Lead Contact --}}
+                            @if(auth()->user()->moduleToggleAllows('leads-contacts'))
                             <li class="menu-item {{ request()->routeIs('leads.contacts.*') ? 'active' : '' }}">
                                 <a href="{{ route('leads.contacts.index') }}" class="menu-link">
                                     <div class="text-truncate" data-i18n="Landing">Lead Contact</div>
                                 </a>
                             </li>
+                            @endif
 
                             {{-- Deals --}}
+                            @if(auth()->user()->moduleToggleAllows('crm-deals'))
                             <li class="menu-item {{ request()->routeIs('admin.deals.*') ? 'active' : '' }}">
                                 <a href="{{ route('admin.deals.index') }}" class="menu-link">
                                     <div class="text-truncate">Deals</div>
                                 </a>
                             </li>
+                            @endif
                         </ul>
                     </li>
                 @endif
 
-                @if($canSeeModule('products'))
+                @if($canSeeModule('products') || in_array(auth()->user()?->normalizedRole(), ['admin', 'superadmin'], true))
                 <!-- Products -->
                 <li class="menu-item {{ request()->routeIs('products.*') ? 'active' : '' }}">
                     <a href="{{ route('products.index') }}" class="menu-link" data-sidebar-key="products">
@@ -2242,111 +772,134 @@
                 <!-- //ticket section . -->
 
 
-            @if($canSeeModule('tickets'))
+            {{-- Internal work tickets are separate from Platform Support & Complaints. --}}
+            @if($canSeeModule('tickets') && ! \App\Support\TicketAccess::hiddenForCurrentUser())
             <li class="menu-item {{ request()->routeIs('tickets.*') || request()->routeIs('ticket-groups.*') ? 'active' : '' }}">
                   <a href="{{ route('tickets.index') }}" class="menu-link" data-sidebar-key="tickets">
                        <i class="menu-icon tf-icons bx bx-receipt"></i>
-                      <div class="text-truncate" data-i18n="Dashboard">Ticket</div>
+                      <div class="text-truncate" data-i18n="Dashboard">Internal Tickets</div>
                   </a>
               </li>
             @endif
 
             <!-- Platform Support & Complaints -->
+            @if(\App\Support\PlatformSupportAccess::companyAdmin(auth()->user()) && auth()->user()->moduleToggleAllows('company-complaints'))
             <li class="menu-item {{ request()->routeIs('admin.company-complaints.*') ? 'active' : '' }}">
                 <a href="{{ route('admin.company-complaints.index') }}" class="menu-link">
                     <i class="menu-icon tf-icons bx bx-support"></i>
                     <div class="text-truncate">Platform Support &amp; Complaints</div>
                 </a>
             </li>
+            @endif
 
-            @if($canSeeModule('settings'))
-                <li class="menu-item {{ request()->routeIs('settings.*') || request()->routeIs('admin.settings.*') || request()->routeIs('admin.modules.*') || request()->routeIs('admin.role-permissions.*') || request()->routeIs('admin.role-accounts.*') ? 'active open' : '' }}">
+            {{-- Payroll access follows saved permissions for Admin and HR. --}}
+            @php
+                $canUsePayrollWorkspace = in_array(strtolower((string)(auth()->user()->role ?? '')), ['admin', 'superadmin', 'administrator', 'hr'], true);
+            @endphp
+            @if($canUsePayrollWorkspace && ($canSeeModule('payroll') || $canSeeModule('payslips')))
+            <li class="menu-item {{ request()->routeIs('payroll.*') ? 'active' : '' }}">
+                <a href="{{ route($canSeeModule('payroll') ? 'payroll.index' : 'payroll.payslips.index') }}" class="menu-link">
+                    <i class="menu-icon tf-icons bx bx-money"></i>
+                    <div class="text-truncate" data-i18n="Payroll">Payroll</div>
+                </a>
+            </li>
+            @endif
+
+            @if($canSeeModule('settings') || in_array(auth()->user()?->normalizedRole(), ['admin', 'superadmin'], true))
+                @php
+                    // Holiday Settings shares the holidays.* routes with the HR "Holiday List" page (holidays.calendar).
+                    $holidaySettingsActive = request()->routeIs('holidays.*') && ! request()->routeIs('holidays.calendar');
+                    // Keep Settings expanded on every one of its own pages (Holiday and Attendance Settings included).
+                    $settingsMenuOpen = request()->routeIs('settings.*', 'admin.settings.*', 'admin.modules.*', 'admin.role-permissions.*', 'admin.role-accounts.*', 'attendance.settings*') || $holidaySettingsActive;
+                @endphp
+                <li class="menu-item {{ $settingsMenuOpen ? 'active open' : '' }}" data-sidebar-menu="settings">
                     <a href="javascript:void(0);" class="menu-link menu-toggle">
                         <i class="menu-icon tf-icons bx bx-cog"></i>
                         <div class="text-truncate" data-i18n="Settings">Settings</div>
                     </a>
                     <ul class="menu-sub">
-                        @if($canSeeModule('settings-dashboard'))
-                        <li class="menu-item {{ request()->routeIs('admin.settings.index') ? 'active' : '' }}"><a href="{{ route('admin.settings.index') }}" class="menu-link"><div>Settings Dashboard</div></a></li>
-                        @endif
-                        @if($canSeeModule('company-profile-settings'))
-                        <li class="menu-item {{ request()->routeIs('settings.company') ? 'active' : '' }}"><a href="{{ route('settings.company') }}" class="menu-link"><div>Company Profile</div></a></li>
-                        @endif
-                        @if($canSeeModule('organization-details-settings'))
-                        <li class="menu-item {{ request()->routeIs('admin.settings.organization-details*') ? 'active' : '' }}"><a href="{{ route('admin.settings.organization-details') }}" class="menu-link"><div>Organization Details</div></a></li>
-                        @endif
-                        @if($canSeeModule('business-address-settings'))
-                        <li class="menu-item {{ request()->routeIs('admin.settings.business-address*') ? 'active' : '' }}"><a href="{{ route('admin.settings.business-address.index') }}" class="menu-link"><div>Branches / Locations</div></a></li>
-                        @endif
-                        @if($canSeeModule('departments'))
-                        <li class="menu-item {{ request()->routeIs('parent-departments.*') || request()->routeIs('departments.*') ? 'active open' : '' }}">
-                            <a href="javascript:void(0);" class="menu-link menu-toggle">
-                                <div>Department</div>
-                            </a>
-                            <ul class="menu-sub">
-                                <li class="menu-item {{ request()->routeIs('parent-departments.*') ? 'active' : '' }}">
-                                    <a href="{{ route('parent-departments.index') }}" class="menu-link">
-                                        <div>Parent Department</div>
-                                    </a>
-                                </li>
-                                <li class="menu-item {{ request()->routeIs('departments.*') ? 'active' : '' }}">
-                                    <a href="{{ route('departments.index') }}" class="menu-link">
-                                        <div>Sub Department</div>
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-                        @endif
-                        @if($canSeeModule('designations'))
-                        <li class="menu-item {{ request()->routeIs('designations.*') ? 'active' : '' }}"><a href="{{ route('designations.index') }}" class="menu-link"><div>Designations</div></a></li>
-                        @endif
-                        @if($canSeeModule('work-schedule-settings'))
-                        <li class="menu-item {{ request()->routeIs('admin.settings.work-schedule*') ? 'active' : '' }}"><a href="{{ route('admin.settings.work-schedule') }}" class="menu-link"><div>Work Schedule</div></a></li>
-                        @endif
-                        @if($canSeeModule('leave-settings'))
-                        <li class="menu-item {{ request()->routeIs('admin.settings.leave*') ? 'active' : '' }}"><a href="{{ route('admin.settings.leave') }}" class="menu-link"><div>Leave Settings</div></a></li>
-                        @endif
-                        @if($canSeeModule('holiday-settings'))
-                        <li class="menu-item {{ request()->routeIs('holidays.*') ? 'active' : '' }}"><a href="{{ route('holidays.index') }}" class="menu-link"><div>Holiday Settings</div></a></li>
-                        @endif
                         @if($canSeeModule('attendance-settings'))
                         <li class="menu-item {{ request()->routeIs('attendance.settings*') ? 'active' : '' }}"><a href="{{ route('attendance.settings') }}" class="menu-link"><div>Attendance Settings</div></a></li>
                         @endif
-                        @if($canSeeModule('payroll-settings'))
-                        <li class="menu-item {{ request()->routeIs('payroll.settings*') ? 'active' : '' }}"><a href="{{ route('payroll.settings.index') }}" class="menu-link"><div>Payroll Settings</div></a></li>
-                        @endif
-                        @if($canSeeModule('recruitment-settings'))
-                        <li class="menu-item {{ request()->routeIs('admin.settings.recruitment*') ? 'active' : '' }}"><a href="{{ route('admin.settings.recruitment') }}" class="menu-link"><div>Recruitment Settings</div></a></li>
-                        @endif
-                        @if($canSeeModule('performance-settings'))
-                        <li class="menu-item {{ request()->routeIs('admin.settings.performance*') ? 'active' : '' }}"><a href="{{ route('admin.settings.performance') }}" class="menu-link"><div>Performance Settings</div></a></li>
-                        @endif
-                        @if($canSeeModule('notification-settings'))
-                        <li class="menu-item {{ request()->routeIs('admin.settings.notification*') ? 'active' : '' }}"><a href="{{ route('admin.settings.notification') }}" class="menu-link"><div>Notification Settings</div></a></li>
-                        @endif
-                        @if($canSeeModule('email-settings'))
-                        <li class="menu-item {{ request()->routeIs('admin.settings.email*') ? 'active' : '' }}"><a href="{{ route('admin.settings.email') }}" class="menu-link"><div>Email Settings</div></a></li>
-                        @endif
-                        @if($canSeeModule('document-settings'))
-                        <li class="menu-item {{ request()->routeIs('admin.settings.document*') ? 'active' : '' }}"><a href="{{ route('admin.settings.document') }}" class="menu-link"><div>Document Settings</div></a></li>
-                        @endif
-                        @if($canSeeModule('security-settings'))
-                        <li class="menu-item {{ request()->routeIs('admin.settings.security*') ? 'active' : '' }}"><a href="{{ route('admin.settings.security') }}" class="menu-link"><div>Security Settings</div></a></li>
+                        @if($canSeeModule('business-address-settings') && in_array(strtolower((string) auth()->user()?->role), ['admin', 'administrator', 'superadmin', 'hr', 'manager'], true))
+                        <li class="menu-item {{ request()->routeIs('admin.settings.business-address*') ? 'active' : '' }}"><a href="{{ route('admin.settings.business-address.index') }}" class="menu-link"><div>Branches / Locations</div></a></li>
                         @endif
                         @if($canSeeModule('change-password-settings'))
                         <li class="menu-item {{ request()->routeIs('admin.settings.change-password*') ? 'active' : '' }}"><a href="{{ route('admin.settings.change-password') }}" class="menu-link"><div>Change Password</div></a></li>
                         @endif
-                        @if($canSeeModule('role-permissions-settings') || $canSeeModule('role-management'))
-                        <li class="menu-item {{ request()->routeIs('admin.role-permissions.*') ? 'active' : '' }}"><a href="{{ route('admin.role-permissions.index') }}" class="menu-link"><div>Role & Permission</div></a></li>
+                        @if($canSeeModule('company-profile-settings'))
+                        <li class="menu-item {{ request()->routeIs('settings.company') ? 'active' : '' }}"><a href="{{ route('settings.company') }}" class="menu-link"><div>Company Profile</div></a></li>
+                        @endif
+                        @if(\App\Services\WorkforceAccess::isAdmin(auth()->user()) && $canSeeModule('departments'))
+                        <li class="menu-item department-sidebar-menu {{ request()->routeIs('admin.settings.parent-departments.*') || request()->routeIs('admin.settings.departments.*') ? 'active open' : '' }}">
+                            <a href="javascript:void(0);" class="menu-link menu-toggle">
+                                <div>Department</div>
+                            </a>
+                            <ul class="menu-sub">
+                                @if($canSeeModule('department-parent'))
+                                <li class="menu-item {{ request()->routeIs('admin.settings.parent-departments.*') ? 'active' : '' }}">
+                                    <a href="{{ route('admin.settings.parent-departments.index') }}" class="menu-link">
+                                        <div>Parent Department</div>
+                                    </a>
+                                </li>
+                                @endif
+                                @if($canSeeModule('department-sub'))
+                                <li class="menu-item {{ request()->routeIs('admin.settings.departments.*') ? 'active' : '' }}">
+                                    <a href="{{ route('admin.settings.departments.index') }}" class="menu-link">
+                                        <div>Sub Department</div>
+                                    </a>
+                                </li>
+                                @endif
+                            </ul>
+                        </li>
+                        @endif
+                        @if(\App\Services\WorkforceAccess::isAdmin(auth()->user()) && $canSeeModule('designations'))
+                        <li class="menu-item {{ request()->routeIs('admin.settings.designations.*') ? 'active' : '' }}"><a href="{{ route('admin.settings.designations.index') }}" class="menu-link"><div>Designations</div></a></li>
+                        @endif
+                        @if($canSeeModule('document-settings'))
+                        <li class="menu-item {{ request()->routeIs('admin.settings.document*') ? 'active' : '' }}"><a href="{{ route('admin.settings.document') }}" class="menu-link"><div>Document Settings</div></a></li>
+                        @endif
+                        @if($canSeeModule('email-settings'))
+                        <li class="menu-item {{ request()->routeIs('admin.settings.email*') ? 'active' : '' }}"><a href="{{ route('admin.settings.email') }}" class="menu-link"><div>Email Settings</div></a></li>
+                        @endif
+                        @if($canSeeModule('holiday-settings'))
+                        <li class="menu-item {{ $holidaySettingsActive ? 'active' : '' }}"><a href="{{ route('holidays.index') }}" class="menu-link"><div>Holiday Settings</div></a></li>
+                        @endif
+                        @if($canSeeModule('leave-settings'))
+                        <li class="menu-item {{ request()->routeIs('admin.settings.leave*') ? 'active' : '' }}"><a href="{{ route('admin.settings.leave') }}" class="menu-link"><div>Leave Settings</div></a></li>
                         @endif
                         @if($canSeeModule('localization-settings'))
                         <li class="menu-item {{ request()->routeIs('admin.settings.localization*') ? 'active' : '' }}"><a href="{{ route('admin.settings.localization') }}" class="menu-link"><div>Localization</div></a></li>
                         @endif
+                        @if($canSeeModule('module-management') || in_array(auth()->user()?->normalizedRole(), ['admin', 'superadmin'], true))
+                        <li class="menu-item {{ request()->routeIs('admin.modules.*') ? 'active' : '' }}"><a href="{{ route('admin.modules.index') }}" class="menu-link"><div>Module Management</div></a></li>
+                        @endif
+                        @if($canSeeModule('notification-settings'))
+                        <li class="menu-item {{ request()->routeIs('admin.settings.notification*') ? 'active' : '' }}"><a href="{{ route('admin.settings.notification') }}" class="menu-link"><div>Notification Settings</div></a></li>
+                        @endif
+                        @if($canSeeModule('organization-details-settings'))
+                        <li class="menu-item {{ request()->routeIs('admin.settings.organization-details*') ? 'active' : '' }}"><a href="{{ route('admin.settings.organization-details') }}" class="menu-link"><div>Organization Details</div></a></li>
+                        @endif
+                        @if($canSeeModule('performance-settings'))
+                        <li class="menu-item {{ request()->routeIs('admin.settings.performance*') ? 'active' : '' }}"><a href="{{ route('admin.settings.performance') }}" class="menu-link"><div>Performance Settings</div></a></li>
+                        @endif
+                        @if($canSeeModule('recruitment-settings'))
+                        <li class="menu-item {{ request()->routeIs('admin.settings.recruitment*') ? 'active' : '' }}"><a href="{{ route('admin.settings.recruitment') }}" class="menu-link"><div>Recruitment Settings</div></a></li>
+                        @endif
+                        @if($canSeeModule('role-permissions-settings') || $canSeeModule('role-management') || in_array(auth()->user()?->normalizedRole(), ['admin', 'superadmin'], true))
+                        <li class="menu-item {{ request()->routeIs('admin.role-permissions.*') ? 'active' : '' }}"><a href="{{ route('admin.role-permissions.index') }}" class="menu-link"><div>Role & Permission</div></a></li>
+                        @endif
+                        @if($canSeeModule('security-settings'))
+                        <li class="menu-item {{ request()->routeIs('admin.settings.security*') ? 'active' : '' }}"><a href="{{ route('admin.settings.security') }}" class="menu-link"><div>Security Settings</div></a></li>
+                        @endif
+                        @if($canSeeModule('settings-dashboard'))
+                        <li class="menu-item {{ request()->routeIs('admin.settings.index') ? 'active' : '' }}"><a href="{{ route('admin.settings.index') }}" class="menu-link"><div>Settings Dashboard</div></a></li>
+                        @endif
                         @if($canSeeModule('terms-policy-settings'))
                         <li class="menu-item {{ request()->routeIs('admin.settings.terms-policy*') ? 'active' : '' }}"><a href="{{ route('admin.settings.terms-policy') }}" class="menu-link"><div>Terms &amp; Policy</div></a></li>
                         @endif
-                        @if($canSeeModule('module-management'))
-                        <li class="menu-item {{ request()->routeIs('admin.modules.*') ? 'active' : '' }}"><a href="{{ route('admin.modules.index') }}" class="menu-link"><div>Module Management</div></a></li>
+                        @if($canSeeModule('work-schedule-settings'))
+                        <li class="menu-item {{ request()->routeIs('admin.settings.work-schedule*') ? 'active' : '' }}"><a href="{{ route('admin.settings.work-schedule') }}" class="menu-link"><div>Work Schedule</div></a></li>
                         @endif
                     </ul>
                 </li>
@@ -2601,6 +1154,12 @@
                 });
             });
 
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') {
+                    closeMobileMenu();
+                }
+            });
+
             window.addEventListener('resize', function () {
                 if (window.innerWidth >= 1200) {
                     closeMobileMenu();
@@ -2616,8 +1175,8 @@
           <nav
             class="layout-navbar container-xxl navbar-detached navbar navbar-expand-xl align-items-center bg-navbar-theme"
             id="layout-navbar">
-            <div class="layout-menu-toggle navbar-nav align-items-xl-center me-4 me-xl-0 d-xl-none">
-              <a class="nav-item nav-link px-0 me-xl-6" href="javascript:void(0)">
+            <div class="layout-menu-toggle navbar-nav align-items-xl-center me-3 me-sm-4 me-xl-0 d-xl-none">
+              <a class="nav-item nav-link px-0 me-xl-6" href="javascript:void(0)" aria-label="Toggle navigation menu">
                 <i class="icon-base bx bx-menu icon-md"></i>
               </a>
             </div>
@@ -2628,33 +1187,33 @@
               </span>
             </a>
 
-            <div class="navbar-nav-right d-flex align-items-center justify-content-end" id="navbar-collapse">
+            <div class="navbar-nav-right d-flex align-items-center justify-content-between" id="navbar-collapse">
 
-              <!-- LEFT: Breadcrumbs -->
-              <div class="navbar-nav align-items-center">
+              <!-- LEFT: Breadcrumbs (desktop only to prevent mobile topbar crowding) -->
+              <div class="navbar-nav align-items-center d-none d-lg-flex pms-navbar-breadcrumb">
                 <div class="nav-item">
-                  <span class="fw-bold">Dashboard</span> • Home
+                  <span class="fw-bold">Dashboard</span> <span class="pms-breadcrumb-dot" aria-hidden="true">&bull;</span> <span class="pms-breadcrumb-sub">Home</span>@if(request()->routeIs('notifications.*', 'admin.company-notifications.*')) <span class="pms-breadcrumb-dot" aria-hidden="true">&bull;</span> <span class="pms-breadcrumb-active">Notification Center</span>@elseif(request()->routeIs('my-documents.*')) <span class="pms-breadcrumb-dot" aria-hidden="true">&bull;</span> <span class="pms-breadcrumb-active">My Documents</span>@endif
                 </div>
               </div>
 
-              <ul class="navbar-nav flex-row align-items-center ms-md-auto">
+              <!-- CENTER: Search -->
+              <div class="nav-item navbar-search-wrapper pms-navbar-search-center d-flex align-items-center mx-auto" title="Search">
+                <i class="bx bx-search icon-md" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#searchModal"></i>
+                <input
+                  type="text"
+                  class="form-control border-0 shadow-none d-none d-md-inline-block"
+                  placeholder="Search..."
+                  data-bs-toggle="modal"
+                  data-bs-target="#searchModal"
+                  readonly
+                  style="cursor: pointer;" />
+              </div>
+
+              <ul class="navbar-nav flex-row align-items-center ms-auto ms-lg-0">
                 <!-- Place this tag where you want the button to render. -->
 
-                <!-- RIGHT: Search + User -->
-                <div class="navbar-nav align-items-center ms-auto d-flex">
-
-                  <!-- Small search -->
-                  <div class="nav-item navbar-search-wrapper d-flex align-items-center me-2 me-sm-3" title="Search">
-                    <i class="bx bx-search icon-md me-1 me-sm-2" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#searchModal"></i>
-                    <input
-                      type="text"
-                      class="form-control border-0 shadow-none ps-1 ps-sm-2 d-none d-md-inline-block"
-                      placeholder="Search..."
-                      data-bs-toggle="modal"
-                      data-bs-target="#searchModal"
-                      readonly
-                      style="cursor: pointer; height: 32px; font-size: 14px; width: 170px;" />
-                  </div>
+                <!-- RIGHT: Actions + User -->
+                <div class="navbar-nav align-items-center d-flex">
 
                   <!-- Sticky Note Icon -->
                   <div class="nav-item me-3">
@@ -2699,11 +1258,13 @@
                                     <i class="bx bx-plus me-2"></i> Add Task
                                 </a>
                             </li>
+                            @unless(\App\Support\TicketAccess::hiddenForCurrentUser())
                             <li title="Create Ticket">
                                 <a class="dropdown-item f-14 openRightModal" href="{{ route('tickets.create') }}">
                                     <i class="bx bx-plus me-2"></i> Create Ticket
                                 </a>
                             </li>
+                            @endunless
                         </ul>
                     </li>
                   </div>
@@ -2719,7 +1280,7 @@
                             @endif
                         </a>
 
-                        <ul class="dropdown-menu dropdown-menu-end p-0" aria-labelledby="assignedWorkDropdown" style="width: 380px; max-height: 520px; overflow-y: auto;">
+                        <ul class="dropdown-menu dropdown-menu-end p-0" aria-labelledby="assignedWorkDropdown" style="width: min(380px, calc(100vw - 24px)); max-height: 520px; overflow-y: auto;">
                             <li class="px-3 py-2 border-bottom">
                                 <p class="mb-0 fw-bold">Assigned Work</p>
                                 <small class="text-muted">Projects, tasks, and tickets assigned to you</small>
@@ -2796,7 +1357,8 @@
                       try {
                           $hdrCompany = app(\App\Services\CompanyContext::class)->current();
                           $hdrCompanyId = $hdrCompany?->id ?? auth()->user()?->company_id;
-                          if ($hdrCompanyId && class_exists(\App\Models\Central\CentralNotification::class)) {
+                          $hdrCanSeeCompanyAlerts = in_array(strtolower((string) auth()->user()?->role), ['admin', 'administrator', 'superadmin'], true);
+                          if ($hdrCompanyId && $hdrCanSeeCompanyAlerts && class_exists(\App\Models\Central\CentralNotification::class)) {
                                try {
                                    app(\App\Services\SubscriptionNotificationEngine::class)->scanAndGenerateAlerts($hdrCompanyId);
                                } catch (\Throwable $e) {}
@@ -2845,8 +1407,7 @@
 
                                 <li class="notification-dropdown-body">
                            @foreach($headerCentralNotifications as $cntf)
-                             <a href="{{ $cntf->action_url ?: route('notifications.all') }}"
-                                class="notification-card-link {{ !$cntf->is_read ? 'is-unread' : '' }}" style="border-left: 3px solid {{ $cntf->severity === 'CRITICAL' ? '#ef4444' : ($cntf->severity === 'WARNING' ? '#f59e0b' : '#3b82f6') }};">
+                             <div class="notification-card-link {{ !$cntf->is_read ? 'is-unread' : '' }}" style="border-left: 3px solid {{ $cntf->severity === 'CRITICAL' ? '#ef4444' : ($cntf->severity === 'WARNING' ? '#f59e0b' : '#3b82f6') }};">
                                  <span class="notification-avatar-icon color-{{ $cntf->severity === 'CRITICAL' ? 'danger' : ($cntf->severity === 'WARNING' ? 'warning' : 'info') }}">
                                      <i class="fas {{ $cntf->severity === 'CRITICAL' ? 'fa-exclamation-triangle' : ($cntf->severity === 'WARNING' ? 'fa-bell-circle-exclamation' : 'fa-bell') }}"></i>
                                  </span>
@@ -2865,7 +1426,7 @@
                                  @if(!$cntf->is_read)
                                      <span class="notification-unread-dot" style="background: #ef4444;"></span>
                                  @endif
-                             </a>
+                             </div>
                            @endforeach
                            @forelse($navbarNotifications as $notification)
                             @php
@@ -2876,36 +1437,15 @@
                                 $color = data_get($data, 'color', 'info');
                                 $title = data_get($data, 'title', $type);
                                 $message = data_get($data, 'message', '');
-
-                                if ($taskId = data_get($data, 'task_id')) {
-                                    $link = route('tasks.show', $taskId);
-                                } elseif ($ticketId = data_get($data, 'ticket_id')) {
-                                    $link = route('tickets.show', $ticketId);
-                                } elseif ($projectId = data_get($data, 'project_id')) {
-                                    $link = route('projects.show', $projectId);
-                                } elseif ($employeeId = data_get($data, 'employee_id')) {
-                                    $link = route('employees.show', $employeeId);
-                                } else {
-                                    $link = data_get($data, 'url', '#');
-                                }
-                                $isClickable = data_get($data, 'clickable', true) !== false && data_get($data, 'type') !== 'own_password_changed';
                             @endphp
 
-    @if($isClickable)
-        <a href="{{ route('notifications.open', $notification->id) }}"
-           class="notification-card-link {{ $isUnread ? 'is-unread' : '' }}">
-    @else
-        <div class="notification-card-link {{ $isUnread ? 'is-unread' : '' }}" style="cursor: default; opacity: 0.95;">
-    @endif
+        <div class="notification-card-link {{ $isUnread ? 'is-unread' : '' }}">
         <span class="notification-avatar-icon color-{{ $color }}">
             <i class="fas {{ $icon }}"></i>
         </span>
         <span class="flex-grow-1">
             <span class="notification-title d-flex align-items-center justify-content-between">
                 <span>{{ $title }}</span>
-                @if(!$isClickable)
-                    <span class="badge bg-secondary text-white rounded-pill px-2 py-0.5" style="font-size: 0.65rem;">View Only</span>
-                @endif
             </span>
             @if($message)
                 <span class="notification-message">{{ \Illuminate\Support\Str::limit($message, 92) }}</span>
@@ -2915,11 +1455,7 @@
         @if($isUnread)
             <span class="notification-unread-dot"></span>
         @endif
-    @if($isClickable)
-        </a>
-    @else
         </div>
-    @endif
 @empty
     <div class="px-3 py-5 text-center text-muted">
         <i class="fas fa-bell-slash fa-2x mb-2 d-block"></i>
@@ -2929,10 +1465,12 @@
                                 </li>
 
 
+                                @if($canSeeModule('notifications'))
                                 <li class="notification-dropdown-foot d-flex gap-2 p-2.5">
                                     <a href="{{ route('notifications.all') }}" class="btn btn-sm btn-primary rounded-pill flex-grow-1">View All</a>
                                     <a href="{{ route('notifications.all', ['filter' => 'unread']) }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">Unread ({{ $navbarUnreadCount }})</a>
                                 </li>
+                                @endif
                             </ul>
                         </li>
 
@@ -2943,13 +1481,19 @@
                 @php
                   use App\Models\User;
                   $user = auth()->user();
-                  $employeeDesignation = $user?->employeeDetail?->designation?->name ?? $user?->designation ?? 'Employee';
+                  $employeeDesignation = $user?->employeeDetail?->designation?->name ?? $user?->designation ?? null;
                   $employeeDepartment = $user?->employeeDetail?->department?->dpt_name ?? null;
+                  $companyStaffRole = $user?->companyStaffRole;
+                  $profileRoleLabel = $companyStaffRole
+                    && (int) $companyStaffRole->company_id === (int) $user?->company_id
+                    && filled($companyStaffRole->name)
+                      ? trim($companyStaffRole->name)
+                      : ucfirst((string) $user?->role);
                 @endphp
 
                 <!-- User -->
                 <li class="nav-item navbar-dropdown dropdown-user dropdown">
-                  <a  class="nav-link dropdown-toggle hide-arrow p-0"
+                  <a  class="nav-link dropdown-toggle hide-arrow p-0 pms-user-pill"
                     href="javascript:void(0);"
                     data-bs-toggle="dropdown">
 
@@ -2961,10 +1505,12 @@
                       </div>
 
                       <div class="d-none d-md-block text-start">
-                        <h6 class="mb-0 text-truncate" style="font-size: 14px;">{{ $user->name }}</h6>
-                        <small class="text-muted d-block text-truncate" style="max-width: 180px;">
-                          {{ $employeeDesignation }}
-                        </small>
+                        <h6 class="mb-0 text-truncate pms-user-pill-name" style="font-size: 13px;">{{ $user->name }}</h6>
+                        @if($employeeDesignation && strtolower($employeeDesignation) !== 'employee')
+                          <small class="text-muted d-block text-truncate" style="max-width: 180px;">
+                            {{ $employeeDesignation }}
+                          </small>
+                        @endif
                         @if($user?->role === 'employee' && $employeeDepartment)
                           <small class="text-muted d-block text-truncate" style="max-width: 180px;">
                             {{ $employeeDepartment }}
@@ -2987,7 +1533,11 @@
 
                           <div class="flex-grow-1">
                               <h6 class="mb-0">{{ $user->name }}</h6>
-                              <small class="text-body-secondary d-block">{{ $employeeDesignation }} ({{ ucfirst($user->role) }})</small>
+                              @if($employeeDesignation && strtolower($employeeDesignation) !== 'employee')
+                                <small class="text-body-secondary d-block">{{ $employeeDesignation }} ({{ $profileRoleLabel }})</small>
+                              @else
+                                <small class="text-body-secondary d-block">{{ $profileRoleLabel }}</small>
+                              @endif
                               @if($user?->role === 'employee' && $employeeDepartment)
                                 <small class="text-body-secondary d-block">Department: {{ $employeeDepartment }}</small>
                               @endif
@@ -3166,11 +1716,33 @@
                   bell.addEventListener('shown.bs.dropdown', silentlyMarkBellNotificationsRead);
               }
 
+              // Session ended server-side (e.g. company deleted by Super Admin): leave the workspace immediately
+              function redirectIfSessionEnded(response) {
+                  if (response && (response.status === 401 || response.headers.get('X-Company-Deleted') === '1')) {
+                      window.location.href = @json(route('login'));
+                      return true;
+                  }
+                  return false;
+              }
+
+              if (window.jQuery) {
+                  window.jQuery(document).ajaxError(function (event, xhr) {
+                      if (xhr && (xhr.status === 401 || xhr.getResponseHeader('X-Company-Deleted') === '1')) {
+                          window.location.href = @json(route('login'));
+                      }
+                  });
+              }
+
               function checkNotifications() {
                   fetch('{{ route('notifications.unreadCount') }}', {
                       headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
                   })
-                  .then(response => response.json())
+                  .then(response => {
+                      if (redirectIfSessionEnded(response)) {
+                          return Promise.reject('session-ended');
+                      }
+                      return response.json();
+                  })
                   .then(data => {
                       const count = Number(data.count || 0);
                       if (count > previousUnread) {
@@ -3205,7 +1777,9 @@
                       <div class="mb-3">
                           <label for="type">Search For:</label>
                           <select name="type" id="type" class="form-select">
+                              @unless(\App\Support\TicketAccess::hiddenForCurrentUser())
                               <option value="ticket">Ticket</option>
+                              @endunless
                               <option value="task">Task</option>
                               <option value="project">Project</option>
                               <option value="employee">Employee</option>
@@ -3565,7 +2139,7 @@
                         </div>
                     </div>
                     <a href="{{ route('subscription.suspended') }}" class="btn btn-danger fw-bold rounded-pill px-4 pms-banner-btn">
-                        <i class="bx bx-zap me-1"></i> Reactivate Plan
+                        <i class="bx bxs-zap me-1"></i> Reactivate Plan
                     </a>
                 </div>
               @elseif($showExpiringBanner && $bannerDaysLeft !== null && $bannerDaysLeft <= 7 && $bannerDaysLeft >= 0)

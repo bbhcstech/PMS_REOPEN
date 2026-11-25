@@ -365,6 +365,10 @@
 
 
 
+{{-- These modals contain their own <form>s, so they are rendered OUTSIDE #taskForm via the
+     task-form-modals stack. Nested inside it, the browser merged their fields into the task form and the
+     Add Employee "status" radio (Active) overwrote the task status, failing validation. --}}
+@push('task-form-modals')
 <!-- Employee Modal -->
 <div class="modal fade" id="employeeModal" tabindex="-1" aria-labelledby="employeeModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-scrollable">
@@ -521,7 +525,17 @@
 
             <div class="col-md-4 mb-3">
                 <label>Mobile <sup class="text-danger">*</sup></label>
-                <input type="text" name="mobile" class="form-control" required>
+                <div class="input-group">
+                    <select name="mobile_country_code" class="form-select" style="max-width: 110px;" required>
+                        @php $taskCountries = isset($countries) && count($countries) ? $countries : \App\Models\Country::getAllWithPhoneCodes(); @endphp
+                        @foreach($taskCountries as $c)
+                            <option value="{{ $c->phone_code }}" {{ (old('mobile_country_code', '+91') == $c->phone_code) ? 'selected' : '' }}>
+                                {{ $c->iso_code ? $c->iso_code . ' ' : '' }}({{ $c->phone_code }})
+                            </option>
+                        @endforeach
+                    </select>
+                    <input type="text" name="mobile" class="form-control" placeholder="Mobile number" required>
+                </div>
             </div>
 
             <div class="col-md-4 mb-3">
@@ -695,8 +709,8 @@
 
 
             <div class="col-md-4 mb-3">
-                <label>Business Address <sup class="text-danger">*</sup></label>
-                <textarea name="business_address" class="form-control" required>Kolkata</textarea>
+                <label>Business Address</label>
+                <textarea name="business_address" class="form-control">Kolkata</textarea>
             </div>
             
             <div class="col-md-4 mb-3 d-flex align-items-center">
@@ -861,3 +875,4 @@
         </form>
     </div>
 </div>
+@endpush
