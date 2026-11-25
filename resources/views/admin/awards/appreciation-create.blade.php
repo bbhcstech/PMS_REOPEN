@@ -54,6 +54,7 @@
       <textarea class="form-control" id="summary" name="summary" rows="3"></textarea>
     </div>
 
+    @include('admin.awards.partials.appreciation-given-fields')
     <button class="btn btn-success">Save</button>
     <a href="{{ route('awards.index') }}" class="btn btn-secondary">Cancel</a>
   </form>

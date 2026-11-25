@@ -7,6 +7,9 @@
     .dt-buttons {
         display: none !important;
     }
+    #clientsTable .dropdown-menu {
+        z-index: 1065 !important;
+    }
 </style>
 
 <div class="container-fluid px-4 py-4">
@@ -144,8 +147,8 @@
                                     {{ $client->created_at ? \Carbon\Carbon::parse($client->created_at)->format('d-m-Y') : '—' }}
                                 </td>
                                 <td>
-                                    <div class="dropdown">
-                                        <button class="btn btn-sm btn-light" type="button" id="dropdownMenuButton{{ $client->id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <div class="dropdown dropup">
+                                        <button class="btn btn-sm btn-light" type="button" id="dropdownMenuButton{{ $client->id }}" data-bs-toggle="dropdown" data-bs-boundary="viewport" data-bs-popper-config='{"strategy":"fixed"}' aria-expanded="false">
                                             <i class="bi bi-three-dots-vertical"></i>
                                         </button>
 
@@ -224,8 +227,27 @@
             },
             drawCallback: function() {
                 updateBulkButtonsState();
+                initClientDropdowns();
             }
         });
+
+        function initClientDropdowns() {
+            document.querySelectorAll('#clientsTable [data-bs-toggle="dropdown"]').forEach(function(btn) {
+                if (window.bootstrap && bootstrap.Dropdown) {
+                    bootstrap.Dropdown.getOrCreateInstance(btn, {
+                        boundary: 'viewport',
+                        popperConfig: function(defaultBsPopperConfig) {
+                            return Object.assign({}, defaultBsPopperConfig, {
+                                strategy: 'fixed',
+                                placement: 'top-end'
+                            });
+                        }
+                    });
+                }
+            });
+        }
+
+        initClientDropdowns();
 
         // daterangepicker for Duration filter
         const predefinedRanges = {

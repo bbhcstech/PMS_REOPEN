@@ -15,6 +15,17 @@ use Carbon\Carbon;
 
 class ComplaintController extends Controller
 {
+    public function subscriptionDecision(Request $request, $id): RedirectResponse
+    {
+        abort_unless(\App\Services\TenantScope::isPlatformAdmin(), 403);
+        $data = $request->validate(['decision' => 'required|in:approved,rejected']);
+        try {
+            $ticket = app(\App\Services\SubscriptionDowngradeRequests::class)->decide((int) $id, $data['decision']);
+        } catch (\InvalidArgumentException $e) {
+            return back()->with('error', $e->getMessage());
+        }
+        return back()->with('success', 'Subscription request ' . $ticket->plan_request_status . '.');
+    }
     protected ComplaintService $complaintService;
 
     public function __construct(ComplaintService $complaintService)
@@ -31,7 +42,7 @@ class ComplaintController extends Controller
         if (auth()->check()) {
             $user = auth()->user();
             $role = strtolower((string) ($user->role ?? ''));
-            if ($role === 'superadmin' || $role === 'admin') {
+            if ($role === 'superadmin') {
                 return;
             }
         }
@@ -238,7 +249,7 @@ class ComplaintController extends Controller
 
         if ($format === 'pdf') {
             if (class_exists(\Barryvdh\DomPDF\Facade\Pdf::class)) {
-                $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('superadmin.complaints.exports.pdf', compact('tickets', 'activeFilters'));
+                $pdf = \App\Services\PdfDocument::loadView('superadmin.complaints.exports.pdf', compact('tickets', 'activeFilters'));
                 return $pdf->download("complaints_report_{$dateStr}.pdf");
             }
             return view('superadmin.complaints.exports.pdf', compact('tickets', 'activeFilters'));
@@ -348,6 +359,13 @@ class ComplaintController extends Controller
         return redirect()->back()->with('success', 'Response posted and Company Admin notified successfully.');
     }
 
+    public function messages(Request $request, $id): JsonResponse
+    {
+        abort_unless(\App\Services\TenantScope::isPlatformAdmin(), 403);
+        $ticket = CompanyComplaint::on('central')->findOrFail($id);
+        return app(\App\Services\ComplaintConversationFeed::class)->response($request, $ticket, true);
+    }
+
     /**
      * Update ticket status.
      */
@@ -414,5 +432,25 @@ class ComplaintController extends Controller
             ->count();
 
         return response()->json(['count' => $count]);
+    }
+
+    /**
+     * Download complaint attachment for Super Admin.
+     */
+    public function downloadAttachment($ticketId, $attachmentId): \Symfony\Component\HttpFoundation\BinaryFileResponse
+    {
+        $this->authorizeSuperAdmin();
+
+        $ticket = CompanyComplaint::on('central')->findOrFail($ticketId);
+        $attachment = \App\Models\Central\ComplaintAttachment::on('central')
+            ->where('complaint_id', $ticket->id)
+            ->findOrFail($attachmentId);
+
+        $filePath = public_path($attachment->file_path);
+        if (!file_exists($filePath)) {
+            abort(404, 'Attachment file not found.');
+        }
+
+        return response()->download($filePath, $attachment->original_name);
     }
 }

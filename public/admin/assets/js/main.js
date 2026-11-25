@@ -21,7 +21,9 @@ document.addEventListener('DOMContentLoaded', function () {
   layoutMenuEl.forEach(function (element) {
     menu = new Menu(element, {
       orientation: 'vertical',
-      closeChildren: false
+      closeChildren: false,
+      // Opening one menu must not collapse the others; menus stay open until the user closes them.
+      accordion: false
     });
     // Change parameter to true if you want scroll animation
     window.Helpers.scrollToActive((animate = false));

@@ -2,6 +2,7 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
   <meta charset="utf-8" />
+  @include('partials.timezone')
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="csrf-token" content="{{ csrf_token() }}" />
   <title>@yield('title', 'Super Admin · Command Center') - {{ config('app.name', 'BBHPMS') }}</title>
@@ -171,6 +172,89 @@
     select {
       font-family: inherit;
       font-size: inherit;
+    }
+
+    /* Fix native select & dropdown colors in dark & light themes */
+    html[data-pms-theme="dark"],
+    html[data-theme="dark"],
+    html[data-bs-theme="dark"] {
+      color-scheme: dark;
+    }
+
+    html:not([data-pms-theme="dark"]):not([data-theme="dark"]):not([data-bs-theme="dark"]) {
+      color-scheme: light;
+    }
+
+    /* Country code select element & options styling for light and dark modes */
+    .country-code-select,
+    #company_create_country_code,
+    #modal_company_country_code,
+    #devFormCountryCode,
+    #profile_country_code {
+      color-scheme: light dark;
+      color: var(--text-main, #10142C) !important;
+      background-color: var(--bg-surface, #ffffff) !important;
+      border: 1px solid var(--border-subtle, rgba(16, 20, 44, 0.12));
+    }
+
+    .country-code-select option,
+    #company_create_country_code option,
+    #modal_company_country_code option,
+    #devFormCountryCode option,
+    #profile_country_code option {
+      background-color: #ffffff !important;
+      color: #10142C !important;
+    }
+
+    html[data-pms-theme="dark"] .country-code-select,
+    html[data-theme="dark"] .country-code-select,
+    html[data-bs-theme="dark"] .country-code-select,
+    html[data-pms-theme="dark"] #company_create_country_code,
+    html[data-theme="dark"] #company_create_country_code,
+    html[data-pms-theme="dark"] #modal_company_country_code,
+    html[data-theme="dark"] #modal_company_country_code,
+    html[data-pms-theme="dark"] #devFormCountryCode,
+    html[data-theme="dark"] #devFormCountryCode,
+    html[data-pms-theme="dark"] #profile_country_code,
+    html[data-theme="dark"] #profile_country_code {
+      color-scheme: dark !important;
+      color: #EEF1FB !important;
+      background-color: #0F1530 !important;
+      border-color: rgba(238, 241, 251, 0.15) !important;
+    }
+
+    html[data-pms-theme="dark"] .country-code-select option,
+    html[data-theme="dark"] .country-code-select option,
+    html[data-bs-theme="dark"] .country-code-select option,
+    html[data-pms-theme="dark"] #company_create_country_code option,
+    html[data-theme="dark"] #company_create_country_code option,
+    html[data-pms-theme="dark"] #modal_company_country_code option,
+    html[data-theme="dark"] #modal_company_country_code option,
+    html[data-pms-theme="dark"] #devFormCountryCode option,
+    html[data-theme="dark"] #devFormCountryCode option,
+    html[data-pms-theme="dark"] #profile_country_code option,
+    html[data-theme="dark"] #profile_country_code option {
+      background-color: #0F1530 !important;
+      color: #EEF1FB !important;
+    }
+
+    /* Inline Validation Feedback */
+    .field-error-feedback {
+      display: none;
+      color: #EF4444 !important;
+      font-size: 12px !important;
+      font-weight: 500 !important;
+      margin-top: 5px !important;
+      line-height: 1.35 !important;
+    }
+    .field-error-feedback.visible {
+      display: block !important;
+    }
+    .input-control.is-invalid,
+    input.is-invalid,
+    select.is-invalid {
+      border-color: #EF4444 !important;
+      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15) !important;
     }
 
     ::selection {
@@ -1139,12 +1223,14 @@
        RESPONSIVE & ALL-DEVICE SCREEN COMPATIBILITY
        ============================================================ */
     html, body {
-      overflow-x: hidden !important;
+      overflow-x: clip !important;
       max-width: 100vw !important;
     }
 
     .main {
-      overflow-x: hidden;
+      /* Clip horizontal overflow without making a separate scroll container.
+         The header must stick to the document's scrolling viewport. */
+      overflow-x: clip;
     }
 
     /* Auto-responsive table containers */
@@ -1300,7 +1386,9 @@
       .header-actions button,
       .filter-actions .btn,
       .action-bar .btn,
-      [class*="btn-"]:not(.hamburger):not(.theme-toggle-btn):not(.btn-notif):not(.profile) {
+      /* Compact, close and icon buttons keep their own size: stretching e.g. a drawer's × button to the full
+         row squeezed the drawer title into a one-character column and pushed the drawer content off-screen. */
+      [class*="btn-"]:not(.hamburger):not(.theme-toggle-btn):not(.btn-notif):not(.profile):not([class*="btn-xs"]):not(.btn-close):not(.btn-icon) {
         width: 100%;
         justify-content: center;
       }
@@ -1501,6 +1589,12 @@
 
     /* ---- MOBILE BOTTOM NAVIGATION BAR ---- */
     /* Shows quick-access links at bottom on mobile instead of requiring sidebar */
+    /* .main is its own stacking layer (z-index: 1), so an open drawer/overlay inside a page sat under the
+       fixed mobile bottom navigation. Lift the page layer above it only while such a layer is open. */
+    .main:has(:is(.drawer-overlay-custom, .drawer-overlay, .modal-overlay).open) {
+      z-index: 1000;
+    }
+
     .mobile-bottom-nav {
       display: none;
       position: fixed;
@@ -1685,6 +1779,146 @@
       background: rgba(47, 107, 255, 0.16);
       color: var(--brand-accent);
     }
+
+    /* Super Admin Notification Dropdown Dark Theme Overrides */
+    html[data-pms-theme="dark"] .notif-dropdown,
+    html[data-theme="dark"] .notif-dropdown,
+    html[data-bs-theme="dark"] .notif-dropdown,
+    [data-pms-theme="dark"] .notif-dropdown,
+    [data-theme="dark"] .notif-dropdown {
+      background: #0F1530 !important;
+      border: 1px solid rgba(238, 241, 251, 0.16) !important;
+      box-shadow: 0 24px 56px -8px rgba(0, 0, 0, 0.75), 0 10px 25px -5px rgba(0, 0, 0, 0.5) !important;
+    }
+    html[data-pms-theme="dark"] .notif-dropdown-header,
+    html[data-theme="dark"] .notif-dropdown-header,
+    html[data-bs-theme="dark"] .notif-dropdown-header,
+    [data-pms-theme="dark"] .notif-dropdown-header,
+    [data-theme="dark"] .notif-dropdown-header {
+      background: linear-gradient(135deg, #070B1A 0%, #1E4FCC 100%) !important;
+      border-bottom: 1px solid rgba(238, 241, 251, 0.1) !important;
+      color: #ffffff !important;
+    }
+    html[data-pms-theme="dark"] .notif-dropdown-header .notif-header-title,
+    html[data-theme="dark"] .notif-dropdown-header .notif-header-title,
+    html[data-bs-theme="dark"] .notif-dropdown-header .notif-header-title,
+    [data-pms-theme="dark"] .notif-dropdown-header .notif-header-title,
+    [data-theme="dark"] .notif-dropdown-header .notif-header-title {
+      color: #ffffff !important;
+    }
+    html[data-pms-theme="dark"] .notif-dropdown-header .notif-unread-pill,
+    html[data-theme="dark"] .notif-dropdown-header .notif-unread-pill,
+    html[data-bs-theme="dark"] .notif-dropdown-header .notif-unread-pill,
+    [data-pms-theme="dark"] .notif-dropdown-header .notif-unread-pill,
+    [data-theme="dark"] .notif-dropdown-header .notif-unread-pill {
+      background: rgba(34, 211, 238, 0.2) !important;
+      border: 1px solid rgba(34, 211, 238, 0.45) !important;
+      color: #22D3EE !important;
+    }
+    html[data-pms-theme="dark"] .notif-dropdown-body,
+    html[data-theme="dark"] .notif-dropdown-body,
+    html[data-bs-theme="dark"] .notif-dropdown-body,
+    [data-pms-theme="dark"] .notif-dropdown-body,
+    [data-theme="dark"] .notif-dropdown-body {
+      background: #0F1530 !important;
+    }
+    html[data-pms-theme="dark"] .notif-item,
+    html[data-theme="dark"] .notif-item,
+    html[data-bs-theme="dark"] .notif-item,
+    [data-pms-theme="dark"] .notif-item,
+    [data-theme="dark"] .notif-item {
+      background: #0F1530 !important;
+      border-bottom: 1px solid rgba(238, 241, 251, 0.08) !important;
+      color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .notif-item:hover,
+    html[data-theme="dark"] .notif-item:hover,
+    html[data-bs-theme="dark"] .notif-item:hover,
+    [data-pms-theme="dark"] .notif-item:hover,
+    [data-theme="dark"] .notif-item:hover {
+      background: #141B3D !important;
+    }
+    html[data-pms-theme="dark"] .notif-item.unread,
+    html[data-theme="dark"] .notif-item.unread,
+    html[data-bs-theme="dark"] .notif-item.unread,
+    [data-pms-theme="dark"] .notif-item.unread,
+    [data-theme="dark"] .notif-item.unread {
+      background: rgba(47, 107, 255, 0.12) !important;
+    }
+    html[data-pms-theme="dark"] .notif-item.unread:hover,
+    html[data-theme="dark"] .notif-item.unread:hover,
+    html[data-bs-theme="dark"] .notif-item.unread:hover,
+    [data-pms-theme="dark"] .notif-item.unread:hover,
+    [data-theme="dark"] .notif-item.unread:hover {
+      background: rgba(47, 107, 255, 0.2) !important;
+    }
+    html[data-pms-theme="dark"] .notif-title,
+    html[data-theme="dark"] .notif-title,
+    html[data-bs-theme="dark"] .notif-title,
+    [data-pms-theme="dark"] .notif-title,
+    [data-theme="dark"] .notif-title {
+      color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .notif-desc,
+    html[data-theme="dark"] .notif-desc,
+    html[data-bs-theme="dark"] .notif-desc,
+    [data-pms-theme="dark"] .notif-desc,
+    [data-theme="dark"] .notif-desc {
+      color: #9AA3C7 !important;
+    }
+    html[data-pms-theme="dark"] .notif-company-tag,
+    html[data-theme="dark"] .notif-company-tag,
+    html[data-bs-theme="dark"] .notif-company-tag,
+    [data-pms-theme="dark"] .notif-company-tag,
+    [data-theme="dark"] .notif-company-tag {
+      background: rgba(47, 107, 255, 0.22) !important;
+      color: #60a5fa !important;
+      border: 1px solid rgba(47, 107, 255, 0.4) !important;
+    }
+    html[data-pms-theme="dark"] .notif-time,
+    html[data-theme="dark"] .notif-time,
+    html[data-bs-theme="dark"] .notif-time,
+    [data-pms-theme="dark"] .notif-time,
+    [data-theme="dark"] .notif-time {
+      color: #6B739A !important;
+    }
+    html[data-pms-theme="dark"] .notif-icon-wrap,
+    html[data-theme="dark"] .notif-icon-wrap,
+    html[data-bs-theme="dark"] .notif-icon-wrap,
+    [data-pms-theme="dark"] .notif-icon-wrap,
+    [data-theme="dark"] .notif-icon-wrap {
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    html[data-pms-theme="dark"] .notif-dropdown-footer,
+    html[data-theme="dark"] .notif-dropdown-footer,
+    html[data-bs-theme="dark"] .notif-dropdown-footer,
+    [data-pms-theme="dark"] .notif-dropdown-footer,
+    [data-theme="dark"] .notif-dropdown-footer {
+      background: #070B1A !important;
+      border-top: 1px solid rgba(238, 241, 251, 0.1) !important;
+    }
+    html[data-pms-theme="dark"] .notif-dropdown-footer a,
+    html[data-theme="dark"] .notif-dropdown-footer a,
+    html[data-bs-theme="dark"] .notif-dropdown-footer a,
+    [data-pms-theme="dark"] .notif-dropdown-footer a,
+    [data-theme="dark"] .notif-dropdown-footer a {
+      color: #22D3EE !important;
+    }
+    html[data-pms-theme="dark"] .notif-dropdown-footer a:hover,
+    html[data-theme="dark"] .notif-dropdown-footer a:hover,
+    html[data-bs-theme="dark"] .notif-dropdown-footer a:hover,
+    [data-pms-theme="dark"] .notif-dropdown-footer a:hover,
+    [data-theme="dark"] .notif-dropdown-footer a:hover {
+      color: #38bdf8 !important;
+    }
+    html[data-pms-theme="dark"] .notif-empty,
+    html[data-theme="dark"] .notif-empty,
+    html[data-bs-theme="dark"] .notif-empty,
+    [data-pms-theme="dark"] .notif-empty,
+    [data-theme="dark"] .notif-empty {
+      color: #9AA3C7 !important;
+    }
+
     html[data-pms-theme="dark"] .page-item .page-link,
     html[data-theme="dark"] .page-item .page-link {
       background: var(--bg-surface);
@@ -1804,13 +2038,19 @@
       </a>
 
       <!-- TENANT MANAGEMENT -->
+      <a href="{{ route('super-admin.ai.index') }}" class="{{ request()->routeIs('super-admin.ai.*') ? 'active' : '' }}">
+        <i class="bx bx-bot icon"></i> Platform Assistant
+      </a>
       <div class="nav-label">Tenant Management</div>
-      <a href="{{ Route::has('super-admin.companies.index') ? route('super-admin.companies.index') : (Route::has('superadmin.companies.index') ? route('superadmin.companies.index') : url('/super-admin/companies')) }}" 
-         class="{{ request()->routeIs('super-admin.companies.index') || (request()->routeIs('super-admin.companies.*') && !request()->routeIs('super-admin.companies.metrics')) ? 'active' : '' }}">
+      <a href="{{ Route::has('superadmin.companies.index') ? route('superadmin.companies.index') : (Route::has('super-admin.companies.index') ? route('super-admin.companies.index') : url('/superadmin/companies')) }}" 
+         class="{{ request()->routeIs('*companies.index') || request()->routeIs('*companies.list') || ((request()->routeIs('*companies.*')) && !request()->routeIs('*companies.metrics', '*companies.suspended')) ? 'active' : '' }}">
         <i class="bx bx-building-house icon"></i> Companies
       </a>
-      <a href="{{ Route::has('super-admin.companies.metrics') ? route('super-admin.companies.metrics') : url('/super-admin/companies/metrics') }}" 
-         class="{{ request()->routeIs('super-admin.companies.metrics') ? 'active' : '' }}">
+      <a href="{{ route('superadmin.companies.suspended') }}" class="{{ request()->routeIs('*companies.suspended') ? 'active' : '' }}">
+        <i class="bx bx-pause-circle icon"></i> Suspended Companies
+      </a>
+      <a href="{{ Route::has('superadmin.companies.metrics') ? route('superadmin.companies.metrics') : (Route::has('super-admin.companies.metrics') ? route('super-admin.companies.metrics') : url('/superadmin/companies/metrics')) }}" 
+         class="{{ request()->routeIs('*companies.metrics') ? 'active' : '' }}">
         <i class="bx bx-line-chart icon"></i> Company Metrics
       </a>
 
@@ -1835,10 +2075,6 @@
          class="{{ request()->routeIs('super-admin.backups.*') || request()->routeIs('superadmin.backups.*') ? 'active' : '' }}">
         <i class="bx bx-data icon"></i> Backups
       </a>
-      <a href="{{ Route::has('super-admin.tenant-audit.index') ? route('super-admin.tenant-audit.index') : (Route::has('superadmin.tenant-audit.index') ? route('superadmin.tenant-audit.index') : url('/super-admin/tenant-audit')) }}"
-         class="{{ request()->routeIs('super-admin.tenant-audit.*') || request()->routeIs('superadmin.tenant-audit.*') ? 'active' : '' }}">
-        <i class="bx bx-shield-quarter icon"></i> Tenant Audit
-      </a>
 
       <!-- MONITORING -->
       <div class="nav-label">Monitoring</div>
@@ -1849,6 +2085,23 @@
       <a href="{{ Route::has('super-admin.alerts.index') ? route('super-admin.alerts.index') : (Route::has('superadmin.alerts.index') ? route('superadmin.alerts.index') : url('/super-admin/alerts')) }}"
          class="{{ request()->routeIs('super-admin.alerts.*') || request()->routeIs('superadmin.alerts.*') ? 'active' : '' }}">
         <i class="bx bx-bell icon"></i> Alerts <span class="badge">Live</span>
+      </a>
+      @php
+        $saPendingComplaintsCount = 0;
+        if (class_exists(\App\Models\Central\CompanyComplaint::class)) {
+            try {
+                $saPendingComplaintsCount = \App\Models\Central\CompanyComplaint::on('central')
+                    ->whereIn('status', ['OPEN', 'IN PROGRESS', 'REOPENED'])
+                    ->count();
+            } catch (\Throwable $e) {}
+        }
+      @endphp
+      <a href="{{ Route::has('superadmin.complaints.index') ? route('superadmin.complaints.index') : (Route::has('super-admin.complaints.index') ? route('super-admin.complaints.index') : url('/superadmin/complaints')) }}"
+         class="{{ request()->routeIs('*complaints*') ? 'active' : '' }}">
+        <i class="bx bx-support icon"></i> Complaints &amp; Support Center
+        @if($saPendingComplaintsCount > 0)
+          <span class="badge" style="background: #2F6BFF; color: #ffffff; font-weight: 800; border-radius: 10px; padding: 2px 7px;">{{ $saPendingComplaintsCount }}</span>
+        @endif
       </a>
 
       <!-- SECURITY & AUDIT -->
@@ -2085,7 +2338,10 @@
         </div>
       @endif
 
+      @include('partials.page-back-navigation')
+      <div data-live-records data-live-identity="@include('partials.live-records-identity')" style="display:contents">
       @yield('content')
+      </div>
     </div>
   </div>
 
@@ -2112,6 +2368,24 @@
         sidebarOverlay.classList.remove('open');
       });
     }
+
+    // Auto-close sidebar on mobile when navigating
+    document.querySelectorAll('#sidebar .nav-item').forEach(function(link) {
+      link.addEventListener('click', function() {
+        if (window.innerWidth <= 992) {
+          if (sidebar) sidebar.classList.remove('open');
+          if (sidebarOverlay) sidebarOverlay.classList.remove('open');
+        }
+      });
+    });
+
+    // Close on Escape key
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        if (sidebar) sidebar.classList.remove('open');
+        if (sidebarOverlay) sidebarOverlay.classList.remove('open');
+      }
+    });
 
     // Notification Dropdown Toggle
     const notifWrapper = document.getElementById('notifWrapper');
@@ -2290,6 +2564,10 @@
 
   @include('admin.layout.toasts')
 
-  @stack('scripts')
+  @include('partials.phone-fields')
+@stack('scripts')
+  <script src="{{ asset('admin/assets/js/pms-live-records.js') }}?v={{ @filemtime(public_path('admin/assets/js/pms-live-records.js')) }}" data-session-url="{{ route('company.session-status') }}" data-login-url="{{ route('login') }}" defer></script>
+  @include('partials.ai-assistant-launcher')
+  @include('partials.responsive-workspace', ['responsiveShell' => 'platform'])
 </body>
 </html>

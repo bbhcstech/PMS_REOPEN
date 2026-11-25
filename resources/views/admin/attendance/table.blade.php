@@ -45,8 +45,6 @@
                 $attendance = $attendanceMap[$user->id][$dateKey] ?? null;
                 $cellDate = \Carbon\Carbon::parse($dateKey);
                 $isRealAttendanceCell = $attendance instanceof \App\Models\Attendance;
-                $isAutoSaturday = !$isRealAttendanceCell && $cellDate->isSaturday();
-                $isAutoSunday = !$isRealAttendanceCell && $cellDate->isSunday();
                 $status = strtolower($attendance->status ?? '');
                 $durationFlag = strtolower($attendance->duration ?? '');
                 $statusIconClass = 'attendance-status-icon';
@@ -55,16 +53,17 @@
                 $rowSeconds = 0;
                 $today = \Carbon\Carbon::now()->format('Y-m-d');
 
-                if ($isAutoSaturday) {
-                  $symbol = "<span class='{$statusIconClass} wfh' data-bs-toggle='tooltip' title='Saturday - Work From Home'><i class='fas fa-laptop-house'></i></span>";
-                  $popupClass = '';
-                } elseif ($isAutoSunday) {
-                  $symbol = "<span class='{$statusIconClass} holiday' data-bs-toggle='tooltip' title='Sunday Holiday'><i class='fas fa-star'></i></span>";
-                  $popupClass = '';
-                } elseif ($status === 'holiday') {
+                if ($status === 'holiday') {
                   $occ = $attendance->occassion ?? 'Holiday';
                   $symbol = "<span class='{$statusIconClass} holiday' data-bs-toggle='tooltip' title='{$occ}'><i class='fas fa-star'></i></span>";
                   $popupClass = '';
+                } elseif ($status === 'wfh') {
+                  $reason = $attendance->reason ?? 'Work From Home';
+                  $symbol = "<span class='{$statusIconClass} wfh' data-bs-toggle='tooltip' title='{$reason}'><i class='fas fa-laptop-house'></i></span>";
+                  $popupClass = $isRealAttendanceCell ? 'view-attendance' : '';
+                  if ($isRealAttendanceCell || $dateKey <= $today) {
+                    $presentCount++;
+                  }
                 } elseif ($dateKey <= $today) {
                   switch ($status) {
                     case 'present':
@@ -114,6 +113,8 @@
                     }
                   } elseif ($status === 'holiday') {
                     $symbol = "<span class='{$statusIconClass} holiday' data-bs-toggle='tooltip' title='Holiday'><i class='fas fa-star'></i></span>";
+                  } elseif ($status === 'wfh') {
+                    $symbol = "<span class='{$statusIconClass} wfh' data-bs-toggle='tooltip' title='Assigned Work From Home'><i class='fas fa-laptop-house'></i></span>";
                   } elseif ($status === 'day_off' || $status === 'dayoff') {
                     $symbol = "<span class='{$statusIconClass} dayoff' data-bs-toggle='tooltip' title='Day Off'><i class='fas fa-calendar'></i></span>";
                   } else {
@@ -157,20 +158,32 @@
                 $dateKey = \Carbon\Carbon::createFromDate($year,$month,$d)->format('Y-m-d');
                 $dayRecord = $attendanceMap[$user->id][$dateKey] ?? null;
                 $isRealAttendance = $dayRecord instanceof \App\Models\Attendance;
-                $monthCellDate = \Carbon\Carbon::parse($dateKey);
-                $autoWeekendStatus = !$isRealAttendance && $monthCellDate->isSaturday()
-                  ? 'Work From Home'
-                  : (!$isRealAttendance && $monthCellDate->isSunday() ? 'Holiday' : null);
                 $daySeconds = $isRealAttendance ? (int) ($dayRecord->total_seconds ?? 0) : 0;
+                $dayStatusRaw = strtolower($dayRecord->status ?? ($dateKey <= $today ? 'absent' : ''));
+                $dayStatusLabel = match($dayStatusRaw) {
+                  'present' => 'Present',
+                  'wfh' => 'Work From Home',
+                  'late' => 'Late',
+                  'half_day' => 'Half Day',
+                  'holiday' => 'Holiday',
+                  'day_off', 'dayoff' => 'Day Off',
+                  'leave' => 'On Leave',
+                  'absent' => 'Absent',
+                  default => '-'
+                };
+                $isOpenShift = $isRealAttendance && $dayRecord->clock_in && !$dayRecord->clock_out;
                 $monthRecords[] = [
                   'date' => $dateKey,
                   'day' => \Carbon\Carbon::parse($dateKey)->format('d D'),
                   'attendance_id' => $isRealAttendance ? $dayRecord->id : null,
-                  'status' => $autoWeekendStatus ?? ucfirst(str_replace('_', ' ', strtolower($dayRecord->status ?? 'absent'))),
+                  'status' => $dayStatusLabel,
                   'clock_in' => $isRealAttendance && $dayRecord->clock_in ? \Carbon\Carbon::parse($dayRecord->clock_in)->format('h:i A') : '-',
                   'clock_out' => $isRealAttendance && $dayRecord->clock_out ? \Carbon\Carbon::parse($dayRecord->clock_out)->format('h:i A') : '-',
-                  'total' => $isRealAttendance ? sprintf('%02d:%02d:%02d', intdiv($daySeconds, 3600), intdiv($daySeconds % 3600, 60), $daySeconds % 60) : '-',
-                  'note' => $autoWeekendStatus ? ($monthCellDate->isSaturday() ? 'Auto Saturday WFH' : 'Auto Sunday Holiday') : ($dayRecord->occassion ?? $dayRecord->reason ?? ''),
+                  'total' => $isRealAttendance && ($dayRecord->clock_in || $daySeconds > 0) ? sprintf('%02d:%02d:%02d', intdiv($daySeconds, 3600), intdiv($daySeconds % 3600, 60), $daySeconds % 60) : '-',
+                  'is_open' => $isOpenShift,
+                  'clock_in_raw' => $isRealAttendance && $dayRecord->clock_in ? $dayRecord->clock_in : '',
+                  'total_seconds' => $daySeconds,
+                  'note' => $dayRecord->occassion ?? $dayRecord->reason ?? '',
                 ];
               }
               $employeeMonthPayload = [
@@ -428,6 +441,7 @@
     -webkit-text-fill-color: #c2410c !important;
     font-weight: 800;
     font-size: 0.95rem;
+  }
   .attendance-col-emp,
   .attendance-col-hours,
   .attendance-col-actions {
@@ -612,41 +626,148 @@
   /* Dark mode modal fixes */
   html[data-pms-theme="dark"] #attendanceDetailsModal .attendance-details-modal-content,
   html[data-theme="dark"] #attendanceDetailsModal .attendance-details-modal-content,
-  body.dark-mode #attendanceDetailsModal .attendance-details-modal-content {
+  html[data-bs-theme="dark"] #attendanceDetailsModal .attendance-details-modal-content,
+  html.dark #attendanceDetailsModal .attendance-details-modal-content,
+  body[data-pms-theme="dark"] #attendanceDetailsModal .attendance-details-modal-content,
+  body[data-theme="dark"] #attendanceDetailsModal .attendance-details-modal-content,
+  body[data-bs-theme="dark"] #attendanceDetailsModal .attendance-details-modal-content,
+  body.dark-mode #attendanceDetailsModal .attendance-details-modal-content,
+  body.dark #attendanceDetailsModal .attendance-details-modal-content,
+  [data-pms-theme="dark"] #attendanceDetailsModal .attendance-details-modal-content,
+  [data-theme="dark"] #attendanceDetailsModal .attendance-details-modal-content,
+  [data-bs-theme="dark"] #attendanceDetailsModal .attendance-details-modal-content,
+  .dark-mode #attendanceDetailsModal .attendance-details-modal-content,
+  html[data-pms-theme="dark"] #editAttendanceModal .modal-content,
+  html[data-theme="dark"] #editAttendanceModal .modal-content,
+  html[data-bs-theme="dark"] #editAttendanceModal .modal-content,
+  body.dark-mode #editAttendanceModal .modal-content,
+  [data-theme="dark"] #editAttendanceModal .modal-content {
     background: #0F1530 !important;
-    border: 1px solid rgba(238, 241, 251, 0.12) !important;
+    border: 1px solid rgba(79, 131, 255, 0.2) !important;
     color: #CBD5E1 !important;
     box-shadow: 0 24px 70px rgba(0, 0, 0, 0.7) !important;
   }
   html[data-pms-theme="dark"] #attendanceDetailsModal .attendance-details-modal-body,
   html[data-theme="dark"] #attendanceDetailsModal .attendance-details-modal-body,
-  body.dark-mode #attendanceDetailsModal .attendance-details-modal-body {
+  html[data-bs-theme="dark"] #attendanceDetailsModal .attendance-details-modal-body,
+  body.dark-mode #attendanceDetailsModal .attendance-details-modal-body,
+  [data-theme="dark"] #attendanceDetailsModal .attendance-details-modal-body,
+  html[data-pms-theme="dark"] #editAttendanceModal .modal-body,
+  html[data-theme="dark"] #editAttendanceModal .modal-body,
+  body.dark-mode #editAttendanceModal .modal-body,
+  [data-theme="dark"] #editAttendanceModal .modal-body {
     background: #0F1530 !important;
     color: #CBD5E1 !important;
   }
   html[data-pms-theme="dark"] #attendanceDetailsModal .attendance-details-container,
   html[data-theme="dark"] #attendanceDetailsModal .attendance-details-container,
-  body.dark-mode #attendanceDetailsModal .attendance-details-container {
+  html[data-bs-theme="dark"] #attendanceDetailsModal .attendance-details-container,
+  body.dark-mode #attendanceDetailsModal .attendance-details-container,
+  [data-theme="dark"] #attendanceDetailsModal .attendance-details-container {
     background: #070B1A !important;
     color: #CBD5E1 !important;
   }
   html[data-pms-theme="dark"] #attendanceDetailsModal .modal-header,
   html[data-theme="dark"] #attendanceDetailsModal .modal-header,
-  body.dark-mode #attendanceDetailsModal .modal-header {
+  html[data-bs-theme="dark"] #attendanceDetailsModal .modal-header,
+  body.dark-mode #attendanceDetailsModal .modal-header,
+  [data-theme="dark"] #attendanceDetailsModal .modal-header,
+  html[data-pms-theme="dark"] #editAttendanceModal .modal-header,
+  html[data-theme="dark"] #editAttendanceModal .modal-header,
+  body.dark-mode #editAttendanceModal .modal-header,
+  [data-theme="dark"] #editAttendanceModal .modal-header {
     background: #141B3D !important;
-    border-bottom: 1px solid rgba(238, 241, 251, 0.09) !important;
-    color: #EEF1FB !important;
+    border-bottom: 1px solid rgba(79, 131, 255, 0.18) !important;
+    color: #FFFFFF !important;
   }
   html[data-pms-theme="dark"] #attendanceDetailsModal .modal-title,
   html[data-theme="dark"] #attendanceDetailsModal .modal-title,
-  body.dark-mode #attendanceDetailsModal .modal-title {
-    color: #EEF1FB !important;
+  html[data-bs-theme="dark"] #attendanceDetailsModal .modal-title,
+  body.dark-mode #attendanceDetailsModal .modal-title,
+  [data-theme="dark"] #attendanceDetailsModal .modal-title,
+  html[data-pms-theme="dark"] #editAttendanceModal .modal-title,
+  html[data-theme="dark"] #editAttendanceModal .modal-title,
+  body.dark-mode #editAttendanceModal .modal-title,
+  [data-theme="dark"] #editAttendanceModal .modal-title {
+    color: #FFFFFF !important;
+  }
+  html[data-pms-theme="dark"] #attendanceDetailsModal .modal-header .btn-close,
+  html[data-theme="dark"] #attendanceDetailsModal .modal-header .btn-close,
+  html[data-bs-theme="dark"] #attendanceDetailsModal .modal-header .btn-close,
+  body.dark-mode #attendanceDetailsModal .modal-header .btn-close,
+  [data-theme="dark"] #attendanceDetailsModal .modal-header .btn-close,
+  html[data-pms-theme="dark"] #editAttendanceModal .modal-header .btn-close,
+  html[data-theme="dark"] #editAttendanceModal .modal-header .btn-close,
+  body.dark-mode #editAttendanceModal .modal-header .btn-close,
+  [data-theme="dark"] #editAttendanceModal .modal-header .btn-close {
+    filter: invert(1) grayscale(100%) brightness(200%) !important;
+    opacity: 0.8 !important;
+  }
+  html[data-pms-theme="dark"] #attendanceDetailsModal .modal-header .btn-close:hover,
+  html[data-theme="dark"] #attendanceDetailsModal .modal-header .btn-close:hover,
+  body.dark-mode #attendanceDetailsModal .modal-header .btn-close:hover,
+  html[data-pms-theme="dark"] #editAttendanceModal .modal-header .btn-close:hover,
+  html[data-theme="dark"] #editAttendanceModal .modal-header .btn-close:hover,
+  body.dark-mode #editAttendanceModal .modal-header .btn-close:hover {
+    opacity: 1 !important;
   }
   html[data-pms-theme="dark"] #attendanceDetailsModal .modal-footer,
   html[data-theme="dark"] #attendanceDetailsModal .modal-footer,
-  body.dark-mode #attendanceDetailsModal .modal-footer {
+  html[data-bs-theme="dark"] #attendanceDetailsModal .modal-footer,
+  body.dark-mode #attendanceDetailsModal .modal-footer,
+  [data-theme="dark"] #attendanceDetailsModal .modal-footer,
+  html[data-pms-theme="dark"] #editAttendanceModal .modal-footer,
+  html[data-theme="dark"] #editAttendanceModal .modal-footer,
+  body.dark-mode #editAttendanceModal .modal-footer,
+  [data-theme="dark"] #editAttendanceModal .modal-footer {
     background: #0F1530 !important;
-    border-top: 1px solid rgba(238, 241, 251, 0.09) !important;
+    border-top: 1px solid rgba(79, 131, 255, 0.18) !important;
+  }
+  html[data-pms-theme="dark"] #attendanceDetailsModal .modal-footer .btn-secondary,
+  html[data-theme="dark"] #attendanceDetailsModal .modal-footer .btn-secondary,
+  html[data-bs-theme="dark"] #attendanceDetailsModal .modal-footer .btn-secondary,
+  body.dark-mode #attendanceDetailsModal .modal-footer .btn-secondary,
+  [data-theme="dark"] #attendanceDetailsModal .modal-footer .btn-secondary {
+    background: #141B3D !important;
+    color: #CBD5E1 !important;
+    border: 1px solid rgba(79, 131, 255, 0.25) !important;
+  }
+  html[data-pms-theme="dark"] #attendanceDetailsModal .modal-footer .btn-secondary:hover,
+  html[data-theme="dark"] #attendanceDetailsModal .modal-footer .btn-secondary:hover,
+  body.dark-mode #attendanceDetailsModal .modal-footer .btn-secondary:hover {
+    background: #1A2247 !important;
+    color: #FFFFFF !important;
+  }
+  html[data-pms-theme="dark"] .month-edit-day-btn,
+  html[data-theme="dark"] .month-edit-day-btn,
+  html[data-bs-theme="dark"] .month-edit-day-btn,
+  [data-pms-theme="dark"] .month-edit-day-btn,
+  [data-theme="dark"] .month-edit-day-btn,
+  body.dark-mode .month-edit-day-btn {
+    background: rgba(245, 158, 11, 0.18) !important;
+    color: #FBBF24 !important;
+    -webkit-text-fill-color: #FBBF24 !important;
+    border: 1px solid rgba(251, 191, 36, 0.35) !important;
+  }
+  html[data-pms-theme="dark"] .month-edit-day-btn:hover,
+  html[data-theme="dark"] .month-edit-day-btn:hover,
+  html[data-bs-theme="dark"] .month-edit-day-btn:hover,
+  [data-pms-theme="dark"] .month-edit-day-btn:hover,
+  [data-theme="dark"] .month-edit-day-btn:hover,
+  body.dark-mode .month-edit-day-btn:hover {
+    background: rgba(245, 158, 11, 0.28) !important;
+    color: #FDE68A !important;
+    -webkit-text-fill-color: #FDE68A !important;
+  }
+  .attendance-loading-box {
+    background: transparent !important;
+  }
+  html[data-pms-theme="dark"] .attendance-loading-box p,
+  html[data-theme="dark"] .attendance-loading-box p,
+  html[data-bs-theme="dark"] .attendance-loading-box p,
+  body.dark-mode .attendance-loading-box p,
+  [data-theme="dark"] .attendance-loading-box p {
+    color: #94A3B8 !important;
   }
 </style>
 
@@ -705,7 +826,7 @@ $(document).ready(function () {
 
     function showAttendanceLoading(message) {
         $('#attendanceDetailsBody').html(
-            '<div class="text-center py-5 bg-white">' +
+            '<div class="text-center py-5 attendance-loading-box">' +
                 '<div class="spinner-border text-primary" role="status">' +
                     '<span class="visually-hidden">Loading...</span>' +
                 '</div>' +
@@ -799,12 +920,18 @@ $(document).ready(function () {
                     '<i class="fas fa-pen me-1"></i>Edit</button>';
             }
 
+            var totalCellHtml = escapeAttendanceHtml(record.total);
+            if (record.is_open && record.clock_in && record.clock_in !== '-') {
+                totalCellHtml = '<span class="live-month-work-timer fw-bold text-success" data-clock-in="' + escapeAttendanceHtml(record.clock_in_raw || '') + '" data-date="' + escapeAttendanceHtml(record.date || '') + '" data-seconds="' + escapeAttendanceHtml(record.total_seconds || 0) + '">' + escapeAttendanceHtml(record.total) + '</span>' +
+                    ' <span class="badge bg-success-subtle text-success small ms-1"><i class="fas fa-spinner fa-spin me-1"></i>Working</span>';
+            }
+
             return '<tr>' +
                 '<td><strong>' + escapeAttendanceHtml(record.day) + '</strong><div class="small text-muted">' + escapeAttendanceHtml(record.date) + '</div></td>' +
                 '<td>' + escapeAttendanceHtml(record.status) + '</td>' +
                 '<td>' + escapeAttendanceHtml(record.clock_in) + '</td>' +
                 '<td>' + escapeAttendanceHtml(record.clock_out) + '</td>' +
-                '<td>' + escapeAttendanceHtml(record.total) + '</td>' +
+                '<td>' + totalCellHtml + '</td>' +
                 '<td>' + escapeAttendanceHtml(record.note || '-') + '</td>' +
                 (editMode ? '<td class="text-center">' + editButton + '</td>' : '') +
             '</tr>';
@@ -815,25 +942,59 @@ $(document).ready(function () {
         $('#attendanceDetailsBody').html(
             '<div class="attendance-month-summary">' +
                 '<div class="attendance-month-profile">' +
-                    '<img src="' + escapeAttendanceHtml(payload.photo) + '" alt="' + escapeAttendanceHtml(payload.name) + '" onerror="this.onerror=null; this.src=\'/images/default-avatar.png\';">' +
-                    '<div>' +
-                        '<h5>' + escapeAttendanceHtml(payload.name) + '</h5>' +
-                        '<p>' + escapeAttendanceHtml(payload.designation) + ' | ' + escapeAttendanceHtml(payload.month_name) +
-                        ' | Total: ' + escapeAttendanceHtml(payload.total_hours) +
-                        ' | Present: ' + escapeAttendanceHtml(payload.present_count) + '/' + escapeAttendanceHtml(payload.days_in_month) + '</p>' +
-                    '</div>' +
+                '<img src="' + escapeAttendanceHtml(payload.photo) + '" alt="' + escapeAttendanceHtml(payload.name) + '" onerror="this.onerror=null; this.src=\'/images/default-avatar.png\';">' +
+                '<div>' +
+                    '<h5>' + escapeAttendanceHtml(payload.name) + '</h5>' +
+                    '<p>' + escapeAttendanceHtml(payload.designation) + ' | ' + escapeAttendanceHtml(payload.month_name) +
+                    ' | Total: ' + escapeAttendanceHtml(payload.total_hours) +
+                    ' | Present: ' + escapeAttendanceHtml(payload.present_count) + '/' + escapeAttendanceHtml(payload.days_in_month) + '</p>' +
                 '</div>' +
-                '<div class="table-responsive">' +
-                    '<table class="attendance-month-table">' +
-                        '<thead><tr>' +
-                            '<th>Date</th><th>Status</th><th>Clock In</th><th>Clock Out</th><th>Total</th><th>Note</th>' +
-                            (editMode ? '<th class="text-center">Action</th>' : '') +
-                        '</tr></thead>' +
-                        '<tbody>' + rows + '</tbody>' +
-                    '</table>' +
-                '</div>' +
-            '</div>'
+            '</div>' +
+            '<div class="table-responsive">' +
+                '<table class="attendance-month-table">' +
+                    '<thead><tr>' +
+                        '<th>Date</th><th>Status</th><th>Clock In</th><th>Clock Out</th><th>Total</th><th>Note</th>' +
+                        (editMode ? '<th class="text-center">Action</th>' : '') +
+                    '</tr></thead>' +
+                    '<tbody>' + rows + '</tbody>' +
+                '</table>' +
+            '</div>' +
+        '</div>'
         );
+
+        if (window.monthAttendanceTimerInterval) {
+            clearInterval(window.monthAttendanceTimerInterval);
+            window.monthAttendanceTimerInterval = null;
+        }
+
+        var updateOpenShifts = function() {
+            var now = window.PMSTime.now();
+            $('#attendanceDetailsModal .live-month-work-timer').each(function() {
+                var el = $(this);
+                var rawDate = el.attr('data-date');
+                var rawTime = el.attr('data-clock-in');
+                if (!rawDate || !rawTime) return;
+                var parts = rawTime.split(':').map(Number);
+                var dp = rawDate.split('-').map(Number);
+                if (parts.length >= 2 && dp.length === 3) {
+                    var start = window.PMSTime.parse(rawDate + "T" + rawTime);
+                    var diffSec = Math.max(0, Math.floor((now - start) / 1000));
+                    var h = Math.floor(diffSec / 3600);
+                    var m = Math.floor((diffSec % 3600) / 60);
+                    var s = diffSec % 60;
+                    var fmt = String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+                    el.text(fmt);
+                }
+            });
+        };
+
+        window.monthAttendanceTimerInterval = setInterval(updateOpenShifts, 1000);
+        $('#attendanceDetailsModal').off('hidden.bs.modal.monthTimer').on('hidden.bs.modal.monthTimer', function() {
+            if (window.monthAttendanceTimerInterval) {
+                clearInterval(window.monthAttendanceTimerInterval);
+                window.monthAttendanceTimerInterval = null;
+            }
+        });
 
         var modal = getAttendanceModal();
         if (modal) {

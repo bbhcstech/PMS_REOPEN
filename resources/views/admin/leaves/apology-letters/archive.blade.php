@@ -60,7 +60,7 @@
             </form>
         </div>
         <div class="table-responsive">
-            <table class="table leave-table">
+            <table class="table leave-table" data-pms-export="off">
                 <thead>
                     <tr>
                         <th class="checkbox-col"><input type="checkbox" class="form-check-input" id="selectAllArchivedApologyLetters"></th>

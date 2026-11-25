@@ -61,7 +61,7 @@
                                         $activeSelectedDial = old('phone_country_code', $selectedCountryCode ?? '+91');
                                         $activeSelectedCountry = old('phone_country_name', $selectedCountry ?? 'India');
                                     @endphp
-                                    @foreach(($countryMap ?? \App\Support\CountryPhone::map()) as $cName => $meta)
+                                    @foreach(($countryMap ?? \App\Support\CountryPhone::formMap()) as $cName => $meta)
                                         @php
                                             $cDial = $meta['dial_code'];
                                             $cIso = strtolower($meta['iso']);

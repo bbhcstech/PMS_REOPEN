@@ -2,360 +2,513 @@
 
 @section('title', 'My Documents & File Storage')
 
-@push('styles')
+@section('content')
 <style>
-    .user-docs-page {
-        min-height: calc(100vh - 100px);
-        padding: 2rem 1.75rem;
-        background: linear-gradient(135deg, #F8FAFC 0%, #EEF2FF 50%, #F8FAFC 100%);
-        color: #0F172A;
+    #user-docs-workspace.user-docs-page {
+        min-height: calc(100vh - 80px);
+        padding: 1.5rem 1.75rem 2.5rem;
+        background: var(--bx-bg, #F8FAFC) !important;
+        color: var(--bx-ink, #0F172A);
     }
 
-    .user-docs-shell {
+    #user-docs-workspace .user-docs-shell {
         position: relative;
-        max-width: 1350px;
+        max-width: 1180px;
         margin: 0 auto;
     }
 
-    .header-card-elevated {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(20px);
-        border-radius: 28px;
-        padding: 1.75rem 2.25rem;
-        margin-bottom: 2rem;
-        border: 1px solid rgba(47, 107, 255, 0.15);
-        box-shadow: 0 10px 30px -10px rgba(47, 107, 255, 0.08);
+    /* Hero Header Card */
+    #user-docs-workspace .header-card-elevated {
+        background: var(--bx-surface, #FFFFFF) !important;
+        border: 1px solid var(--bx-border, #E2E8F0) !important;
+        border-radius: 16px !important;
+        padding: 1.35rem 1.5rem !important;
+        margin-bottom: 1.25rem !important;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04) !important;
     }
 
-    .doc-slot-card {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(15px);
-        border-radius: 24px;
-        border: 1px solid rgba(47, 107, 255, 0.18);
-        box-shadow: 0 8px 25px -5px rgba(47, 107, 255, 0.06);
-        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .doc-slot-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 14px 35px -5px rgba(47, 107, 255, 0.12);
-        border-color: #60A5FA;
-    }
-
-    .doc-slot-header {
-        padding: 1.25rem 1.5rem;
-        border-bottom: 1px solid rgba(47, 107, 255, 0.1);
+    #user-docs-workspace .header-card-elevated .header-icon-badge {
+        width: 46px !important;
+        height: 46px !important;
+        border-radius: 12px !important;
+        background: #2563EB !important;
+        color: #FFFFFF !important;
         display: flex;
         align-items: center;
-        justify-content: space-between;
+        justify-content: center;
+        font-size: 1.25rem !important;
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25) !important;
+        flex-shrink: 0;
     }
 
-    .doc-slot-body {
-        padding: 1.5rem;
-        flex-grow: 1;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
+    #user-docs-workspace .header-card-elevated .header-icon-badge i {
+        color: #FFFFFF !important;
+        -webkit-text-fill-color: #FFFFFF !important;
+        -webkit-text-stroke: 0 !important;
     }
 
-    .btn-upload-submit {
-        background: linear-gradient(145deg, #4F83FF, #2F6BFF);
-        color: white !important;
-        border: none;
-        border-radius: 30px;
-        font-weight: 700;
-        padding: 0.6rem 1.4rem;
-        box-shadow: 0 4px 14px rgba(47, 107, 255, 0.3);
-        transition: all 0.25s ease;
+    #user-docs-workspace .doc-hero-title {
+        font-size: 1.22rem !important;
+        font-weight: 800 !important;
+        letter-spacing: -0.02em !important;
+        color: var(--bx-ink, #0F172A) !important;
+        -webkit-text-fill-color: var(--bx-ink, #0F172A) !important;
+        margin: 0 0 0.2rem !important;
     }
 
-    .btn-upload-submit:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(47, 107, 255, 0.4);
+    #user-docs-workspace .doc-hero-subtitle {
+        font-size: 0.82rem !important;
+        font-weight: 500 !important;
+        color: var(--bx-ink-muted, #64748B) !important;
+        -webkit-text-fill-color: var(--bx-ink-muted, #64748B) !important;
+        margin: 0 !important;
     }
 
-    .doc-nav-pills {
+    #user-docs-workspace .doc-storage-pill {
+        background: #ECFDF5 !important;
+        color: #059669 !important;
+        -webkit-text-fill-color: #059669 !important;
+        border: 1px solid #A7F3D0 !important;
+        border-radius: 999px !important;
+        font-size: 0.74rem !important;
+        font-weight: 650 !important;
+        padding: 0.42rem 0.9rem !important;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+
+    #user-docs-workspace .doc-storage-pill i {
+        color: #059669 !important;
+        -webkit-text-fill-color: #059669 !important;
+        -webkit-text-stroke: 0 !important;
+        font-size: 0.9rem !important;
+    }
+
+    /* Panel Cards */
+    #user-docs-workspace .doc-panel-card {
+        background: var(--bx-surface, #FFFFFF) !important;
+        border: 1px solid var(--bx-border, #E2E8F0) !important;
+        border-radius: 16px !important;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03) !important;
+        padding: 1.35rem 1.5rem !important;
+    }
+
+    #user-docs-workspace .doc-section-heading {
+        font-size: 0.96rem !important;
+        font-weight: 750 !important;
+        color: var(--bx-ink, #0F172A) !important;
+        -webkit-text-fill-color: var(--bx-ink, #0F172A) !important;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin: 0;
+    }
+
+    #user-docs-workspace .doc-section-heading i {
+        color: #2563EB !important;
+        -webkit-text-fill-color: #2563EB !important;
+        -webkit-text-stroke: 0 !important;
+        font-size: 1.15rem !important;
+    }
+
+    #user-docs-workspace .doc-field-label {
+        font-size: 0.78rem !important;
+        font-weight: 650 !important;
+        color: var(--bx-ink, #0F172A) !important;
+        -webkit-text-fill-color: var(--bx-ink, #0F172A) !important;
+        margin-bottom: 0.4rem !important;
+        display: block;
+    }
+
+    #user-docs-workspace .doc-max-size {
+        font-size: 0.72rem !important;
+        font-weight: 500 !important;
+        color: var(--bx-ink-muted, #64748B) !important;
+        -webkit-text-fill-color: var(--bx-ink-muted, #64748B) !important;
+    }
+
+    #user-docs-workspace .form-control,
+    #user-docs-workspace .form-select {
+        min-height: 42px !important;
+        height: 42px;
+        border-radius: 10px !important;
+        border: 1px solid var(--bx-border, #E2E8F0) !important;
+        background: var(--bx-surface, #FFFFFF) !important;
+        color: var(--bx-ink, #0F172A) !important;
+        font-size: 0.82rem !important;
+        padding: 0.45rem 0.85rem !important;
+        box-shadow: none !important;
+    }
+
+    #user-docs-workspace .form-control:focus,
+    #user-docs-workspace .form-select:focus {
+        border-color: #2563EB !important;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1) !important;
+    }
+
+    #user-docs-workspace .form-control::placeholder {
+        color: #94A3B8 !important;
+        -webkit-text-fill-color: #94A3B8 !important;
+    }
+
+    /* File input vertical alignment & clean button */
+    #user-docs-workspace input[type="file"].form-control,
+    #user-docs-workspace .doc-file-input {
         display: flex !important;
         align-items: center !important;
-        gap: 10px !important;
-        background: rgba(255, 255, 255, 0.95) !important;
-        backdrop-filter: blur(20px) !important;
-        border: 1px solid rgba(47, 107, 255, 0.2) !important;
-        padding: 8px 12px !important;
-        border-radius: 50px !important;
-        box-shadow: 0 8px 25px -5px rgba(47, 107, 255, 0.08) !important;
-        margin-bottom: 2rem !important;
+        min-height: 42px !important;
+        height: 42px !important;
+        padding: 4px 10px !important;
+        line-height: 1.4 !important;
+        background: var(--bx-surface, #FFFFFF) !important;
+        border: 1px solid var(--bx-border, #E2E8F0) !important;
+        color: var(--bx-ink-muted, #64748B) !important;
+        overflow: hidden !important;
+        cursor: pointer !important;
+    }
+
+    #user-docs-workspace input[type="file"].form-control::file-selector-button,
+    #user-docs-workspace input[type="file"].form-control::-webkit-file-upload-button,
+    #user-docs-workspace .doc-file-input::file-selector-button,
+    #user-docs-workspace .doc-file-input::-webkit-file-upload-button {
+        margin: 0 !important;
+        margin-inline-end: 10px !important;
+        padding: 5px 12px !important;
+        border-radius: 7px !important;
+        border: 1px solid #CBD5E1 !important;
+        background: #F1F5F9 !important;
+        color: #334155 !important;
+        -webkit-text-fill-color: #334155 !important;
+        font-weight: 600 !important;
+        font-size: 0.78rem !important;
+        line-height: 1.2 !important;
+        cursor: pointer !important;
+        transition: all 0.18s ease !important;
+    }
+
+    #user-docs-workspace input[type="file"].form-control:hover::file-selector-button,
+    #user-docs-workspace .doc-file-input:hover::file-selector-button {
+        background: #E2E8F0 !important;
+        color: #0F172A !important;
+        -webkit-text-fill-color: #0F172A !important;
+    }
+
+    #user-docs-workspace .btn-upload-submit {
+        background: #2563EB !important;
+        border: 1px solid #2563EB !important;
+        color: #FFFFFF !important;
+        -webkit-text-fill-color: #FFFFFF !important;
+        border-radius: 10px !important;
+        min-height: 42px !important;
+        height: 42px;
+        font-size: 0.84rem !important;
+        font-weight: 650 !important;
+        padding: 0.5rem 1.25rem !important;
+        box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25) !important;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.45rem;
+        transition: all 0.18s ease;
+    }
+
+    #user-docs-workspace .btn-upload-submit i {
+        color: #FFFFFF !important;
+        -webkit-text-fill-color: #FFFFFF !important;
+        -webkit-text-stroke: 0 !important;
+    }
+
+    #user-docs-workspace .btn-upload-submit:hover {
+        background: #1D4ED8 !important;
+        border-color: #1D4ED8 !important;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.32) !important;
+    }
+
+    /* Clean Standalone Tabs (no white pill container) */
+    #user-docs-workspace .doc-nav-pills {
+        display: flex !important;
+        align-items: center !important;
+        flex-wrap: wrap;
+        gap: 8px !important;
+        background: transparent !important;
+        border: none !important;
+        padding: 0 !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        margin: 0.25rem 0 1.15rem !important;
         list-style: none !important;
     }
 
-    .doc-tab-btn {
+    #user-docs-workspace .doc-tab-btn {
         border: 1px solid transparent !important;
         background: transparent !important;
-        color: #0F172A !important;
-        -webkit-text-fill-color: #0F172A !important;
-        font-weight: 800 !important;
-        font-size: 0.92rem !important;
-        border-radius: 40px !important;
-        padding: 0.7rem 1.6rem !important;
-        transition: all 0.25s ease !important;
-        display: flex !important;
+        color: var(--bx-ink-body, #475569) !important;
+        -webkit-text-fill-color: var(--bx-ink-body, #475569) !important;
+        font-weight: 600 !important;
+        font-size: 0.82rem !important;
+        border-radius: 10px !important;
+        padding: 0.55rem 1.1rem !important;
+        min-height: 38px !important;
+        display: inline-flex !important;
         align-items: center !important;
-        gap: 8px !important;
+        gap: 0.45rem !important;
+        box-shadow: none !important;
         cursor: pointer !important;
+        transition: all 0.18s ease !important;
     }
-    .doc-tab-btn i,
-    .doc-tab-btn span {
+
+    #user-docs-workspace .doc-tab-btn i {
+        color: var(--bx-ink-muted, #64748B) !important;
+        -webkit-text-fill-color: var(--bx-ink-muted, #64748B) !important;
+        -webkit-text-stroke: 0 !important;
+        font-size: 1rem !important;
+    }
+
+    #user-docs-workspace .doc-tab-btn:hover:not(.active) {
+        background: #F1F5F9 !important;
         color: #0F172A !important;
         -webkit-text-fill-color: #0F172A !important;
     }
 
-    .doc-tab-btn.active {
-        background: linear-gradient(135deg, #4F83FF 0%, #2F6BFF 100%) !important;
-        color: #ffffff !important;
-        -webkit-text-fill-color: #ffffff !important;
-        box-shadow: 0 8px 22px -4px rgba(47, 107, 255, 0.45) !important;
-    }
-    .doc-tab-btn.active i,
-    .doc-tab-btn.active span {
-        color: #ffffff !important;
-        -webkit-text-fill-color: #ffffff !important;
+    #user-docs-workspace .doc-tab-btn.active {
+        background: #2563EB !important;
+        border-color: #2563EB !important;
+        color: #FFFFFF !important;
+        -webkit-text-fill-color: #FFFFFF !important;
+        font-weight: 650 !important;
+        box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25) !important;
     }
 
-    /* Helper classes for theme consistency */
-    .doc-panel-card {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(20px);
-    }
-    .doc-file-preview {
-        background-color: #f8fafc;
-    }
-    .doc-title {
-        color: #0f172a;
-    }
-    .doc-filename {
-        color: #0f172a;
-    }
-    .doc-table-head {
-        background: linear-gradient(90deg, #EEF2FF, #F8FAFC);
-        color: #0F172A;
+    #user-docs-workspace .doc-tab-btn.active i {
+        color: #FFFFFF !important;
+        -webkit-text-fill-color: #FFFFFF !important;
     }
 
-    /* --------------------------------------------------------------------------
-       DARK MODE ENGINE FOR MY OFFICIAL DOCUMENTS
-       -------------------------------------------------------------------------- */
-    html[data-pms-theme="dark"] .user-docs-page {
+    /* Files Counter Pill */
+    #user-docs-workspace .doc-total-pill {
+        background: var(--bx-surface-2, #F8FAFC);
+        border: 1px solid var(--bx-border, #E2E8F0);
+        color: var(--bx-ink-muted, #64748B) !important;
+        -webkit-text-fill-color: var(--bx-ink-muted, #64748B) !important;
+        border-radius: 999px;
+        font-size: 0.72rem;
+        font-weight: 650;
+        padding: 0.26rem 0.72rem;
+    }
+
+    /* Empty State & Footer */
+    #user-docs-workspace .doc-empty-state {
+        padding: 3.25rem 1rem 2.75rem;
+        text-align: center;
+    }
+
+    #user-docs-workspace .doc-empty-icon {
+        font-size: 3rem !important;
+        color: #2563EB !important;
+        -webkit-text-fill-color: #2563EB !important;
+        -webkit-text-stroke: 0 !important;
+        margin-bottom: 0.85rem;
+        display: inline-block;
+    }
+
+    #user-docs-workspace .doc-empty-title {
+        font-size: 0.92rem !important;
+        font-weight: 700 !important;
+        color: var(--bx-ink, #0F172A) !important;
+        -webkit-text-fill-color: var(--bx-ink, #0F172A) !important;
+        margin-bottom: 0.35rem;
+    }
+
+    #user-docs-workspace .doc-empty-sub {
+        font-size: 0.78rem !important;
+        font-weight: 500 !important;
+        color: var(--bx-ink-muted, #64748B) !important;
+        -webkit-text-fill-color: var(--bx-ink-muted, #64748B) !important;
+        max-width: 390px;
+        margin: 0 auto;
+        line-height: 1.5;
+    }
+
+    #user-docs-workspace .doc-panel-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-top: 1.5rem;
+        padding-top: 0.85rem;
+        border-top: 1px solid var(--bx-border, #F1F5F9);
+        font-size: 0.72rem;
+        font-weight: 500;
+        color: var(--bx-ink-muted, #64748B) !important;
+        -webkit-text-fill-color: var(--bx-ink-muted, #64748B) !important;
+    }
+
+    /* Document Slot Cards */
+    #user-docs-workspace .doc-slot-card {
+        background: var(--bx-surface, #FFFFFF) !important;
+        border-radius: 14px !important;
+        border: 1px solid var(--bx-border, #E2E8F0) !important;
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03) !important;
+        transition: all 0.2s ease;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    #user-docs-workspace .doc-slot-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06) !important;
+        border-color: #93C5FD !important;
+    }
+
+    #user-docs-workspace .doc-file-preview {
+        background: var(--bx-surface-2, #F8FAFC) !important;
+        border: 1px solid var(--bx-border, #E2E8F0) !important;
+        border-radius: 10px !important;
+    }
+
+    #user-docs-workspace .doc-title,
+    #user-docs-workspace .doc-filename {
+        color: var(--bx-ink, #0F172A) !important;
+        -webkit-text-fill-color: var(--bx-ink, #0F172A) !important;
+    }
+
+    #user-docs-workspace .doc-title i,
+    #user-docs-workspace .doc-filename i {
+        color: #2563EB !important;
+        -webkit-text-fill-color: #2563EB !important;
+        -webkit-text-stroke: 0 !important;
+    }
+
+    #user-docs-workspace .doc-file-actions {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+        min-width: 0;
+    }
+
+    #user-docs-workspace .doc-file-actions > a {
+        flex: 1 1 0;
+        width: auto;
+        min-width: 0;
+        border-radius: 8px !important;
+        font-size: 0.78rem !important;
+        font-weight: 650 !important;
+    }
+
+    #user-docs-workspace .doc-file-actions > form {
+        flex: 0 0 auto;
+        margin: 0;
+    }
+
+    #user-docs-workspace .doc-table-head {
+        background: var(--bx-surface-2, #F8FAFC) !important;
+        color: var(--bx-ink, #0F172A) !important;
+    }
+
+    /* Dark Mode Support */
+    html[data-pms-theme="dark"] #user-docs-workspace.user-docs-page {
         background: #070B1A !important;
         color: #CBD5E1 !important;
     }
 
-    /* 1. Header / Hero Card */
-    html[data-pms-theme="dark"] .header-card-elevated {
+    html[data-pms-theme="dark"] #user-docs-workspace .header-card-elevated,
+    html[data-pms-theme="dark"] #user-docs-workspace .doc-panel-card,
+    html[data-pms-theme="dark"] #user-docs-workspace .doc-slot-card {
         background: #0F1530 !important;
-        border: 1px solid rgba(238, 241, 251, 0.09) !important;
-        box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5) !important;
-    }
-    html[data-pms-theme="dark"] .header-card-elevated h1,
-    html[data-pms-theme="dark"] .header-card-elevated .text-dark {
-        color: #EEF1FB !important;
-    }
-    html[data-pms-theme="dark"] .header-card-elevated .text-muted,
-    html[data-pms-theme="dark"] .header-card-elevated p {
-        color: #9AA3C7 !important;
-    }
-    html[data-pms-theme="dark"] .header-card-elevated strong {
-        color: #93C5FD !important;
-    }
-    html[data-pms-theme="dark"] .badge.bg-success-subtle {
-        background: rgba(47, 107, 255, 0.18) !important;
-        color: #93C5FD !important;
-        border: 1px solid rgba(47, 107, 255, 0.35) !important;
+        border-color: rgba(238, 241, 251, 0.1) !important;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35) !important;
     }
 
-    /* 2. Main Content & Panel Cards */
-    html[data-pms-theme="dark"] .doc-panel-card,
-    html[data-pms-theme="dark"] .user-docs-shell .card {
-        background: #0F1530 !important;
-        border: 1px solid rgba(238, 241, 251, 0.09) !important;
-        box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.4) !important;
-        color: #CBD5E1 !important;
-    }
-    html[data-pms-theme="dark"] .user-docs-shell h5.text-dark {
-        color: #EEF1FB !important;
-    }
-    html[data-pms-theme="dark"] .user-docs-shell label.text-dark {
-        color: #EEF1FB !important;
+    html[data-pms-theme="dark"] #user-docs-workspace .doc-storage-pill {
+        background: rgba(16, 185, 129, 0.16) !important;
+        border-color: rgba(52, 211, 153, 0.32) !important;
+        color: #34D399 !important;
+        -webkit-text-fill-color: #34D399 !important;
     }
 
-    /* 3. Form Inputs */
-    html[data-pms-theme="dark"] .user-docs-shell .form-control,
-    html[data-pms-theme="dark"] .user-docs-shell .form-select {
-        background-color: #141B3D !important;
-        border: 1px solid rgba(238, 241, 251, 0.16) !important;
-        color: #EEF1FB !important;
-    }
-    html[data-pms-theme="dark"] .user-docs-shell .form-control::placeholder {
-        color: #6B739A !important;
-    }
-    html[data-pms-theme="dark"] .user-docs-shell .input-group-text {
-        background-color: #1A2247 !important;
-        border: 1px solid rgba(238, 241, 251, 0.16) !important;
-        color: #9AA3C7 !important;
+    html[data-pms-theme="dark"] #user-docs-workspace .doc-storage-pill i {
+        color: #34D399 !important;
+        -webkit-text-fill-color: #34D399 !important;
     }
 
-    /* 4. Navigation Pills & Tabs */
-    html[data-pms-theme="dark"] .doc-nav-pills {
-        background: #0F1530 !important;
-        border: 1px solid rgba(238, 241, 251, 0.09) !important;
-        box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.45) !important;
+    html[data-pms-theme="dark"] #user-docs-workspace .form-control,
+    html[data-pms-theme="dark"] #user-docs-workspace .form-select,
+    html[data-pms-theme="dark"] #user-docs-workspace input[type="file"].form-control,
+    html[data-pms-theme="dark"] #user-docs-workspace .doc-file-input {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.16) !important;
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
     }
-    html[data-pms-theme="dark"] .doc-tab-btn {
-        color: #CBD5E1 !important;
-        -webkit-text-fill-color: #CBD5E1 !important;
-        background: transparent !important;
+
+    html[data-pms-theme="dark"] #user-docs-workspace input[type="file"].form-control::file-selector-button,
+    html[data-pms-theme="dark"] #user-docs-workspace .doc-file-input::file-selector-button {
+        background: #1A2247 !important;
+        border-color: rgba(238, 241, 251, 0.22) !important;
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
     }
-    html[data-pms-theme="dark"] .doc-tab-btn:hover:not(.active) {
+
+    html[data-pms-theme="dark"] #user-docs-workspace .doc-tab-btn:hover:not(.active) {
         background: #141B3D !important;
         color: #EEF1FB !important;
         -webkit-text-fill-color: #EEF1FB !important;
     }
-    html[data-pms-theme="dark"] .doc-tab-btn.active {
-        background: linear-gradient(135deg, #4F83FF 0%, #2F6BFF 100%) !important;
-        color: #ffffff !important;
-        -webkit-text-fill-color: #ffffff !important;
-        box-shadow: 0 8px 22px -4px rgba(47, 107, 255, 0.45) !important;
-    }
 
-    /* 5. Document Slot Cards */
-    html[data-pms-theme="dark"] .doc-slot-card {
-        background: #0F1530 !important;
-        border: 1px solid rgba(238, 241, 251, 0.09) !important;
-        box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.4) !important;
-    }
-    html[data-pms-theme="dark"] .doc-slot-card:hover {
-        border-color: rgba(47, 107, 255, 0.45) !important;
-        box-shadow: 0 14px 35px -5px rgba(0, 0, 0, 0.6) !important;
-    }
-    html[data-pms-theme="dark"] .doc-slot-card .doc-title,
-    html[data-pms-theme="dark"] .doc-slot-card .text-dark {
-        color: #EEF1FB !important;
-    }
-    html[data-pms-theme="dark"] .doc-slot-card .doc-file-preview,
-    html[data-pms-theme="dark"] .doc-slot-card .bg-light {
+    html[data-pms-theme="dark"] #user-docs-workspace .doc-total-pill,
+    html[data-pms-theme="dark"] #user-docs-workspace .doc-file-preview,
+    html[data-pms-theme="dark"] #user-docs-workspace .doc-table-head,
+    html[data-pms-theme="dark"] #user-docs-workspace thead th {
         background: #141B3D !important;
-        border: 1px solid rgba(238, 241, 251, 0.1) !important;
-    }
-    html[data-pms-theme="dark"] .doc-slot-card .doc-filename {
-        color: #EEF1FB !important;
-    }
-    html[data-pms-theme="dark"] .doc-slot-card .text-muted {
-        color: #9AA3C7 !important;
-    }
-    html[data-pms-theme="dark"] .btn-show-doc-info {
-        background: #141B3D !important;
-        border: 1px solid rgba(6, 182, 212, 0.4) !important;
-        color: #67E8F9 !important;
-    }
-    html[data-pms-theme="dark"] .btn-show-doc-info:hover {
-        background: rgba(6, 182, 212, 0.2) !important;
-        color: #FFFFFF !important;
-    }
-    html[data-pms-theme="dark"] .doc-slot-card .btn-outline-success {
-        background: rgba(47, 107, 255, 0.16) !important;
-        border: 1px solid rgba(47, 107, 255, 0.4) !important;
-        color: #93C5FD !important;
-    }
-    html[data-pms-theme="dark"] .doc-slot-card .btn-outline-success:hover {
-        background: #10B981 !important;
-        color: #FFFFFF !important;
-    }
-    html[data-pms-theme="dark"] .doc-slot-card .btn-outline-danger {
-        background: rgba(239, 68, 68, 0.16) !important;
-        border: 1px solid rgba(239, 68, 68, 0.4) !important;
-        color: #FCA5A5 !important;
-    }
-    html[data-pms-theme="dark"] .doc-slot-card .btn-outline-danger:hover {
-        background: #EF4444 !important;
-        color: #FFFFFF !important;
-    }
-
-    /* 6. Repository Table */
-    html[data-pms-theme="dark"] .doc-table-head,
-    html[data-pms-theme="dark"] .user-docs-shell thead,
-    html[data-pms-theme="dark"] .user-docs-shell thead th {
-        background: #141B3D !important;
-        color: #EEF1FB !important;
-        border-color: rgba(238, 241, 251, 0.09) !important;
-    }
-    html[data-pms-theme="dark"] .user-docs-shell .table {
+        border-color: rgba(238, 241, 251, 0.12) !important;
         color: #CBD5E1 !important;
     }
-    html[data-pms-theme="dark"] .user-docs-shell .table tbody tr td {
-        background: transparent !important;
-        border-bottom: 1px solid rgba(238, 241, 251, 0.06) !important;
-        color: #CBD5E1 !important;
-    }
-    html[data-pms-theme="dark"] .user-docs-shell .table tbody tr:hover td {
-        background: rgba(47, 107, 255, 0.06) !important;
-    }
-    html[data-pms-theme="dark"] .user-docs-shell .table .text-dark {
-        color: #EEF1FB !important;
-    }
-    html[data-pms-theme="dark"] .user-docs-shell .table-responsive {
-        border-color: rgba(238, 241, 251, 0.09) !important;
-    }
 
-    /* 7. Modal Access History */
     html[data-pms-theme="dark"] #globalDocInfoModal .modal-content {
         background: #0F1530 !important;
         border: 1px solid rgba(238, 241, 251, 0.12) !important;
         color: #CBD5E1 !important;
     }
-    html[data-pms-theme="dark"] #globalDocInfoModal .bg-light {
-        background: #141B3D !important;
-        border: 1px solid rgba(238, 241, 251, 0.1) !important;
-        color: #CBD5E1 !important;
-    }
+
+    html[data-pms-theme="dark"] #globalDocInfoModal .bg-light,
     html[data-pms-theme="dark"] #globalDocInfoModal .list-group-item {
         background: #141B3D !important;
-        border-color: rgba(238, 241, 251, 0.08) !important;
+        border-color: rgba(238, 241, 251, 0.1) !important;
         color: #CBD5E1 !important;
     }
-    html[data-pms-theme="dark"] #globalDocInfoModal .list-group-item .text-dark {
-        color: #EEF1FB !important;
-    }
 </style>
-@endpush
 
-@section('content')
-<div class="user-docs-page">
+<div id="user-docs-workspace" class="user-docs-page">
     <div class="user-docs-shell">
 
         <!-- Page Header -->
         <div class="header-card-elevated d-flex justify-content-between align-items-center flex-wrap gap-3">
             <div class="d-flex align-items-center gap-3">
-                <div class="avatar-badge" style="width: 52px; height: 52px; border-radius: 18px; background: linear-gradient(135deg, #4F83FF, #2F6BFF); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; box-shadow: 0 8px 20px -4px rgba(47, 107, 255, 0.4);">
-                    <i class="fas fa-file-shield"></i>
+                <div class="avatar-badge header-icon-badge">
+                    <i class="bx bx-check-shield"></i>
                 </div>
                 <div>
-                    <h1 class="fs-4 fw-bold text-dark mb-1">My Official Documents</h1>
-                    <p class="text-muted small mb-0">Upload any document into your role storage database (<strong>{{ strtoupper($userRole) }} DB</strong>).</p>
+                    <h1 class="doc-hero-title">My Official Documents</h1>
+                    <p class="doc-hero-subtitle">Upload any document into your role storage database ({{ strtoupper($userRole) }} DB).</p>
                 </div>
             </div>
 
             <div class="d-flex align-items-center gap-2">
-                <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-2 fw-bold">
-                    <i class="fas fa-database me-1.5"></i> {{ strtoupper($userRole) }} Storage Database
+                <span class="doc-storage-pill">
+                    <i class="bx bx-data"></i> {{ strtoupper($userRole) }} Storage Database
                 </span>
             </div>
         </div>
 
         <!-- Alert Notifications -->
         @if(session('success'))
-            <div class="alert alert-success alert-dismissible fade show d-flex align-items-center mb-4 shadow-sm rounded-4 border-0" style="background: rgba(220, 252, 231, 0.95); color: #065f46; border-left: 5px solid #10b981 !important;" role="alert">
-                <i class="fas fa-check-circle fs-4 me-2"></i>
+            <div class="alert alert-success alert-dismissible fade show d-flex align-items-center mb-4 shadow-sm rounded-4 border-0" style="background: rgba(220, 252, 231, 0.95); color: #065f46; border-left: 4px solid #10b981 !important;" role="alert">
+                <i class="fas fa-check-circle fs-5 me-2"></i>
                 <div>{{ session('success') }}</div>
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
@@ -363,31 +516,34 @@
 
         @if(session('error'))
             <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center mb-4 shadow-sm rounded-4 border-0" role="alert">
-                <i class="fas fa-exclamation-circle fs-4 me-2"></i>
+                <i class="fas fa-exclamation-circle fs-5 me-2"></i>
                 <div>{{ session('error') }}</div>
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         @endif
 
         <!-- Upload Any Document Card -->
-        <div class="card doc-panel-card rounded-4 border-0 shadow-sm mb-4 p-4">
-            <h5 class="fw-bold text-dark mb-3"><i class="fas fa-cloud-upload-alt text-emerald-600 me-2"></i> Upload New Document</h5>
+        <div class="card doc-panel-card mb-3">
+            <h5 class="doc-section-heading mb-3"><i class="bx bx-cloud-upload"></i> Upload New Document</h5>
             <form method="POST" action="{{ route('my-documents.upload') }}" enctype="multipart/form-data">
                 @csrf
                 <div class="row g-3 align-items-end">
                     <div class="col-md-5">
-                        <label class="form-label fw-bold text-dark small mb-1">Document Category / Title <span class="text-danger">*</span></label>
-                        <input type="text" name="document_type" class="form-control rounded-3" placeholder="Enter document title (e.g. Passport, NID, Certificate, Contract)..." required>
+                        <label class="doc-field-label">Document Category / Title <span class="text-danger">*</span></label>
+                        <input type="text" name="document_type" class="form-control" placeholder="Enter document title (e.g. Passport, NID, Certificate, Contract)..." required>
                     </div>
 
                     <div class="col-md-4">
-                        <label class="form-label fw-bold text-dark small mb-1">Select File <span class="text-danger">*</span> (Max: {{ $maxSizeMb }} MB)</label>
-                        <input type="file" name="document_file" class="form-control rounded-3" required>
+                        <div class="d-flex align-items-center justify-content-between mb-1">
+                            <label class="doc-field-label mb-0">Select File <span class="text-danger">*</span></label>
+                            <span class="doc-max-size">Max: {{ $maxSizeMb }} MB</span>
+                        </div>
+                        <input type="file" name="document_file" class="form-control doc-file-input" required>
                     </div>
 
                     <div class="col-md-3">
-                        <button type="submit" class="btn btn-upload-submit w-100 py-2">
-                            <i class="fas fa-upload me-1.5"></i> Upload Document
+                        <button type="submit" class="btn btn-upload-submit w-100">
+                            <i class="bx bx-upload"></i> Upload Document
                         </button>
                     </div>
                 </div>
@@ -396,19 +552,21 @@
 
         @php
             $activeTab = request('tab', 'my-docs');
+            // Old notification links open the repository tab; other roles only have their own documents.
+            if (! $canViewAllDocuments) $activeTab = 'my-docs';
         @endphp
 
-        <!-- Navigation Tabs (For HR, Manager, Admin) -->
-        @if(in_array($userRole, ['admin', 'hr', 'manager']))
+        <!-- Navigation Tabs (company Admin / Super Admin: every role's documents) -->
+        @if($canViewAllDocuments)
             <ul class="nav doc-nav-pills" id="userDocTabs" role="tablist">
                 <li class="nav-item" role="presentation">
                     <button class="nav-link doc-tab-btn {{ $activeTab !== 'employee' ? 'active' : '' }}" id="my-docs-tab" data-bs-toggle="tab" data-bs-target="#my-docs-pane" type="button" role="tab">
-                        <i class="fas fa-folder me-2"></i> My Uploaded Documents ({{ count($myDocs) }})
+                        <i class="bx bx-folder"></i> My Uploaded Documents ({{ count($myDocs) }})
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
                     <button class="nav-link doc-tab-btn {{ $activeTab === 'employee' ? 'active' : '' }}" id="emp-docs-tab" data-bs-toggle="tab" data-bs-target="#emp-docs-pane" type="button" role="tab">
-                        <i class="fas fa-database me-2"></i> Role Storage Databases Repository ({{ count($repositoryDocs) }})
+                        <i class="bx bx-data"></i> Role Storage Databases Repository ({{ count($repositoryDocs) }})
                     </button>
                 </li>
             </ul>
@@ -418,34 +576,37 @@
 
             <!-- TAB 1: My Documents -->
             <div class="tab-pane fade {{ $activeTab !== 'employee' ? 'show active' : '' }}" id="my-docs-pane" role="tabpanel">
-                <div class="card doc-panel-card rounded-4 border-0 shadow-sm p-4">
-                    <h5 class="fw-bold text-dark mb-4"><i class="fas fa-folder-open text-emerald-600 me-2"></i> My Uploaded Files</h5>
+                <div class="card doc-panel-card">
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+                        <h5 class="doc-section-heading"><i class="bx bx-folder-open"></i> My Uploaded Files</h5>
+                        <span class="doc-total-pill">Total: {{ count($myDocs) }} {{ \Illuminate\Support\Str::plural('file', count($myDocs)) }}</span>
+                    </div>
 
                     @if($myDocs->count() > 0)
-                        <div class="row g-4">
+                        <div class="row g-3 mt-1">
                             @foreach($myDocs as $doc)
                                 <div class="col-md-6 col-lg-4">
-                                    <div class="doc-slot-card p-4">
+                                    <div class="doc-slot-card p-3">
                                         <div>
                                             <div class="d-flex justify-content-between align-items-start mb-3">
-                                                <div class="fw-bold doc-title text-dark fs-6 text-truncate" title="{{ $doc->document_type }}">
-                                                    <i class="fas fa-file-invoice text-emerald-600 me-1.5"></i> {{ $doc->document_type }}
+                                                <div class="fw-bold doc-title fs-6 text-truncate" title="{{ $doc->document_type }}">
+                                                    <i class="fas fa-file-invoice me-1.5"></i> {{ $doc->document_type }}
                                                 </div>
-                                                
+
                                                 <!-- Info Button (Seen By Who) -->
-                                                <button type="button" class="btn btn-sm btn-outline-info rounded-circle btn-show-doc-info" style="width: 32px; height: 32px; padding: 0; display: inline-flex; align-items: center; justify-content: center;" 
+                                                <button type="button" class="btn btn-sm btn-outline-info rounded-circle btn-show-doc-info" style="width: 30px; height: 30px; padding: 0; display: inline-flex; align-items: center; justify-content: center;"
                                                     data-title="{{ $doc->document_type }}"
                                                     data-file="{{ $doc->file_name }}"
                                                     data-uploader="{{ $doc->user->name ?? 'Me' }}"
-                                                    data-views='@json($doc->views)'
+                                                    data-history-url="{{ route('my-documents.history', ['type' => $doc->table_type ?? $userRole, 'id' => $doc->id]) }}"
                                                     title="Seen By Who">
                                                     <i class="fas fa-info"></i>
                                                 </button>
                                             </div>
 
-                                            <div class="p-3 bg-light doc-file-preview rounded-4 border mb-3">
-                                                <div class="fw-bold doc-filename text-dark text-truncate" title="{{ $doc->file_name }}">
-                                                    <i class="fas fa-paperclip me-1 text-emerald-600"></i> {{ $doc->file_name }}
+                                            <div class="p-3 doc-file-preview mb-3">
+                                                <div class="fw-bold doc-filename text-truncate" title="{{ $doc->file_name }}">
+                                                    <i class="fas fa-paperclip me-1"></i> {{ $doc->file_name }}
                                                 </div>
                                                 <div class="small text-muted mt-1 d-flex justify-content-between">
                                                     <span>{{ strtoupper($doc->file_type ?? 'FILE') }} • {{ round(($doc->file_size ?? 0) / 1024, 1) }} KB</span>
@@ -454,14 +615,14 @@
                                             </div>
                                         </div>
 
-                                        <div class="d-flex gap-2 align-items-center">
-                                            <a href="{{ route('my-documents.download', ['type' => $doc->table_type ?? $userRole, 'id' => $doc->id]) }}" class="btn btn-sm btn-outline-success w-100 rounded-pill py-2 font-weight-bold">
+                                        <div class="doc-file-actions">
+                                            <a href="{{ route('my-documents.download', ['type' => $doc->table_type ?? $userRole, 'id' => $doc->id]) }}" class="btn btn-sm btn-outline-primary py-2 fw-semibold">
                                                 <i class="fas fa-download me-1"></i> Download
                                             </a>
                                             <form method="POST" action="{{ route('my-documents.destroy', ['type' => $doc->table_type ?? $userRole, 'id' => $doc->id]) }}" onsubmit="return confirm('Delete this uploaded document?');">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-circle p-2" title="Delete Upload">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-3 p-2" title="Delete Upload">
                                                     <i class="fas fa-trash-alt"></i>
                                                 </button>
                                             </form>
@@ -471,22 +632,28 @@
                             @endforeach
                         </div>
                     @else
-                        <div class="text-center py-5 text-muted">
-                            <i class="fas fa-folder-open fs-1 text-emerald-300 mb-2"></i>
-                            <p class="mb-0 fw-medium">You haven't uploaded any documents yet.</p>
+                        <div class="doc-empty-state">
+                            <i class="bx bxs-folder doc-empty-icon"></i>
+                            <div class="doc-empty-title">You haven't uploaded any documents yet.</div>
+                            <p class="doc-empty-sub">Your submitted identity papers, agreements, certificates, and payroll records will appear right here once uploaded.</p>
                         </div>
                     @endif
+
+                    <div class="doc-panel-footer">
+                        <span>Security encryption: AES-256 Bit</span>
+                        <span>All uploads subject to role verification</span>
+                    </div>
                 </div>
             </div>
 
-            <!-- TAB 2: Role Storage Databases Repository (For HR, Manager, Admin) -->
-            @if(in_array($userRole, ['admin', 'hr', 'manager']))
+            <!-- TAB 2: Role Storage Databases Repository (company Admin / Super Admin only) -->
+            @if($canViewAllDocuments)
                 <div class="tab-pane fade {{ $activeTab === 'employee' ? 'show active' : '' }}" id="emp-docs-pane" role="tabpanel">
-                    <div class="card doc-panel-card rounded-4 border-0 shadow-sm p-4">
-                        
+                    <div class="card doc-panel-card">
+
                         <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
                             <div>
-                                <h5 class="fw-bold text-dark mb-1"><i class="fas fa-database text-emerald-600 me-2"></i> Stored Staff & Employee Documents</h5>
+                                <h5 class="doc-section-heading mb-1"><i class="bx bx-data"></i> Stored Staff & Employee Documents</h5>
                                 <p class="text-muted small mb-0">Search and download uploaded documents across accessible role databases.</p>
                             </div>
                         </div>
@@ -496,34 +663,32 @@
                             <input type="hidden" name="tab" value="employee">
                             <div class="row g-3 align-items-center">
                                 <div class="col-md-7">
-                                    <div class="input-group rounded-4 border overflow-hidden">
+                                    <div class="input-group rounded-3 border overflow-hidden">
                                         <span class="input-group-text bg-white border-0"><i class="fas fa-search text-muted"></i></span>
                                         <input type="text" name="search" class="form-control border-0" placeholder="Search by staff name, email, or document title..." value="{{ request('search') }}">
                                     </div>
                                 </div>
                                 <div class="col-md-4">
-                                    <select name="role_type" class="form-select rounded-4 py-2" onchange="this.form.submit()">
+                                    <select name="role_type" class="form-select" onchange="this.form.submit()">
                                         <option value="">All Accessible Databases</option>
                                         <option value="employee" {{ request('role_type') === 'employee' ? 'selected' : '' }}>Employee Database</option>
-                                        @if(in_array($userRole, ['admin', 'hr', 'manager']))
+                                        @if($canViewAllDocuments)
                                              <option value="hr" {{ request('role_type') === 'hr' ? 'selected' : '' }}>HR Database</option>
                                         @endif
-                                        @if(in_array($userRole, ['admin', 'hr', 'manager']))
+                                        @if($canViewAllDocuments)
                                              <option value="manager" {{ request('role_type') === 'manager' ? 'selected' : '' }}>Manager Database</option>
-                                        @endif
-                                        @if($userRole === 'admin')
                                              <option value="admin" {{ request('role_type') === 'admin' ? 'selected' : '' }}>Admin Database</option>
                                         @endif
                                     </select>
                                 </div>
                                 <div class="col-md-1">
-                                    <a href="{{ route('my-documents.index', ['tab' => 'employee']) }}" class="btn btn-outline-secondary w-100 rounded-4 py-2" title="Reset Filters"><i class="fas fa-undo"></i></a>
+                                    <a href="{{ route('my-documents.index', ['tab' => 'employee']) }}" class="btn btn-outline-secondary w-100 rounded-3 py-2" title="Reset Filters"><i class="fas fa-undo"></i></a>
                                 </div>
                             </div>
                         </form>
 
                         <!-- Repository Table -->
-                        <div class="table-responsive rounded-4 border border-emerald-subtle shadow-sm">
+                        <div class="table-responsive rounded-3 border">
                             <table class="table table-hover align-middle mb-0">
                                 <thead class="doc-table-head">
                                     <tr>
@@ -539,13 +704,13 @@
                                         <tr>
                                             <td class="py-3 px-4">
                                                 <div class="d-flex align-items-center gap-3">
-                                                    <div class="avatar-circle" style="width: 40px; height: 40px; border-radius: 12px; background: linear-gradient(135deg, #4F83FF, #2F6BFF); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700;">
+                                                    <div class="avatar-circle" style="width: 38px; height: 38px; border-radius: 10px; background: #2563EB; color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.8rem;">
                                                         {{ strtoupper(substr($doc->user->name ?? 'U', 0, 2)) }}
                                                     </div>
                                                     <div>
                                                         <div class="fw-bold text-dark small">{{ $doc->user->name ?? 'Unknown Staff' }}</div>
                                                         <small class="text-muted text-xs">
-                                                            {{ $doc->user->email ?? '' }} • 
+                                                            {{ $doc->user->email ?? '' }} •
                                                             <span class="badge bg-light text-dark border">{{ ucfirst($doc->user->role ?? $doc->table_type) }}</span>
                                                             <span class="badge bg-success-subtle text-success border border-success-subtle ms-1">{{ strtoupper($doc->table_type) }} DB</span>
                                                         </small>
@@ -553,7 +718,7 @@
                                                 </div>
                                             </td>
                                             <td class="py-3 px-4 fw-semibold text-dark small">
-                                                <i class="fas fa-file-alt text-emerald-600 me-1.5"></i> {{ $doc->document_type }}
+                                                <i class="fas fa-file-alt text-primary me-1.5"></i> {{ $doc->document_type }}
                                             </td>
                                             <td class="py-3 px-4 small">
                                                 <div class="fw-medium text-secondary text-truncate" style="max-width: 220px;" title="{{ $doc->file_name }}">
@@ -566,16 +731,16 @@
                                             </td>
                                             <td class="py-3 px-4 text-end">
                                                 <div class="d-inline-flex gap-2 align-items-center">
-                                                    <a href="{{ route('my-documents.download', ['type' => $doc->table_type, 'id' => $doc->id]) }}" class="btn btn-sm btn-outline-success rounded-pill px-3" title="Download File">
+                                                    <a href="{{ route('my-documents.download', ['type' => $doc->table_type, 'id' => $doc->id]) }}" class="btn btn-sm btn-outline-primary rounded-3 px-3" title="Download File">
                                                         <i class="fas fa-download me-1"></i> Download
                                                     </a>
 
                                                     <!-- Info Button (Seen By Who) -->
-                                                    <button type="button" class="btn btn-sm btn-outline-info rounded-circle btn-show-doc-info" style="width: 32px; height: 32px; padding: 0; display: inline-flex; align-items: center; justify-content: center;"
+                                                    <button type="button" class="btn btn-sm btn-outline-info rounded-circle btn-show-doc-info" style="width: 30px; height: 30px; padding: 0; display: inline-flex; align-items: center; justify-content: center;"
                                                         data-title="{{ $doc->document_type }}"
                                                         data-file="{{ $doc->file_name }}"
                                                         data-uploader="{{ $doc->user->name ?? 'Staff' }}"
-                                                        data-views='@json($doc->views)'
+                                                        data-history-url="{{ route('my-documents.history', ['type' => $doc->table_type, 'id' => $doc->id]) }}"
                                                         title="Seen By Who">
                                                         <i class="fas fa-info"></i>
                                                     </button>
@@ -585,7 +750,7 @@
                                     @empty
                                         <tr>
                                             <td colspan="5" class="text-center py-5 text-muted">
-                                                <i class="fas fa-folder-open fs-1 text-emerald-300 mb-2"></i>
+                                                <i class="bx bxs-folder-open fs-1 text-primary mb-2 d-block"></i>
                                                 <p class="mb-0 fw-medium">No uploaded documents match your filter query.</p>
                                             </td>
                                         </tr>
@@ -624,7 +789,8 @@ document.addEventListener('DOMContentLoaded', function() {
         return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
 
-    document.addEventListener('click', function(e) {
+    var historyRequest = 0;
+    document.addEventListener('click', async function(e) {
         var btn = e.target.closest('.btn-show-doc-info');
         if (!btn) return;
 
@@ -632,11 +798,27 @@ document.addEventListener('DOMContentLoaded', function() {
         var filename = btn.getAttribute('data-file') || '';
         var uploader = btn.getAttribute('data-uploader') || '';
         var views = [];
+        var requestId = ++historyRequest;
+        var body = document.getElementById('globalDocInfoBody');
+        var modalEl = document.getElementById('globalDocInfoModal');
+        var modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+        body.innerHTML = '<p class="text-muted mb-0">Loading document access history...</p>';
+        modal.show();
         try {
-            views = JSON.parse(btn.getAttribute('data-views') || '[]');
+            var response = await fetch(btn.getAttribute('data-history-url'), {
+                headers: { 'Accept': 'application/json' },
+                cache: 'no-store'
+            });
+            if (!response.ok) throw new Error('History request failed');
+            views = await response.json();
+            if (!Array.isArray(views)) throw new Error('Invalid history response');
         } catch(err) {
-            views = [];
+            if (requestId === historyRequest) {
+                body.innerHTML = '<p class="text-danger mb-0">Unable to load document access history. Please try again.</p>';
+            }
+            return;
         }
+        if (requestId !== historyRequest) return;
 
         var html = '<div class="mb-3 p-3 bg-light rounded-3">';
         html += '<div class="fw-bold text-dark fs-6">' + escapeHtml(title) + '</div>';
@@ -650,7 +832,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 var name = (v.viewer && v.viewer.name) ? v.viewer.name : 'System User';
                 var email = (v.viewer && v.viewer.email) ? v.viewer.email : '';
                 var role = (v.viewer && v.viewer.role) ? v.viewer.role : 'User';
-                var time = v.viewed_at ? new Date(v.viewed_at).toLocaleString() : '';
+                var time = v.viewed_at ? window.PMSTime.format(v.viewed_at, { year: 'numeric', month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '';
 
                 html += '<div class="list-group-item d-flex justify-content-between align-items-center py-2.5">';
                 html += '<div><div class="fw-semibold text-dark small">' + escapeHtml(name) + '</div>';
@@ -667,9 +849,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         document.getElementById('globalDocInfoBody').innerHTML = html;
-        var modalEl = document.getElementById('globalDocInfoModal');
-        var modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
-        modal.show();
     });
 
     // Auto-switch tab if specified in URL query string or hash

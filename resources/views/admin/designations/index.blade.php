@@ -4,14 +4,15 @@
 @section('title', 'Designations')
 
 @section('content')
+@include('admin.settings.partials.workforce-navigation')
 <div class="designation-page">
     <!-- Breadcrumb -->
-    <div class="breadcrumb">
+    <div class="breadcrumb" data-live-key="designation-breadcrumb">
         <i class="fas fa-building"></i> Admin / Settings / Designations
     </div>
 
     <!-- Header Card -->
-    <div class="header-card">
+    <div class="header-card" data-live-key="designation-header">
         <div class="header-left">
             <div class="header-icon">
                 <i class="fas fa-briefcase"></i>
@@ -22,10 +23,10 @@
             </div>
         </div>
         <div class="btn-group">
-            <a href="{{ route('designations.hierarchy') }}" class="btn btn-light">
+            <a href="{{ \App\Support\WorkforceSettings::route('designations.hierarchy') }}" class="btn btn-light">
                 <i class="fas fa-project-diagram"></i> Hierarchy
             </a>
-            <a href="{{ route('designations.archive') }}" class="btn btn-light">
+            <a href="{{ \App\Support\WorkforceSettings::route('designations.archive') }}" class="btn btn-light">
                 <i class="fas fa-box-archive"></i> Archived
                 @if(($archivedCount ?? 0) > 0)
                     <span class="archive-count-badge">{{ $archivedCount }}</span>
@@ -44,7 +45,7 @@
                     <li><button type="button" class="dropdown-item" onclick="printTable()"><i class="fas fa-print text-info"></i> Print</button></li>
                 </ul>
             </div>
-            <a href="{{ route('designations.create') }}" class="btn btn-primary">
+            <a href="{{ \App\Support\WorkforceSettings::route('designations.create') }}" class="btn btn-primary">
                 <i class="fas fa-plus-circle"></i> Add New
             </a>
         </div>
@@ -56,8 +57,29 @@
         $recentCount = $recentCount ?? $designations->where('updated_at', '>=', now()->subDays(7))->count();
     @endphp
 
+    @if(in_array(strtolower((string) auth()->user()?->role), ['admin', 'administrator'], true))
+        <section class="card p-3 mb-4" aria-labelledby="designation-level-settings" data-live-key="designation-level-settings">
+            <h3 id="designation-level-settings">Designation level settings</h3>
+            <p>Companies start with levels L0–L6. When an admin adds a designation at the maximum level, the next level becomes available automatically for this company. You can also change the limit here.</p>
+            <form method="POST" action="{{ \App\Support\WorkforceSettings::route('designations.level-settings') }}" class="d-flex align-items-end gap-3 flex-wrap">
+                @csrf
+                @method('PUT')
+                <div>
+                    <label for="maximum_level" class="form-label">Maximum designation level</label>
+                    <input id="maximum_level" name="maximum_level" type="number" class="form-control" min="7" step="1" required value="{{ old('maximum_level', \App\Services\DesignationLevels::count()) }}">
+                    <div class="form-text">Total number of levels, starting at L0. For example, 8 allows L0–L7.</div>
+                    @error('maximum_level')<div class="text-danger">{{ $message }}</div>@enderror
+                </div>
+                <button type="submit" class="btn btn-primary">Save level limit</button>
+            </form>
+        </section>
+    @endif
+    @if(\App\Models\Designation::where('level', '>', \App\Services\DesignationLevels::maximum())->exists())
+        <div class="alert alert-warning" data-live-key="designation-level-warning">Some existing designations exceed this company's level limit. Edit their levels or ask your administrator to raise the limit. New designations must follow the configured limit.</div>
+    @endif
+
     <!-- Stats Cards -->
-    <div class="stats">
+    <div class="stats" data-live-key="designation-stats">
         <div class="stat-card">
             <div class="stat-icon">
                 <i class="fas fa-users"></i>
@@ -102,7 +124,7 @@
 
     <!-- Alert Messages -->
     @if(session('success'))
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
+    <div class="alert alert-success alert-dismissible fade show" role="alert" data-live-key="designation-success">
         <i class="fas fa-check-circle"></i>
         <strong>Success!</strong> {{ session('success') }}
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
@@ -110,7 +132,7 @@
     @endif
 
     @if(session('error'))
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+    <div class="alert alert-danger alert-dismissible fade show" role="alert" data-live-key="designation-error">
         <i class="fas fa-exclamation-triangle"></i>
         <strong>Error!</strong> {{ session('error') }}
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
@@ -118,7 +140,7 @@
     @endif
 
     <!-- Main Table Card -->
-    <div class="table-card">
+    <div class="table-card" data-live-key="designation-list">
         <div class="table-header">
             <div class="table-title">
                 <div class="table-title-icon">
@@ -133,32 +155,20 @@
                 <i class="fas fa-search"></i>
                 <input type="text" id="designationSearch" placeholder="Search designations..." />
             </div>
+            <div id="designation-export-tools" class="designation-export-tools" data-live-preserve></div>
         </div>
 
         <!-- Level Filters Bar -->
         <div class="level-filters-bar">
             <span class="filter-label"><i class="fas fa-filter"></i> Filter by Level:</span>
-            @for($i = 0; $i <= 6; $i++)
+            @for($i = 0; $i <= \App\Services\DesignationLevels::maximum(); $i++)
                 <button class="level-filter-btn" data-level="{{ $i }}">L{{ $i }}</button>
             @endfor
             <button class="level-filter-btn reset-btn" onclick="resetFilters()"><i class="fas fa-undo-alt"></i> All</button>
         </div>
 
-        <!-- Bulk Actions Bar -->
-        <div class="bulk-actions-bar" id="bulk-actions-bar" style="display: none;">
-            <div class="bulk-actions-content">
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="select-all">
-                    <label class="form-check-label" for="select-all">Select All</label>
-                </div>
-                <span class="selected-badge" id="selected-count">0 selected</span>
-                <button class="btn-clear" id="clear-selection"><i class="fas fa-times"></i> Clear</button>
-                <button class="btn-bulk-delete" id="bulk-delete-btn" disabled><i class="fas fa-box-archive"></i> Archive Selected</button>
-            </div>
-        </div>
-
         <div class="table-wrapper">
-            <table id="designationTable" class="designation-list-table">
+            <table id="designationTable" class="designation-list-table" data-pms-toolbar-host="designation-export-tools">
                 <thead>
                     <tr>
                         <th width="50">
@@ -243,18 +253,18 @@
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end">
                                     <li>
-                                        <a class="dropdown-item" href="{{ route('designations.show', $designation->id) }}">
+                                        <a class="dropdown-item" href="{{ \App\Support\WorkforceSettings::route('designations.show', $designation->id) }}">
                                             <i class="fas fa-eye"></i> View Details
                                         </a>
                                     </li>
                                     <li>
-                                        <a class="dropdown-item" href="{{ route('designations.edit', $designation->id) }}">
+                                        <a class="dropdown-item" href="{{ \App\Support\WorkforceSettings::route('designations.edit', $designation->id) }}">
                                             <i class="fas fa-pen"></i> Edit Designation
                                         </a>
                                     </li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li>
-                                        <form action="{{ route('designations.archive.action', $designation->id) }}" method="POST" class="d-inline delete-form" onsubmit="return confirm('Archive this designation? It will move to Archived Designations and can be restored later.')">
+                                        <form action="{{ \App\Support\WorkforceSettings::route('designations.archive.action', $designation->id) }}" method="POST" class="d-inline delete-form" onsubmit="return confirm('Archive this designation? It will move to Archived Designations and can be restored later.')">
                                             @csrf
                                             <button type="submit" class="dropdown-item text-warning">
                                                 <i class="fas fa-box-archive"></i> Archive Designation
@@ -272,7 +282,7 @@
                                 <i class="fas fa-briefcase fa-4x"></i>
                                 <h5>No Designations Found</h5>
                                 <p>Get started by creating your first designation</p>
-                                <a href="{{ route('designations.create') }}" class="btn btn-primary">
+                                <a href="{{ \App\Support\WorkforceSettings::route('designations.create') }}" class="btn btn-primary">
                                     <i class="fas fa-plus-circle"></i> Create Designation
                                 </a>
                             </div>
@@ -302,7 +312,7 @@
             </div>
 
             <div class="pagination-info">
-                <i class="fas fa-chart-simple"></i>
+                <i class="fas fa-chart-line"></i>
                 Showing {{ $designations->firstItem() ?? 0 }} to {{ $designations->lastItem() ?? 0 }} of {{ $designations->total() }} designations
             </div>
 
@@ -369,16 +379,14 @@
     </div>
 
     <!-- Level Legend -->
-    <div class="legend-card">
+    <div class="legend-card" data-live-key="designation-legend">
         <div class="legend-content">
             <span class="legend-title"><i class="fas fa-palette"></i> Level Legend:</span>
-            <span class="level l0"><i class="fas fa-seedling"></i> L0 (Intern)</span>
-            <span class="level l1"><i class="fas fa-user"></i> L1 (Associate)</span>
-            <span class="level l2"><i class="fas fa-user-graduate"></i> L2 (Sr. Associate)</span>
-            <span class="level l3"><i class="fas fa-chalkboard-user"></i> L3 (Manager)</span>
-            <span class="level l4"><i class="fas fa-trophy"></i> L4 (Sr. Manager)</span>
-            <span class="level l5"><i class="fas fa-medal"></i> L5 (Associate Director)</span>
-            <span class="level l6"><i class="fas fa-star-of-life"></i> L6 (Director)</span>
+            @forelse(\App\Services\DesignationLevels::legend() as $level => $names)
+                <span class="level l{{ min((int) $level, 6) }}" data-live-key="designation-level-{{ $level }}"><i class="fas fa-layer-group"></i> L{{ $level }} ({{ $names }})</span>
+            @empty
+                <span class="text-muted">No designation levels configured.</span>
+            @endforelse
         </div>
     </div>
 </div>
@@ -470,6 +478,13 @@
         font-size: 32px;
         box-shadow: 0 12px 24px -8px rgba(47, 107, 255, 0.3);
         transition: all 0.3s ease;
+    }
+
+    /* Preserve contrast on the blue header tile in light theme. */
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .designation-page .header-card .header-icon > i,
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .designation-page .header-card .header-icon > i::before {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
     }
 
     .header-card:hover .header-icon {
@@ -835,6 +850,66 @@
         border-bottom: 1px solid rgba(47, 107, 255, 0.1);
     }
 
+    .designation-page .designation-export-tools {
+        flex: 1 1 100%;
+        min-width: 0;
+    }
+
+    .designation-page .designation-export-tools .pms-table-tools {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin: 0;
+        padding: 0;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+        box-shadow: none;
+    }
+
+    .designation-page .designation-export-tools .pms-table-export__toggle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        min-height: 44px;
+        padding: 10px 18px;
+        border: 1px solid #2f6bff;
+        border-radius: 12px;
+        background: #2f6bff;
+        color: #fff !important;
+        -webkit-text-fill-color: #fff !important;
+        font: inherit;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .designation-page .designation-export-tools .pms-table-export__toggle span {
+        background: transparent !important;
+        color: inherit !important;
+        -webkit-text-fill-color: inherit !important;
+    }
+
+    /* Override shared light-theme green text on this page's blue export button,
+       including hover/open states and the SVG icons that use currentColor. */
+    html .designation-page .table-card .designation-export-tools .pms-table-export button.pms-table-export__toggle,
+    html .designation-page .table-card .designation-export-tools .pms-table-export button.pms-table-export__toggle * {
+        color: #fff !important;
+        -webkit-text-fill-color: #fff !important;
+    }
+
+    .designation-page .designation-export-tools .pms-table-export__toggle:hover {
+        background: #2455d8;
+        border-color: #2455d8;
+    }
+
+    .designation-page .designation-export-tools .pms-table-export__toggle:focus-visible {
+        outline: 3px solid #7da5ff;
+        outline-offset: 3px;
+    }
+
     .table-title {
         display: flex;
         align-items: center;
@@ -950,71 +1025,6 @@
         background: #F8FAFC;
     }
 
-    /* Bulk Actions Bar */
-    .bulk-actions-bar {
-        padding: 14px 28px;
-        background: #EEF2FF;
-        border-bottom: 1px solid rgba(47, 107, 255, 0.12);
-    }
-
-    .bulk-actions-content {
-        display: flex;
-        align-items: center;
-        gap: 20px;
-        flex-wrap: wrap;
-    }
-
-    .selected-badge {
-        padding: 6px 18px;
-        background: white;
-        color: #2F6BFF;
-        border-radius: 40px;
-        font-size: 0.85rem;
-        font-weight: 600;
-        border: 1px solid rgba(47, 107, 255, 0.2);
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
-    }
-
-    .btn-clear, .btn-bulk-delete {
-        padding: 8px 20px;
-        border-radius: 12px;
-        font-size: 0.85rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        border: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .btn-clear {
-        background: #f3f4f6;
-        color: #6b7280;
-        border: 1px solid #e5e7eb;
-    }
-
-    .btn-clear:hover {
-        background: #e5e7eb;
-        color: #374151;
-    }
-
-    .btn-bulk-delete {
-        background: #fffbeb;
-        color: #b45309;
-        border: 1px solid #fde68a;
-    }
-
-    .btn-bulk-delete:hover:not(:disabled) {
-        background: #fef3c7;
-        color: #92400e;
-    }
-
-    .btn-bulk-delete:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-    }
-
     /* Table Wrapper */
     .table-wrapper {
         overflow-x: auto;
@@ -1089,6 +1099,12 @@
         justify-content: center;
         font-size: 1.1rem;
         transition: all 0.2s ease;
+        flex-shrink: 0;
+    }
+
+    .mini-icon i {
+        display: inline-block;
+        line-height: 1;
     }
 
     .designation-row:hover .mini-icon {
@@ -1119,6 +1135,8 @@
 
     /* Level Badges & High-Contrast Level Pills */
     .level {
+        background: #e0e7ff;
+        color: #1e40af;
         padding: 6px 16px;
         border-radius: 40px;
         font-size: 0.78rem;
@@ -1556,7 +1574,7 @@
 
     /* Print Styles */
     @media print {
-        .btn-group, .search-box, .level-filters-bar, .bulk-actions-bar, .legend-card, .action-btn, .dropdown {
+        .btn-group, .search-box, .level-filters-bar, .legend-card, .action-btn, .dropdown {
             display: none;
         }
 
@@ -1639,9 +1657,6 @@
         font-size: .95rem;
     }
 
-    .designation-page .selected-badge,
-    .designation-page .btn-clear,
-    .designation-page .btn-bulk-delete,
     .designation-page .form-check-label {
         font-size: .95rem;
     }
@@ -2506,91 +2521,16 @@ $(document).ready(function() {
         window.location.href = url.toString();
     });
 
-    // Bulk actions functionality
-    function getSelectedIds() {
-        return $('.select-item:checked').map(function() {
-            return $(this).val();
-        }).get();
-    }
-
-    function updateUI() {
-        var count = getSelectedIds().length;
-        var bulkBar = $('#bulk-actions-bar');
-
-        if (count > 0) {
-            bulkBar.slideDown();
-        } else {
-            bulkBar.slideUp();
-        }
-
-        $('#selected-count').text(count + ' selected');
-        $('#bulk-delete-btn').prop('disabled', count === 0);
-    }
-
+    // Keep table selection available for the shared selection/export toolbar.
     $(document).on('change', '.select-item', function() {
-        updateUI();
-        var totalCheckboxes = $('.select-item').length;
-        var checkedCheckboxes = $('.select-item:checked').length;
-        $('#table-select-all').prop('checked', totalCheckboxes === checkedCheckboxes && totalCheckboxes > 0);
-        $('#select-all').prop('checked', totalCheckboxes === checkedCheckboxes && totalCheckboxes > 0);
-    });
-
-    $('#clear-selection').on('click', function() {
-        $('.select-item').prop('checked', false);
-        $('#table-select-all').prop('checked', false);
-        $('#select-all').prop('checked', false);
-        updateUI();
+        var total = $('.select-item').length;
+        var checked = $('.select-item:checked').length;
+        $('#table-select-all').prop('checked', total > 0 && total === checked)
+            .prop('indeterminate', checked > 0 && checked < total);
     });
 
     $('#table-select-all').on('change', function() {
-        var isChecked = $(this).is(':checked');
-        $('.select-item').prop('checked', isChecked);
-        $('#select-all').prop('checked', isChecked);
-        updateUI();
-    });
-
-    $('#select-all').on('change', function() {
-        var isChecked = $(this).is(':checked');
-        $('.select-item').prop('checked', isChecked);
-        $('#table-select-all').prop('checked', isChecked);
-        updateUI();
-    });
-
-    // Bulk archive
-    $('#bulk-delete-btn').on('click', function() {
-        var ids = getSelectedIds();
-        if (ids.length === 0) {
-            if (typeof toastr !== 'undefined') {
-                toastr.warning('Please select at least one designation.');
-            } else {
-                alert('Please select at least one designation.');
-            }
-            return;
-        }
-
-        if (confirm(`Archive ${ids.length} designation(s)?\n\nThey will move to Archived Designations and can be restored later.`)) {
-            var form = document.createElement('form');
-            form.method = 'POST';
-            form.action = '{{ route("designations.bulk-archive") }}';
-            form.style.display = 'none';
-
-            var csrfToken = document.createElement('input');
-            csrfToken.type = 'hidden';
-            csrfToken.name = '_token';
-            csrfToken.value = '{{ csrf_token() }}';
-            form.appendChild(csrfToken);
-
-            ids.forEach(function(id) {
-                var idInput = document.createElement('input');
-                idInput.type = 'hidden';
-                idInput.name = 'ids[]';
-                idInput.value = id;
-                form.appendChild(idInput);
-            });
-
-            document.body.appendChild(form);
-            form.submit();
-        }
+        $('.select-item').prop('checked', $(this).is(':checked'));
     });
 
     // Export functions
@@ -2629,7 +2569,7 @@ $(document).ready(function() {
         if (!$(e.target).closest('input, a, button, .dropdown, .form-check, .action-btn, .dropdown-menu, .btn, .level').length) {
             var designationId = $(this).find('.select-item').val();
             if (designationId) {
-                window.location.href = "{{ route('designations.show', '') }}/" + designationId;
+                window.location.href = "{{ \App\Support\WorkforceSettings::route('designations.show', '') }}/" + designationId;
             }
         }
     });
@@ -2646,14 +2586,6 @@ $(document).ready(function() {
         };
     }
 });
-
-@if(session('success'))
-    $(document).ready(function() {
-        if (typeof toastr !== 'undefined') {
-            toastr.success('{{ session('success') }}');
-        }
-    });
-@endif
 
 @if(session('error'))
     $(document).ready(function() {

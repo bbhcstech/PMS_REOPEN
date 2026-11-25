@@ -5,6 +5,8 @@
 @section('page_subtitle', 'Central Multi-Tenant Control Hub')
 
 @section('content')
+@if(session('success'))<div class="alert alert-success" data-live-key="dashboard-success" role="status">{{ session('success') }}</div>@endif
+@if($errors->any())<div class="alert alert-danger" data-live-key="dashboard-errors" role="alert">@foreach($errors->all() as $error)<div>{{ $error }}</div>@endforeach</div>@endif
   <style>
     /* ===== WELCOME / COMMANDo CENTER ===== */
     /* ===== WELCOME / COMMAND CENTER HERO CARD BANNER ===== */
@@ -936,7 +938,8 @@
       border-color: rgba(255, 255, 255, 0.1);
     }
     .plan-card-option:hover { border-color: #0284c7; }
-    .plan-card-option.selected { border-color: #0284c7; background: rgba(2, 132, 199, 0.08); }
+    .plan-card-option:has(input:checked) { border-color: #0284c7; background: rgba(2, 132, 199, 0.08); }
+    .plan-card-option:has(input:disabled) { opacity: 0.45; cursor: not-allowed; }
 
     /* MODALS */
     .modal-overlay {
@@ -1381,7 +1384,7 @@
   </style>
 
   <!-- WELCOME / COMMAND CENTER HERO CARD BANNER -->
-  <section class="welcome-section">
+  <section class="welcome-section" data-live-key="dashboard-welcome">
     <div class="left">
       <div class="eyebrow"><i class="bx bx-shield-quarter"></i> Command Center</div>
       <h2 class="greeting">Welcome back, <span class="highlight">{{ auth('super_admin')->user()?->name ?? auth()->user()?->name ?? 'Super Admin' }}</span></h2>
@@ -1400,7 +1403,7 @@
   </section>
 
   <!-- KPI GRID (6 Cards with Sparklines & Counter Animation) -->
-  <section class="kpi-grid">
+  <section class="kpi-grid" data-live-key="dashboard-kpis">
     <!-- Card 1: Total Companies -->
     <div class="kpi-card">
       <div class="top">
@@ -1525,11 +1528,11 @@
   </section>
 
   <!-- PLATFORM SYSTEM HEALTH -->
-  <div class="section-header" id="platform-health">
+  <div class="section-header" id="platform-health" data-live-key="dashboard-health-heading">
     <h2>Platform System Health</h2>
     <a href="{{ url()->current() }}" class="action-link"><i class="bx bx-refresh"></i> Refresh Metrics</a>
   </div>
-  <div class="health-grid">
+  <div class="health-grid" data-live-key="dashboard-health-grid">
     <div class="health-item">
       <div class="top">
         <span class="label">Database Cluster</span>
@@ -1581,11 +1584,11 @@
   </div>
 
   <!-- CHARTS & ANALYTICS -->
-  <div class="section-header">
+  <div class="section-header" data-live-key="dashboard-analytics-heading">
     <h2>Platform Analytics &amp; Metrics</h2>
   </div>
-  <div class="charts-row">
-    <div class="chart-card">
+  <div class="charts-row" data-live-key="dashboard-charts">
+    <div class="chart-card" id="dashboardPlanDistribution" data-counts='@json($dashboardPlanCounts)'>
       <div class="card-header">
         <div>
           <div class="title"><i class="bx bx-bar-chart-alt-2" style="color:#2563eb; margin-right:6px;"></i> Companies Distribution by Plan</div>
@@ -1645,7 +1648,7 @@
   </div>
 
   <!-- ACTIVITY & ALERTS ROW -->
-  <div class="activity-row">
+  <div class="activity-row" data-live-key="dashboard-activity-summary">
     <!-- Audit Activity Timeline -->
     <div class="activity-card">
       <div class="card-header">
@@ -1654,7 +1657,7 @@
       </div>
       <div class="timeline">
         @forelse($recentActivities->take(5) as $activity)
-          <div class="timeline-item">
+          <div class="timeline-item" data-live-key="dashboard-activity-{{ $activity->id }}">
             <i class="bx bx-check-circle icon" style="color:var(--emerald-light);"></i>
             <div class="content">
               <div class="text">
@@ -1686,7 +1689,7 @@
           $expiringCompanies = $companies->filter(fn($c) => $c->status === 'trial' || $c->status === 'suspended')->take(3);
         @endphp
         @forelse($expiringCompanies as $exp)
-          <div class="expiring-item">
+          <div class="expiring-item" data-live-key="dashboard-expiring-{{ $exp->id }}">
             <div class="left">
               <div class="name">{{ $exp->name }}</div>
               <div class="plan">{{ $exp->activeSubscription?->plan?->name ?? 'Trial Plan' }}</div>
@@ -1720,7 +1723,7 @@
   </div>
 
   <!-- REGISTERED TENANT COMPANIES -->
-  <div class="section-header" id="companies-section">
+  <div class="section-header" id="companies-section" data-live-key="dashboard-companies-heading">
     <h2>Registered Tenant Companies</h2>
     <div style="display: flex; gap: 10px; align-items: center;">
       <a href="{{ Route::has('super-admin.companies.create') ? route('super-admin.companies.create') : (Route::has('superadmin.companies.create') ? route('superadmin.companies.create') : url('/super-admin/companies/create')) }}" class="btn btn-primary"><i class="bx bx-plus-circle"></i> Provision Tenant</a>
@@ -1728,7 +1731,7 @@
     </div>
   </div>
 
-  <div class="table-wrap" style="border-radius: 20px; overflow: hidden;">
+  <div class="table-wrap" style="border-radius: 20px; overflow: hidden;" data-live-key="dashboard-companies-table">
     <div class="table-toolbar">
       <div style="display:flex; align-items:center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--slate-body);">
         <span>Show</span>
@@ -1820,7 +1823,31 @@
               </span>
             </td>
             <td>
-              <span class="status-badge info">{{ $company->activeSubscription?->plan?->name ?? 'No Plan' }}</span>
+              @php
+                $displaySub = ($company->activeSubscription?->plan ? $company->activeSubscription : null) ?? $company->latestSubscription;
+                $displayPlanName = $displaySub?->plan?->name
+                    ?? ($company->highest_plan_slug ? strtoupper($company->highest_plan_slug) : null);
+
+                $displaySubStatus = strtolower((string) ($displaySub?->status ?? ''));
+                $displaySubExpired = $displaySub?->ends_at && $displaySub->ends_at->lt(now()->startOfDay());
+                $displayPlanState = match (true) {
+                    ! $displaySub => null,
+                    $displaySubExpired || $displaySubStatus === 'expired' => 'Expired',
+                    $displaySubStatus === 'trial' => 'Trial',
+                    $displaySubStatus === 'pending' => 'Pending',
+                    default => null,
+                };
+                $displayPlanBadge = match ($displayPlanState) {
+                    'Expired' => 'critical',
+                    'Trial', 'Pending' => 'warning',
+                    default => 'info',
+                };
+              @endphp
+              @if($displayPlanName)
+                <span class="status-badge {{ $displayPlanBadge }}">{{ $displayPlanName }}{{ $displayPlanState ? ' · ' . $displayPlanState : '' }}</span>
+              @else
+                <span class="status-badge info">No Plan</span>
+              @endif
             </td>
             <td>
               <span style="font-size:12px; color:var(--slate-muted); font-weight:600;">
@@ -1829,7 +1856,7 @@
             </td>
             <td>
               <span style="font-size:12px; color:var(--slate-muted); font-weight:600;">
-                {{ $company->activeSubscription?->ends_at?->format('M d, Y') ?? '—' }}
+                {{ $displaySub?->ends_at?->format('M d, Y') ?? ($company->trial_ends_at ? \Carbon\Carbon::parse($company->trial_ends_at)->format('M d, Y') : '—') }}
               </span>
             </td>
             <td style="color: var(--slate-muted, #94a3b8); font-size: 12px; font-weight: 500; white-space: nowrap;">
@@ -1862,7 +1889,9 @@
                     <a href="javascript:void(0)" class="trigger-detail-drawer" data-company-id="{{ $company->id }}" data-company-name="{{ $company->name }}" data-company-email="{{ $company->email }}" data-company-db="{{ $company->db_name }}" data-company-logo="{{ $company->logo ? asset($company->logo) : '' }}">
                       <i class="bx bx-info-circle" style="color: #38bdf8;"></i> Quick Details
                     </a>
-                    <a href="javascript:void(0)" class="trigger-plan-modal" data-company-id="{{ $company->id }}">
+                    <a href="javascript:void(0)" class="trigger-plan-modal" data-company-id="{{ $company->id }}" data-current-plan-id="{{ $displaySub?->plan_id }}"
+                       data-billing-cycle="{{ $displaySub?->billing_cycle ?? 'monthly' }}"
+                       data-allowed-plan-ids="{{ json_encode(app(\App\Services\PlanEligibilityService::class)->getAllowedPlans($company)->pluck('id')->all()) }}">
                       <i class="bx bx-layer" style="color: #c084fc;"></i> Change Subscription
                     </a>
                     <div class="divider"></div>
@@ -1920,13 +1949,13 @@
   </script>
 
   <!-- SUBSCRIPTION CATALOG -->
-  <div class="section-header" id="plans">
+  <div class="section-header" id="plans" data-live-key="dashboard-plans-heading">
     <h2>Subscription Catalog</h2>
     <a href="{{ route('super-admin.plans.index') }}" class="action-link">Plans Catalog <i class="bx bx-layer"></i></a>
   </div>
-  <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:16px; margin-bottom:28px;">
+  <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:16px; margin-bottom:28px;" data-live-key="dashboard-plans-catalog">
     @forelse($plans as $plan)
-      <div class="catalog-plan-card">
+      <div class="catalog-plan-card" data-live-key="dashboard-plan-{{ $plan->id }}">
         <div style="font-size:11px; font-weight:700; color:var(--slate-muted); text-transform:uppercase; letter-spacing:0.5px;">{{ $plan->name }} Plan</div>
         <div style="font-size:26px; font-weight:900; color:var(--slate-dark); margin: 4px 0;">${{ number_format($plan->monthly_price, 0) }}<span style="font-size:13px; font-weight:600; color:var(--slate-muted);">/mo</span></div>
         <div class="plan-feature-text" style="font-size:12px; color:var(--emerald-primary); font-weight:700; display:flex; align-items:center; gap:4px;">
@@ -1944,11 +1973,11 @@
   </div>
 
   <!-- MIGRATION OPERATIONS -->
-  <div class="section-header" id="migrations">
+  <div class="section-header" id="migrations" data-live-key="dashboard-migrations-heading">
     <h2>Migration Operations</h2>
     <span class="action-link"><i class="bx bx-play-circle"></i> Migration Logs</span>
   </div>
-  <div class="table-wrap">
+  <div class="table-wrap" data-live-key="dashboard-migrations-table">
     <table class="table-compact">
       <thead>
         <tr><th>Database</th><th>Connection</th><th>Schema Batch</th><th>Migration Health</th><th>Status</th></tr>
@@ -1975,11 +2004,11 @@
   </div>
 
   <!-- BACKUP CENTER -->
-  <div class="section-header" id="backups">
+  <div class="section-header" id="backups" data-live-key="dashboard-backups-heading">
     <h2>Backup Center &amp; Snapshots</h2>
     <span class="action-link"><i class="bx bx-cloud-upload"></i> Verification Logs</span>
   </div>
-  <div class="table-wrap">
+  <div class="table-wrap" data-live-key="dashboard-backups-table">
     <table class="table-compact">
       <thead><tr><th>Target Database</th><th>Last Snapshot</th><th>Verification</th><th>Integrity Status</th></tr></thead>
       <tbody>
@@ -2001,37 +2030,52 @@
     </table>
   </div>
 
-  <!-- TENANT AUDIT -->
-  <div class="section-header" id="tenant-audit">
-    <h2>Tenant Audit &amp; System Health</h2>
-    <span class="action-link"><i class="bx bx-refresh"></i> Run Audit Scan</span>
-  </div>
-  <div style="display:flex; gap:14px; flex-wrap:wrap; margin-bottom:28px;">
-    <div class="audit-health-pill">
-      <span class="health-green" style="font-weight:700; color:var(--emerald-primary); font-size:14px; display:flex; align-items:center; gap:6px;"><i class="bx bx-check-circle"></i> {{ $stats['active_companies'] ?? 0 }} Healthy</span>
-    </div>
-    <div class="audit-health-pill">
-      <span class="health-amber" style="font-weight:700; color:var(--amber-accent); font-size:14px; display:flex; align-items:center; gap:6px;"><i class="bx bx-error"></i> 0 Migration Drift</span>
-    </div>
-    <div class="audit-health-pill">
-      <span class="health-blue" style="font-weight:700; color:var(--emerald-primary); font-size:14px; display:flex; align-items:center; gap:6px;"><i class="bx bx-data"></i> 0 Orphan DB</span>
-    </div>
-    <div class="audit-health-pill">
-      <span class="health-blue" style="font-weight:700; color:var(--emerald-primary); font-size:14px; display:flex; align-items:center; gap:6px;"><i class="bx bx-shield"></i> 0 Missing DB</span>
-    </div>
-  </div>
-
   <!-- AUDIT ACTIVITY LOGS -->
-  <div class="section-header" id="activity-logs">
+  <div class="section-header" id="activity-logs" data-live-key="dashboard-activity-heading">
     <h2>Audit Activity Logs</h2>
-    <span class="action-link">Full History <i class="bx bx-history"></i></span>
+    <div style="display: flex; gap: 10px; align-items: center;">
+      <button type="button" class="btn btn-secondary" data-activity-export style="display: flex; align-items: center; gap: 6px; font-size: 12.5px; padding: 6px 14px; cursor: pointer;">
+        <i class="bx bx-download"></i> Export CSV
+      </button>
+      <a href="{{ Route::has('super-admin.activity-logs.index') ? route('super-admin.activity-logs.index') : (Route::has('super-admin.tenant-audit.index') ? route('super-admin.tenant-audit.index') : url('/super-admin/activity-logs')) }}" class="action-link">Full History <i class="bx bx-history"></i></a>
+    </div>
   </div>
-  <div class="table-wrap">
-    <table class="table-compact">
-      <thead><tr><th>Timestamp</th><th>Company</th><th>Action</th><th>IP Address</th><th>Status</th></tr></thead>
-      <tbody>
+  <div class="table-wrap" style="border-radius: 20px; overflow: hidden;" data-live-key="dashboard-activity-table">
+    <div class="table-toolbar">
+      <div style="display:flex; align-items:center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--slate-body);">
+        <span>Show</span>
+        <select id="activityEntriesPerPageSelect" class="table-select">
+          <option value="10" selected>10</option>
+          <option value="20">20</option>
+          <option value="30">30</option>
+          <option value="50">50</option>
+          <option value="100">100</option>
+        </select>
+        <span>entries</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <div style="position: relative;">
+          <i class="bx bx-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--slate-muted); font-size: 17px;"></i>
+          <input type="text" id="activityTableSearch" class="table-search-input" placeholder="Search activity logs..." />
+        </div>
+        <button type="button" class="btn btn-secondary" data-activity-export title="Export Activity Logs to CSV" style="display: flex; align-items: center; gap: 6px; font-size: 12.5px; height: 34px; padding: 0 14px; cursor: pointer; border-radius: 8px;">
+          <i class="bx bx-export"></i> Export
+        </button>
+      </div>
+    </div>
+    <table class="table-compact" id="activityLogsTable">
+      <thead>
+        <tr>
+          <th>Timestamp</th>
+          <th>Company</th>
+          <th>Action</th>
+          <th>IP Address</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="activityLogsTableBody">
         @forelse($recentActivities as $activity)
-          <tr>
+          <tr class="activity-log-row" data-live-key="dashboard-activity-row-{{ $activity->id }}">
             <td style="font-size:12px; color:var(--slate-muted);">{{ $activity->created_at?->format('Y-m-d H:i') }}</td>
             <td><strong style="color:var(--slate-dark);">{{ $activity->company?->name ?? 'System' }}</strong></td>
             <td>{{ str_replace('.', ' ', ucfirst($activity->action)) }}</td>
@@ -2039,20 +2083,26 @@
             <td><span class="status-badge success"><i class="bx bx-check"></i> Success</span></td>
           </tr>
         @empty
-          <tr>
+          <tr class="no-activity-row">
             <td colspan="5" style="text-align:center; color:var(--slate-muted); padding:20px;">No recent audit activity logged.</td>
           </tr>
         @endforelse
       </tbody>
     </table>
+    <div class="table-footer-bar" id="activityTableFooter">
+      <div style="font-size: 12.5px; font-weight: 600; color: var(--slate-muted);" id="activityShowingText">
+        Showing 1 to {{ min(10, count($recentActivities)) }} of {{ count($recentActivities) }} entries
+      </div>
+      <div style="display: flex; gap: 4px; align-items: center;" id="activityPaginationControls"></div>
+    </div>
   </div>
 
   <!-- COMPANY ADMISSIONS DIRECTORY -->
-  <div class="section-header">
+  <div class="section-header" data-live-key="dashboard-admins-heading">
     <h2>Company Admins Directory</h2>
     <a href="{{ route('superadmin.admins.index') }}" class="btn btn-secondary"><i class="bx bx-user-voice"></i> Manage All Company Admins</a>
   </div>
-  <div class="table-wrap">
+  <div class="table-wrap" data-live-key="dashboard-admins-table">
     <table class="table-compact">
       <thead><tr><th>Admin Name</th><th>Email Address</th><th>Assigned Company</th><th>Creation Date</th></tr></thead>
       <tbody>
@@ -2087,7 +2137,7 @@
       <h3><i class="bx bx-building-house" style="color:var(--emerald-primary);"></i> Provision New Tenant Company</h3>
       <p>Initialize a new isolated tenant company, provision its database, run migrations, and assign an admin.</p>
       
-      <form method="POST" action="{{ route('superadmin.companies.store') }}" enctype="multipart/form-data">
+      <form method="POST" action="{{ route('superadmin.companies.store') }}" enctype="multipart/form-data" id="dashboardProvisionCompanyForm">
         @csrf
         <div class="form-group">
           <label>Company Name <span style="color:var(--rose-accent);">*</span></label>
@@ -2095,7 +2145,8 @@
         </div>
         <div class="form-group">
           <label>Company Email <span style="color:var(--rose-accent);">*</span></label>
-          <input type="email" name="email" value="{{ old('email') }}" required placeholder="contact@acme.com" />
+          <input type="email" name="email" id="modal_company_email" value="{{ old('email') }}" required placeholder="contact@acme.com" />
+          <div id="modal_company_email_error" class="field-error-feedback"></div>
         </div>
         <div class="form-group">
           <label>Subdomain / Tenant Identifier</label>
@@ -2113,34 +2164,17 @@
               }
           @endphp
           <div style="display: flex;">
-            <select id="modal_company_country_code" style="width: 90px; flex-shrink: 0; padding: 10px 8px; border: 1px solid var(--border-subtle, #cbd5e1); border-right: 0; border-top-left-radius: 8px; border-bottom-left-radius: 8px; font-size: 13px; background-color: var(--bg-surface, #f8fafc); outline: none;">
-                <option value="+91" {{ $countryCode == '+91' ? 'selected' : '' }}>+91 (IN)</option>
-                <option value="+1" {{ $countryCode == '+1' ? 'selected' : '' }}>+1 (US)</option>
-                <option value="+44" {{ $countryCode == '+44' ? 'selected' : '' }}>+44 (UK)</option>
-                <option value="+61" {{ $countryCode == '+61' ? 'selected' : '' }}>+61 (AU)</option>
-                <option value="+971" {{ $countryCode == '+971' ? 'selected' : '' }}>+971 (AE)</option>
-                <option value="+81" {{ $countryCode == '+81' ? 'selected' : '' }}>+81 (JP)</option>
-                <option value="+49" {{ $countryCode == '+49' ? 'selected' : '' }}>+49 (DE)</option>
-                <option value="+33" {{ $countryCode == '+33' ? 'selected' : '' }}>+33 (FR)</option>
+            <select id="modal_company_country_code" class="country-code-select" style="width: 110px; flex-shrink: 0; padding: 10px 8px; border: 1px solid var(--border-subtle, #cbd5e1); border-right: 0; border-top-left-radius: 8px; border-bottom-left-radius: 8px; font-size: 13px; outline: none;">
+                @foreach(\App\Models\Country::getAllWithPhoneCodes() as $c)
+                    <option value="{{ $c->phone_code }}" {{ $countryCode == $c->phone_code ? 'selected' : '' }}>
+                        {{ $c->iso_code ? $c->iso_code . ' ' : '' }}({{ $c->phone_code }})
+                    </option>
+                @endforeach
             </select>
             <input type="text" id="modal_company_phone_display" value="{{ $phoneNum }}" placeholder="555 0199" style="border-top-left-radius: 0; border-bottom-left-radius: 0; width: 100%;" />
             <input type="hidden" name="phone" id="modal_company_phone_hidden" value="{{ $fullPhone }}">
           </div>
-          <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                const ccDash = document.getElementById('modal_company_country_code');
-                const mobDash = document.getElementById('modal_company_phone_display');
-                const hiddenDash = document.getElementById('modal_company_phone_hidden');
-                function updateDashPhone() {
-                    const num = mobDash.value.replace(/[^0-9]/g, '');
-                    hiddenDash.value = num ? ccDash.value + ' ' + num : '';
-                }
-                if(ccDash && mobDash) {
-                    ccDash.addEventListener('change', updateDashPhone);
-                    mobDash.addEventListener('input', updateDashPhone);
-                }
-            });
-          </script>
+          <div id="modal_company_phone_error" class="field-error-feedback"></div>
         </div>
         <div class="form-group">
           <label>Company Address</label>
@@ -2199,11 +2233,19 @@
         </div>
         <div class="form-group">
           <label>Admin Login Email <span style="color:var(--rose-accent);">*</span></label>
-          <input type="email" name="admin_email" value="{{ old('admin_email') }}" required placeholder="admin@acme.com" />
+          <input type="email" name="admin_email" id="modal_company_admin_email" value="{{ old('admin_email') }}" required placeholder="admin@acme.com" />
+          <div id="modal_company_admin_email_error" class="field-error-feedback"></div>
         </div>
         <div class="form-group">
           <label>Admin Password <span style="color:var(--rose-accent);">*</span></label>
-          <input type="password" name="admin_password" required placeholder="••••••••" />
+          <div style="position: relative;">
+            <input type="password" name="admin_password" id="modal_admin_password" required minlength="8" maxlength="128" placeholder="•••••••• (min 8 chars)" style="padding-right: 40px;" />
+            <button type="button" onclick="toggleDashboardPassword('modal_admin_password', this)" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--slate-muted); font-size: 18px;" title="Show/Hide Password">
+              <i class="bx bx-show"></i>
+            </button>
+          </div>
+          <div style="font-size: 11px; color: var(--slate-muted); margin-top: 4px;">Must be between 8 and 128 characters.</div>
+          <div id="modal_admin_password_error" class="field-error-feedback"></div>
         </div>
         <div class="form-group">
           <label>Admin Profile Picture</label>
@@ -2297,18 +2339,19 @@
     <div class="plan-modal-dialog">
       <h3 style="font-size: 20px; font-weight: 800; margin-top: 0; margin-bottom: 6px; color: var(--slate-dark);">Change Subscription Plan</h3>
       <p style="font-size: 13.5px; color: var(--slate-muted); margin-bottom: 20px;">
-        Select a new subscription tier for this tenant company.
+        Select the current tier or an eligible higher tier. Lower plans cannot be selected.
       </p>
 
       <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px;">
         @forelse($plans as $plan)
-          <div class="plan-card-option {{ $loop->first ? 'selected' : '' }}" data-plan-id="{{ $plan->id }}" onclick="selectPlanCard(this, '{{ $plan->id }}')">
+          <label class="plan-card-option" style="display:block" data-plan-id="{{ $plan->id }}">
+            <input type="radio" name="plan_id" value="{{ $plan->id }}" form="assignPlanForm" required style="position:absolute;opacity:0;width:1px;height:1px;">
             <div style="display: flex; justify-content: space-between; align-items: center;">
               <span class="status-badge info" style="font-weight: 800; text-transform: uppercase;">{{ $plan->name }}</span>
               <strong style="font-size: 15px; color: var(--slate-dark);">${{ number_format($plan->monthly_price, 0) }} / mo</strong>
             </div>
             <div style="font-size: 12px; color: var(--slate-muted); margin-top: 4px;">{{ $plan->description ?? ($plan->max_users > 0 ? $plan->max_users . ' Users Max' : 'Unlimited Users') }}</div>
-          </div>
+          </label>
         @empty
           <div class="plan-card-option selected">
             <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -2322,10 +2365,10 @@
       <form id="assignPlanForm" method="POST" action="{{ Route::has('superadmin.subscriptions.assign') ? route('superadmin.subscriptions.assign') : url('/superadmin/subscriptions/assign') }}">
         @csrf
         <input type="hidden" name="company_id" id="modalPlanCompanyId" value="">
-        <input type="hidden" name="plan_id" id="modalPlanSelectedId" value="{{ $plans->first()?->id ?? 1 }}">
+        <input type="hidden" name="billing_cycle" id="modalPlanBillingCycle" value="monthly">
         <div style="display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid rgba(226, 232, 240, 0.8); padding-top: 16px;">
           <button type="button" class="btn btn-secondary" id="closePlanModalBtn">Cancel</button>
-          <button type="submit" class="btn btn-primary" id="confirmPlanChangeBtn">Confirm Change</button>
+          <button type="submit" class="btn btn-primary" id="confirmPlanChangeBtn" disabled>Confirm Change</button>
         </div>
       </form>
     </div>
@@ -2342,6 +2385,7 @@
 @endsection
 
 @push('scripts')
+  <script src="{{ asset('admin/assets/js/pms-dashboard-activity.js') }}?v={{ @filemtime(public_path('admin/assets/js/pms-dashboard-activity.js')) }}" defer></script>
   <script>
     // Modal Open/Close Triggers
     const createModal = document.getElementById('createCompanyModal');
@@ -2390,47 +2434,97 @@
     }
 
     // Dropdown Positioning and Viewport Alignment
+    let activeDropdownMenu = null;
+    let activeDropdownParent = null;
+    let activeDropdownNextSibling = null;
+
+    function closeAllDropdowns() {
+      if (activeDropdownMenu) {
+        activeDropdownMenu.classList.remove('open');
+        activeDropdownMenu.style.display = 'none';
+        activeDropdownMenu.style.visibility = '';
+        activeDropdownMenu.style.top = '';
+        activeDropdownMenu.style.left = '';
+        activeDropdownMenu.style.right = '';
+        activeDropdownMenu.style.bottom = '';
+        activeDropdownMenu.style.maxHeight = '';
+        activeDropdownMenu.style.overflowY = '';
+
+        if (activeDropdownParent) {
+          if (activeDropdownNextSibling && activeDropdownNextSibling.parentNode === activeDropdownParent) {
+            activeDropdownParent.insertBefore(activeDropdownMenu, activeDropdownNextSibling);
+          } else {
+            activeDropdownParent.appendChild(activeDropdownMenu);
+          }
+        }
+        activeDropdownMenu._triggerBtn = null;
+        activeDropdownMenu = null;
+        activeDropdownParent = null;
+        activeDropdownNextSibling = null;
+      }
+
+      document.querySelectorAll('.dropdown-menu-custom.open').forEach(menu => {
+        menu.classList.remove('open');
+        menu.style.display = 'none';
+      });
+    }
+
     function positionDropdownMenu(btn, menu) {
       if (!btn || !menu) return;
+
       menu.style.position = 'fixed';
       menu.style.zIndex = '999999';
-      menu.style.visibility = 'hidden';
       menu.style.display = 'block';
+      menu.style.visibility = 'hidden';
+      menu.style.top = '0px';
+      menu.style.left = '0px';
+      menu.style.right = 'auto';
+      menu.style.bottom = 'auto';
+      menu.style.margin = '0';
 
-      const rect = btn.getBoundingClientRect();
+      const btnRect = btn.getBoundingClientRect();
       const menuHeight = menu.offsetHeight || 260;
       const menuWidth = menu.offsetWidth || 215;
       const viewportHeight = window.innerHeight;
       const viewportWidth = window.innerWidth;
 
-      const spaceBelow = viewportHeight - rect.bottom;
-      const spaceAbove = rect.top;
+      const gap = 6;
+      const padding = 12;
 
-      if (spaceBelow < menuHeight + 12 && spaceAbove > spaceBelow) {
-        menu.style.top = 'auto';
-        menu.style.bottom = Math.max(8, viewportHeight - rect.top + 6) + 'px';
+      const spaceBelow = viewportHeight - btnRect.bottom - gap - padding;
+      const spaceAbove = btnRect.top - gap - padding;
+
+      let top;
+      if (spaceBelow < menuHeight && spaceAbove >= menuHeight) {
+        top = btnRect.top - menuHeight - gap;
+      } else if (spaceBelow >= menuHeight) {
+        top = btnRect.bottom + gap;
       } else {
-        menu.style.top = Math.max(8, rect.bottom + 6) + 'px';
-        menu.style.bottom = 'auto';
+        if (spaceAbove > spaceBelow) {
+          top = Math.max(padding, btnRect.top - menuHeight - gap);
+        } else {
+          top = btnRect.bottom + gap;
+        }
       }
 
-      const rightOffset = viewportWidth - rect.right;
-      if (rect.right - menuWidth < 12) {
-        menu.style.left = '12px';
-        menu.style.right = 'auto';
-      } else {
-        menu.style.right = Math.max(12, rightOffset) + 'px';
-        menu.style.left = 'auto';
+      top = Math.max(padding, Math.min(top, viewportHeight - menuHeight - padding));
+
+      let left = btnRect.right - menuWidth;
+      if (left < padding) {
+        left = padding;
+      }
+      if (left + menuWidth > viewportWidth - padding) {
+        left = Math.max(padding, viewportWidth - menuWidth - padding);
       }
 
+      menu.style.top = Math.round(top) + 'px';
+      menu.style.left = Math.round(left) + 'px';
+      menu.style.right = 'auto';
+      menu.style.bottom = 'auto';
+      menu.style.maxHeight = `calc(100vh - ${padding * 2}px)`;
+      menu.style.overflowY = 'auto';
+      menu.classList.add('open');
       menu.style.visibility = 'visible';
-    }
-
-    function closeAllDropdowns() {
-      document.querySelectorAll('.dropdown-menu-custom').forEach(menu => {
-        menu.classList.remove('open');
-        menu.style.display = '';
-      });
     }
 
     document.addEventListener('click', function(e) {
@@ -2438,20 +2532,35 @@
       if (toggleBtn) {
         e.preventDefault();
         e.stopPropagation();
-        const menu = toggleBtn.nextElementSibling;
-        if (menu) {
-          const isOpen = menu.classList.contains('open');
+
+        if (activeDropdownMenu && activeDropdownMenu._triggerBtn === toggleBtn) {
           closeAllDropdowns();
-          if (!isOpen) {
-            menu.classList.add('open');
-            positionDropdownMenu(toggleBtn, menu);
-          }
+          return;
+        }
+
+        const container = toggleBtn.closest('.dropdown-container');
+        const menu = container ? container.querySelector('.dropdown-menu-custom') : toggleBtn.nextElementSibling;
+        if (menu) {
+          closeAllDropdowns();
+
+          activeDropdownMenu = menu;
+          activeDropdownParent = menu.parentElement;
+          activeDropdownNextSibling = menu.nextSibling;
+          activeDropdownMenu._triggerBtn = toggleBtn;
+
+          document.body.appendChild(menu);
+          positionDropdownMenu(toggleBtn, menu);
         }
         return;
       }
 
-      if (e.target.closest('.dropdown-menu-custom a, .dropdown-menu-custom button')) {
-        closeAllDropdowns();
+      const actionItem = e.target.closest('.dropdown-menu-custom a, .dropdown-menu-custom button');
+      if (actionItem) {
+        const form = actionItem.closest('form');
+        if (form && actionItem.type === 'submit') {
+          form.submit();
+        }
+        setTimeout(closeAllDropdowns, 10);
         return;
       }
 
@@ -2465,11 +2574,7 @@
 
     // Suspend and Delete handlers
     function confirmSuspendCompany(id, name) {
-      if (confirm("Are you sure you want to suspend access for company '" + name + "'?")) {
-        const form = document.getElementById('dashboardSuspendForm');
-        form.action = "{{ url('/superadmin/companies') }}/" + id + "/suspend";
-        form.submit();
-      }
+      window.location.href = "{{ url('/superadmin/companies') }}/" + id + "/suspension";
     }
 
     function confirmDeleteCompany(id, name) {
@@ -2523,14 +2628,42 @@
       // Plan Change Modal handlers
       const planModal = document.getElementById('planChangeModal');
       const closePlanBtn = document.getElementById('closePlanModalBtn');
+      const assignPlanForm = document.getElementById('assignPlanForm');
+      const confirmPlanBtn = document.getElementById('confirmPlanChangeBtn');
 
-      document.querySelectorAll('.trigger-plan-modal').forEach(trigger => {
-        trigger.addEventListener('click', function(e) {
+      document.addEventListener('click', function(e) {
+          const trigger = e.target.closest('.trigger-plan-modal');
+          if (!trigger) return;
           e.preventDefault();
-          const id = this.getAttribute('data-company-id');
+          const id = trigger.getAttribute('data-company-id');
           document.getElementById('modalPlanCompanyId').value = id;
+          document.getElementById('modalPlanBillingCycle').value = trigger.getAttribute('data-billing-cycle') || 'monthly';
+          const currentPlan = trigger.getAttribute('data-current-plan-id');
+          const allowedIds = JSON.parse(trigger.getAttribute('data-allowed-plan-ids') || '[]').map(String);
+          const choices = Array.from(document.querySelectorAll('#planChangeModal input[name="plan_id"]'));
+          choices.forEach(input => {
+              input.disabled = !allowedIds.includes(input.value);
+              input.checked = !input.disabled && input.value === currentPlan;
+              input.closest('.plan-card-option').title = input.disabled ? 'This tier is unavailable. Lower plans cannot be selected.' : '';
+          });
+          confirmPlanBtn.disabled = !choices.some(input => input.checked && !input.disabled);
+          confirmPlanBtn.textContent = 'Confirm Change';
           if (planModal) planModal.classList.add('open');
-        });
+      });
+
+      planModal?.addEventListener('change', function(event) {
+          if (event.target.matches('input[name="plan_id"]') && !event.target.disabled) {
+              confirmPlanBtn.disabled = false;
+          }
+      });
+      assignPlanForm?.addEventListener('submit', function(event) {
+          const selected = planModal.querySelector('input[name="plan_id"]:checked:not(:disabled)');
+          if (!selected || !document.getElementById('modalPlanCompanyId').value) {
+              event.preventDefault();
+              return;
+          }
+          confirmPlanBtn.disabled = true;
+          confirmPlanBtn.textContent = 'Updating Plan...';
       });
 
       if (closePlanBtn && planModal) {
@@ -2544,67 +2677,18 @@
     });
 
     function selectPlanCard(card, planId) {
-      document.querySelectorAll('.plan-card-option').forEach(c => c.classList.remove('selected'));
-      card.classList.add('selected');
-      const hiddenInput = document.getElementById('modalPlanSelectedId');
-      if (hiddenInput) hiddenInput.value = planId;
+      const input = card.querySelector('input[name="plan_id"]');
+      if (input && !input.disabled) {
+          input.checked = true;
+          input.dispatchEvent(new Event('change', { bubbles: true }));
+      }
     }
 
+    </script>
+    <script src="{{ asset('admin/assets/js/pms-dashboard-plan-distribution.js') }}"></script>
+    <script>
     // ---------- CHARTS (Chart.js Gradient & Curves) ----------
     document.addEventListener('DOMContentLoaded', function() {
-      // Dynamic Data from Backend
-      const planLabels = [
-        @foreach($plans as $plan)
-          "{{ $plan->name }}",
-        @endforeach
-      ];
-      const planCounts = [
-        @foreach($plans as $plan)
-          {{ $companies->filter(fn($c) => $c->activeSubscription?->plan_id == $plan->id)->count() ?: rand(1, 4) }},
-        @endforeach
-      ];
-
-      // Bar Chart: Companies by Plan
-      const ctxBar = document.getElementById('barChart');
-      if (ctxBar) {
-        const barCtx = ctxBar.getContext('2d');
-        new Chart(barCtx, {
-          type: 'bar',
-          data: {
-            labels: planLabels.length ? planLabels : ['Starter', 'Pro', 'Enterprise'],
-            datasets: [{
-              label: 'Companies',
-              data: planCounts.length ? planCounts : [8, 6, 4],
-              backgroundColor: ['#2F6BFF', '#8B5CF6', '#22D3EE', '#10B981', '#F59E0B'],
-              borderRadius: 8,
-              borderSkipped: false,
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            animation: {
-              duration: 1400,
-              easing: 'easeOutQuart'
-            },
-            plugins: {
-              legend: { display: false }
-            },
-            scales: {
-              y: { 
-                beginAtZero: true, 
-                grid: { color: 'rgba(226, 232, 240, 0.6)' }, 
-                ticks: { stepSize: 1, font: { family: 'Plus Jakarta Sans', size: 11, weight: '600' } } 
-              },
-              x: { 
-                grid: { display: false },
-                ticks: { font: { family: 'Plus Jakarta Sans', size: 11, weight: '700' } }
-              }
-            }
-          }
-        });
-      }
-
       // Doughnut Chart: Company Status Distribution
       const ctxPie = document.getElementById('pieChart');
       if (ctxPie) {
@@ -2726,6 +2810,260 @@
         'modal_admin_profile_preview_container', 'modal_admin_profile_preview_img',
         'modal_admin_profile_filename', 'modal_admin_profile_remove_btn'
       );
+
+      // Dashboard Modal Strict Email & Phone Validation
+      function getModalPhoneRule(countryCode) {
+        switch (countryCode) {
+          case '+91': return { min: 10, max: 10, regex: /^[6-9]\d{9}$/, placeholder: '9876543210', error: 'India phone number must be exactly 10 digits starting with 6, 7, 8, or 9.' };
+          case '+1':  return { min: 10, max: 10, regex: /^[2-9]\d{9}$/, placeholder: '5550192831', error: 'US/Canada phone number must be exactly 10 digits (e.g. 5550192831).' };
+          case '+44': return { min: 10, max: 11, regex: /^[1-9]\d{9,10}$/, placeholder: '7911123456', error: 'UK phone number must be 10 to 11 digits.' };
+          case '+61': return { min: 9,  max: 10, regex: /^[1-9]\d{8,9}$/, placeholder: '412345678', error: 'Australia phone number must be 9 to 10 digits.' };
+          case '+971':return { min: 9,  max: 9,  regex: /^[2-9]\d{8}$/, placeholder: '501234567', error: 'UAE phone number must be 9 digits (e.g. 501234567).' };
+          case '+81': return { min: 10, max: 10, regex: /^[1-9]\d{9}$/, placeholder: '9012345678', error: 'Japan phone number must be 10 digits.' };
+          case '+49': return { min: 10, max: 11, regex: /^[1-9]\d{9,10}$/, placeholder: '15123456789', error: 'Germany phone number must be 10 to 11 digits.' };
+          case '+33': return { min: 9,  max: 9,  regex: /^[1-9]\d{8}$/, placeholder: '612345678', error: 'France phone number must be 9 digits.' };
+          default:    return { min: 7,  max: 15, regex: /^\d{7,15}$/, placeholder: '1234567890', error: 'Phone number must be between 7 and 15 digits.' };
+        }
+      }
+
+      function validateModalEmailFormat(email, isRequired = true) {
+        const val = (email || '').trim();
+        if (!val) {
+          return isRequired ? { valid: false, message: 'Email address is required.' } : { valid: true };
+        }
+        if (/\s/.test(val)) {
+          return { valid: false, message: 'Email address cannot contain spaces.' };
+        }
+        if (!val.includes('@')) {
+          return { valid: false, message: "Email address must include an '@' symbol." };
+        }
+        const parts = val.split('@');
+        if (parts.length !== 2) {
+          return { valid: false, message: "Email address must contain only one '@' symbol." };
+        }
+        const [local, domain] = parts;
+        if (!local) return { valid: false, message: "Missing username before '@'." };
+        if (!domain) return { valid: false, message: "Missing domain after '@'." };
+        if (!domain.includes('.')) return { valid: false, message: "Domain name must include a valid extension (e.g. .com)." };
+        if (domain.startsWith('.') || domain.endsWith('.')) return { valid: false, message: "Domain name cannot start or end with a dot." };
+        if (domain.includes('..')) return { valid: false, message: "Domain name cannot contain consecutive dots." };
+        const strictRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        if (!strictRegex.test(val)) {
+          return { valid: false, message: 'Please enter a valid email address (e.g. name@company.com).' };
+        }
+        return { valid: true };
+      }
+
+      function setupModalPhoneValidator(countrySelectId, phoneInputId, hiddenInputId, errorDivId) {
+        const countrySelect = document.getElementById(countrySelectId);
+        const phoneInput = document.getElementById(phoneInputId);
+        const hiddenInput = document.getElementById(hiddenInputId);
+        const errorDiv = document.getElementById(errorDivId);
+        if (!countrySelect || !phoneInput) return null;
+
+        function updateRule() {
+          const rule = getModalPhoneRule(countrySelect.value);
+          phoneInput.placeholder = rule.placeholder;
+          phoneInput.maxLength = rule.max;
+        }
+
+        phoneInput.addEventListener('keydown', function(e) {
+          if (['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(e.key) ||
+              ((e.ctrlKey || e.metaKey) && ['a', 'c', 'v', 'x', 'z'].includes(e.key.toLowerCase()))) {
+            return;
+          }
+          if (!/^\d$/.test(e.key)) {
+            e.preventDefault();
+          }
+        });
+
+        function syncValue() {
+          phoneInput.value = phoneInput.value.replace(/\D/g, '');
+          const rule = getModalPhoneRule(countrySelect.value);
+          if (phoneInput.value.length > rule.max) {
+            phoneInput.value = phoneInput.value.substring(0, rule.max);
+          }
+          if (hiddenInput) {
+            hiddenInput.value = phoneInput.value ? countrySelect.value + ' ' + phoneInput.value : '';
+          }
+        }
+
+        phoneInput.addEventListener('input', function() {
+          syncValue();
+          validate(false);
+        });
+
+        countrySelect.addEventListener('change', function() {
+          updateRule();
+          syncValue();
+          validate(false);
+        });
+
+        phoneInput.addEventListener('blur', function() {
+          validate(true);
+        });
+
+        function validate(showEmptyError = true) {
+          const val = phoneInput.value.trim();
+          if (!val) {
+            clearError();
+            return true;
+          }
+          const rule = getModalPhoneRule(countrySelect.value);
+          if (!rule.regex.test(val)) {
+            showError(rule.error);
+            return false;
+          }
+          clearError();
+          return true;
+        }
+
+        function showError(msg) {
+          if (errorDiv) {
+            errorDiv.textContent = msg;
+            errorDiv.classList.add('visible');
+          }
+          phoneInput.classList.add('is-invalid');
+        }
+
+        function clearError() {
+          if (errorDiv) {
+            errorDiv.textContent = '';
+            errorDiv.classList.remove('visible');
+          }
+          phoneInput.classList.remove('is-invalid');
+        }
+
+        updateRule();
+        syncValue();
+        return { validate, input: phoneInput };
+      }
+
+      function setupModalEmailValidator(inputId, errorDivId, isRequired = true) {
+        const input = document.getElementById(inputId);
+        const errorDiv = document.getElementById(errorDivId);
+        if (!input) return null;
+
+        function validate(showEmptyError = true) {
+          const val = input.value.trim();
+          if (!val && !showEmptyError && !isRequired) {
+            clearError();
+            return true;
+          }
+          const res = validateModalEmailFormat(val, isRequired);
+          if (!res.valid) {
+            if (val || showEmptyError) {
+              showError(res.message);
+              return false;
+            }
+            return false;
+          }
+          clearError();
+          return true;
+        }
+
+        function showError(msg) {
+          if (errorDiv) {
+            errorDiv.textContent = msg;
+            errorDiv.classList.add('visible');
+          }
+          input.classList.add('is-invalid');
+        }
+
+        function clearError() {
+          if (errorDiv) {
+            errorDiv.textContent = '';
+            errorDiv.classList.remove('visible');
+          }
+          input.classList.remove('is-invalid');
+        }
+
+        input.addEventListener('input', function() {
+          if (/\s/.test(this.value)) {
+            this.value = this.value.replace(/\s+/g, '');
+          }
+          validate(false);
+        });
+
+        input.addEventListener('blur', function() {
+          validate(true);
+        });
+
+        return { validate, input };
+      }
+
+      window.toggleDashboardPassword = function(inputId, btnEl) {
+        const input = document.getElementById(inputId);
+        if (!input) return;
+        const icon = btnEl?.querySelector('i');
+        if (input.type === 'password') {
+          input.type = 'text';
+          if (icon) { icon.classList.remove('bx-show'); icon.classList.add('bx-hide'); }
+        } else {
+          input.type = 'password';
+          if (icon) { icon.classList.remove('bx-hide'); icon.classList.add('bx-show'); }
+        }
+      };
+
+      function validateModalAdminPassword(showError = true) {
+        const input = document.getElementById('modal_admin_password');
+        const errorDiv = document.getElementById('modal_admin_password_error');
+        if (!input) return true;
+        const val = input.value;
+        if (!val) {
+          if (showError) {
+            if (errorDiv) { errorDiv.textContent = 'Admin password is required.'; errorDiv.classList.add('visible'); errorDiv.style.display = 'block'; }
+            input.classList.add('is-invalid');
+          }
+          return false;
+        }
+        if (val.length < 8) {
+          if (showError) {
+            if (errorDiv) { errorDiv.textContent = 'Password must be at least 8 characters long.'; errorDiv.classList.add('visible'); errorDiv.style.display = 'block'; }
+            input.classList.add('is-invalid');
+          }
+          return false;
+        }
+        if (val.length > 128) {
+          if (showError) {
+            if (errorDiv) { errorDiv.textContent = 'Password cannot exceed 128 characters.'; errorDiv.classList.add('visible'); errorDiv.style.display = 'block'; }
+            input.classList.add('is-invalid');
+          }
+          return false;
+        }
+        if (errorDiv) { errorDiv.textContent = ''; errorDiv.classList.remove('visible'); errorDiv.style.display = 'none'; }
+        input.classList.remove('is-invalid');
+        return true;
+      }
+
+      const modalPwdInput = document.getElementById('modal_admin_password');
+      if (modalPwdInput) {
+        modalPwdInput.addEventListener('input', function() { validateModalAdminPassword(false); });
+        modalPwdInput.addEventListener('blur', function() { validateModalAdminPassword(true); });
+      }
+
+      const modalPhoneVal = setupModalPhoneValidator('modal_company_country_code', 'modal_company_phone_display', 'modal_company_phone_hidden', 'modal_company_phone_error');
+      const modalEmailVal = setupModalEmailValidator('modal_company_email', 'modal_company_email_error', true);
+      const modalAdminEmailVal = setupModalEmailValidator('modal_company_admin_email', 'modal_company_admin_email_error', true);
+
+      const modalForm = document.getElementById('dashboardProvisionCompanyForm');
+      if (modalForm) {
+        modalForm.addEventListener('submit', function(e) {
+          const isEmailValid = modalEmailVal ? modalEmailVal.validate(true) : true;
+          const isAdminEmailValid = modalAdminEmailVal ? modalAdminEmailVal.validate(true) : true;
+          const isPhoneValid = modalPhoneVal ? modalPhoneVal.validate(true) : true;
+          const isPasswordValid = validateModalAdminPassword(true);
+
+          if (!isEmailValid || !isAdminEmailValid || !isPhoneValid || !isPasswordValid) {
+            e.preventDefault();
+            const firstInvalid = modalForm.querySelector('input.is-invalid, select.is-invalid');
+            if (firstInvalid) {
+              firstInvalid.focus();
+            }
+            return false;
+          }
+        });
+      }
     });
   </script>
 @endpush

@@ -31,6 +31,123 @@
         -webkit-text-fill-color: #ffffff !important;
         opacity: 1 !important;
     }
+
+    /* Actions Column Dropdown Button & Three-Dot Visibility Fix */
+    .table td .btn-icon,
+    .table td .btn-icon.btn-sm,
+    .table td button.btn-icon {
+        width: 34px !important;
+        height: 34px !important;
+        min-width: 34px !important;
+        min-height: 34px !important;
+        padding: 0 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        border-radius: 50% !important;
+        flex-shrink: 0 !important;
+        transition: all 0.2s ease !important;
+    }
+
+    .table td .btn-icon i,
+    .table td .btn-icon i.bx,
+    .table td .btn-icon i.bx-dots-vertical-rounded {
+        font-size: 1.25rem !important;
+        width: 1.25rem !important;
+        height: 1.25rem !important;
+        min-width: 1.25rem !important;
+        min-height: 1.25rem !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        line-height: 1 !important;
+        background-color: transparent !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    /* Light Mode Actions Button */
+    .table td .btn-icon.btn-light {
+        background-color: #f1f5f9 !important;
+        border: 1px solid rgba(148, 163, 184, 0.3) !important;
+        color: #334155 !important;
+    }
+    .table td .btn-icon.btn-light:hover {
+        background-color: #e2e8f0 !important;
+        border-color: #2F6BFF !important;
+        color: #2F6BFF !important;
+    }
+
+    /* Dark Mode Actions Button & Three-Dot Prominence */
+    html[data-pms-theme="dark"] .table td .btn-icon,
+    html[data-bs-theme="dark"] .table td .btn-icon,
+    html[data-theme="dark"] .table td .btn-icon,
+    html.dark .table td .btn-icon,
+    body[data-pms-theme="dark"] .table td .btn-icon,
+    [data-pms-theme="dark"] .table td .btn-icon,
+    .dark .table td .btn-icon {
+        background: #141B3D !important;
+        border: 1px solid rgba(79, 131, 255, 0.35) !important;
+        color: #EEF1FB !important;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25) !important;
+    }
+
+    html[data-pms-theme="dark"] .table td .btn-icon:hover,
+    html[data-bs-theme="dark"] .table td .btn-icon:hover,
+    html[data-theme="dark"] .table td .btn-icon:hover,
+    html.dark .table td .btn-icon:hover,
+    body[data-pms-theme="dark"] .table td .btn-icon:hover,
+    [data-pms-theme="dark"] .table td .btn-icon:hover,
+    .dark .table td .btn-icon:hover {
+        background: #1A2247 !important;
+        border-color: #2F6BFF !important;
+        color: #FFFFFF !important;
+        box-shadow: 0 4px 12px rgba(47, 107, 255, 0.35) !important;
+        transform: translateY(-1px) !important;
+    }
+
+    html[data-pms-theme="dark"] .table td .btn-icon i,
+    html[data-pms-theme="dark"] .table td .btn-icon i.bx,
+    html[data-pms-theme="dark"] .table td .btn-icon i.bx-dots-vertical-rounded,
+    html[data-bs-theme="dark"] .table td .btn-icon i,
+    html[data-theme="dark"] .table td .btn-icon i,
+    html.dark .table td .btn-icon i,
+    body[data-pms-theme="dark"] .table td .btn-icon i,
+    [data-pms-theme="dark"] .table td .btn-icon i,
+    .dark .table td .btn-icon i {
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+        background-color: transparent !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    html[data-pms-theme="dark"] .table td .btn-icon:hover i,
+    html[data-bs-theme="dark"] .table td .btn-icon:hover i,
+    html[data-theme="dark"] .table td .btn-icon:hover i,
+    html.dark .table td .btn-icon:hover i,
+    body[data-pms-theme="dark"] .table td .btn-icon:hover i,
+    [data-pms-theme="dark"] .table td .btn-icon:hover i,
+    .dark .table td .btn-icon:hover i {
+        color: #FFFFFF !important;
+        -webkit-text-fill-color: #FFFFFF !important;
+        background-color: transparent !important;
+    }
+    .project-selection-tools .pms-table-tools {
+        margin: 0;
+        border-radius: 0;
+        border: 0;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+    }
+    #homeProjectTools .pms-table-tools__status::before { content: 'Home projects · '; }
+    #clientProjectTools .pms-table-tools__status::before { content: 'Client projects · '; }
+    .table .project-actions-icon {
+        width: 20px;
+        height: 20px;
+        fill: currentColor;
+        background: transparent !important;
+        pointer-events: none;
+    }
 </style>
 
 <div class="container-fluid px-4 py-4">
@@ -117,7 +234,19 @@
                 <div class="card-body p-3 d-flex align-items-center justify-content-between">
                     <div>
                         <span class="text-muted fw-semibold small d-block mb-1">💰 Total Pipeline &amp; Deal Value</span>
-                        <h4 class="fw-bold text-dark mb-0">${{ number_format($stats['total_deal_cost'], 2) }}</h4>
+                        @php
+                            // 10 lakh (1,000,000) and above reads as M / B / T; the exact amount stays in the tooltip.
+                            $pipelineValue = (float) ($stats['total_deal_cost'] ?? 0);
+                            $pipelineAbs = abs($pipelineValue);
+                            $pipelineLabel = number_format($pipelineValue, 2);
+                            foreach ([1e12 => 'T', 1e9 => 'B', 1e6 => 'M'] as $pipelineUnit => $pipelineSuffix) {
+                                if ($pipelineAbs >= $pipelineUnit) {
+                                    $pipelineLabel = rtrim(rtrim(number_format($pipelineValue / $pipelineUnit, 2), '0'), '.') . $pipelineSuffix;
+                                    break;
+                                }
+                            }
+                        @endphp
+                        <h4 class="fw-bold text-dark mb-0" title="${{ number_format($pipelineValue, 2) }}">${{ $pipelineLabel }}</h4>
                         <small class="text-success"><i class="bx bx-trending-up me-1"></i>Combined Project Valuation</small>
                     </div>
                     <div class="p-3 rounded-4 bg-warning-subtle text-warning">
@@ -193,10 +322,12 @@
                 {{ count($homeProjects) }} Home Project(s)
             </span>
         </div>
+        <div id="homeProjectTools" class="project-selection-tools" aria-label="Home project selection and export"></div>
         <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
+            <table class="table table-hover align-middle mb-0" data-pms-toolbar-host="homeProjectTools">
                 <thead class="bg-light">
                     <tr class="text-secondary text-uppercase fw-semibold" style="font-size: 0.76rem;">
+                        <th data-pms-selection-column class="pms-table-selection-cell" scope="col"><label class="pms-table-select"><input type="checkbox" class="pms-table-select__input" aria-label="Select all home projects"></label></th>
                         <th class="ps-4">Project / Product</th>
                         <th>Assigned Team</th>
                         <th>Progress</th>
@@ -226,6 +357,7 @@
                         @endphp
                         <tr>
                             <!-- Project / Product Name -->
+                            <td data-pms-selection-column class="pms-table-selection-cell"><label class="pms-table-select"><input type="checkbox" class="pms-table-select__input" aria-label="Select {{ $project->name }} for export"></label></td>
                             <td class="ps-4">
                                 <div class="d-flex align-items-center gap-3">
                                     <div class="rounded-3 bg-info-subtle text-info p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
@@ -324,8 +456,8 @@
                             <!-- Actions -->
                             <td class="text-end pe-4">
                                 <div class="dropdown">
-                                    <button class="btn btn-sm btn-icon btn-light rounded-circle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                        <i class="bx bx-dots-vertical-rounded"></i>
+                                    <button class="btn btn-sm btn-icon btn-light rounded-circle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Actions for {{ $project->name }}">
+                                        <svg class="project-actions-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>
                                     </button>
                                     <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-3">
                                         <li>
@@ -349,7 +481,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="text-center py-5 text-muted">
+                            <td colspan="8" class="text-center py-5 text-muted">
                                 <i class="bx bx-home-alt fs-1 d-block mb-2 text-secondary"></i>
                                 No Home Projects found.
                             </td>
@@ -378,10 +510,12 @@
                 {{ count($clientProjects) }} Client Project(s)
             </span>
         </div>
+        <div id="clientProjectTools" class="project-selection-tools" aria-label="Client project selection and export"></div>
         <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
+            <table class="table table-hover align-middle mb-0" data-pms-toolbar-host="clientProjectTools">
                 <thead class="bg-light">
                     <tr class="text-secondary text-uppercase fw-semibold" style="font-size: 0.76rem;">
+                        <th data-pms-selection-column class="pms-table-selection-cell" scope="col"><label class="pms-table-select"><input type="checkbox" class="pms-table-select__input" aria-label="Select all client projects"></label></th>
                         <th class="ps-4">Project / Product</th>
                         <th>Client Details</th>
                         <th>Assigned Team</th>
@@ -412,6 +546,7 @@
                         @endphp
                         <tr>
                             <!-- Project / Product Name -->
+                            <td data-pms-selection-column class="pms-table-selection-cell"><label class="pms-table-select"><input type="checkbox" class="pms-table-select__input" aria-label="Select {{ $project->name }} for export"></label></td>
                             <td class="ps-4">
                                 <div class="d-flex align-items-center gap-3">
                                     <div class="rounded-3 bg-success-subtle text-success p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
@@ -527,8 +662,8 @@
                             <!-- Actions -->
                             <td class="text-end pe-4">
                                 <div class="dropdown">
-                                    <button class="btn btn-sm btn-icon btn-light rounded-circle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                        <i class="bx bx-dots-vertical-rounded"></i>
+                                    <button class="btn btn-sm btn-icon btn-light rounded-circle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Actions for {{ $project->name }}">
+                                        <svg class="project-actions-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>
                                     </button>
                                     <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-3">
                                         <li>
@@ -559,7 +694,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="text-center py-5 text-muted">
+                            <td colspan="9" class="text-center py-5 text-muted">
                                 <i class="bx bx-buildings fs-1 d-block mb-2 text-secondary"></i>
                                 No Client Projects found.
                             </td>

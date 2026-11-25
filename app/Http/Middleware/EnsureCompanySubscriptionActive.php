@@ -14,32 +14,43 @@ class EnsureCompanySubscriptionActive
 {
     public function handle(Request $request, Closure $next): Response
     {
-        // Platform Super Admin bypasses subscription checks
+        // 1. Super Admin and Developer management routes are bypassed
         if (
-            Auth::guard('super_admin')->check() ||
             $request->is('super-admin*') ||
             $request->is('superadmin*') ||
-            (auth()->check() && in_array(strtolower((string)(auth()->user()->role ?? '')), ['superadmin', 'super-admin', 'super_admin'], true))
+            ($request->is('developer*') && ((!Auth::user()?->company_id && !session('current_company_id'))
+                || \App\Services\SecureCompanyLogin::isPlatformDeveloper(Auth::guard('web')->user())))
         ) {
             return $next($request);
         }
 
-        // Resolve Central Company for current request/user
+        // 2. Resolve Central Company for current request/session
         $company = null;
-        $user = Auth::user();
-        if ($user && !empty($user->company_id)) {
-            $company = Company::on('central')->find($user->company_id) ?? \App\Models\Company::find($user->company_id);
-        }
 
-        if (!$company && session('current_company_id')) {
+        // Check impersonated tenant session first
+        if (session('current_company_id')) {
             $company = Company::on('central')->find(session('current_company_id')) ?? \App\Models\Company::find(session('current_company_id'));
         }
 
-        if (!$company) {
+        // Check authenticated user's company
+        $user = Auth::user();
+        if (!$company && $user && !empty($user->company_id)) {
+            $company = Company::on('central')->find($user->company_id) ?? \App\Models\Company::find($user->company_id);
+        }
+
+        // Check company context
+        if (!$company && app()->bound(CompanyContext::class)) {
             $ctxComp = app(CompanyContext::class)->current();
             if ($ctxComp) {
                 $company = Company::on('central')->find($ctxComp->id) ?? $ctxComp;
             }
+        }
+
+        // Check tenant database session
+        if (!$company && session('current_company_db')) {
+            try {
+                $company = Company::on('central')->where('db_name', session('current_company_db'))->first();
+            } catch (\Throwable $e) {}
         }
 
         if ($company) {
@@ -47,39 +58,41 @@ class EnsureCompanySubscriptionActive
                 /** @var SubscriptionService $subService */
                 $subService = app(SubscriptionService::class);
 
-                // Execute real-time dynamic expiration check
-                $subService->checkRealtimeExpiration($company);
+                // Synchronize and persist status at database level
+                $subService->syncCompanyStatus($company);
 
                 // Refresh central company model to get fresh status
                 $centralComp = Company::on('central')->find($company->id) ?? $company;
 
-                $isSuspended = strtolower((string)($centralComp->status ?? '')) === 'suspended'
-                    || $subService->isSuspended($centralComp)
-                    || $subService->isExpired($centralComp);
+                $isManualSuspension = (bool) ($centralComp->manually_suspended ?? false);
+                $isSuspended = strtolower((string)($centralComp->status ?? '')) === 'suspended' || $isManualSuspension;
+                $isExpired = strtolower((string)($centralComp->status ?? '')) === 'expired' || $subService->isExpired($centralComp);
 
-                if ($isSuspended) {
+                if ($isSuspended || $isExpired) {
                     $routeName = (string) $request->route()?->getName();
 
-                    // If company subscription is finished/suspended, strictly allow ONLY:
-                    // 1. Notification section routes
-                    // 2. Subscription suspended & renewal/assignment routes
-                    // 3. Auth logout/login routes
-                    $isAllowedWhenSuspended = (
+                    // Base routes always allowed when restricted:
+                    $isBaseAllowed = (
                         $routeName === 'subscription.suspended' ||
                         $routeName === 'logout' ||
                         $routeName === 'login' ||
-                        str_starts_with($routeName, 'notifications.') ||
-                        str_starts_with($routeName, 'admin.company-notifications.') ||
-                        str_starts_with($routeName, 'super-admin.subscriptions.') ||
-                        str_starts_with($routeName, 'superadmin.subscriptions.') ||
-                        str_starts_with($routeName, 'subscriptions.')
+                        $routeName === 'super-admin.leave-impersonation' ||
+                        $routeName === 'superadmin.leave-impersonation' ||
+                        $request->is('super-admin/leave-impersonation*') ||
+                        $request->is('superadmin/leave-impersonation*')
                     );
 
-                    if (!$isAllowedWhenSuspended) {
+                    $isAllowedWhenRestricted = $isBaseAllowed;
+
+                    if (!$isAllowedWhenRestricted) {
                         if ($request->expectsJson() || $request->is('api/*')) {
                             return response()->json([
-                                'error'               => 'Your subscription has expired and your organization access is restricted until Super Admin extends your subscription.',
-                                'subscription_status' => 'suspended',
+                                'error'               => $isManualSuspension
+                                    ? 'Your organization has been suspended by the platform administrator. Please contact support.'
+                                    : 'Your subscription has expired. Contact Super Admin to extend your plan and restore access.',
+                                'subscription_status' => $isManualSuspension ? 'suspended' : 'expired',
+                                'manually_suspended'  => $isManualSuspension,
+                                'restriction_url'     => route('subscription.suspended'),
                                 'company'             => $centralComp->name ?? 'Organization',
                             ], 402);
                         }
@@ -87,7 +100,10 @@ class EnsureCompanySubscriptionActive
                         return redirect()->route('subscription.suspended');
                     }
                 }
-            } catch (\Throwable $e) {}
+            } catch (\Throwable $e) {
+                report($e);
+                return response('Company subscription could not be verified. Please try again shortly.', 503);
+            }
         }
 
         return $next($request);

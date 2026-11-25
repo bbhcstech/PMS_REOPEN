@@ -822,8 +822,8 @@
     .status-pill.status-trial .dot { background: var(--amber-accent); }
     .status-pill.status-suspended { background: rgba(239, 68, 68, 0.1); color: var(--rose-accent); border-color: rgba(239, 68, 68, 0.2); }
     .status-pill.status-suspended .dot { background: var(--rose-accent); }
-    .status-pill.status-expired { background: var(--slate-light); color: var(--slate-muted); border-color: rgba(226, 232, 240, 0.8); }
-    .status-pill.status-expired .dot { background: var(--slate-muted); }
+    .status-pill.status-expired { background: rgba(239, 68, 68, 0.1); color: var(--rose-accent); border-color: rgba(239, 68, 68, 0.2); }
+    .status-pill.status-expired .dot { background: var(--rose-accent); }
 
     .storage-track-bar {
         width: 76px;
@@ -946,6 +946,7 @@
 
     .plan-card-option:hover { border-color: var(--emerald-primary); }
     .plan-card-option.selected { border-color: var(--emerald-primary); background: var(--emerald-soft); }
+    .plan-card-option.disabled { opacity: 0.45; cursor: not-allowed; }
 
     /* Company Detail Drawer */
     .detail-overlay {
@@ -1340,7 +1341,7 @@
                 </a>
             </div>
         </div>
-        <a href="{{ route('super-admin.companies.create') }}" class="btn-custom btn-primary-custom">
+        <a href="{{ Route::has('super-admin.companies.create') ? route('super-admin.companies.create') : (Route::has('superadmin.companies.create') ? route('superadmin.companies.create') : url('/super-admin/companies/create')) }}" class="btn-custom btn-primary-custom">
             <i class="bx bx-plus-circle"></i> Provision New Company
         </a>
     </div>
@@ -1475,39 +1476,58 @@
             </div>
             <span class="badge badge-success">Live Catalog</span>
         </div>
+        @php
+            // One source of truth for both the legend and the doughnut: each company's current plan is its
+            // active subscription, otherwise its latest running trial/active subscription; else "No Plan".
+            if ($companies instanceof \Illuminate\Database\Eloquent\Collection) {
+                try { $companies->loadMissing(['activeSubscription.plan', 'subscriptions.plan']); } catch (\Throwable $e) {}
+            }
+            $currentPlanSlug = function ($company) {
+                $plan = $company->activeSubscription?->plan;
+                if (! $plan) {
+                    $running = collect($company->subscriptions ?? [])
+                        ->filter(fn ($s) => in_array(strtolower((string) $s->status), ['active', 'trial'], true)
+                            && (! $s->ends_at || \Carbon\Carbon::parse($s->ends_at)->endOfDay()->gte(now())))
+                        ->sortByDesc('id')
+                        ->first();
+                    $plan = $running?->plan;
+                }
+                $slug = strtolower(trim((string) ($plan?->slug ?: $plan?->name)));
+                return in_array($slug, ['free', 'gold', 'platinum', 'diamond'], true) ? $slug : ($plan ? 'other' : 'none');
+            };
+            $planBuckets = [
+                'free'     => ['label' => 'FREE',     'color' => '#cbd5e1', 'count' => 0],
+                'gold'     => ['label' => 'GOLD',     'color' => '#f59e0b', 'count' => 0],
+                'platinum' => ['label' => 'PLATINUM', 'color' => '#2563eb', 'count' => 0],
+                'diamond'  => ['label' => 'DIAMOND',  'color' => '#7c3aed', 'count' => 0],
+                'other'    => ['label' => 'OTHER PLAN', 'color' => '#14b8a6', 'count' => 0],
+                'none'     => ['label' => 'NO PLAN',  'color' => '#64748b', 'count' => 0],
+            ];
+            foreach ($companies as $planCompany) {
+                $planBuckets[$currentPlanSlug($planCompany)]['count']++;
+            }
+            // The four catalog tiers always show; "Other" / "No Plan" only when they contain companies.
+            $planBuckets = array_filter($planBuckets, fn ($bucket, $slug) => in_array($slug, ['free', 'gold', 'platinum', 'diamond'], true) || $bucket['count'] > 0, ARRAY_FILTER_USE_BOTH);
+            $planChartData = [
+                'labels' => array_values(array_column($planBuckets, 'label')),
+                'counts' => array_values(array_column($planBuckets, 'count')),
+                'colors' => array_values(array_column($planBuckets, 'color')),
+            ];
+        @endphp
         <div class="donut-container">
-            <div class="chart-wrap">
+            <div class="chart-wrap" id="planDonutData" data-plan-chart='@json($planChartData)'>
                 <canvas id="planDonutChart"></canvas>
             </div>
             <div class="legend">
+                @foreach($planBuckets as $bucket)
                 <div class="item">
                     <div class="left-info">
-                        <span class="dot" style="background: #cbd5e1;"></span>
-                        <span class="name">FREE</span>
+                        <span class="dot" style="background: {{ $bucket['color'] }};"></span>
+                        <span class="name">{{ $bucket['label'] }}</span>
                     </div>
-                    <span class="count">{{ $companies->filter(fn($c) => strtolower($c->activeSubscription?->plan?->name ?? '') === 'free')->count() }}</span>
+                    <span class="count">{{ $bucket['count'] }}</span>
                 </div>
-                <div class="item">
-                    <div class="left-info">
-                        <span class="dot" style="background: var(--amber-accent);"></span>
-                        <span class="name">GOLD</span>
-                    </div>
-                    <span class="count">{{ $companies->filter(fn($c) => strtolower($c->activeSubscription?->plan?->name ?? '') === 'gold')->count() }}</span>
-                </div>
-                <div class="item">
-                    <div class="left-info">
-                        <span class="dot" style="background: var(--blue-accent);"></span>
-                        <span class="name">PLATINUM</span>
-                    </div>
-                    <span class="count">{{ $companies->filter(fn($c) => strtolower($c->activeSubscription?->plan?->name ?? '') === 'platinum')->count() }}</span>
-                </div>
-                <div class="item">
-                    <div class="left-info">
-                        <span class="dot" style="background: var(--purple-accent);"></span>
-                        <span class="name">DIAMOND</span>
-                    </div>
-                    <span class="count">{{ $companies->filter(fn($c) => strtolower($c->activeSubscription?->plan?->name ?? '') === 'diamond')->count() }}</span>
-                </div>
+                @endforeach
                 <div class="total">
                     <span>Total Subscriptions</span>
                     <span>{{ $companies->count() }}</span>
@@ -1638,9 +1658,10 @@
                 @forelse($companies as $index => $company)
                 @php
                     $planNames = ['FREE', 'GOLD', 'PLATINUM', 'DIAMOND'];
-                    $rawPlan = strtoupper($company->activeSubscription?->plan?->name ?? $planNames[$index % 4]);
+                    $currentSubscription = $company->activeSubscription ?? $company->subscriptions()->latest()->first();
+                    $rawPlan = strtoupper($currentSubscription?->plan?->name ?? 'FREE');
                     if (!in_array($rawPlan, $planNames)) {
-                        $rawPlan = $planNames[$index % 4];
+                        $rawPlan = 'FREE';
                     }
                     $planClass = strtolower($rawPlan);
                     $storagePercent = 65 + ($index * 7) % 30;
@@ -1702,6 +1723,7 @@
                                 'active' => 'status-active',
                                 'trial' => 'status-trial',
                                 'suspended' => 'status-suspended',
+                                'expired' => 'status-expired',
                                 default => 'status-expired',
                             };
                         @endphp
@@ -1724,7 +1746,8 @@
                         </span>
                     </td>
                     <td style="color: var(--slate-muted); font-size: 12px; font-weight: 500;">
-                        {{ rand(2, 45) }} mins ago
+                        @php $companyLastActivity = ($lastActivity ?? [])[$company->id] ?? null; @endphp
+                        <span title="{{ $companyLastActivity ? 'Last request by a signed-in company user' : 'No signed-in activity recorded yet' }}">{{ \App\Services\CompanyActivity::format($companyLastActivity) }}</span>
                     </td>
                     <td style="text-align: right;">
                         <div class="actions-cell-wrap">
@@ -1743,7 +1766,10 @@
                                     <a href="#" class="trigger-detail-drawer" data-company-id="{{ $company->id }}" data-company-name="{{ $company->name }}" data-company-email="{{ $company->email }}" data-company-db="{{ $company->db_name }}" data-company-logo="{{ $company->logo ? asset($company->logo) : '' }}">
                                         <i class="bx bx-info-circle" style="color: var(--emerald-primary);"></i> Quick Details
                                     </a>
-                                    <a href="#" class="trigger-plan-modal" data-company-id="{{ $company->id }}">
+                                    <a href="#" class="trigger-plan-modal" data-company-id="{{ $company->id }}"
+                                       data-current-planid="{{ $currentSubscription?->plan_id }}"
+                                       data-billing-cycle="{{ $currentSubscription?->billing_cycle ?? 'monthly' }}"
+                                       data-allowed-planids="{{ json_encode(app(\App\Services\PlanEligibilityService::class)->getAllowedPlans($company)->pluck('id')->all()) }}">
                                         <i class="bx bx-layer" style="color: var(--purple-accent);"></i> Change Subscription
                                     </a>
                                     <div class="divider"></div>
@@ -1752,7 +1778,11 @@
                                         <button type="submit" style="width:100%; text-align:left;"><i class="bx bx-log-in-circle" style="color: var(--amber-accent);"></i> Impersonate Context</button>
                                     </form>
                                     <div class="divider"></div>
-                                    <a href="javascript:void(0)" onclick="confirmSuspendCompany({{ $company->id }}, '{{ addslashes($company->name) }}')" class="danger-item"><i class="bx bx-block"></i> Suspend Company</a>
+                                    @if(($company->status ?? '') === 'suspended')
+                                        <a href="javascript:void(0)" onclick="confirmActivateCompany({{ $company->id }}, '{{ addslashes($company->name) }}')" style="color: var(--emerald-primary);"><i class="bx bx-check-circle"></i> Lift Suspension (Activate)</a>
+                                    @else
+                                        <a href="javascript:void(0)" onclick="confirmSuspendCompany({{ $company->id }}, '{{ addslashes($company->name) }}')" class="danger-item"><i class="bx bx-block"></i> Suspend Company</a>
+                                    @endif
                                     <a href="javascript:void(0)" onclick="confirmDeleteCompany({{ $company->id }}, '{{ addslashes($company->name) }}')" class="danger-item"><i class="bx bx-trash"></i> Delete Company</a>
                                 </div>
                             </div>
@@ -1792,49 +1822,35 @@
 <!-- CHANGE SUBSCRIPTION MODAL -->
 <div class="modal-backdrop-custom" id="planChangeModal">
     <div class="modal-dialog-custom">
+        <form method="POST" action="{{ route('super-admin.subscriptions.assign') }}" id="companyPlanChangeForm">
+            @csrf
+            <input type="hidden" name="company_id" id="planChangeCompanyId">
+            <input type="hidden" name="billing_cycle" id="planChangeBillingCycle" value="monthly">
         <h3 style="font-size: 20px; font-weight: 800; margin-top: 0; margin-bottom: 6px; color: var(--slate-dark);">Change Subscription Plan</h3>
         <p style="font-size: 13.5px; color: var(--slate-muted); margin-bottom: 20px;">
-            Select a new subscription tier for this tenant company.
+            Select the current tier or a higher tier for this tenant company. Lower tiers cannot be selected.
         </p>
 
         <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px;">
-            <div class="plan-card-option" data-plan="free">
+            @foreach($plans as $plan)
+            <label class="plan-card-option" data-plan="{{ $plan->slug }}" data-planid="{{ $plan->id }}">
+                <input type="radio" name="plan_id" value="{{ $plan->id }}" required class="visually-hidden">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span class="plan-badge-cell plan-free">FREE</span>
-                    <strong style="font-size: 14px; color: var(--slate-dark);">₹0 / mo</strong>
+                    <span class="plan-badge-cell plan-{{ $plan->slug }}">{{ strtoupper($plan->name) }}</span>
+                    <strong style="font-size: 14px; color: var(--slate-dark);">₹{{ number_format($plan->monthly_price) }} / mo</strong>
                 </div>
-                <div style="font-size: 12px; color: var(--slate-muted); margin-top: 4px;">Up to 5 Users • 5GB Storage</div>
-            </div>
-
-            <div class="plan-card-option" data-plan="gold">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span class="plan-badge-cell plan-gold">GOLD</span>
-                    <strong style="font-size: 14px; color: var(--slate-dark);">₹4,999 / mo</strong>
+                <div style="font-size: 12px; color: var(--slate-muted); margin-top: 4px;">
+                    {{ $plan->max_users > 0 ? 'Up to ' . $plan->max_users . ' Users' : 'Unlimited Users' }} · {{ $plan->max_storage_mb / 1024 }}GB Storage
                 </div>
-                <div style="font-size: 12px; color: var(--slate-muted); margin-top: 4px;">Up to 25 Users • 25GB Storage</div>
-            </div>
-
-            <div class="plan-card-option" data-plan="platinum">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span class="plan-badge-cell plan-platinum">PLATINUM</span>
-                    <strong style="font-size: 14px; color: var(--slate-dark);">₹9,999 / mo</strong>
-                </div>
-                <div style="font-size: 12px; color: var(--slate-muted); margin-top: 4px;">Up to 100 Users • 100GB Storage</div>
-            </div>
-
-            <div class="plan-card-option selected" data-plan="diamond">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span class="plan-badge-cell plan-diamond">DIAMOND</span>
-                    <strong style="font-size: 14px; color: var(--slate-dark);">₹19,999 / mo</strong>
-                </div>
-                <div style="font-size: 12px; color: var(--slate-muted); margin-top: 4px;">Unlimited Users • Priority Support</div>
-            </div>
+            </label>
+            @endforeach
         </div>
 
         <div style="display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid rgba(226, 232, 240, 0.8); padding-top: 16px;">
-            <button class="btn-custom btn-outline-custom btn-sm-custom" id="closePlanModalBtn">Cancel</button>
-            <button class="btn-custom btn-primary-custom btn-sm-custom" id="confirmPlanChangeBtn">Confirm Change</button>
+            <button type="button" class="btn-custom btn-outline-custom btn-sm-custom" id="closePlanModalBtn">Cancel</button>
+            <button type="submit" class="btn-custom btn-primary-custom btn-sm-custom" id="confirmPlanChangeBtn" disabled>Confirm Change</button>
         </div>
+        </form>
     </div>
 </div>
 
@@ -1899,12 +1915,15 @@
 @endsection
 
 @push('scripts')
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+@include('partials.pdf-export-scripts')
 <script>
 function confirmSuspendCompany(id, name) {
-    if (confirm("Are you sure you want to suspend access for company '" + name + "'?")) {
+    window.location.href = "{{ url('/superadmin/companies') }}/" + id + "/suspension";
+}
+function confirmActivateCompany(id, name) {
+    if (confirm("Are you sure you want to lift suspension and activate access for company '" + name + "'?")) {
         const form = document.getElementById('companiesIndexSuspendForm');
-        form.action = "{{ url('/superadmin/companies') }}/" + id + "/suspend";
+        form.action = "{{ url('/superadmin/companies') }}/" + id + "/activate";
         form.submit();
     }
 }
@@ -1919,22 +1938,52 @@ document.addEventListener('DOMContentLoaded', function() {
     // 1. Chart.js Donut Chart
     const ctx = document.getElementById('planDonutChart');
     if (ctx && typeof Chart !== 'undefined') {
+        // Real per-plan company counts, computed server-side together with the legend.
+        let planChart = { labels: [], counts: [], colors: [] };
+        try { planChart = JSON.parse((document.getElementById('planDonutData')?.getAttribute('data-plan-chart')) || '{}'); } catch (e) {}
+        const hasData = (planChart.counts || []).some(count => Number(count) > 0);
+
+        // Keep the doughnut in step with the legend when the live-records refresh brings new counts.
+        let lastPlanChartJson = (document.getElementById('planDonutData')?.getAttribute('data-plan-chart'));
+        document.addEventListener('pms:records-updated', function () {
+            const json = (document.getElementById('planDonutData')?.getAttribute('data-plan-chart'));
+            if (!json || json === lastPlanChartJson) return;
+            lastPlanChartJson = json;
+            try {
+                const next = JSON.parse(json);
+                const chart = Chart.getChart(ctx);
+                if (!chart) return;
+                const nextHasData = (next.counts || []).some(count => Number(count) > 0);
+                chart.data.labels = nextHasData ? next.labels : ['No subscriptions'];
+                chart.data.datasets[0].data = nextHasData ? next.counts : [1];
+                chart.data.datasets[0].backgroundColor = nextHasData ? next.colors : ['rgba(148, 163, 184, 0.25)'];
+                chart.options.plugins.tooltip.enabled = nextHasData;
+                chart.update();
+            } catch (e) {}
+        });
+
         new Chart(ctx, {
             type: 'doughnut',
             data: {
-                labels: ['FREE', 'GOLD', 'PLATINUM', 'DIAMOND'],
+                labels: hasData ? planChart.labels : ['No subscriptions'],
                 datasets: [{
-                    data: [12, 18, 24, 15],
-                    backgroundColor: ['#cbd5e1', '#f59e0b', '#2563eb', '#7c3aed'],
+                    data: hasData ? planChart.counts : [1],
+                    backgroundColor: hasData ? planChart.colors : ['rgba(148, 163, 184, 0.25)'],
                     borderWidth: 0,
-                    hoverOffset: 4
+                    hoverOffset: hasData ? 4 : 0
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: { display: false }
+                    legend: { display: false },
+                    tooltip: {
+                        enabled: hasData,
+                        callbacks: {
+                            label: (item) => ` ${item.raw} ${Number(item.raw) === 1 ? 'company' : 'companies'}`
+                        }
+                    }
                 },
                 cutout: '72%'
             }
@@ -2084,50 +2133,112 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // 5. Action & Export Dropdown Toggle with Smart Viewport Positioning
+    let activeDropdownMenu = null;
+    let activeDropdownParent = null;
+    let activeDropdownNextSibling = null;
+
+    function closeAllDropdowns() {
+        if (activeDropdownMenu) {
+            activeDropdownMenu.classList.remove('open');
+            activeDropdownMenu.style.display = 'none';
+            activeDropdownMenu.style.visibility = '';
+            activeDropdownMenu.style.top = '';
+            activeDropdownMenu.style.left = '';
+            activeDropdownMenu.style.right = '';
+            activeDropdownMenu.style.bottom = '';
+            activeDropdownMenu.style.maxHeight = '';
+            activeDropdownMenu.style.overflowY = '';
+
+            // Restore menu back to its original DOM container in the row
+            if (activeDropdownParent) {
+                if (activeDropdownNextSibling && activeDropdownNextSibling.parentNode === activeDropdownParent) {
+                    activeDropdownParent.insertBefore(activeDropdownMenu, activeDropdownNextSibling);
+                } else {
+                    activeDropdownParent.appendChild(activeDropdownMenu);
+                }
+            }
+            activeDropdownMenu._triggerBtn = null;
+            activeDropdownMenu = null;
+            activeDropdownParent = null;
+            activeDropdownNextSibling = null;
+        }
+
+        // Safety fallback for any lingering open menus
+        document.querySelectorAll('.dropdown-menu-custom.open').forEach(menu => {
+            menu.classList.remove('open');
+            menu.style.display = 'none';
+        });
+    }
+
     function positionDropdownMenu(btn, menu) {
         if (!btn || !menu) return;
 
+        // Reset temporary positioning to get true dimensions
         menu.style.position = 'fixed';
         menu.style.zIndex = '999999';
-        menu.style.visibility = 'hidden';
         menu.style.display = 'block';
+        menu.style.visibility = 'hidden';
+        menu.style.top = '0px';
+        menu.style.left = '0px';
+        menu.style.right = 'auto';
+        menu.style.bottom = 'auto';
+        menu.style.margin = '0';
 
-        const rect = btn.getBoundingClientRect();
-        const menuHeight = menu.offsetHeight || 250;
+        const btnRect = btn.getBoundingClientRect();
         const menuWidth = menu.offsetWidth || 220;
-        const viewportHeight = window.innerHeight;
+        const menuHeight = menu.offsetHeight || 260;
         const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
 
-        // Flip UP if near screen bottom
-        const spaceBelow = viewportHeight - rect.bottom;
-        const spaceAbove = rect.top;
+        const gap = 6; // Small consistent gap between button and dropdown
+        const padding = 12; // Safety margin from viewport edges
 
-        if (spaceBelow < menuHeight + 12 && spaceAbove > spaceBelow) {
-            menu.style.top = 'auto';
-            menu.style.bottom = Math.max(8, viewportHeight - rect.top + 6) + 'px';
+        // Vertical positioning:
+        // Requirement: Prefer opening above the button when there is not enough space below
+        const spaceBelow = viewportHeight - btnRect.bottom - gap - padding;
+        const spaceAbove = btnRect.top - gap - padding;
+
+        let top;
+        if (spaceBelow < menuHeight && spaceAbove >= menuHeight) {
+            // Open ABOVE the button
+            top = btnRect.top - menuHeight - gap;
+        } else if (spaceBelow >= menuHeight) {
+            // Open BELOW the button
+            top = btnRect.bottom + gap;
         } else {
-            menu.style.top = Math.max(8, rect.bottom + 6) + 'px';
-            menu.style.bottom = 'auto';
+            // Space is tight on both sides: pick whichever side has more room
+            if (spaceAbove > spaceBelow) {
+                top = Math.max(padding, btnRect.top - menuHeight - gap);
+            } else {
+                top = btnRect.bottom + gap;
+            }
         }
 
-        // Align right edge of menu to right edge of trigger button
-        const rightOffset = viewportWidth - rect.right;
-        if (rect.right - menuWidth < 12) {
-            menu.style.left = '12px';
-            menu.style.right = 'auto';
-        } else {
-            menu.style.right = Math.max(12, rightOffset) + 'px';
-            menu.style.left = 'auto';
+        // Clamp top within viewport boundaries
+        top = Math.max(padding, Math.min(top, viewportHeight - menuHeight - padding));
+
+        // Horizontal positioning:
+        // Align dropdown right edge with the button's right edge so it sits directly beside it
+        let left = btnRect.right - menuWidth;
+
+        // Prevent overflowing left edge
+        if (left < padding) {
+            left = padding;
         }
 
+        // Prevent overflowing right edge
+        if (left + menuWidth > viewportWidth - padding) {
+            left = Math.max(padding, viewportWidth - menuWidth - padding);
+        }
+
+        menu.style.top = Math.round(top) + 'px';
+        menu.style.left = Math.round(left) + 'px';
+        menu.style.right = 'auto';
+        menu.style.bottom = 'auto';
+        menu.style.maxHeight = `calc(100vh - ${padding * 2}px)`;
+        menu.style.overflowY = 'auto';
+        menu.classList.add('open');
         menu.style.visibility = 'visible';
-    }
-
-    function closeAllDropdowns() {
-        document.querySelectorAll('.dropdown-menu-custom').forEach(menu => {
-            menu.classList.remove('open');
-            menu.style.display = '';
-        });
     }
 
     // Toggle dropdowns with dynamic viewport alignment
@@ -2138,26 +2249,46 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             e.stopPropagation();
 
-            let menu = toggleBtn.nextElementSibling;
+            // Toggle off if clicking the currently open trigger
+            if (activeDropdownMenu && activeDropdownMenu._triggerBtn === toggleBtn) {
+                closeAllDropdowns();
+                return;
+            }
+
+            // Find target menu
+            let menu = null;
             if (toggleBtn.id === 'exportDropdownBtn') {
                 menu = document.getElementById('exportDropdownMenu');
+            } else {
+                const container = toggleBtn.closest('.dropdown-container');
+                menu = container ? container.querySelector('.dropdown-menu-custom') : toggleBtn.nextElementSibling;
             }
 
             if (menu) {
-                const isOpen = menu.classList.contains('open');
                 closeAllDropdowns();
 
-                if (!isOpen) {
-                    menu.classList.add('open');
-                    positionDropdownMenu(toggleBtn, menu);
-                }
+                // Store references before moving to body
+                activeDropdownMenu = menu;
+                activeDropdownParent = menu.parentElement;
+                activeDropdownNextSibling = menu.nextSibling;
+                activeDropdownMenu._triggerBtn = toggleBtn;
+
+                // Move directly to body to bypass any ancestor backdrop-filter/overflow constraints
+                document.body.appendChild(menu);
+
+                positionDropdownMenu(toggleBtn, menu);
             }
             return;
         }
 
         // Close dropdown when item inside is clicked
-        if (e.target.closest('.dropdown-menu-custom a, .dropdown-menu-custom button')) {
-            closeAllDropdowns();
+        const actionItem = e.target.closest('.dropdown-menu-custom a, .dropdown-menu-custom button');
+        if (actionItem) {
+            const form = actionItem.closest('form');
+            if (form && actionItem.type === 'submit') {
+                form.submit();
+            }
+            setTimeout(closeAllDropdowns, 10);
             return;
         }
 
@@ -2179,6 +2310,19 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.trigger-plan-modal').forEach(trigger => {
         trigger.addEventListener('click', function(e) {
             e.preventDefault();
+            const allowedIds = JSON.parse(this.getAttribute('data-allowed-planids') || '[]').map(String);
+            const currentId = this.getAttribute('data-current-planid');
+            document.getElementById('planChangeCompanyId').value = this.getAttribute('data-company-id');
+            document.getElementById('planChangeBillingCycle').value = this.getAttribute('data-billing-cycle') || 'monthly';
+            planModal.querySelectorAll('.plan-card-option').forEach(card => {
+                const radio = card.querySelector('input[name="plan_id"]');
+                radio.disabled = !allowedIds.includes(radio.value);
+                radio.checked = !radio.disabled && radio.value === currentId;
+                card.classList.toggle('disabled', radio.disabled);
+                card.classList.toggle('selected', radio.checked);
+                card.title = radio.disabled ? 'This tier is unavailable. Lower plans cannot be selected.' : '';
+            });
+            confirmPlanBtn.disabled = !planModal.querySelector('input[name="plan_id"]:checked');
             if (planModal) planModal.classList.add('open');
         });
     });
@@ -2189,18 +2333,23 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    if (confirmPlanBtn && planModal) {
-        confirmPlanBtn.addEventListener('click', function() {
-            planModal.classList.remove('open');
-        });
-    }
-
     // Plan selection toggle inside modal
-    document.querySelectorAll('.plan-card-option').forEach(card => {
-        card.addEventListener('click', function() {
-            document.querySelectorAll('.plan-card-option').forEach(c => c.classList.remove('selected'));
-            this.classList.add('selected');
+    planModal.querySelectorAll('input[name="plan_id"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            planModal.querySelectorAll('.plan-card-option').forEach(card => {
+                card.classList.toggle('selected', card.querySelector('input').checked);
+            });
+            confirmPlanBtn.disabled = false;
         });
+    });
+    document.getElementById('companyPlanChangeForm').addEventListener('submit', function(event) {
+        const selected = planModal.querySelector('input[name="plan_id"]:checked:not(:disabled)');
+        if (!selected || !document.getElementById('planChangeCompanyId').value) {
+            event.preventDefault();
+            return;
+        }
+        confirmPlanBtn.disabled = true;
+        confirmPlanBtn.textContent = 'Updating Plan...';
     });
 
     // 7. Company Detail Drawer
@@ -2288,7 +2437,7 @@ document.addEventListener('DOMContentLoaded', function() {
             element.style.fontFamily = "'Inter', Arial, sans-serif";
             element.style.color = '#1e293b';
 
-            const now = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+            const now = new Date().toLocaleDateString('en-US', { timeZone: 'Asia/Kolkata',  year: 'numeric', month: 'long', day: 'numeric' });
 
             // 2. Clone table & filter out hidden rows & action/checkbox columns
             const originalTable = document.getElementById('companiesCommandTable');
@@ -2342,15 +2491,9 @@ document.addEventListener('DOMContentLoaded', function() {
             `;
 
             // 4. Trigger auto-download PDF
-            if (typeof html2pdf !== 'undefined') {
-                const opt = {
-                    margin:       [10, 10, 10, 10],
-                    filename:     'tenant_companies_report.pdf',
-                    image:        { type: 'jpeg', quality: 0.98 },
-                    html2canvas:  { scale: 2, useCORS: true, logging: false },
-                    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
-                };
-                html2pdf().set(opt).from(element).save();
+            if (window.pdfMake && window.PmsPdfExports) {
+                const pdfDocument = window.PmsPdfExports.fromTable(tableClone, 'Tenant Companies Directory Report', 'Platform Super Admin Infrastructure & Subscription Export', 'Export Date: ' + now + ' | Total Records: ' + tableClone.querySelectorAll('tbody tr').length, 'landscape');
+                window.pdfMake.createPdf(pdfDocument).download('tenant_companies_report.pdf');
             } else {
                 const printWin = window.open('', '_blank');
                 printWin.document.write(`<!DOCTYPE html><html><head><title>Tenant Companies Report</title></head><body>${element.innerHTML}<script>window.onload=function(){window.print();};<\\/script></body></html>`);

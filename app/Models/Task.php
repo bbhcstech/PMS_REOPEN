@@ -4,12 +4,16 @@ namespace App\Models;
 
 use App\Models\TenantModel;
 
+use App\Traits\BelongsToCompany;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Task extends TenantModel
 {
+    use BelongsToCompany;
+
      protected $fillable = [
+        'company_id',
         'task_short_code',
         'title',
         'project_id',
@@ -150,16 +154,21 @@ class Task extends TenantModel
     return $this->hasMany(TaskTimer::class);
 }
 
-// Optional: helper to get total logged time
+public function finishedTimers()
+{
+    return $this->timers()->whereNotNull('end_time');
+}
+
 public function getTotalLoggedSecondsAttribute()
 {
-    return $this->timers()
-        ->whereNotNull('end_time')
-        ->get()
-        ->sum(function ($timer) {
-            return \Carbon\Carbon::parse($timer->start_time)
-                ->diffInSeconds($timer->end_time);
-        });
+    $timers = $this->relationLoaded('finishedTimers')
+        ? $this->finishedTimers
+        : $this->finishedTimers()->get();
+
+    return $timers->sum(function ($timer) {
+        return \Carbon\Carbon::parse($timer->start_time)
+            ->diffInSeconds($timer->end_time);
+    });
 }
 
 public function getTotalLoggedFormattedAttribute()

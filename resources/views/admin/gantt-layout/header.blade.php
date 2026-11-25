@@ -6,6 +6,8 @@
   data-assets-path="admin/assets/"
   data-template="vertical-menu-template-free">
   <head>
+    @include('partials.pwa')
+    @include('partials.timezone')
     <meta charset="utf-8" />
     <meta
       name="viewport"

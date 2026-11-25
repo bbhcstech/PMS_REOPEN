@@ -37,6 +37,7 @@ class StoreLeaveRequest extends FormRequest
     public function messages(): array
     {
         return [
+            'end_date.after_or_equal' => "End date can't be backdated. Please select a date on or after the start date.",
             'contact_during_leave.regex' => 'Please enter a valid phone number with country code (e.g. +919876543210).',
             'contact_during_leave.max'   => 'Contact number must not exceed 25 characters.',
         ];

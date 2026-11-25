@@ -16,9 +16,26 @@ class ClientSubCategoryController extends Controller
     
     public function store(Request $request)
     {
+        $connectionName = (new ClientSubCategory)->getConnectionName();
+        $schema = (new ClientSubCategory)->getConnection()->getSchemaBuilder();
+
+        if ($schema->hasTable('client_sub_categories') && ! $schema->hasColumn('client_sub_categories', 'name')) {
+            $schema->table('client_sub_categories', function ($table) {
+                $table->string('name')->nullable();
+            });
+        }
+
         $request->validate([
-            'name' => 'required|unique:client_sub_categories,name',
-            'client_category_id' => 'required|exists:client_categories,id'
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                \Illuminate\Validation\Rule::unique($connectionName . '.client_sub_categories', 'name'),
+            ],
+            'client_category_id' => [
+                'required',
+                \Illuminate\Validation\Rule::exists($connectionName . '.client_categories', 'id'),
+            ],
         ]);
         $sub = ClientSubCategory::create($request->only('name', 'client_category_id'));
         return response()->json($sub->load('category'));

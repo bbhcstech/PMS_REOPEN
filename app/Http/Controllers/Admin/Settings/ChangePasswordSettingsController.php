@@ -32,6 +32,12 @@ class ChangePasswordSettingsController extends Controller
             $selectColumns[] = 'password_changed_by_role';
         }
 
+        // Company role (e.g. "Associate Manager" from Add Upper Level Employee) is shown instead of the bare access role.
+        $hasStaffRole = Schema::hasColumn('users', 'company_staff_role_id') && Schema::hasTable('company_staff_roles');
+        if ($hasStaffRole) {
+            $selectColumns[] = 'company_staff_role_id';
+            $query->with('companyStaffRole');
+        }
         $staffUsers = $query->orderBy('name')->get($selectColumns);
 
         $totalCount = $staffUsers->count();

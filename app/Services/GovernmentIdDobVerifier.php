@@ -147,7 +147,7 @@ class GovernmentIdDobVerifier
                         '--psm',
                         (string) $pageSegmentationMode,
                     ]);
-                    $process->setTimeout(5);
+                    $process->setTimeout(max(1, min(30, (float) (config('services.ocr.timeout') ?: 5))));
                     $process->run();
 
                     if ($process->isSuccessful() && trim($process->getOutput()) !== '') {

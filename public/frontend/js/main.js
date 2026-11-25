@@ -99,7 +99,7 @@
     });
   }
   if (mobileDrawer) {
-    mobileDrawer.querySelectorAll("[data-close-drawer]").forEach(function (el) {
+    mobileDrawer.querySelectorAll("[data-close-drawer], a").forEach(function (el) {
       el.addEventListener("click", closeDrawer);
     });
   }

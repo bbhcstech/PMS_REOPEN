@@ -1283,7 +1283,7 @@
                         elseif (str_contains(strtolower($actStr), 'sub') || str_contains(strtolower($actStr), 'plan')) { $iconClass = 'bx-credit-card'; $bgIconColor = 'var(--purple-light)'; $textIconColor = 'var(--purple)'; }
                         elseif (str_contains(strtolower($actStr), 'user')) { $iconClass = 'bx-user-plus'; $bgIconColor = 'var(--cyan-light)'; $textIconColor = 'var(--cyan)'; }
                         elseif (str_contains(strtolower($actStr), 'permission') || str_contains(strtolower($actStr), 'role')) { $iconClass = 'bx-key'; $bgIconColor = '#fdf2f8'; $textIconColor = '#be185d'; }
-                        elseif (str_contains(strtolower($actStr), 'backup')) { $iconClass = 'bx-hard-drive'; $bgIconColor = 'var(--warning-light)'; $textIconColor = 'var(--warning)'; }
+                        elseif (str_contains(strtolower($actStr), 'backup')) { $iconClass = 'bx-hdd'; $bgIconColor = 'var(--warning-light)'; $textIconColor = 'var(--warning)'; }
                         elseif (str_contains(strtolower($actStr), 'migration')) { $iconClass = 'bx-git-repo-forked'; $bgIconColor = 'var(--success-light)'; $textIconColor = 'var(--success)'; }
                         elseif (str_contains(strtolower($actStr), 'login')) { $iconClass = 'bx-log-in-circle'; $bgIconColor = 'var(--success-light)'; $textIconColor = 'var(--success)'; }
                         elseif (str_contains(strtolower($actStr), 'security')) { $iconClass = 'bx-shield-quarter'; $bgIconColor = 'var(--danger-light)'; $textIconColor = 'var(--danger)'; }
@@ -1297,6 +1297,7 @@
                         data-module="{{ $evt['module'] }}"
                         data-status="{{ $evt['status'] }}"
                         data-is-security="{{ $evt['is_security'] ? '1' : '0' }}"
+                        data-timestamp="{{ \Carbon\Carbon::parse($evt['timestamp'])->toIso8601String() }}"
                         data-search="{{ strtolower($evt['user_name'].' '.$evt['user_email'].' '.$evt['company_name'].' '.$evt['action'].' '.$evt['resource'].' '.$evt['ip_address']) }}">
                         
                         <!-- TIMESTAMP -->
@@ -1438,7 +1439,10 @@
             <div style="display: flex; align-items: center; gap: 12px;">
                 <div style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-subtle);">
                     <span>Rows per page:</span>
-                    <select id="rowsPerPageSelect" class="filter-select" style="padding: 4px 8px; font-size: 12px; width: 70px;">
+                    <select id="rowsPerPageSelect" class="filter-select" style="padding: 4px 8px; font-size: 12px; width: 75px;">
+                        <option value="10" selected>10</option>
+                        <option value="20">20</option>
+                        <option value="30">30</option>
                         <option value="25">25</option>
                         <option value="50">50</option>
                         <option value="100">100</option>
@@ -1459,7 +1463,7 @@
     <div class="audit-safeguard-box" style="background: var(--bg-surface); border-radius: var(--radius-lg); border: 1px solid var(--border-color); padding: 18px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; box-shadow: var(--shadow-sm);">
         <div style="display: flex; align-items: center; gap: 14px;">
             <div class="audit-safeguard-icon" style="width: 42px; height: 42px; border-radius: 10px; background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 22px;">
-                <i class="bx bx-shield-check"></i>
+                <i class="bx bx-check-shield"></i>
             </div>
             <div>
                 <h4 style="font-size: 14px; font-weight: 800; color: var(--text-main); margin: 0 0 2px 0;">Audit Integrity &amp; Compliance Safeguard</h4>
@@ -1786,7 +1790,21 @@ document.addEventListener('DOMContentLoaded', function() {
     const closeDrawerBtn = document.getElementById('closeDrawerBtn');
 
     document.querySelectorAll('.open-drawer-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
+        btn.addEventListener('click', async function() {
+            try {
+                const url = @json(route('super-admin.tenant-audit.event', ['id' => '__EVENT__']));
+                const response = await fetch(url.replace('__EVENT__', encodeURIComponent(this.getAttribute('data-id'))), {headers: {'Accept': 'application/json'}});
+                if (!response.ok) throw new Error('Could not load this activity log. Please try again.');
+                const payload = await response.json();
+                const event = payload.event;
+                const fields = {'company': 'company_name', 'code': 'company_code', 'domain': 'domain', 'user-name': 'user_name', 'user-email': 'user_email', 'role': 'role', 'time': 'date_str', 'module': 'module', 'action': 'action', 'resource': 'resource', 'resource-id': 'resource_id', 'status': 'status', 'ip': 'ip_address', 'browser': 'browser', 'os': 'os', 'session': 'session_id'};
+                Object.entries(fields).forEach(([attribute, key]) => this.setAttribute('data-' + attribute, event[key] ?? ''));
+                const oldValues = event.old_values || {};
+                const newValues = event.new_values || {};
+                const diff = Array.from(new Set([...Object.keys(oldValues), ...Object.keys(newValues)]))
+                    .filter(key => JSON.stringify(oldValues[key]) !== JSON.stringify(newValues[key]))
+                    .map(key => ({field: key, before: JSON.stringify(oldValues[key] ?? null), after: JSON.stringify(newValues[key] ?? null)}));
+                this.setAttribute('data-diff', JSON.stringify(diff));
             const id = this.getAttribute('data-id');
             const comp = this.getAttribute('data-company');
             const code = this.getAttribute('data-code');
@@ -1873,13 +1891,14 @@ document.addEventListener('DOMContentLoaded', function() {
                         diffBox.appendChild(add);
                     });
                 } else {
-                    diffBox.innerHTML = '<div class="diff-removed">- BEFORE: Plan (Free)</div><div class="diff-added">+ AFTER: Plan (Platinum)</div>';
+                    diffBox.textContent = 'No field changes were recorded for this activity.';
                 }
             } catch(ex) {
                 diffBox.innerHTML = '<div class="diff-removed">- BEFORE: Previous State</div><div class="diff-added">+ AFTER: Updated State</div>';
             }
 
             drawerOverlay.classList.add('open');
+            } catch (error) { window.alert(error.message); }
         });
     });
 
@@ -1906,8 +1925,19 @@ document.addEventListener('DOMContentLoaded', function() {
     const emptyState = document.getElementById('emptyState');
     const activeChipsBar = document.getElementById('activeChipsBar');
     const chipsContainer = document.getElementById('chipsContainer');
+    const serverFilters = {search: searchInput, actor: actorFilter, company: companyFilter, action: actionFilter, module: moduleFilter, result: statusFilter, date: dateFilter};
+    const currentQuery = new URLSearchParams(window.location.search);
+    Object.entries(serverFilters).forEach(([key, input]) => { input.value = currentQuery.get(key) || ''; });
 
     function filterRows() {
+        const url = new URL(window.location.href);
+        let changed = false;
+        Object.entries(serverFilters).forEach(([key, input]) => {
+            if ((url.searchParams.get(key) || '') !== input.value) changed = true;
+            if (input.value) url.searchParams.set(key, input.value);
+            else url.searchParams.delete(key);
+        });
+        if (changed) { window.location.assign(url.toString()); return; }
         const q = searchInput.value.toLowerCase().trim();
         const actorVal = actorFilter.value;
         const compVal = companyFilter.value;
@@ -1930,6 +1960,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         activeChipsBar.style.display = activeFilterCount > 0 ? 'flex' : 'none';
 
+        let tenantAuditMatched = [];
         rows.forEach(r => {
             const rActor = r.getAttribute('data-actor');
             const rComp = r.getAttribute('data-company-id');
@@ -1943,22 +1974,95 @@ document.addEventListener('DOMContentLoaded', function() {
             if (q && !rSearch.includes(q)) match = false;
             if (actorVal && !rActor.includes(actorVal)) match = false;
             if (compVal && rComp !== compVal) match = false;
-            if (actVal && !rAct.includes(actVal) && !rSearch.includes(actVal.toLowerCase())) match = false;
-            if (modVal && rMod !== modVal) match = false;
+            if (actVal === 'Security' ? rSec !== '1' : (actVal && rAct !== actVal && !rSearch.includes(actVal.toLowerCase()))) match = false;
+            if (modVal && (rMod === 'User Management' ? 'Users' : rMod) !== modVal) match = false;
             if (statVal && rStat !== statVal) match = false;
+            const stamp = new Date(r.getAttribute('data-timestamp'));
+            const today = new Date(@json(now()->startOfDay()->toIso8601String()));
+            const yesterday = new Date(today.getTime() - 86400000);
+            if (dateVal === 'today' && stamp < today) match = false;
+            if (dateVal === 'yesterday' && !(stamp >= yesterday && stamp < today)) match = false;
+            if (dateVal === '7days' && stamp < new Date(today.getTime() - 6 * 86400000)) match = false;
+            if (dateVal === '30days' && stamp < new Date(today.getTime() - 29 * 86400000)) match = false;
 
             if (match) {
-                r.style.display = '';
-                visibleCount++;
-            } else {
-                r.style.display = 'none';
+                tenantAuditMatched.push(r);
             }
+            r.style.display = 'none';
         });
 
-        emptyState.style.display = visibleCount === 0 ? 'block' : 'none';
-        document.getElementById('showingStart').textContent = visibleCount > 0 ? 1 : 0;
-        document.getElementById('showingEnd').textContent = visibleCount;
-        document.getElementById('totalEventsCount').textContent = visibleCount;
+        const rowsPerPage = parseInt(document.getElementById('rowsPerPageSelect')?.value || '10');
+        const totalMatched = tenantAuditMatched.length;
+        const totalPages = Math.ceil(totalMatched / rowsPerPage) || 1;
+
+        if (tenantAuditCurrentPage > totalPages) tenantAuditCurrentPage = totalPages;
+        if (tenantAuditCurrentPage < 1) tenantAuditCurrentPage = 1;
+
+        const startIdx = (tenantAuditCurrentPage - 1) * rowsPerPage;
+        const endIdx = Math.min(startIdx + rowsPerPage, totalMatched);
+
+        for (let i = startIdx; i < endIdx; i++) {
+            tenantAuditMatched[i].style.display = '';
+        }
+
+        emptyState.style.display = totalMatched === 0 ? 'block' : 'none';
+        document.getElementById('showingStart').textContent = totalMatched > 0 ? (startIdx + 1) : 0;
+        document.getElementById('showingEnd').textContent = endIdx;
+        document.getElementById('totalEventsCount').textContent = totalMatched;
+
+        renderTenantAuditPagination(totalPages);
+    }
+
+    let tenantAuditCurrentPage = 1;
+
+    function renderTenantAuditPagination(totalPages) {
+        const paginationContainer = document.getElementById('paginationButtons');
+        if (!paginationContainer) return;
+
+        paginationContainer.innerHTML = '';
+        if (totalPages <= 1) return;
+
+        const prevBtn = document.createElement('button');
+        prevBtn.className = 'page-num-btn';
+        prevBtn.innerHTML = '<i class="bx bx-chevron-left"></i>';
+        prevBtn.disabled = tenantAuditCurrentPage === 1;
+        prevBtn.onclick = () => {
+            if (tenantAuditCurrentPage > 1) {
+                tenantAuditCurrentPage--;
+                filterRows();
+            }
+        };
+        paginationContainer.appendChild(prevBtn);
+
+        let startP = Math.max(1, tenantAuditCurrentPage - 2);
+        let endP = Math.min(totalPages, startP + 4);
+        if (endP - startP < 4) {
+            startP = Math.max(1, endP - 4);
+        }
+
+        for (let p = startP; p <= endP; p++) {
+            const pageBtn = document.createElement('button');
+            pageBtn.className = 'page-num-btn' + (p === tenantAuditCurrentPage ? ' active' : '');
+            pageBtn.textContent = p;
+            const targetP = p;
+            pageBtn.onclick = () => {
+                tenantAuditCurrentPage = targetP;
+                filterRows();
+            };
+            paginationContainer.appendChild(pageBtn);
+        }
+
+        const nextBtn = document.createElement('button');
+        nextBtn.className = 'page-num-btn';
+        nextBtn.innerHTML = '<i class="bx bx-chevron-right"></i>';
+        nextBtn.disabled = tenantAuditCurrentPage === totalPages;
+        nextBtn.onclick = () => {
+            if (tenantAuditCurrentPage < totalPages) {
+                tenantAuditCurrentPage++;
+                filterRows();
+            }
+        };
+        paginationContainer.appendChild(nextBtn);
     }
 
     function addChip(label, onRemove) {
@@ -1982,13 +2086,20 @@ document.addEventListener('DOMContentLoaded', function() {
         filterRows();
     };
 
-    searchInput.addEventListener('input', filterRows);
-    actorFilter.addEventListener('change', filterRows);
-    companyFilter.addEventListener('change', filterRows);
-    actionFilter.addEventListener('change', filterRows);
-    moduleFilter.addEventListener('change', filterRows);
-    statusFilter.addEventListener('change', filterRows);
-    dateFilter.addEventListener('change', filterRows);
+    const onFilterChange = () => {
+        tenantAuditCurrentPage = 1;
+        filterRows();
+    };
+
+    let searchTimer;
+    searchInput.addEventListener('input', () => { clearTimeout(searchTimer); searchTimer = setTimeout(onFilterChange, 350); });
+    actorFilter.addEventListener('change', onFilterChange);
+    companyFilter.addEventListener('change', onFilterChange);
+    actionFilter.addEventListener('change', onFilterChange);
+    moduleFilter.addEventListener('change', onFilterChange);
+    statusFilter.addEventListener('change', onFilterChange);
+    dateFilter.addEventListener('change', onFilterChange);
+    document.getElementById('rowsPerPageSelect')?.addEventListener('change', onFilterChange);
     resetBtn?.addEventListener('click', resetAllFilters);
 
     // 4. Click-to-filter on KPI Cards
@@ -2056,7 +2167,10 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         rowsArr.forEach(r => tbody.appendChild(r));
+        filterRows();
     };
+
+    filterRows();
 });
 </script>
 @endpush

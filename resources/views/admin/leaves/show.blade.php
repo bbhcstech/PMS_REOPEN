@@ -26,7 +26,7 @@
                 </form>
                 <button type="button" class="btn btn-danger btn-reject-trigger" data-bs-toggle="modal" data-bs-target="#rejectModal{{ $leave->id }}" data-toggle="modal" data-target="#rejectModal{{ $leave->id }}" title="Reject Leave"><i class="fas fa-times me-1"></i> Reject</button>
             @endif
-            <a href="{{ route('leaves.index') }}" class="btn btn-light"><i class="fas fa-arrow-left me-1"></i> Back</a>
+            <a href="{{ route((int) $leave->user_id === (int) auth()->id() && \App\Services\WorkforceAccess::isAuthority(auth()->user()) ? 'leaves.mine' : 'leaves.index') }}" class="btn btn-light"><i class="fas fa-arrow-left me-1"></i> Back</a>
         </div>
     </div>
 
@@ -35,7 +35,7 @@
             <h2>Request Details</h2>
             <dl>
                 <dt>Status</dt><dd><span class="badge status-{{ $leave->status }}">{{ ucfirst($leave->status) }}</span></dd>
-                <dt>Payment</dt><dd>{{ $leave->is_unpaid ? 'Unpaid Leave / Payroll Deduction' : 'Paid Leave' }}</dd>
+                <dt>Payment</dt><dd>{{ $leave->status === 'rejected' ? 'N/A (Rejected)' : ($leave->status === 'pending' ? 'Pending Approval' : ($leave->is_unpaid ? 'Unpaid Leave / Payroll Deduction' : 'Paid Leave')) }}</dd>
                 <dt>Total Days</dt><dd>{{ number_format((float) $leave->total_days, 1) }}</dd>
                 <dt>Emergency</dt><dd>{{ $leave->emergency_flag ? 'Yes' : 'No' }}</dd>
                 <dt>Half Day</dt><dd>{{ $leave->half_day_flag ? 'Yes' : 'No' }}</dd>

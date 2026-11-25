@@ -19,7 +19,40 @@
     .table-head { display: flex; justify-content: space-between; gap: 16px; margin-bottom: 16px; align-items: center; }
     .table-head h2 { margin: 0 0 4px; font-weight: 900; }
     .checkbox-col { width: 44px; text-align: center; }
-    .leave-table th { color: #667085; font-size: .78rem; text-transform: uppercase; }
+    .leave-table {
+        margin: 0;
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+    .leave-table thead,
+    .leave-table thead tr {
+        background: #F8FAFC !important;
+        background-color: #F8FAFC !important;
+    }
+    .leave-table thead th,
+    .leave-table th {
+        background: #F8FAFC !important;
+        background-color: #F8FAFC !important;
+        color: #475569 !important;
+        font-size: 0.78rem !important;
+        font-weight: 800 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.05em !important;
+        padding: 14px 16px !important;
+        border: none !important;
+        border-bottom: 2px solid #E2E8F0 !important;
+        box-shadow: none !important;
+        white-space: nowrap !important;
+    }
+    .leave-table thead th:first-child {
+        border-top-left-radius: 12px;
+        border-bottom-left-radius: 12px;
+    }
+    .leave-table thead th:last-child {
+        border-top-right-radius: 12px;
+        border-bottom-right-radius: 12px;
+    }
     .leave-table td { vertical-align: middle; font-weight: 650; }
     .leave-table td.text-end { white-space: nowrap !important; text-align: right; width: 1%; }
     .leave-table .action-buttons,
@@ -75,18 +108,94 @@
     html[data-pms-theme="dark"] .leave-hero p,
     html[data-pms-theme="dark"] .table-head p,
     html[data-pms-theme="dark"] label,
-    html[data-pms-theme="dark"] .leave-table th,
     html[data-pms-theme="dark"] .leave-table small {
         color: #9AA3C7 !important;
+    }
+    html[data-pms-theme="dark"] .table-card .leave-table,
+    html[data-theme="dark"] .table-card .leave-table,
+    html[data-bs-theme="dark"] .table-card .leave-table,
+    [data-pms-theme="dark"] .table-card .leave-table,
+    .dark .table-card .leave-table {
+        --bs-table-bg: transparent !important;
+        --bs-table-accent-bg: transparent !important;
+        background: transparent !important;
+    }
+    html[data-pms-theme="dark"] .leave-table thead,
+    html[data-theme="dark"] .leave-table thead,
+    html[data-bs-theme="dark"] .leave-table thead,
+    [data-pms-theme="dark"] .leave-table thead,
+    .dark .leave-table thead,
+    html[data-pms-theme="dark"] .leave-table thead tr,
+    html[data-theme="dark"] .leave-table thead tr,
+    html[data-bs-theme="dark"] .leave-table thead tr,
+    [data-pms-theme="dark"] .leave-table thead tr,
+    .dark .leave-table thead tr {
+        background: #141B3D !important;
+        background-color: #141B3D !important;
+    }
+    html[data-pms-theme="dark"] .table-card .leave-table thead th,
+    html[data-theme="dark"] .table-card .leave-table thead th,
+    html[data-bs-theme="dark"] .table-card .leave-table thead th,
+    [data-pms-theme="dark"] .table-card .leave-table thead th,
+    .dark .table-card .leave-table thead th,
+    html[data-pms-theme="dark"] .leave-table thead th,
+    html[data-theme="dark"] .leave-table thead th,
+    html[data-bs-theme="dark"] .leave-table thead th,
+    [data-pms-theme="dark"] .leave-table thead th,
+    .dark .leave-table thead th,
+    html[data-pms-theme="dark"] .leave-table th,
+    html[data-theme="dark"] .leave-table th,
+    html[data-bs-theme="dark"] .leave-table th,
+    [data-pms-theme="dark"] .leave-table th,
+    .dark .leave-table th {
+        background: #141B3D !important;
+        background-color: #141B3D !important;
+        color: #EEF1FB !important;
+        border-bottom: 2px solid rgba(238, 241, 251, 0.1) !important;
+        border-top: none !important;
+        box-shadow: none !important;
     }
     html[data-pms-theme="dark"] .form-control {
         background: #141B3D !important;
         border-color: rgba(238, 241, 251, 0.16) !important;
         color: #EEF1FB !important;
     }
-    html[data-pms-theme="dark"] .leave-table td {
+    html[data-pms-theme="dark"] .leave-table td,
+    html[data-theme="dark"] .leave-table td,
+    html[data-bs-theme="dark"] .leave-table td,
+    [data-pms-theme="dark"] .leave-table td,
+    .dark .leave-table td {
         color: #CBD5E1 !important;
         border-color: rgba(238, 241, 251, 0.06) !important;
+        background: transparent !important;
+        background-color: transparent !important;
+        box-shadow: none !important;
+    }
+    html[data-pms-theme="dark"] .leave-table td strong,
+    html[data-theme="dark"] .leave-table td strong,
+    [data-pms-theme="dark"] .leave-table td strong {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .leave-table .form-check-input,
+    html[data-theme="dark"] .leave-table .form-check-input,
+    html[data-bs-theme="dark"] .leave-table .form-check-input,
+    [data-pms-theme="dark"] .leave-table .form-check-input,
+    .dark .leave-table .form-check-input {
+        background-color: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .leave-table .form-check-input:checked,
+    html[data-theme="dark"] .leave-table .form-check-input:checked,
+    html[data-bs-theme="dark"] .leave-table .form-check-input:checked,
+    [data-pms-theme="dark"] .leave-table .form-check-input:checked,
+    .dark .leave-table .form-check-input:checked {
+        background-color: #2F6BFF !important;
+        border-color: #2F6BFF !important;
+    }
+    html[data-pms-theme="dark"] .empty-state h3,
+    html[data-theme="dark"] .empty-state h3,
+    [data-pms-theme="dark"] .empty-state h3 {
+        color: #EEF1FB !important;
     }
     html[data-pms-theme="dark"] .btn-light,
     html[data-pms-theme="dark"] .btn-secondary {

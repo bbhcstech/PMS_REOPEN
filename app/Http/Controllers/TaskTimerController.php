@@ -16,14 +16,15 @@ public function start(Task $task)
 {
     $this->authorizeTimerTask($task);
 
-    TaskTimer::where('user_id', auth()->id())->whereNull('end_time')->update(['end_time' => now()]);
+    $startedAt = now();
+    TaskTimer::where('user_id', auth()->id())->whereNull('end_time')->update(['end_time' => $startedAt]);
 
     TaskTimer::create([
         'task_id' => $task->id,
         'project_id' => $task->project_id,
         'user_id' => auth()->id(),
-        'start_date' => now()->toDateString(),
-        'start_time' => now()
+        'start_date' => $startedAt->toDateString(),
+        'start_time' => $startedAt
     ]);
 
     return back()->with('success', 'Timer started.');
@@ -81,7 +82,7 @@ public function stop(Request $request, Task $task)
         $end = Carbon::now();
 
         if ($start->lt($end)) {
-            $seconds = $end->diffInSeconds($start);
+            $seconds = $start->diffInSeconds($end);
             $total_hours_decimal = round($seconds / 3600, 2);
         } else {
             $seconds = 0;
@@ -91,8 +92,8 @@ public function stop(Request $request, Task $task)
         $timer->end_time = $end;
         $timer->memo = $request->memo;
         $timer->project_id = $request->project_id ?? $timer->project_id ?? $task->project_id;
-        $timer->start_date = $request->start_date ?? $start->toDateString();
-        $timer->end_date = $request->end_date ?? $end->toDateString();
+        $timer->start_date = $start->toDateString();
+        $timer->end_date = $end->toDateString();
         $timer->total_hours = $total_hours_decimal;
         $timer->save();
 

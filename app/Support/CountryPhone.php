@@ -6,31 +6,28 @@ use App\Models\Country;
 
 class CountryPhone
 {
-    protected static ?array $dbCache = null;
-
     protected static function loadDbCache(): array
     {
-        if (self::$dbCache !== null) {
-            return self::$dbCache;
+        return self::formMap();
+    }
+
+    /** Database-backed options for forms; the built-in map remains a seeding source. */
+    public static function formMap(): array
+    {
+        $connection = \Illuminate\Support\Facades\DB::connection('tenant');
+        $key = 'pms.phone-countries.' . hash('sha256', (string) $connection->getDatabaseName() . '|' . spl_object_id($connection->getPdo()));
+        if (request()->attributes->has($key)) return request()->attributes->get($key);
+        if (!\Illuminate\Support\Facades\Schema::connection('tenant')->hasTable('countries')) {
+            (require database_path('migrations/tenant/2026_10_09_150000_ensure_tenant_country_phone_codes.php'))->up();
         }
-
-        self::$dbCache = [];
-        try {
-            $countries = Country::all();
-            foreach ($countries as $c) {
-                if ($c->phone_code) {
-                    self::$dbCache[$c->name] = [
-                        'dial_code'  => $c->phone_code,
-                        'iso'        => strtolower($c->iso_code ?? 'in'),
-                        'min_digits' => (int) ($c->min_digits ?? 10),
-                        'max_digits' => (int) ($c->max_digits ?? 10),
-                        'flag_url'   => $c->flag_url,
-                    ];
-                }
-            }
-        } catch (\Throwable $e) {}
-
-        return self::$dbCache;
+        $map = Country::getAllWithPhoneCodes()->filter(fn ($country) => filled($country->phone_code))
+            ->mapWithKeys(fn ($country) => [$country->name => [
+                'dial_code' => $country->phone_code, 'iso' => strtolower($country->iso_code ?? ''),
+                'min_digits' => (int) $country->min_digits, 'max_digits' => (int) $country->max_digits,
+                'flag_url' => $country->flag_url,
+            ]])->all();
+        request()->attributes->set($key, $map);
+        return $map;
     }
 
     public static function meta(string $countryName): array
@@ -87,6 +84,69 @@ class CountryPhone
         }
 
         return ['dial_code' => '+91', 'iso' => 'in', 'min_digits' => 10, 'max_digits' => 10, 'name' => 'India'];
+    }
+
+    /**
+     * Strictly validate phone number according to country code format.
+     */
+    public static function validateFormattedNumber(?string $phone): bool
+    {
+        if (empty($phone)) {
+            return true;
+        }
+
+        $phone = trim($phone);
+        if (!preg_match('/^(\+\d{1,4})\s*(\d+)$/', $phone, $matches)) {
+            return false;
+        }
+
+        $dialCode = $matches[1];
+        $digits = $matches[2];
+
+        return match ($dialCode) {
+            '+91' => (bool) preg_match('/^[6-9]\d{9}$/', $digits),
+            '+1'  => (bool) preg_match('/^[2-9]\d{9}$/', $digits),
+            '+44' => (bool) preg_match('/^[1-9]\d{9,10}$/', $digits),
+            '+61' => (bool) preg_match('/^[1-9]\d{8,9}$/', $digits),
+            '+971' => (bool) preg_match('/^[2-9]\d{8}$/', $digits),
+            '+81' => (bool) preg_match('/^[1-9]\d{9}$/', $digits),
+            '+49' => (bool) preg_match('/^[1-9]\d{9,10}$/', $digits),
+            '+33' => (bool) preg_match('/^[1-9]\d{8}$/', $digits),
+            default => (function () use ($dialCode, $digits) {
+                $rules = self::getDigitRules($dialCode);
+                $min = $rules['min_digits'] ?? 7;
+                $max = $rules['max_digits'] ?? 15;
+                $len = strlen($digits);
+                return $len >= $min && $len <= $max;
+            })(),
+        };
+    }
+
+    /**
+     * Get specific error message for invalid phone according to country.
+     */
+    public static function getValidationErrorMessage(?string $phone): string
+    {
+        if (empty($phone)) {
+            return 'Phone number cannot be empty.';
+        }
+
+        if (!preg_match('/^(\+\d{1,4})\s*(\d+)$/', trim($phone), $matches)) {
+            return 'Phone number must contain only digits for the selected country code.';
+        }
+
+        $dialCode = $matches[1];
+        return match ($dialCode) {
+            '+91' => 'India phone number must be exactly 10 digits starting with 6, 7, 8, or 9.',
+            '+1'  => 'US/Canada phone number must be exactly 10 digits (e.g. 5550192831).',
+            '+44' => 'UK phone number must be 10 to 11 digits.',
+            '+61' => 'Australia phone number must be 9 to 10 digits.',
+            '+971' => 'UAE phone number must be 9 digits (e.g. 501234567).',
+            '+81' => 'Japan phone number must be 10 digits.',
+            '+49' => 'Germany phone number must be 10 to 11 digits.',
+            '+33' => 'France phone number must be 9 digits.',
+            default => 'Phone number format is invalid for the selected country.',
+        };
     }
 
     public static function map(): array
@@ -289,4 +349,3 @@ class CountryPhone
         ];
     }
 }
-

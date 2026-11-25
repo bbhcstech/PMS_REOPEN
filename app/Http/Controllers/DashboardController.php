@@ -2,350 +2,59 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
+use App\Http\Controllers\Concerns\Dashboard\DashboardAttendance;
+use App\Http\Controllers\Concerns\Dashboard\DashboardReports;
+use App\Http\Controllers\Concerns\Dashboard\DashboardSearch;
+use App\Http\Controllers\Concerns\Dashboard\DashboardStickyNotes;
+use App\Http\Controllers\Concerns\Dashboard\DashboardTimers;
 use App\Models\Attendance;
-use App\Models\Task;
-use App\Models\Leave;
 use App\Models\Award;
-use App\Models\AttendanceSetting;
 use App\Models\Client;
-use App\Models\Project;
-use App\Models\Ticket;
-use App\Models\ProjectMilestone;
-use App\Models\TimeLog;
-use App\Models\TaskTimer;
-use App\Models\UserActivity;
 use App\Models\EmployeeDetail;
-use App\Models\Department;
-use App\Models\Designation;
-use App\Models\StickyNote;
-use App\Models\Holiday;
-use App\Models\User;
-use App\Services\SystemNotificationService;
+use App\Models\Leave;
+use App\Models\Project;
+use App\Models\Task;
+use App\Models\Ticket;
+use App\Models\UserActivity;
 use Carbon\Carbon;
-
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
+    use DashboardAttendance;
+    use DashboardTimers;
+    use DashboardStickyNotes;
+    use DashboardSearch;
+    use DashboardReports;
+
     private const OFFICE_LATITUDE = 22.49682;
+
     private const OFFICE_LONGITUDE = 88.39462;
+
     private const OFFICE_RADIUS_METERS = 10;
+
     private const OFFICE_ADDRESS = '11 Hospital Link Road, Satavisha Building, Kolkata, West Bengal 700075';
-
-    private function distanceInMeters(float $lat1, float $lon1, float $lat2, float $lon2): float
-    {
-        $earthRadius = 6371000;
-        $latFrom = deg2rad($lat1);
-        $latTo = deg2rad($lat2);
-        $latDelta = deg2rad($lat2 - $lat1);
-        $lonDelta = deg2rad($lon2 - $lon1);
-
-        $a = sin($latDelta / 2) * sin($latDelta / 2)
-            + cos($latFrom) * cos($latTo) * sin($lonDelta / 2) * sin($lonDelta / 2);
-
-        return $earthRadius * (2 * atan2(sqrt($a), sqrt(1 - $a)));
-    }
-
-    private function storeClockInPhoto(string $selfieData, int $userId, string $today): ?string
-    {
-        if (! preg_match('/^data:image\/(png|jpe?g);base64,/', $selfieData)) {
-            return null;
-        }
-
-        $imageData = preg_replace('/^data:image\/(png|jpe?g);base64,/', '', $selfieData);
-        $decoded = base64_decode($imageData, true);
-
-        if ($decoded === false) {
-            return null;
-        }
-
-        $directory = public_path('admin/uploads/attendance-selfies');
-        if (! is_dir($directory)) {
-            mkdir($directory, 0755, true);
-        }
-
-        $fileName = 'clock-in-' . $userId . '-' . $today . '-' . time() . '.jpg';
-        $absolutePath = $directory . DIRECTORY_SEPARATOR . $fileName;
-
-        return file_put_contents($absolutePath, $decoded) !== false
-            ? 'admin/uploads/attendance-selfies/' . $fileName
-            : null;
-    }
-
-    private function applyOrganizationAttendanceRules(Attendance $attendance): Attendance
-    {
-        $setting = $this->attendancePolicy();
-        $attendance->append(['total_seconds', 'clock_in_datetime', 'clock_out_datetime']);
-
-        $clockIn = $attendance->clock_in_datetime;
-        $seconds = (int) ($attendance->total_seconds ?? 0);
-        $lateTime = Carbon::parse($attendance->date->format('Y-m-d') . ' ' . $setting->late_time);
-        $isLate = $clockIn && $clockIn->gt($lateTime);
-        $hasCompletedShift = $attendance->clock_in && $attendance->clock_out;
-        $dayOffSeconds = (int) $setting->day_off_threshold_minutes * 60;
-        $halfDaySeconds = (int) $setting->half_day_threshold_minutes * 60;
-
-        if ($hasCompletedShift && $seconds < $dayOffSeconds) {
-            $attendance->status = 'day_off';
-            $attendance->late = $isLate ? 'yes' : 'no';
-            $attendance->half_day = 'no';
-        } elseif ($hasCompletedShift && $seconds < $halfDaySeconds) {
-            $attendance->status = 'half_day';
-            $attendance->late = $isLate ? 'yes' : 'no';
-            $attendance->half_day = 'yes';
-        } elseif ($isLate) {
-            $attendance->status = 'late';
-            $attendance->late = 'yes';
-            $attendance->half_day = 'no';
-        } elseif ($clockIn) {
-            $attendance->status = 'present';
-            $attendance->late = 'no';
-            $attendance->half_day = 'no';
-        }
-
-        $attendance->save();
-
-        return $attendance;
-    }
-
-    private function attendancePolicy(): AttendanceSetting
-    {
-        $setting = AttendanceSetting::firstOrCreate([], [
-            'office_start_time' => '09:30:00',
-            'late_time' => '09:30:00',
-            'half_day_threshold_minutes' => 510,
-            'day_off_threshold_minutes' => 270,
-        ]);
-
-        $updates = [];
-        if (! $setting->office_start_time) {
-            $updates['office_start_time'] = '09:30:00';
-        }
-        if (! $setting->late_time) {
-            $updates['late_time'] = '09:30:00';
-        }
-        if (! $setting->half_day_threshold_minutes) {
-            $updates['half_day_threshold_minutes'] = 510;
-        }
-        if (! $setting->day_off_threshold_minutes) {
-            $updates['day_off_threshold_minutes'] = 270;
-        }
-
-        if ($updates) {
-            $setting->forceFill($updates)->save();
-            $setting->refresh();
-        }
-
-        return $setting;
-    }
-
- public function timersstore(Request $request)
-{
-    // Check if creating a new task
-    $createNewTask = $request->has('create_task');
-
-    // Validation
-    $request->validate([
-        'project_id' => 'required|exists:projects,id',
-        'task_id'    => $createNewTask ? 'nullable' : 'required|exists:tasks,id',
-        'new_task_name' => $createNewTask ? 'required|string|max:255' : 'nullable',
-        'memo'       => 'required|string',
-        'project_status' => 'nullable|in:not started,in progress,on hold,completed',
-    ]);
-
-    $project = Project::findOrFail($request->project_id);
-    abort_unless($this->canUseTimerProject($project), 403);
-
-    // If creating a new task, save it first
-    if ($createNewTask) {
-        abort_unless($this->canCreateWorkItems(), 403);
-
-        $task = new Task();
-        $task->company_id = Auth::user()->company_id ?? null;
-        $task->created_by = Auth::id();
-        $task->assigned_to = (string) Auth::id();
-        $task->title = $request->new_task_name;
-        $task->project_id = $request->project_id;
-        $task->start_date = now()->toDateString();
-        $task->status = 'In Progress';
-        $task->task_short_code = 'TSK-' . strtoupper(substr(uniqid(), -4));
-        $task->save();
-        $taskId = $task->id;
-    } else {
-        $task = Task::findOrFail($request->task_id);
-        abort_unless((int) $task->project_id === (int) $project->id && $this->canUseTimerTask($task), 403);
-
-        $taskId = $request->task_id;
-    }
-
-    // Save the timer
-    $timer = new TaskTimer();
-    $timer->project_id = $request->project_id;
-    $timer->task_id = $taskId;
-    $timer->user_id  = Auth::id();
-    $timer->start_date = now()->toDateString();
-    $timer->start_time = now(); // current timestamp
-    $timer->memo = $request->memo;
-    $timer->save();
-
-    $this->updateProjectStatusForTimer($project, $request->project_status);
-
-    if (strtolower((string) auth()->user()?->role) === 'employee') {
-        SystemNotificationService::notifyAdmins(
-            'Timer Started',
-            auth()->user()->name . ' started timer for ' . $project->name,
-            route('timelogs.index'),
-            ['project_id' => $project->id, 'task_id' => $taskId, 'type' => 'timer_started', 'icon' => 'fa-clock']
-        );
-    }
-
-    return redirect()->back()->with('success', 'Timer started successfully!');
-}
-
-
-
- // StickyNoteController.php
-public function notestore(Request $request)
-{
-    $request->validate([
-        'note_text' => 'required|string|max:1000',
-        'colour' => 'required|in:blue,yellow,red,gray,purple,green',
-    ]);
-
-    StickyNote::create([
-        'company_id' => auth()->user()->company_id ?? null,
-        'user_id' => auth()->id(),
-        'note_text' => $request->note_text,
-        'colour' => $request->colour,
-    ]);
-
-    return redirect()->back()->with('success', 'Note added successfully!');
-}
-
-public function stickyNoteComplete(StickyNote $stickyNote)
-{
-    abort_unless($this->canManageStickyNote($stickyNote), 403);
-
-    $stickyNote->forceFill(['completed_at' => now()])->save();
-
-    return redirect()->back()->with('success', 'Sticky note completed.');
-}
-
-public function stickyNoteDestroy(StickyNote $stickyNote)
-{
-    abort_unless($this->canManageStickyNote($stickyNote), 403);
-
-    $stickyNote->delete();
-
-    return redirect()->back()->with('success', 'Sticky note deleted.');
-}
-
-private function canManageStickyNote(StickyNote $stickyNote): bool
-{
-    $user = auth()->user();
-
-    if (! $user) {
-        return false;
-    }
-
-    if ((int) $stickyNote->user_id === (int) $user->id) {
-        return true;
-    }
-
-    if (! in_array(strtolower((string) $user->role), ['admin', 'hr', 'superadmin', 'super_admin', 'super-admin'], true)) {
-        return false;
-    }
-
-    if (! $stickyNote->company_id || ! $user->company_id) {
-        return true;
-    }
-
-    return (int) $stickyNote->company_id === (int) $user->company_id;
-}
-
-private function canCreateWorkItems(): bool
-{
-    return in_array(strtolower((string) auth()->user()?->role), ['admin', 'hr', 'manager', 'superadmin', 'super_admin', 'super-admin'], true);
-}
-
-private function canUseTimerProject(Project $project): bool
-{
-    $user = auth()->user();
-
-    if (! $user) {
-        return false;
-    }
-
-    if ($this->canCreateWorkItems()) {
-        return true;
-    }
-
-    if (strtolower((string) $user->role) !== 'employee') {
-        return false;
-    }
-
-    return $project->users()->where('users.id', $user->id)->exists()
-        || Task::where('project_id', $project->id)
-            ->where(function ($query) use ($user) {
-                $query->whereHas('assignees', function ($assignees) use ($user) {
-                    $assignees->where('users.id', $user->id);
-                })->orWhereRaw('FIND_IN_SET(?, assigned_to)', [$user->id]);
-            })
-            ->exists();
-}
-
-private function canUseTimerTask(Task $task): bool
-{
-    $user = auth()->user();
-
-    if (! $user) {
-        return false;
-    }
-
-    if ($this->canCreateWorkItems()) {
-        return true;
-    }
-
-    if (strtolower((string) $user->role) !== 'employee') {
-        return false;
-    }
-
-    return $task->assignees()->where('users.id', $user->id)->exists()
-        || collect(explode(',', (string) $task->assigned_to))
-            ->map(fn ($id) => (int) trim($id))
-            ->contains((int) $user->id);
-}
-
-private function updateProjectStatusForTimer(Project $project, ?string $status): void
-{
-    if (! $status) {
-        return;
-    }
-
-    if (! in_array($status, ['not started', 'in progress', 'on hold', 'completed'], true)) {
-        return;
-    }
-
-    if ($project->status === $status) {
-        return;
-    }
-
-    $project->forceFill(['status' => $status])->save();
-
-    UserActivity::create([
-        'company_id' => auth()->user()->company_id ?? null,
-        'user_id' => auth()->id(),
-        'activity' => 'Changed project status from timer: ' . $project->name . ' -> ' . $status,
-    ]);
-}
 
     public function index()
     {
         $user = auth()->user();
-        if ($user && (
+        if ($user?->company_id) {
+            // Clock-in boundary: today's missed clock-ins count as absent on every dashboard.
+            try {
+                \App\Services\AttendanceClockPolicy::markMissedClockIns((int) $user->company_id);
+            } catch (\Throwable $e) {
+                report($e);
+            }
+        }
+        if ($user?->company_staff_role_id) {
+            return view('admin.company-role-dashboard', app(\App\Services\CompanyRoleDashboard::class)->data($user));
+        }
+        // An employee's first workspace visit shows the welcome on the employee dashboard (recorded below).
+        $employeeFirstVisit = $user && strtolower((string) $user->role) === 'employee' && ! $user->employee_welcome_seen_at
+            && ! request()->hasHeader('X-PMS-Live-Records');
+        if ($user && ! $employeeFirstVisit && (
             (method_exists($user, 'isDeveloper') && $user->isDeveloper()) ||
             in_array(strtolower((string) ($user->role ?? '')), ['developer', 'dev'], true) ||
             str_contains(strtolower((string) ($user->role ?? '')), 'developer') ||
@@ -359,53 +68,77 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
         $userRole = strtolower((string) (auth()->user()?->role ?? ''));
 
         if (in_array($userRole, ['admin', 'administrator', 'superadmin'], true)) {
-            try { $totalEmployees = \App\Models\User::where('role', 'employee')->count(); } catch (\Throwable $e) { $totalEmployees = 0; }
+            $companyId = app(\App\Services\CompanyContext::class)->id() ?? auth()->user()?->company_id;
+
+            try {
+                $totalEmployees = app(\App\Services\CompanyEmployeeDirectory::class)->count((int) $companyId);
+            } catch (\Throwable $e) { $totalEmployees = 0; }
             $today = now()->toDateString();
 
             try {
                 $presentCount = \App\Models\Attendance::where('date', $today)
+                    ->when($companyId && \Illuminate\Support\Facades\Schema::hasColumn('attendances', 'company_id'), fn ($q) => $q->where(fn($sub) => $sub->where('company_id', $companyId)->orWhereNull('company_id')))
                     ->whereIn('status', ['present', 'late'])
                     ->count();
             } catch (\Throwable $e) { $presentCount = 0; }
 
             try {
                 $lateCount = \App\Models\Attendance::where('date', $today)
+                    ->when($companyId && \Illuminate\Support\Facades\Schema::hasColumn('attendances', 'company_id'), fn ($q) => $q->where(fn($sub) => $sub->where('company_id', $companyId)->orWhereNull('company_id')))
                     ->where('status', 'late')
                     ->count();
             } catch (\Throwable $e) { $lateCount = 0; }
 
             $absentCount = max(0, $totalEmployees - $presentCount);
 
-            try { $totalClient = \App\Models\Client::count(); } catch (\Throwable $e) { $totalClient = 0; }
-            try { $totalProject = \App\Models\Project::count(); } catch (\Throwable $e) { $totalProject = 0; }
-            try { $pendingTask = \App\Models\Task::where('status', '!=', 'Completed')->count(); } catch (\Throwable $e) { $pendingTask = 0; }
+            try {
+                $totalClient = \App\Models\Client::when($companyId && \Illuminate\Support\Facades\Schema::hasColumn('clients', 'company_id'), fn ($q) => $q->where(fn($sub) => $sub->where('company_id', $companyId)->orWhereNull('company_id')))->count();
+            } catch (\Throwable $e) { $totalClient = 0; }
 
             try {
+                $totalProject = \App\Models\Project::when($companyId && \Illuminate\Support\Facades\Schema::hasColumn('projects', 'company_id'), fn ($q) => $q->where(fn($sub) => $sub->where('company_id', $companyId)->orWhereNull('company_id')))->count();
+            } catch (\Throwable $e) { $totalProject = 0; }
+
+            try {
+                $pendingTask = \App\Models\Task::where('status', '!=', 'Completed')
+                    ->when($companyId && \Illuminate\Support\Facades\Schema::hasColumn('tasks', 'company_id'), fn ($q) => $q->where(fn($sub) => $sub->where('company_id', $companyId)->orWhereNull('company_id')))
+                    ->count();
+            } catch (\Throwable $e) { $pendingTask = 0; }
+
+            try {
+                $unresolvedTicketQuery = \App\Models\Ticket::query()
+                    ->when($companyId && \Illuminate\Support\Facades\Schema::hasColumn('tickets', 'company_id'), fn ($q) => $q->where(fn($sub) => $sub->where('company_id', $companyId)->orWhereNull('company_id')));
+
                 if (\Illuminate\Support\Facades\Schema::hasColumn('tickets', 'status')) {
-                    $unresolvedTicket = \App\Models\Ticket::where('status', '!=', 'closed')->count();
+                    $unresolvedTicket = $unresolvedTicketQuery->where('status', '!=', 'closed')->count();
                 } else {
-                    $unresolvedTicket = \App\Models\Ticket::count();
+                    $unresolvedTicket = $unresolvedTicketQuery->count();
                 }
             } catch (\Throwable $e) { $unresolvedTicket = 0; }
 
             try {
-                $pendingLeaves = Leave::with('user')->where('status', 'pending')->latest()->take(5)->get();
+                $pendingLeaves = Leave::with('user')
+                    ->when($companyId && \Illuminate\Support\Facades\Schema::hasColumn('leaves', 'company_id'), fn ($q) => $q->where(fn($sub) => $sub->where('company_id', $companyId)->orWhereNull('company_id')))
+                    ->where('status', 'pending')
+                    ->latest()
+                    ->take(5)
+                    ->get();
             } catch (\Throwable $e) { $pendingLeaves = collect(); }
 
             try {
+                $openTicketsQuery = \App\Models\Ticket::with(['project', 'agent'])
+                    ->when($companyId && \Illuminate\Support\Facades\Schema::hasColumn('tickets', 'company_id'), fn ($q) => $q->where(fn($sub) => $sub->where('company_id', $companyId)->orWhereNull('company_id')));
+
                 if (\Illuminate\Support\Facades\Schema::hasColumn('tickets', 'status')) {
-                    $openTickets = \App\Models\Ticket::where('status', 'open')
-                        ->with(['project', 'agent'])
-                        ->latest()
-                        ->take(5)
-                        ->get();
+                    $openTickets = $openTicketsQuery->where('status', 'open')->latest()->take(5)->get();
                 } else {
-                    $openTickets = \App\Models\Ticket::with(['project', 'agent'])->latest()->take(5)->get();
+                    $openTickets = $openTicketsQuery->latest()->take(5)->get();
                 }
             } catch (\Throwable $e) { $openTickets = collect(); }
 
             try {
                 $pendingTasksTotal = \App\Models\Task::where('status', '!=', 'Completed')
+                    ->when($companyId && \Illuminate\Support\Facades\Schema::hasColumn('tasks', 'company_id'), fn ($q) => $q->where(fn($sub) => $sub->where('company_id', $companyId)->orWhereNull('company_id')))
                     ->with('project')
                     ->orderByDesc('created_at')
                     ->take(5)
@@ -414,16 +147,19 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
 
             try {
                 if (\Illuminate\Support\Facades\Schema::hasTable('project_activity')) {
-                    $activities = DB::table('project_activity')
+                    $activitiesQuery = DB::table('project_activity')
                         ->join('projects', 'projects.id', '=', 'project_activity.project_id')
                         ->select(
                             'project_activity.activity',
                             'project_activity.created_at',
                             'projects.name as project_name'
-                        )
-                        ->orderByDesc('project_activity.created_at')
-                        ->limit(15)
-                        ->get();
+                        );
+
+                    if ($companyId && \Illuminate\Support\Facades\Schema::hasColumn('projects', 'company_id')) {
+                        $activitiesQuery->where(fn($sub) => $sub->where('projects.company_id', $companyId)->orWhereNull('projects.company_id'));
+                    }
+
+                    $activities = $activitiesQuery->orderByDesc('project_activity.created_at')->limit(15)->get();
                 } else {
                     $activities = collect();
                 }
@@ -431,13 +167,19 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
 
             try {
                 $useractivities = UserActivity::with('user')
+                    ->when($companyId && \Illuminate\Support\Facades\Schema::hasColumn('user_activities', 'company_id'), fn ($q) => $q->where(fn($sub) => $sub->where('company_id', $companyId)->orWhereNull('company_id')))
                     ->orderBy('created_at', 'desc')
                     ->limit(10)
                     ->get();
             } catch (\Throwable $e) { $useractivities = collect(); }
 
-            try { $projects = Project::all(); } catch (\Throwable $e) { $projects = collect(); }
-            try { $tasks = Task::all(); } catch (\Throwable $e) { $tasks = collect(); }
+            try {
+                $projects = Project::when($companyId && \Illuminate\Support\Facades\Schema::hasColumn('projects', 'company_id'), fn ($q) => $q->where(fn($sub) => $sub->where('company_id', $companyId)->orWhereNull('company_id')))->get();
+            } catch (\Throwable $e) { $projects = collect(); }
+
+            try {
+                $tasks = Task::when($companyId && \Illuminate\Support\Facades\Schema::hasColumn('tasks', 'company_id'), fn ($q) => $q->where(fn($sub) => $sub->where('company_id', $companyId)->orWhereNull('company_id')))->get();
+            } catch (\Throwable $e) { $tasks = collect(); }
 
             return view('dashboard', compact(
                 'totalEmployees',
@@ -462,31 +204,49 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
             return view('client-dashboard');
         }
 
-        if (in_array($userRole, ['hr', 'manager'], true)) {
+        if ($userRole === 'manager') {
+            return $this->project(request());
+        }
+
+        if ($userRole === 'hr') {
             return $this->hrindex(request());
         }
 
         // ✅ Employee logic
         if ($userRole === 'employee') {
             $user = Auth::user()->loadMissing(['employeeDetail.designation', 'employeeDetail.department']);
-            $today = now()->toDateString();
+            $employeeTimezone = $this->resolveEmployeeTimezone(session('attendance_timezone.' . $user->id));
+            $today = Carbon::now($employeeTimezone)->toDateString();
 
-            $showEmployeeWelcome = ! $user->employee_welcome_seen_at;
+            // The welcome appears on the employee's first workspace visit only. It is recorded here, the
+            // moment it is shown, so a reload, a quick navigation or a lost browser request never shows it
+            // again. Background live-refresh requests (X-PMS-Live-Records) never trigger or consume it.
+            $isLiveRefresh = request()->hasHeader('X-PMS-Live-Records');
+            $showEmployeeWelcome = ! $user->employee_welcome_seen_at && ! $isLiveRefresh;
+            if ($showEmployeeWelcome) {
+                try {
+                    $user->forceFill(['employee_welcome_seen_at' => now()])->save();
+                } catch (\Throwable $e) {
+                    report($e);
+                }
+            }
 
-            $attendance = \App\Models\Attendance::where('user_id', $user->id)
-                ->where('date', $today)
-                ->first();
+            $attendance = \App\Services\WorkforceAccess::currentAttendance($user);
             $attendancePolicy = $this->attendancePolicy();
 
 
             // Fetch week data
-            $startOfWeek = Carbon::now()->startOfWeek(); // Monday
-            $endOfWeek = Carbon::now()->endOfWeek();     // Sunday
+            $startOfWeek = Carbon::now($employeeTimezone)->startOfWeek(); // Monday
+            $endOfWeek = Carbon::now($employeeTimezone)->endOfWeek();     // Sunday
 
-            $weeklyLogs = Attendance::where('user_id', $user->id)
-                ->whereBetween('date', [$startOfWeek->toDateString(), $endOfWeek->toDateString()])
-                ->get()
-                ->keyBy('date');
+            // Same source and rules as My Attendance, so dashboard charts never disagree with it.
+            try {
+                \App\Services\AttendanceClockPolicy::markMissedClockIns((int) $user->company_id);
+            } catch (\Throwable $e) {
+                report($e);
+            }
+            $weekDays = app(\App\Services\AttendanceCalendar::class)->daysForUser($user, $startOfWeek, $endOfWeek);
+            $weekAttendance = $this->summarizeEmployeeWeek($weekDays);
 
             $openTasksCount = Task::where('status', '!=', 'completed')->count();
             $projectsCount = Project::count();
@@ -624,14 +384,18 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
         $projects = $myProjects;
         $tasks = $myTasks;
 
+        $dashboardStatusCharts = app(\App\Services\EmployeeDashboardCharts::class)->forUser($user);
         return view('employee-dashboard', compact(
+            'dashboardStatusCharts',
+            'employeeTimezone',
             'user',
             'projects',
             'tasks',
             'myProjects',
             'attendance',
             'attendancePolicy',
-            'weeklyLogs',
+            'weekDays',
+            'weekAttendance',
             'openTasksCount',
             'projectsCount',
             'openTicketsCount',
@@ -654,234 +418,43 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
         abort(403);
     }
 
-    public function globalSearch(Request $request)
-{
-    $type = $request->input('type');
-    $query = $request->input('query');
-    $results = [];
-
-    // Get matching results
-    switch ($type) {
-        case 'ticket':
-            $results = Ticket::where(function ($q) use ($query) {
-                $q->where('requester_name', 'like', "%$query%")
-                  ->orWhere('requester_type', 'like', "%$query%")
-                  ->orWhere('subject', 'like', "%$query%")
-                  ->orWhere('description', 'like', "%$query%")
-                  ->orWhere('attachment', 'like', "%$query%")
-                  ->orWhere('priority', 'like', "%$query%")
-                  ->orWhere('channel', 'like', "%$query%")
-                  ->orWhere('tags', 'like', "%$query%")
-                  ->orWhere('status', 'like', "%$query%");
-            })->get();
-            break;
-
-        case 'task':
-            $results = Task::where(function ($q) use ($query) {
-                $q->where('task_short_code', 'like', "%$query%")
-                  ->orWhere('title', 'like', "%$query%")
-                  ->orWhere('description', 'like', "%$query%")
-                  ->orWhere('assigned_to', 'like', "%$query%")
-                  ->orWhere('task_labels', 'like', "%$query%")
-                  ->orWhere('priority', 'like', "%$query%")
-                  ->orWhere('status', 'like', "%$query%");
-            })->get();
-            break;
-
-
-      case 'project':
-    $results = Project::with('client') // eager load client
-        ->where(function ($q) use ($query) {
-            $q->where('name', 'like', "%$query%")
-              ->orWhere('project_code', 'like', "%$query%")
-              ->orWhere('description', 'like', "%$query%")
-              ->orWhere('start_date', 'like', "%$query%")
-              ->orWhere('deadline', 'like', "%$query%")
-              ->orWhere('status', 'like', "%$query%");
-        })
-        ->orWhereHas('client', function ($q) use ($query) {
-            $q->where('name', 'like', "%$query%")
-              ->orWhere('email', 'like', "%$query%")
-              ->orWhere('mobile', 'like', "%$query%")
-              ->orWhere('company_name', 'like', "%$query%")
-              ->orWhere('website', 'like', "%$query%")
-              ->orWhere('country', 'like', "%$query%")
-              ->orWhere('city', 'like', "%$query%");
-        })
-        ->get();
-    break;
-
-
-
-        case 'employee':
-    $results = \DB::table('employee_details')
-        ->join('users', 'employee_details.user_id', '=', 'users.id')
-        ->leftJoin('designations', 'employee_details.designation_id', '=', 'designations.id')
-        ->select(
-            'employee_details.id as emp_detail_id',
-            'employee_details.employee_id',
-            'employee_details.status',
-            'employee_details.gender',
-            'employee_details.user_role',
-            'users.id as user_id',
-            'users.name',
-            'users.email',
-            'users.mobile',
-            'designations.name as designation'
-        )
-        ->where(function ($q) use ($query) {
-            $q->where('users.name', 'like', "%{$query}%")
-              ->orWhere('users.email', 'like', "%{$query}%")
-              ->orWhere('users.mobile', 'like', "%{$query}%")
-              ->orWhere('designations.name', 'like', "%{$query}%")
-              // add employee_details fields also
-              ->orWhere('employee_details.employee_id', 'like', "%{$query}%")
-              ->orWhere('employee_details.status', 'like', "%{$query}%")
-              ->orWhere('employee_details.gender', 'like', "%{$query}%")
-              ->orWhere('employee_details.user_role', 'like', "%{$query}%");
-        })
-        ->get();
-    break;
-
-
-        case 'client':
-            $results = Client::where('name', 'like', "%$query%")->get();
-            break;
-    }
-
-    // ✅ Redirect if only one match is found
-    if ($results->count() === 1) {
-        $single = $results->first();
-
-        switch ($type) {
-            case 'ticket':
-                return redirect()->route('tickets.show', $single->id);
-            case 'task':
-                return redirect()->route('tasks.show', $single->id);
-            case 'project':
-                return redirect()->route('projects.show', $single->id);
-            case 'employee':
-                return redirect()->route('employees.show', $single->user_id);
-            case 'client':
-                return redirect()->route('clients.show', $single->id);
-        }
-    }
-
-    // ✅ Otherwise, show result list
-    return view('search-results', compact('results', 'type', 'query'));
-}
-
-
-
     /**
-     * Resolve employee's timezone with respect to location/browser, defaulting to India (Asia/Kolkata).
+     * Weekly chart data for the employee dashboard from My Attendance calendar days.
+     * Each day lands in exactly one pie slice; holidays, days off and upcoming days are not counted.
      */
-    protected function resolveEmployeeTimezone(?string $clientTz = null, ?float $lat = null, ?float $lng = null): string
+    private function summarizeEmployeeWeek($weekDays): array
     {
-        // 1. If valid IANA timezone string is provided (e.g. from employee's device/browser)
-        if (!empty($clientTz) && in_array($clientTz, \DateTimeZone::listIdentifiers(), true)) {
-            return $clientTz;
+        $summary = ['Present' => 0, 'Absent' => 0, 'On Leave' => 0, 'Work From Home' => 0, 'Half Day' => 0];
+        $labels = [];
+        $hours = [];
+        $scheduled = 0;
+        $attended = 0.0;
+        foreach ($weekDays as $day) {
+            $labels[] = $day['date']->format('D');
+            $hours[] = round($day['seconds'] / 3600, 2);
+            $slice = match ($day['status']) {
+                'present', 'late' => $day['wfh'] ? 'Work From Home' : 'Present',
+                'wfh' => 'Work From Home',
+                'half_day' => 'Half Day',
+                'leave', 'unpaid_leave' => 'On Leave',
+                'absent' => 'Absent',
+                default => null,
+            };
+            if ($slice) $summary[$slice]++;
+            if (! $day['date']->isFuture() && ! in_array($day['status'], ['holiday', 'day_off', 'not_joined'], true)) {
+                $scheduled++;
+                $attended += in_array($day['status'], ['present', 'late', 'wfh'], true) ? 1 : ($day['status'] === 'half_day' ? 0.5 : 0);
+            }
         }
 
-        // 2. Fallback based on geolocation coordinates if available
-        if ($lat !== null && $lng !== null) {
-            // India bounding box (approx lat 6°N - 37.5°N, lng 68°E - 97.5°E)
-            if ($lat >= 6.0 && $lat <= 37.5 && $lng >= 68.0 && $lng <= 97.5) {
-                return 'Asia/Kolkata';
-            }
-            // UAE / Gulf (approx lat 22°N - 27°N, lng 51°E - 57°E)
-            if ($lat >= 22.0 && $lat <= 27.0 && $lng >= 51.0 && $lng <= 57.0) {
-                return 'Asia/Dubai';
-            }
-            // UK (approx lat 49°N - 61°N, lng -8°W - 2°E)
-            if ($lat >= 49.0 && $lat <= 61.0 && $lng >= -8.0 && $lng <= 2.0) {
-                return 'Europe/London';
-            }
-        }
-
-        // 3. Fallback to app configuration or default to India (Asia/Kolkata)
-        return config('app.timezone') ?: 'Asia/Kolkata';
+        return [
+            'labels' => $labels,
+            'hours' => $hours,
+            'summary' => $summary,
+            'totalHours' => round(array_sum($hours), 1),
+            'percent' => $scheduled > 0 ? (int) round(100 * $attended / $scheduled) : 0,
+        ];
     }
-
-   public function clockIn(Request $request)
-{
-    $validated = $request->validate([
-        'clock_in_latitude' => ['nullable', 'numeric', 'between:-90,90'],
-        'clock_in_longitude' => ['nullable', 'numeric', 'between:-180,180'],
-        'clock_in_accuracy' => ['nullable', 'numeric', 'min:0'],
-        'clock_in_address' => ['nullable', 'string', 'max:255'],
-        'clock_in_selfie' => ['nullable', 'string'],
-        'clock_in_timezone' => ['nullable', 'string', 'max:50'],
-    ]);
-
-    $timezone = $this->resolveEmployeeTimezone(
-        $request->input('clock_in_timezone'),
-        (float) $validated['clock_in_latitude'],
-        (float) $validated['clock_in_longitude']
-    );
-
-    $now = Carbon::now($timezone);
-    $today = $now->toDateString();
-    $userId = auth()->id();
-
-    $lat = isset($validated['clock_in_latitude']) && $validated['clock_in_latitude'] !== ''
-        ? (float) $validated['clock_in_latitude']
-        : self::OFFICE_LATITUDE;
-
-    $lng = isset($validated['clock_in_longitude']) && $validated['clock_in_longitude'] !== ''
-        ? (float) $validated['clock_in_longitude']
-        : self::OFFICE_LONGITUDE;
-
-    $distance = $this->distanceInMeters(
-        self::OFFICE_LATITUDE,
-        self::OFFICE_LONGITUDE,
-        $lat,
-        $lng
-    );
-
-    $existing = Attendance::where('user_id', $userId)
-        ->where('date', $today)
-        ->first();
-
-    if ($existing) {
-        return back()->with('error', 'You have already clocked in today.');
-    }
-
-    $photoPath = !empty($validated['clock_in_selfie'])
-        ? $this->storeClockInPhoto($validated['clock_in_selfie'], $userId, $today)
-        : null;
-
-    $clockInTime = $now->format('H:i:s');
-    $currentLocationLabel = trim((string) ($validated['clock_in_address'] ?? ''));
-
-    if ($currentLocationLabel === '') {
-        $currentLocationLabel = 'Current location: '
-            . $lat
-            . ', '
-            . $lng
-            . ' (' . round($distance, 1) . 'm from office)';
-    }
-
-    $currentLocationLabel = mb_substr($currentLocationLabel, 0, 255);
-
-    $attendance = Attendance::create([
-        'user_id'  => $userId,
-        'date'     => $today,
-        'clock_in' => $clockInTime,
-        'status'   => 'present',
-        'location' => $currentLocationLabel,
-        'latitude' => $lat,
-        'longitude' => $lng,
-        'clock_in_latitude' => $lat,
-        'clock_in_longitude' => $lng,
-        'clock_in_address' => $currentLocationLabel,
-        'clock_in_photo' => $photoPath,
-        'work_from_type' => $distance <= self::OFFICE_RADIUS_METERS ? 'office' : 'field',
-    ]);
-    $this->applyOrganizationAttendanceRules($attendance);
-
-    return back()->with('success', 'Clocked in at ' . $now->format('h:i A') . '. Current location saved.');
-}
 
    public function markEmployeeWelcomeSeen(Request $request)
 {
@@ -897,470 +470,4 @@ private function updateProjectStatusForTimer(Project $project, ?string $status):
 
     return response()->json(['success' => true]);
 }
-
-
-   public function clockOut(Request $request)
-{
-    $timezone = $this->resolveEmployeeTimezone($request->input('clock_out_timezone') ?? $request->input('timezone'));
-    $now = Carbon::now($timezone);
-    $today = $now->toDateString();
-    $userId = auth()->id();
-
-    $attendance = Attendance::where('user_id', $userId)
-        ->where('date', $today)
-        ->first();
-
-    // If not found for today's local date (e.g. crossing midnight), look for latest open clock-in
-    if (!$attendance) {
-        $attendance = Attendance::where('user_id', $userId)
-            ->whereNotNull('clock_in')
-            ->whereNull('clock_out')
-            ->latest('date')
-            ->first();
-    }
-
-    if (!$attendance) {
-        return back()->with('error', 'You need to clock in first.');
-    }
-
-    if ($attendance->clock_out) {
-        return back()->with('error', 'You have already clocked out today.');
-    }
-
-    $attendance->update([
-        'clock_out' => $now->format('H:i:s')
-    ]);
-    $this->applyOrganizationAttendanceRules($attendance->fresh());
-
-    return back()->with('success', 'Clocked out at ' . $now->format('h:i A'));
-}
-
-
-public function project(Request $request)
-{
-    return redirect()->route('dashboard');
-
-    // Default to today if no filter
-    $startDate = $request->filled('start_date') ? Carbon::parse($request->start_date)->startOfDay() : now()->startOfDay();
-    $endDate = $request->filled('end_date') ? Carbon::parse($request->end_date)->endOfDay() : now()->endOfDay();
-
-    // Apply filters to all queries where applicable
-    $totalProjects = Project::whereBetween('created_at', [$startDate, $endDate])->count();
-
-    $overdueProjects = Project::whereBetween('created_at', [$startDate, $endDate])
-        ->where('deadline', '<', now())
-        ->where('status', '!=', 'Completed')
-        ->count();
-
-    $pendingMilestones = ProjectMilestone::whereHas('project', function ($query) use ($startDate, $endDate) {
-            $query->whereBetween('created_at', [$startDate, $endDate]);
-        })
-        ->where('status', 'Pending')
-        ->with('project')
-        ->get();
-
-    $statusWiseCounts = Project::whereBetween('created_at', [$startDate, $endDate])
-        ->select('status', DB::raw('count(*) as total'))
-        ->groupBy('status')
-        ->pluck('total', 'status')
-        ->toArray();
-
-    return view('dasboard-project', compact(
-        'totalProjects',
-        'overdueProjects',
-        'pendingMilestones',
-        'statusWiseCounts',
-        'startDate',
-        'endDate'
-    ));
-}
-
-
-
-
-public function clientDashboard(Request $request)
-{
-    return redirect()->route('dashboard');
-
-    $startDate = $request->filled('start_date')
-        ? Carbon::parse($request->start_date)->startOfDay()
-        : now()->startOfDay();
-
-    $endDate = $request->filled('end_date')
-        ? Carbon::parse($request->end_date)->endOfDay()
-        : now()->endOfDay();
-
-    // Filter clients created between start and end dates
-    $totalClients = Client::whereBetween('created_at', [$startDate, $endDate])->count();
-
-    // Example placeholders for charts
-    $timelogChartData = [];
-    $earningsData = [];
-
-    return view('dashboard-client', compact(
-        'totalClients',
-        'startDate',
-        'endDate'
-    ));
-}
-// public function ticketDashboard()
-// {
-//     return view('dashboard-ticket', [
-//         'unresolved' => Ticket::where('status', '!=', 'resolved')->count(),
-//         'resolved' => Ticket::where('status', 'resolved')->count(),
-//         'unassigned' => Ticket::whereNull('agent_id')->count(),
-//         'typeWiseData' => Ticket::selectRaw('type_id, COUNT(*) as count')->groupBy('type_id')->pluck('count', 'type_id')->toArray(),
-//         'statusWiseData' => Ticket::selectRaw('status, COUNT(*) as count')->groupBy('status')->pluck('count', 'status')->toArray(),
-//         'channelWiseData' => Ticket::selectRaw('channel, COUNT(*) as count')->groupBy('channel')->pluck('count', 'channel')->toArray(),
-//         'openTickets' => Ticket::where('status', 'open')->orderBy('created_at', 'desc')->limit(5)->get()
-//     ]);
-// }
-
-public function ticketDashboard(Request $request)
-{
-    return redirect()->route('dashboard');
-
-    $startDate = $request->filled('start_date')
-        ? Carbon::parse($request->start_date)->startOfDay()
-        : now()->startOfDay();
-
-    $endDate = $request->filled('end_date')
-        ? Carbon::parse($request->end_date)->endOfDay()
-        : now()->endOfDay();
-
-    // Base query for date filtering
-    $ticketQuery = Ticket::whereBetween('created_at', [$startDate, $endDate]);
-
-    return view('dashboard-ticket', [
-        'unresolved' => (clone $ticketQuery)->where('status', '!=', 'resolved')->count(),
-        'resolved' => (clone $ticketQuery)->where('status', 'resolved')->count(),
-        'unassigned' => (clone $ticketQuery)->whereNull('agent_id')->count(),
-        'typeWiseData' => (clone $ticketQuery)
-                            ->selectRaw('type_id, COUNT(*) as count')
-                            ->groupBy('type_id')
-                            ->pluck('count', 'type_id')
-                            ->toArray(),
-        'statusWiseData' => (clone $ticketQuery)
-                            ->selectRaw('status, COUNT(*) as count')
-                            ->groupBy('status')
-                            ->pluck('count', 'status')
-                            ->toArray(),
-        'channelWiseData' => (clone $ticketQuery)
-                            ->selectRaw('channel, COUNT(*) as count')
-                            ->groupBy('channel')
-                            ->pluck('count', 'channel')
-                            ->toArray(),
-        'openTickets' => (clone $ticketQuery)
-                            ->where('status', 'open')
-                            ->orderBy('created_at', 'desc')
-                            ->limit(5)
-                            ->get(),
-        'startDate' => $startDate,
-        'endDate' => $endDate,
-    ]);
-}
-
-public function hrindex(Request $request)
-{
-        $today = Carbon::today();
-        // Parse date range
-       $startDate = $request->filled('start_date') ? Carbon::parse($request->start_date)->startOfDay() : now()->startOfMonth();
-       $endDate = $request->filled('end_date') ? Carbon::parse($request->end_date)->endOfDay() : now()->endOfMonth();
-
-
-        $totalEmployees = EmployeeDetail::count();
-        $activeEmployees = EmployeeDetail::where('status', 'Active')->count();
-        $departmentsCount = Department::count();
-        $designationsCount = Designation::count();
-        $presentToday = Attendance::where('date', $today)->where('status', 'present')->count();
-        $onLeaveToday = Leave::whereDate('start_date', '<=', $today)
-                            ->whereDate('end_date', '>=', $today)
-                            ->where('status', 'approved')
-                            ->count();
-        $pendingLeaves = Leave::where('status', 'pending')->count();
-
-        $newEmployees = EmployeeDetail::whereBetween('joining_date', [$startDate, $endDate])->count();
-          $exits = EmployeeDetail::whereBetween('exit_date', [$startDate, $endDate])->count();
-         $approvedLeaves = Leave::where('status', 'Approved')
-                        ->whereBetween('start_date', [$startDate, $endDate])
-                        ->count();
-
-        $todayPresent = Attendance::whereDate('date', today())->count();
-        $averageAttendance = ($totalEmployees > 0) ? round(($todayPresent / $totalEmployees) * 100, 2) : 0;
-
-        $pendingTasks = Task::where('status', 'Pending Task')->count();
-
-        $monthlyHeadcount = EmployeeDetail::selectRaw('MONTH(joining_date) as month, COUNT(*) as count')
-            ->groupBy('month')->pluck('count', 'month');
-
-        $monthlyJoinings = EmployeeDetail::whereBetween('joining_date', [$startDate, $endDate])
-                        ->selectRaw('MONTH(joining_date) as month, COUNT(*) as joinings')
-                        ->groupBy('month')
-                        ->pluck('joinings', 'month');
-
-        $monthlyAttrition = EmployeeDetail::whereBetween('exit_date', [$startDate, $endDate])
-                        ->selectRaw('MONTH(exit_date) as month, COUNT(*) as attritions')
-                        ->groupBy('month')
-                        ->pluck('attritions', 'month');
-
-         $lateAttendances = Attendance::with('user.employeeDetail.designation')
-            ->where('status', 'Late')
-            ->whereBetween('date', [$startDate, $endDate])
-            ->orderBy('user_id')
-            ->get()
-            ->groupBy('user_id');
-
-              $leavesTaken = Leave::with(['user.employeeDetail.designation'])
-            ->where('status', 'Approved')
-            ->whereBetween('start_date', [$startDate, $endDate])
-            ->select('user_id', DB::raw('count(*) as total'))
-            ->groupBy('user_id')
-            ->get();
-
-
-
-        $departmentWise = EmployeeDetail::leftJoin('departments', 'employee_details.department_id', '=', 'departments.id')
-            ->select('departments.dpt_name as department_name', DB::raw('COUNT(*) as total'))
-            ->groupBy('departments.dpt_name')
-            ->get();
-
-            // echo'<pre>';print_r($departmentWise);die;
-
-        // Designation-wise employee count
-        $designationWise = EmployeeDetail::with('designation')
-            ->selectRaw('designation_id, COUNT(*) as total')
-            ->groupBy('designation_id')
-            ->get();
-
-        $genderCounts = EmployeeDetail::select('gender')
-        ->selectRaw('COUNT(*) as total')
-        ->groupBy('gender')
-        ->pluck('total', 'gender');
-
-        $roleCounts = User::select('role')
-            ->selectRaw('COUNT(*) as total')
-            ->groupBy('role')
-            ->pluck('total', 'role');
-
-        $totalProjects = Project::whereNull('deleted_at')->count();
-        $activeProjects = Project::whereNull('deleted_at')->whereNotIn('status', ['completed', 'canceled'])->count();
-        $pendingTasksTotal = Task::where('status', '!=', 'Completed')
-            ->with('project')
-            ->orderByDesc('start_date')
-            ->take(5)
-            ->get();
-
-        try {
-            if (Schema::hasTable('project_activity')) {
-                $activities = DB::table('project_activity')
-                    ->join('projects', 'projects.id', '=', 'project_activity.project_id')
-                    ->select(
-                        'project_activity.activity',
-                        'project_activity.created_at',
-                        'projects.name as project_name'
-                    )
-                    ->orderByDesc('project_activity.created_at')
-                    ->limit(10)
-                    ->get();
-            } else {
-                $activities = collect();
-            }
-        } catch (\Throwable $e) {
-            $activities = collect();
-        }
-
-        $totalTimelogsCount = TaskTimer::count();
-        $totalTimelogHours = round((float) TaskTimer::sum('total_hours'), 1);
-        $totalClient = Client::count();
-        $unresolvedTicket = Ticket::where('status', '!=', 'closed')->count();
-        $projects = Project::whereNull('deleted_at')->orderBy('name')->get();
-        $tasks = Task::all();
-
-        $todayStr = now()->toDateString();
-        $attendance = Attendance::where('user_id', Auth::id())
-            ->where('date', $todayStr)
-            ->first();
-        $attendancePolicy = $this->attendancePolicy();
-        $officeLatitude = self::OFFICE_LATITUDE;
-        $officeLongitude = self::OFFICE_LONGITUDE;
-        $officeRadiusMeters = self::OFFICE_RADIUS_METERS;
-        $officeAddress = self::OFFICE_ADDRESS;
-
-        // Attendance Calendar Data for HR Dashboard
-        $calMonth = (int) ($request->filled('month') ? $request->month : now()->month);
-        $calYear = (int) ($request->filled('year') ? $request->year : now()->year);
-        $calUserId = $request->input('user_id');
-        $calDaysInMonth = Carbon::createFromDate($calYear, $calMonth, 1)->daysInMonth;
-        $calStartDate = Carbon::create($calYear, $calMonth, 1);
-        $calEndDate = $calStartDate->copy()->endOfMonth();
-
-        $hrUser = Auth::user();
-        $baseUsersQuery = User::with(['employeeDetail.department', 'employeeDetail.designation'])
-            ->where(function ($q) {
-                $q->whereNotIn(DB::raw('LOWER(COALESCE(role, ""))'), ['client']);
-            });
-
-        if ($hrUser && $hrUser->company_id && strtolower((string)$hrUser->role) === 'hr') {
-            $baseUsersQuery->where('company_id', $hrUser->company_id);
-        }
-
-        $allEmployees = $baseUsersQuery->orderBy('name')->get();
-        $users = $allEmployees;
-        $selectedUserId = $calUserId ?? ($allEmployees->first()?->id ?? $hrUser?->id);
-
-        $holidays = Holiday::whereBetween('date', [$calStartDate, $calEndDate])
-            ->get()
-            ->mapWithKeys(function ($holiday) {
-                return [
-                    Carbon::parse($holiday->date)->format('Y-m-d') => $holiday->occassion ?? $holiday->title ?? 'Holiday',
-                ];
-            })
-            ->toArray();
-
-        $attendances = Attendance::whereIn('user_id', $allEmployees->pluck('id'))
-            ->whereNull('archived_at')
-            ->whereMonth('date', $calMonth)
-            ->whereYear('date', $calYear)
-            ->get();
-
-        $attendances->each->append(['total_seconds', 'total_duration', 'clock_in_datetime', 'clock_out_datetime']);
-
-        $leavesQuery = Leave::query();
-        if (Schema::hasColumn('leaves', 'status')) {
-            $leavesQuery->where('status', 'approved');
-        }
-        if ($allEmployees->isNotEmpty()) {
-            $leavesQuery->whereIn('user_id', $allEmployees->pluck('id'));
-        }
-        $leavesQuery->where(function ($q) use ($calStartDate, $calEndDate, $calMonth, $calYear) {
-            $hasDateFilter = false;
-            if (Schema::hasColumn('leaves', 'start_date') && Schema::hasColumn('leaves', 'end_date')) {
-                $q->where(function ($sub) use ($calStartDate, $calEndDate) {
-                    $sub->whereDate('start_date', '<=', $calEndDate)
-                        ->whereDate('end_date', '>=', $calStartDate);
-                });
-                $hasDateFilter = true;
-            }
-            if (Schema::hasColumn('leaves', 'date')) {
-                if ($hasDateFilter) {
-                    $q->orWhere(function ($sub) use ($calMonth, $calYear) {
-                        $sub->whereMonth('date', $calMonth)->whereYear('date', $calYear);
-                    });
-                } else {
-                    $q->whereMonth('date', $calMonth)->whereYear('date', $calYear);
-                }
-            }
-        });
-        $leaves = $leavesQuery->get();
-
-        $attendanceMap = [];
-        foreach ($allEmployees as $u) {
-            for ($d = $calStartDate->copy(); $d->lte($calEndDate); $d->addDay()) {
-                $formattedDate = $d->format('Y-m-d');
-                $attendanceMap[$u->id][$formattedDate] = null;
-
-                if (array_key_exists($formattedDate, $holidays)) {
-                    $attendanceMap[$u->id][$formattedDate] = (object)[
-                        'status' => 'holiday',
-                        'occassion' => $holidays[$formattedDate]
-                    ];
-                }
-            }
-        }
-
-        foreach ($attendances as $att) {
-            $dateKey = Carbon::parse($att->date)->format('Y-m-d');
-            $attendanceMap[$att->user_id][$dateKey] = $att;
-        }
-
-        foreach ($leaves as $leave) {
-            $lStart = !empty($leave->start_date) ? Carbon::parse($leave->start_date) : (!empty($leave->date) ? Carbon::parse($leave->date) : null);
-            $lEnd = !empty($leave->end_date) ? Carbon::parse($leave->end_date) : $lStart;
-
-            if ($lStart) {
-                for ($curr = $lStart->copy(); $curr->lte($lEnd); $curr->addDay()) {
-                    if ($curr->gte($calStartDate) && $curr->lte($calEndDate)) {
-                        $dateKey = $curr->format('Y-m-d');
-                        $attendanceMap[$leave->user_id][$dateKey] = (object)[
-                            'status' => 'leave',
-                            'leave_type' => $leave->type ?? 'leave',
-                            'duration' => $leave->duration ?? 'full_day',
-                            'reason' => $leave->reason ?? null,
-                        ];
-                    }
-                }
-            }
-        }
-
-        foreach ($allEmployees as $u) {
-            for ($date = $calStartDate->copy(); $date->lte($calEndDate); $date->addDay()) {
-                $formattedDate = $date->format('Y-m-d');
-                if (!isset($attendanceMap[$u->id][$formattedDate])) {
-                    $attendanceMap[$u->id][$formattedDate] = (object)[ 'status' => 'absent' ];
-                }
-            }
-        }
-
-        $canManage = true;
-        $month = $calMonth;
-        $year = $calYear;
-        $daysInMonth = $calDaysInMonth;
-
-        return view('dashboard-hr', compact(
-            'totalEmployees',
-            'activeEmployees',
-            'departmentsCount',
-            'designationsCount',
-            'presentToday',
-            'onLeaveToday',
-            'pendingLeaves',
-            'newEmployees',
-            'exits',
-            'approvedLeaves',
-            'todayPresent',
-            'averageAttendance',
-            'pendingTasks',
-            'monthlyHeadcount',
-            'monthlyJoinings',
-            'monthlyAttrition',
-            'lateAttendances',
-            'leavesTaken',
-            'departmentWise',
-            'designationWise',
-            'genderCounts',
-            'roleCounts',
-            'totalProjects',
-            'activeProjects',
-            'pendingTasksTotal',
-            'activities',
-            'totalTimelogsCount',
-            'totalTimelogHours',
-            'totalClient',
-            'unresolvedTicket',
-            'projects',
-            'tasks',
-            'attendance',
-            'attendancePolicy',
-            'officeLatitude',
-            'officeLongitude',
-            'officeRadiusMeters',
-            'officeAddress',
-            'users',
-            'allEmployees',
-            'attendanceMap',
-            'month',
-            'year',
-            'daysInMonth',
-            'selectedUserId',
-            'canManage'
-        ));
-    }
-
-
-
-
-
-
-
-
 }

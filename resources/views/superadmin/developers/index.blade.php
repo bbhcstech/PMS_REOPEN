@@ -1493,11 +1493,11 @@
                                     <i class="bx bx-send"></i>
                                 </button>
                                 <!-- WHATSAPP SHARE -->
-                                <button class="btn-action-secondary" onclick="shareDevWhatsApp('{{ addslashes($dev->name) }}', '{{ $dev->email }}', '{{ $dev->personal_email ?: $dev->email }}', '{{ $dev->phone_number }}', 'DEV-{{ str_pad($dev->id, 3, '0', STR_PAD_LEFT) }}', '{{ $dev->active_tasks_count }}', '{{ addslashes($dev->raw_password ?: 'Developer@123') }}')" style="padding: 5px 8px; font-size: 14px; color: #2F6BFF; border-color: #C7D2FE; background: #EEF2FF;" title="Share Credentials & Tasks via WhatsApp">
+                                <button class="btn-action-secondary" onclick="shareDevWhatsApp('{{ addslashes($dev->name) }}', '{{ $dev->email }}', '{{ $dev->personal_email ?: $dev->email }}', '{{ $dev->phone_number }}', 'DEV-{{ str_pad($dev->id, 3, '0', STR_PAD_LEFT) }}', '{{ $dev->active_tasks_count }}', '{{ addslashes($dev->raw_password ?: '') }}')" style="padding: 5px 8px; font-size: 14px; color: #2F6BFF; border-color: #C7D2FE; background: #EEF2FF;" title="Share Credentials & Tasks via WhatsApp">
                                     <i class="bx bxl-whatsapp"></i>
                                 </button>
                                 <!-- EMAIL CREDENTIALS & NOTIFICATION -->
-                                <button class="btn-action-secondary" onclick="openDevCredentialsModal('{{ $dev->id }}', '{{ addslashes($dev->name) }}', '{{ $dev->email }}', '{{ $dev->personal_email ?: $dev->email }}', '{{ $dev->phone_number }}', 'DEV-{{ str_pad($dev->id, 3, '0', STR_PAD_LEFT) }}', '{{ $dev->active_tasks_count }}', '{{ addslashes($dev->raw_password ?: 'Developer@123') }}')" style="padding: 5px 8px; font-size: 14px; color: #2563eb; border-color: #bfdbfe; background: #eff6ff;" title="Developer Credentials & Email Notification">
+                                <button class="btn-action-secondary" onclick="openDevCredentialsModal('{{ $dev->id }}', '{{ addslashes($dev->name) }}', '{{ $dev->email }}', '{{ $dev->personal_email ?: $dev->email }}', '{{ $dev->phone_number }}', 'DEV-{{ str_pad($dev->id, 3, '0', STR_PAD_LEFT) }}', '{{ $dev->active_tasks_count }}', '{{ addslashes($dev->raw_password ?: '') }}')" style="padding: 5px 8px; font-size: 14px; color: #2563eb; border-color: #bfdbfe; background: #eff6ff;" title="Developer Credentials & Email Notification">
                                     <i class="bx bx-envelope"></i>
                                 </button>
                                 <button class="btn-action-secondary" onclick="openEditDeveloperModal('{{ $dev->id }}')" style="padding: 5px 8px; font-size: 12px;" title="Edit Profile">
@@ -1779,6 +1779,7 @@
                     <div>
                         <label style="display: block; font-size: 12px; font-weight: 700; color: var(--slate-dark); margin-bottom: 6px;">Developer Login Email *</label>
                         <input type="email" name="email" id="devFormEmail" required style="width: 100%; padding: 9px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 13px;" placeholder="e.g. developer@example.com">
+                        <div id="devFormEmail_error" class="field-error-feedback"></div>
                     </div>
                 </div>
 
@@ -1786,38 +1787,22 @@
                     <div>
                         <label style="display: block; font-size: 12px; font-weight: 700; color: var(--slate-dark); margin-bottom: 6px;">Personal Email (for Credentials) *</label>
                         <input type="email" name="personal_email" id="devFormPersonalEmail" required style="width: 100%; padding: 9px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 13px;" placeholder="e.g. siraj.personal@gmail.com">
+                        <div id="devFormPersonalEmail_error" class="field-error-feedback"></div>
                     </div>
                     <div>
                         <label style="display: block; font-size: 12px; font-weight: 700; color: var(--slate-dark); margin-bottom: 6px;">Phone Number</label>
                         <div style="display: flex;">
-                            <select id="devFormCountryCode" style="width: 90px; flex-shrink: 0; padding: 9px; border: 1px solid var(--border-color); border-right: 0; border-top-left-radius: var(--radius-md); border-bottom-left-radius: var(--radius-md); font-size: 13px; background-color: var(--bg-surface);">
-                                <option value="+91">+91 (IN)</option>
-                                <option value="+1">+1 (US)</option>
-                                <option value="+44">+44 (UK)</option>
-                                <option value="+61">+61 (AU)</option>
-                                <option value="+971">+971 (AE)</option>
-                                <option value="+81">+81 (JP)</option>
-                                <option value="+49">+49 (DE)</option>
-                                <option value="+33">+33 (FR)</option>
+                            <select id="devFormCountryCode" class="country-code-select" style="width: 110px; flex-shrink: 0; padding: 9px; border: 1px solid var(--border-color); border-right: 0; border-top-left-radius: var(--radius-md); border-bottom-left-radius: var(--radius-md); font-size: 13px; outline: none;">
+                                @foreach(\App\Models\Country::getAllWithPhoneCodes() as $c)
+                                    <option value="{{ $c->phone_code }}">
+                                        {{ $c->iso_code ? $c->iso_code . ' ' : '' }}({{ $c->phone_code }})
+                                    </option>
+                                @endforeach
                             </select>
                             <input type="text" id="devFormMobileDisplay" style="width: 100%; padding: 9px 12px; border: 1px solid var(--border-color); border-top-right-radius: var(--radius-md); border-bottom-right-radius: var(--radius-md); font-size: 13px;" placeholder="98765 43210">
                             <input type="hidden" name="mobile" id="devFormMobile">
                         </div>
-                        <script>
-                            document.addEventListener('DOMContentLoaded', function() {
-                                const ccDev = document.getElementById('devFormCountryCode');
-                                const mobDev = document.getElementById('devFormMobileDisplay');
-                                const hiddenDev = document.getElementById('devFormMobile');
-                                function updateDevMobile() {
-                                    const num = mobDev.value.replace(/[^0-9]/g, '');
-                                    hiddenDev.value = num ? ccDev.value + ' ' + num : '';
-                                }
-                                if(ccDev && mobDev) {
-                                    ccDev.addEventListener('change', updateDevMobile);
-                                    mobDev.addEventListener('input', updateDevMobile);
-                                }
-                            });
-                        </script>
+                        <div id="devFormMobile_error" class="field-error-feedback"></div>
                     </div>
                 </div>
 
@@ -1874,7 +1859,7 @@
 <!-- MODAL 2: ASSIGN TASK WORK ALLOCATION MODAL -->
 <div class="modal-overlay" id="assignWorkModal">
     <div class="modal-box" style="width: 720px;">
-        <form method="POST" action="{{ route('super-admin.developers.assign-work') }}">
+        <form id="assignWorkForm" method="POST" action="{{ route('super-admin.developers.assign-work') }}">
             @csrf
             <div class="modal-header">
                 <div>
@@ -1890,7 +1875,7 @@
 
                 <!-- RULE EXPLANATION BANNER -->
                 <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: var(--radius-md); padding: 12px 14px; margin-bottom: 16px; color: #166534; font-size: 12px; display: flex; align-items: center; gap: 10px;">
-                    <i class="bx bx-shield-check" style="font-size: 20px; color: #16a34a; flex-shrink: 0;"></i>
+                    <i class="bx bx-check-shield" style="font-size: 20px; color: #16a34a; flex-shrink: 0;"></i>
                     <span><strong>1 Developer = 1 Account Rule:</strong> If the selected developer already exists, the task will be assigned to their existing account. No new account, password, or login credentials email will be generated.</span>
                 </div>
 
@@ -1913,6 +1898,7 @@
                     <div>
                         <label style="display: block; font-size: 11.5px; font-weight: 700; color: var(--slate-dark); margin-bottom: 4px;">Developer Email *</label>
                         <input type="email" name="developer_email" id="assignDevEmailInput" onkeyup="lookupDevEmail(this.value)" style="width: 100%; padding: 8px 10px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 12.5px; font-family: monospace;" placeholder="developer@example.com">
+                        <div id="assignDevEmail_error" class="field-error-feedback"></div>
                     </div>
                     <div>
                         <label style="display: block; font-size: 11.5px; font-weight: 700; color: var(--slate-dark); margin-bottom: 4px;">Full Name</label>
@@ -2002,7 +1988,7 @@
                     </div>
                     <div>
                         <label style="display: block; font-size: 12px; font-weight: 700; color: var(--slate-dark); margin-bottom: 6px;">Deadline *</label>
-                        <input type="date" name="due_date" value="{{ date('Y-m-d', strtotime('+3 days')) }}" required style="width: 100%; padding: 9px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 13px;">
+                        <input type="date" min="{{ date('Y-m-d') }}" name="due_date" value="{{ date('Y-m-d', strtotime('+3 days')) }}" required style="width: 100%; padding: 9px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 13px;">
                     </div>
                 </div>
 
@@ -2068,7 +2054,7 @@
                     <div>
                         <span style="color: var(--slate-muted); font-weight: 700; display: block; font-size: 11px; margin-bottom: 2px;">DEVELOPER LOGIN PASSWORD</span>
                         <div style="display: flex; align-items: center; gap: 6px;">
-                            <input type="password" id="credModalLoginPasswordInput" readonly value="Developer@123" style="font-family: monospace; font-size: 13px; font-weight: 700; color: #2F6BFF; border: 1px solid #cbd5e1; border-radius: 6px; padding: 3px 8px; width: 135px; background: #ffffff;">
+                            <input type="password" id="credModalLoginPasswordInput" readonly value="" placeholder="Reset required" style="font-family: monospace; font-size: 13px; font-weight: 700; color: #2F6BFF; border: 1px solid #cbd5e1; border-radius: 6px; padding: 3px 8px; width: 135px; background: #ffffff;">
                             <button type="button" onclick="togglePasswordVisibility('credModalLoginPasswordInput', this)" class="btn-action-secondary" style="padding: 3px 6px; font-size: 13px; border-color: #cbd5e1;" title="Show/Hide Password">
                                 <i class="bx bx-show"></i>
                             </button>
@@ -2094,7 +2080,7 @@
                     </div>
                     <div>
                         <span style="color: var(--slate-muted); font-weight: 700; font-size: 11px;">PASSWORD SYNC:</span>
-                        <span style="background: #EEF2FF; color: #065f46; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; margin-left: 4px;">Live Auto-Updated</span>
+                        <span id="credModalPasswordStatus" style="background: #EEF2FF; color: #065f46; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; margin-left: 4px;">Verified</span>
                     </div>
                 </div>
             </div>
@@ -2116,6 +2102,19 @@
             <div style="display: flex; flex-direction: column; gap: 10px;">
                 <form id="credResetForm" method="POST" action="">
                     @csrf
+                    <div style="margin-bottom: 12px; text-align: left;">
+                        <label style="font-size: 11.5px; font-weight: 700; color: var(--slate-dark); display: block; margin-bottom: 4px;">
+                            New Custom Password <span style="font-weight: normal; color: var(--slate-muted);">(Optional - leave blank to auto-generate 10-char password)</span>
+                        </label>
+                        <div style="position: relative;">
+                            <input type="password" name="password" id="devResetPasswordInput" minlength="8" maxlength="128" placeholder="Enter custom password (min 8 chars)" style="width: 100%; padding: 8px 36px 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; font-family: monospace; outline: none; background: #ffffff;">
+                            <button type="button" onclick="togglePasswordVisibility('devResetPasswordInput', this)" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--slate-muted); font-size: 18px;" title="Show/Hide Password">
+                                <i class="bx bx-show"></i>
+                            </button>
+                        </div>
+                        <div style="font-size: 11px; color: var(--slate-muted); margin-top: 3px;">8–128 characters with at least one uppercase letter, lowercase letter, number, and special character.</div>
+                        <div id="devResetPassword_error" style="display: none; color: #ef4444; font-size: 12px; margin-top: 3px; font-weight: 600;"></div>
+                    </div>
                     <button type="submit" class="btn-action-primary" style="width: 100%; padding: 10px; justify-content: center; font-size: 13px;">
                         <i class="bx bx-paper-plane"></i> Reset Password &amp; Dispatch Credentials Email
                     </button>
@@ -2139,6 +2138,7 @@
 </div>
 
 @push('scripts')
+<script src="{{ asset('admin/assets/js/pms-assignment-dates.js') }}?v={{ @filemtime(public_path('admin/assets/js/pms-assignment-dates.js')) }}" defer></script>
 <script>
     const devData = @json($paginatedDevs->items());
 
@@ -2356,7 +2356,7 @@
             return;
         }
 
-        const nowStr = new Date().toLocaleString();
+        const nowStr = window.PMSTime.format(window.PMSTime.now(), { year: 'numeric', month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' });
         printWin.document.write(`
             <!DOCTYPE html>
             <html>
@@ -2772,7 +2772,7 @@
                     body.innerHTML = `
                         <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 16px; margin-bottom: 16px;">
                             <strong style="font-size: 13.5px; color: var(--slate-dark); display: block; margin-bottom: 4px;">Task Initialized: ${data.task.title}</strong>
-                            <span style="font-size: 12px; color: var(--slate-muted);">Created on ${new Date(data.task.created_at).toLocaleString()} · Initial Status: ${data.task.status.toUpperCase()}</span>
+                            <span style="font-size: 12px; color: var(--slate-muted);">Created on ${window.PMSTime.format(data.task.created_at, { year: 'numeric', month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' })} · Initial Status: ${data.task.status.toUpperCase()}</span>
                         </div>
                         <div style="text-align:center; padding: 20px; color: var(--slate-muted); font-size: 13px;">No further activity logs recorded yet.</div>
                     `;
@@ -2781,7 +2781,7 @@
 
                 let html = '<div style="display: flex; flex-direction: column; gap: 14px;">';
                 data.history.forEach((h, idx) => {
-                    const dateStr = new Date(h.created_at).toLocaleString();
+                    const dateStr = window.PMSTime.format(h.created_at, { year: 'numeric', month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' });
                     html += `
                         <div style="display: flex; gap: 14px; position: relative;">
                             <div style="width: 34px; height: 34px; border-radius: 50%; background: #EEF2FF; color: #2F6BFF; display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; border: 1px solid #C7D2FE;">
@@ -2815,7 +2815,7 @@
             cleanPhone = '919876543210';
         }
 
-        const pwdText = password || 'Developer@123';
+        const pwdText = password || 'Reset required';
         const loginUrl = '{{ url('/login') }}';
         const msgText = `*PMS Developer Portal Credentials & Task Info*\n` +
             `Hello ${name},\n\n` +
@@ -2836,12 +2836,13 @@
     let activeCredDevId = null;
     function openDevCredentialsModal(devId, name, email, personalEmail, phone, devCode, activeTasks, password) {
         activeCredDevId = devId;
-        const pwdText = password || 'Developer@123';
+        const pwdText = password || 'Reset required';
 
         document.getElementById('credModalDevName').innerText = name + ' - Credentials';
         document.getElementById('credModalDevId').innerText = devCode + ' · ' + (personalEmail || email);
         document.getElementById('credModalLoginEmail').innerText = email;
-        document.getElementById('credModalLoginPasswordInput').value = pwdText;
+        document.getElementById('credModalLoginPasswordInput').value = password || '';
+        document.getElementById('credModalPasswordStatus').innerText = password ? 'Verified' : 'Reset required';
         document.getElementById('credModalPersonalEmail').innerText = personalEmail || email;
         document.getElementById('credModalPhone').innerText = phone || 'N/A';
         document.getElementById('credModalActiveTasks').innerText = (activeTasks || 0) + ' Active Tasks';
@@ -2852,9 +2853,21 @@
         const msgText = `PMS Developer Portal Credentials for ${name}:\nLogin Email: ${email}\nLogin Password: ${pwdText}\nLogin Portal: ${loginUrl}\nActive Tasks: ${activeTasks || 0}`;
         const encodedText = encodeURIComponent(msgText);
 
+        // mailto: needs a desktop mail app; without one the browser only opens a blank tab.
+        // Open a pre-filled web compose window instead (recipient, subject and credentials body).
         document.getElementById('credMailtoBtn').onclick = function() {
-            const subject = encodeURIComponent(`Developer Workspace Credentials - ${name}`);
-            window.location.href = `mailto:${personalEmail || email}?subject=${subject}&body=${encodedText}`;
+            const recipient = (personalEmail || email || '').trim();
+            const composeUrl = 'https://mail.google.com/mail/?view=cm&fs=1'
+                + '&to=' + encodeURIComponent(recipient)
+                + '&su=' + encodeURIComponent(`Developer Workspace Credentials - ${name}`)
+                + '&body=' + encodedText;
+            const composeWindow = window.open(composeUrl, '_blank');
+            if (composeWindow) {
+                composeWindow.opener = null;
+            } else {
+                // Popup blocked: fall back to the system mail app.
+                window.location.href = `mailto:${encodeURIComponent(recipient)}?subject=${encodeURIComponent(`Developer Workspace Credentials - ${name}`)}&body=${encodedText}`;
+            }
         };
 
         document.getElementById('credWhatsappBtn').onclick = function() {
@@ -2880,6 +2893,30 @@
         document.getElementById('devCredentialsModal').classList.remove('active');
     }
 
+    const credResetForm = document.getElementById('credResetForm');
+    if (credResetForm) {
+        credResetForm.addEventListener('submit', function(e) {
+            const pwdInput = document.getElementById('devResetPasswordInput');
+            const errorDiv = document.getElementById('devResetPassword_error');
+            if (pwdInput && pwdInput.value) {
+                const val = pwdInput.value;
+                if (val.length < 8 || !/[A-Z]/.test(val) || !/[a-z]/.test(val) || !/[0-9]/.test(val) || !/[^A-Za-z0-9\s]/.test(val)) {
+                    e.preventDefault();
+                    if (errorDiv) { errorDiv.textContent = 'Use at least 8 characters with uppercase, lowercase, a number, and a special character.'; errorDiv.style.display = 'block'; }
+                    pwdInput.focus();
+                    return false;
+                }
+                if (val.length > 128) {
+                    e.preventDefault();
+                    if (errorDiv) { errorDiv.textContent = 'Password cannot exceed 128 characters.'; errorDiv.style.display = 'block'; }
+                    pwdInput.focus();
+                    return false;
+                }
+            }
+            if (errorDiv) { errorDiv.textContent = ''; errorDiv.style.display = 'none'; }
+        });
+    }
+
     function copyTextToClipboard(text, successMsg) {
         if (navigator.clipboard && window.isSecureContext) {
             navigator.clipboard.writeText(text).then(() => {
@@ -2895,6 +2932,227 @@
             alert(successMsg || 'Copied to clipboard!');
         }
     }
+
+    // Developer Form Strict Email & Phone Validation
+    document.addEventListener('DOMContentLoaded', function() {
+        function getDevPhoneRule(countryCode) {
+            switch (countryCode) {
+                case '+91': return { min: 10, max: 10, regex: /^[6-9]\d{9}$/, placeholder: '9876543210', error: 'India phone number must be exactly 10 digits starting with 6, 7, 8, or 9.' };
+                case '+1':  return { min: 10, max: 10, regex: /^[2-9]\d{9}$/, placeholder: '5550192831', error: 'US/Canada phone number must be exactly 10 digits (e.g. 5550192831).' };
+                case '+44': return { min: 10, max: 11, regex: /^[1-9]\d{9,10}$/, placeholder: '7911123456', error: 'UK phone number must be 10 to 11 digits.' };
+                case '+61': return { min: 9,  max: 10, regex: /^[1-9]\d{8,9}$/, placeholder: '412345678', error: 'Australia phone number must be 9 to 10 digits.' };
+                case '+971':return { min: 9,  max: 9,  regex: /^[2-9]\d{8}$/, placeholder: '501234567', error: 'UAE phone number must be 9 digits (e.g. 501234567).' };
+                case '+81': return { min: 10, max: 10, regex: /^[1-9]\d{9}$/, placeholder: '9012345678', error: 'Japan phone number must be 10 digits.' };
+                case '+49': return { min: 10, max: 11, regex: /^[1-9]\d{9,10}$/, placeholder: '15123456789', error: 'Germany phone number must be 10 to 11 digits.' };
+                case '+33': return { min: 9,  max: 9,  regex: /^[1-9]\d{8}$/, placeholder: '612345678', error: 'France phone number must be 9 digits.' };
+                default:    return { min: 7,  max: 15, regex: /^\d{7,15}$/, placeholder: '1234567890', error: 'Phone number must be between 7 and 15 digits.' };
+            }
+        }
+
+        function validateDevEmailFormat(email, isRequired = true) {
+            const val = (email || '').trim();
+            if (!val) {
+                return isRequired ? { valid: false, message: 'Email address is required.' } : { valid: true };
+            }
+            if (/\s/.test(val)) {
+                return { valid: false, message: 'Email address cannot contain spaces.' };
+            }
+            if (!val.includes('@')) {
+                return { valid: false, message: "Email address must include an '@' symbol." };
+            }
+            const parts = val.split('@');
+            if (parts.length !== 2) {
+                return { valid: false, message: "Email address must contain only one '@' symbol." };
+            }
+            const [local, domain] = parts;
+            if (!local) return { valid: false, message: "Missing username before '@'." };
+            if (!domain) return { valid: false, message: "Missing domain after '@'." };
+            if (!domain.includes('.')) return { valid: false, message: "Domain name must include a valid extension (e.g. .com)." };
+            if (domain.startsWith('.') || domain.endsWith('.')) return { valid: false, message: "Domain name cannot start or end with a dot." };
+            if (domain.includes('..')) return { valid: false, message: "Domain name cannot contain consecutive dots." };
+            const strictRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+            if (!strictRegex.test(val)) {
+                return { valid: false, message: 'Please enter a valid email address (e.g. name@company.com).' };
+            }
+            return { valid: true };
+        }
+
+        function setupDevPhoneValidator(countrySelectId, phoneInputId, hiddenInputId, errorDivId) {
+            const countrySelect = document.getElementById(countrySelectId);
+            const phoneInput = document.getElementById(phoneInputId);
+            const hiddenInput = document.getElementById(hiddenInputId);
+            const errorDiv = document.getElementById(errorDivId);
+            if (!countrySelect || !phoneInput) return null;
+
+            function updateRule() {
+                const rule = getDevPhoneRule(countrySelect.value);
+                phoneInput.placeholder = rule.placeholder;
+                phoneInput.maxLength = rule.max;
+            }
+
+            phoneInput.addEventListener('keydown', function(e) {
+                if (['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(e.key) ||
+                    ((e.ctrlKey || e.metaKey) && ['a', 'c', 'v', 'x', 'z'].includes(e.key.toLowerCase()))) {
+                    return;
+                }
+                if (!/^\d$/.test(e.key)) {
+                    e.preventDefault();
+                }
+            });
+
+            function syncValue() {
+                phoneInput.value = phoneInput.value.replace(/\D/g, '');
+                const rule = getDevPhoneRule(countrySelect.value);
+                if (phoneInput.value.length > rule.max) {
+                    phoneInput.value = phoneInput.value.substring(0, rule.max);
+                }
+                if (hiddenInput) {
+                    hiddenInput.value = phoneInput.value ? countrySelect.value + ' ' + phoneInput.value : '';
+                }
+            }
+
+            phoneInput.addEventListener('input', function() {
+                syncValue();
+                validate(false);
+            });
+
+            countrySelect.addEventListener('change', function() {
+                updateRule();
+                syncValue();
+                validate(false);
+            });
+
+            phoneInput.addEventListener('blur', function() {
+                validate(true);
+            });
+
+            function validate(showEmptyError = true) {
+                const val = phoneInput.value.trim();
+                if (!val) {
+                    clearError();
+                    return true;
+                }
+                const rule = getDevPhoneRule(countrySelect.value);
+                if (!rule.regex.test(val)) {
+                    showError(rule.error);
+                    return false;
+                }
+                clearError();
+                return true;
+            }
+
+            function showError(msg) {
+                if (errorDiv) {
+                    errorDiv.textContent = msg;
+                    errorDiv.classList.add('visible');
+                }
+                phoneInput.classList.add('is-invalid');
+            }
+
+            function clearError() {
+                if (errorDiv) {
+                    errorDiv.textContent = '';
+                    errorDiv.classList.remove('visible');
+                }
+                phoneInput.classList.remove('is-invalid');
+            }
+
+            updateRule();
+            syncValue();
+            return { validate, input: phoneInput };
+        }
+
+        function setupDevEmailValidator(inputId, errorDivId, isRequired = true) {
+            const input = document.getElementById(inputId);
+            const errorDiv = document.getElementById(errorDivId);
+            if (!input) return null;
+
+            function validate(showEmptyError = true) {
+                const val = input.value.trim();
+                if (!val && !showEmptyError && !isRequired) {
+                    clearError();
+                    return true;
+                }
+                const res = validateDevEmailFormat(val, isRequired);
+                if (!res.valid) {
+                    if (val || showEmptyError) {
+                        showError(res.message);
+                        return false;
+                    }
+                    return false;
+                }
+                clearError();
+                return true;
+            }
+
+            function showError(msg) {
+                if (errorDiv) {
+                    errorDiv.textContent = msg;
+                    errorDiv.classList.add('visible');
+                }
+                input.classList.add('is-invalid');
+            }
+
+            function clearError() {
+                if (errorDiv) {
+                    errorDiv.textContent = '';
+                    errorDiv.classList.remove('visible');
+                }
+                input.classList.remove('is-invalid');
+            }
+
+            input.addEventListener('input', function() {
+                if (/\s/.test(this.value)) {
+                    this.value = this.value.replace(/\s+/g, '');
+                }
+                validate(false);
+            });
+
+            input.addEventListener('blur', function() {
+                validate(true);
+            });
+
+            return { validate, input };
+        }
+
+        const devPhoneVal = setupDevPhoneValidator('devFormCountryCode', 'devFormMobileDisplay', 'devFormMobile', 'devFormMobile_error');
+        const devLoginEmailVal = setupDevEmailValidator('devFormEmail', 'devFormEmail_error', true);
+        const devPersonalEmailVal = setupDevEmailValidator('devFormPersonalEmail', 'devFormPersonalEmail_error', true);
+        const devAssignEmailVal = setupDevEmailValidator('assignDevEmailInput', 'assignDevEmail_error', false);
+
+        const devForm = document.getElementById('devForm');
+        if (devForm) {
+            devForm.addEventListener('submit', function(e) {
+                const isLoginEmailValid = devLoginEmailVal ? devLoginEmailVal.validate(true) : true;
+                const isPersonalEmailValid = devPersonalEmailVal ? devPersonalEmailVal.validate(true) : true;
+                const isPhoneValid = devPhoneVal ? devPhoneVal.validate(true) : true;
+
+                if (!isLoginEmailValid || !isPersonalEmailValid || !isPhoneValid) {
+                    e.preventDefault();
+                    const firstInvalid = devForm.querySelector('input.is-invalid, select.is-invalid');
+                    if (firstInvalid) {
+                        firstInvalid.focus();
+                    }
+                    return false;
+                }
+            });
+        }
+
+        const assignWorkForm = document.getElementById('assignWorkForm');
+        if (assignWorkForm) {
+            assignWorkForm.addEventListener('submit', function(e) {
+                const select = document.getElementById('assignDevSelect');
+                if (select && select.value === 'new') {
+                    if (devAssignEmailVal && !devAssignEmailVal.validate(true)) {
+                        e.preventDefault();
+                        const input = document.getElementById('assignDevEmailInput');
+                        if (input) input.focus();
+                        return false;
+                    }
+                }
+            });
+        }
+    });
 </script>
 @endpush
 @endsection

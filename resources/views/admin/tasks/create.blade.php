@@ -1,6 +1,16 @@
 @extends('admin.layout.app')
 
 @section('content')
+@if(request()->boolean('embedded'))
+<style>
+#header, #sidebar, #footer, #layout-navbar, #layout-menu, .pms-page-back-navigation, [data-page-back-navigation], #pms-ai-assistant-launcher { display: none !important; }
+html.layout-navbar-fixed .layout-wrapper .layout-page { padding-top: 0 !important; }
+.layout-page, .content-wrapper { margin-left: 0 !important; padding-top: 0 !important; }
+#main.main { margin: 0 !important; padding: 12px !important; }
+#main > .container { max-width: none; padding: 0; }
+#main > .container > .nav-tabs { display: none; }
+</style>
+@endif
 <main id="main" class="main">
     <div class="container">
         @if(isset($project))
@@ -41,6 +51,9 @@
 
             <form method="POST" action="{{ route('tasks.store') }}" class="card-body"  enctype="multipart/form-data">
                 @csrf
+                @if(request()->boolean('embedded'))
+                    <input type="hidden" name="embedded_task_form" value="1">
+                @endif
 
                 <h5 class="text-primary mb-3">Task Info</h5>
                 <div class="row mb-3">
@@ -219,7 +232,18 @@
                             <input class="form-check-input" type="checkbox" name="is_private" id="is_private">
                             <label class="form-check-label" for="is_private">
                                 Make Private
-                                <i class="fas fa-question-circle" data-toggle="popover" data-content="Private tasks are only visible to admin, assignor, and assignee."></i>
+                                <i class="fas fa-question-circle question-info-icon"
+                                   data-bs-toggle="popover"
+                                   data-bs-trigger="hover focus"
+                                   data-bs-placement="top"
+                                   data-bs-content="Private tasks are only visible to admin, assignor, and assignee."
+                                   data-toggle="popover"
+                                   data-trigger="hover focus"
+                                   data-placement="top"
+                                   data-content="Private tasks are only visible to admin, assignor, and assignee."
+                                   tabindex="0"
+                                   role="button"
+                                   aria-label="Info"></i>
                             </label>
                         </div>
                     </div>
@@ -232,7 +256,18 @@
 
                             <label class="form-check-label" for="billable">
                                 Billable
-                                <i class="fas fa-question-circle" data-toggle="popover" data-content="Invoice can be generated for this task's time log."></i>
+                                <i class="fas fa-question-circle question-info-icon"
+                                   data-bs-toggle="popover"
+                                   data-bs-trigger="hover focus"
+                                   data-bs-placement="top"
+                                   data-bs-content="Invoice can be generated for this task's time log."
+                                   data-toggle="popover"
+                                   data-trigger="hover focus"
+                                   data-placement="top"
+                                   data-content="Invoice can be generated for this task's time log."
+                                   tabindex="0"
+                                   role="button"
+                                   aria-label="Info"></i>
                             </label>
                         </div>
                     </div>
@@ -338,7 +373,11 @@
                 <button type="submit" name="action" value="save" class="btn btn-primary">Save</button>
                 <button type="submit" name="action" value="save_add_more" class="btn btn-secondary">Save & Add More</button>
                 
-                <a href="{{ route('tasks.index') }}" class="btn btn-secondary">Cancel</a>
+                @if(request()->boolean('embedded'))
+                    <button type="button" class="btn btn-secondary" onclick="window.parent.postMessage('task-form-cancel', window.location.origin)">Cancel</button>
+                @else
+                    <a href="{{ route('tasks.index') }}" class="btn btn-secondary">Cancel</a>
+                @endif
             </div>
 
             </form>
@@ -349,8 +388,6 @@
 
       <div class="modal fade" id="taskLabelsModal" tabindex="-1" aria-labelledby="taskLabelsModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-xl">
-    <form action="{{ route('labels.store') }}" method="POST">
-      @csrf
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">Task Labels</h5>
@@ -360,6 +397,8 @@
         <div class="modal-body">
 
           {{-- Form Section --}}
+          <form id="taskLabelCreateForm" action="{{ route('labels.store') }}" method="POST">
+          @csrf
           <div class="row g-3 mb-4">
             <div class="col-md-4">
               <label class="form-label">Label Name *</label>
@@ -391,9 +430,10 @@
             </div>
           </div>
 
+          </form>
           {{-- Table Section --}}
           <div class="table-responsive">
-            <table class="table table-bordered table-striped">
+            <table data-pms-export="off" class="table table-bordered table-striped">
               <thead class="table-light">
                 <tr>
                   <th>#</th>
@@ -431,10 +471,9 @@
         </div>
 
         <div class="modal-footer">
-          <button type="submit" class="btn btn-primary">Add Label</button>
+          <button type="submit" form="taskLabelCreateForm" class="btn btn-primary">Add Label</button>
         </div>
       </div>
-    </form>
   </div>
 </div>
 
@@ -454,7 +493,7 @@
 
           {{-- Table --}}
           <div class="table-responsive mb-4">
-            <table class="table table-bordered table-striped align-middle">
+            <table data-pms-export="off" class="table table-bordered table-striped align-middle">
               <thead class="table-light">
                 <tr>
                   <th>#</th>
@@ -516,7 +555,6 @@
                  <form id="employeeForm" action="{{ route('employees.store') }}" method="POST" enctype="multipart/form-data">
         @csrf
         <input type="hidden" name="company_id" value="{{ auth()->user()?->company_id }}">
-        <input type="hidden" name="mobile_country_code" value="+91">
         <input type="hidden" name="status" value="Active">
         <input type="hidden" name="login_allowed" value="1">
         <input type="hidden" name="employment_type" value="full_time">
@@ -666,7 +704,17 @@
 
             <div class="col-md-4 mb-3">
                 <label>Mobile <sup class="text-danger">*</sup></label>
-                <input type="text" name="mobile" class="form-control" required>
+                <div class="input-group">
+                    <select name="mobile_country_code" class="form-select" style="max-width: 110px;" required>
+                        @php $taskCountries = isset($countries) && count($countries) ? $countries : \App\Models\Country::getAllWithPhoneCodes(); @endphp
+                        @foreach($taskCountries as $c)
+                            <option value="{{ $c->phone_code }}" {{ (old('mobile_country_code', '+91') == $c->phone_code) ? 'selected' : '' }}>
+                                {{ $c->iso_code ? $c->iso_code . ' ' : '' }}({{ $c->phone_code }})
+                            </option>
+                        @endforeach
+                    </select>
+                    <input type="text" name="mobile" class="form-control" placeholder="Mobile number" required>
+                </div>
             </div>
 
             <div class="col-md-4 mb-3">
@@ -841,8 +889,8 @@
 
 
             <div class="col-md-4 mb-3">
-                <label>Business Address <sup class="text-danger">*</sup></label>
-                <textarea name="business_address" class="form-control" required>Kolkata</textarea>
+                <label>Business Address</label>
+                <textarea name="business_address" class="form-control">Kolkata</textarea>
             </div>
             
             <div class="col-md-4 mb-3 d-flex align-items-center">
@@ -898,7 +946,7 @@
         
                         <div class="modal-body">
                             <!-- Group List Table -->
-                            <table class="table table-bordered mb-4">
+                            <table data-pms-export="off" class="table table-bordered mb-4">
                                 <thead class="table-light">
                                     <tr>
                                         <th>#</th>
@@ -952,7 +1000,7 @@
 
                 <div class="modal-body">
                     <!-- Group List Table -->
-                    <table class="table table-bordered mb-4">
+                    <table data-pms-export="off" class="table table-bordered mb-4">
                         <thead class="table-light">
                             <tr>
                                 <th>#</th>
@@ -1038,7 +1086,45 @@
         </main>
 
 
+@push('styles')
+<style>
+    .question-info-icon {
+        cursor: pointer;
+        color: #6c757d;
+        font-size: 0.875rem;
+        margin-left: 4px;
+        transition: color 0.15s ease-in-out, transform 0.15s ease-in-out;
+        vertical-align: middle;
+        display: inline-block;
+    }
+    .question-info-icon:hover,
+    .question-info-icon:focus {
+        color: #0d6efd;
+        transform: scale(1.15);
+    }
+    .popover {
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+        border-radius: 8px;
+        font-size: 0.85rem;
+        z-index: 1060;
+    }
+    html[data-pms-theme="dark"] .popover,
+    html[data-bs-theme="dark"] .popover,
+    body.dark-mode .popover {
+        background-color: #232733 !important;
+        border-color: #3b4253 !important;
+        color: #e2e8f0 !important;
+    }
+    html[data-pms-theme="dark"] .popover .popover-body,
+    html[data-bs-theme="dark"] .popover .popover-body,
+    body.dark-mode .popover .popover-body {
+        color: #cbd5e1 !important;
+    }
+</style>
+@endpush
+
 @push('scripts')
+<script src="{{ asset('admin/assets/js/pms-task-labels.js') }}?v={{ filemtime(public_path('admin/assets/js/pms-task-labels.js')) }}"></script>
 
 <script>
     $(function () {
@@ -1112,18 +1198,49 @@
 </script>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-toggle="popover"]'));
-        popoverTriggerList.map(function (popoverTriggerEl) {
-            new bootstrap.Popover(popoverTriggerEl);
-        });
-    });
-</script>
-<script>
+    function initTaskPopovers() {
+        var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"], [data-toggle="popover"]'));
+        popoverTriggerList.forEach(function (popoverTriggerEl) {
+            var content = popoverTriggerEl.getAttribute('data-bs-content') || popoverTriggerEl.getAttribute('data-content') || '';
+            var title = popoverTriggerEl.getAttribute('data-bs-original-title') || popoverTriggerEl.getAttribute('title') || '';
+            var placement = popoverTriggerEl.getAttribute('data-bs-placement') || popoverTriggerEl.getAttribute('data-placement') || 'top';
+            var trigger = popoverTriggerEl.getAttribute('data-bs-trigger') || popoverTriggerEl.getAttribute('data-trigger') || 'hover focus';
 
+            if (window.bootstrap && bootstrap.Popover) {
+                try {
+                    var existing = bootstrap.Popover.getInstance(popoverTriggerEl);
+                    if (existing) {
+                        existing.dispose();
+                    }
+                } catch (e) {}
+
+                new bootstrap.Popover(popoverTriggerEl, {
+                    trigger: trigger,
+                    placement: placement,
+                    content: content,
+                    title: title,
+                    html: true
+                });
+            } else if (window.jQuery && $.fn.popover) {
+                $(popoverTriggerEl).popover({
+                    trigger: trigger,
+                    placement: placement,
+                    content: content,
+                    title: title,
+                    html: true
+                });
+            }
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initTaskPopovers);
+    } else {
+        initTaskPopovers();
+    }
 
     $(function () {
-        $('[data-toggle="popover"]').popover();
+        initTaskPopovers();
 
         $('#set_time_estimate').on('change', function () {
             $('#set-time-estimate-fields').toggle(this.checked);

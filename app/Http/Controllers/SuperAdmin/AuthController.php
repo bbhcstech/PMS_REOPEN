@@ -25,7 +25,7 @@ class AuthController extends Controller
             if ($isDev) {
                 return redirect()->route('developer.dashboard');
             }
-            if (in_array(strtolower((string) ($user->role ?? '')), ['superadmin', 'admin'], true)) {
+            if (\App\Services\TenantScope::isPlatformAdmin()) {
                 return redirect()->route('superadmin.dashboard');
             }
             return redirect()->route('dashboard');
@@ -41,8 +41,13 @@ class AuthController extends Controller
     {
         $credentials = $request->validate([
             'email'    => ['required', 'email'],
-            'password' => ['required', 'string'],
+            'password' => ['required', 'string', 'min:8', 'max:128'],
+        ], [
+            'password.min' => 'Password must be at least 8 characters long.',
+            'password.max' => 'Password may not be greater than 128 characters.',
         ]);
+
+        app(\App\Services\AuthenticationSession::class)->clear($request);
 
         $remember = $request->boolean('remember');
 
@@ -63,7 +68,7 @@ class AuthController extends Controller
 
             $request->session()->regenerate();
 
-            return redirect()->intended(route('superadmin.dashboard'));
+            return redirect()->route('superadmin.dashboard');
         }
 
         return back()->withErrors([
@@ -76,12 +81,6 @@ class AuthController extends Controller
      */
     public function logout(Request $request): RedirectResponse
     {
-        Auth::guard('super_admin')->logout();
-        Auth::guard('web')->logout();
-
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-
-        return redirect()->route('login');
+        return app(\App\Services\AuthenticationSession::class)->logout($request);
     }
 }

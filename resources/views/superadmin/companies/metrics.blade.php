@@ -135,6 +135,17 @@
         box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
         color: #ffffff;
     }
+    .btn-export.btn-export-cancel {
+        background: #ffffff;
+        color: var(--text-main);
+        border: 1px solid var(--border-color);
+        box-shadow: none;
+    }
+    .btn-export.btn-export-cancel:hover {
+        background: var(--border-subtle, #f1f5f9);
+        color: var(--text-main);
+        box-shadow: none;
+    }
 
     /* Executive KPI Grid */
     .executive-kpi-grid {
@@ -425,6 +436,67 @@
         box-shadow: var(--shadow-md);
     }
 
+    /* Ledger Export Dropdown Styles */
+    .ledger-export-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--bg-surface, #ffffff);
+        color: var(--text-main);
+        border: 1px solid var(--border-color);
+        padding: 8px 14px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        box-shadow: var(--shadow-xs);
+        transition: all var(--transition-fast);
+    }
+    .ledger-export-btn:hover {
+        background: var(--border-subtle, #f1f5f9);
+    }
+    .ledger-export-menu {
+        display: none;
+        position: absolute;
+        right: 0;
+        top: 100%;
+        margin-top: 4px;
+        background: var(--bg-surface, #ffffff);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        box-shadow: var(--shadow-md);
+        padding: 6px;
+        z-index: 100;
+        min-width: 160px;
+    }
+    .ledger-export-menu a,
+    .ledger-export-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 12px;
+        color: var(--text-main);
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 600;
+        border-radius: 6px;
+        transition: background 0.15s ease, color 0.15s ease;
+        background: transparent;
+    }
+    .ledger-export-menu a:hover,
+    .ledger-export-menu a:focus,
+    .ledger-export-menu a:active,
+    .ledger-export-item:hover,
+    .ledger-export-item:focus,
+    .ledger-export-item:active {
+        background: #f1f5f9;
+        color: var(--text-main);
+    }
+    .platform-activity-view-all:hover {
+        color: var(--primary-hover, #1d4ed8) !important;
+        text-decoration: underline !important;
+    }
+
     /* ============================================================
        DARK MODE OVERRIDES (data-pms-theme="dark" / data-theme="dark")
        ============================================================ */
@@ -535,12 +607,37 @@
     html[data-bs-theme="dark"] .ledger-export-menu {
         background: var(--bg-surface, #0F1530) !important;
         border-color: var(--border-color) !important;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45) !important;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55) !important;
     }
     html[data-pms-theme="dark"] .ledger-export-menu a,
     html[data-theme="dark"] .ledger-export-menu a,
-    html[data-bs-theme="dark"] .ledger-export-menu a {
+    html[data-bs-theme="dark"] .ledger-export-menu a,
+    html[data-pms-theme="dark"] .ledger-export-item,
+    html[data-theme="dark"] .ledger-export-item,
+    html[data-bs-theme="dark"] .ledger-export-item {
         color: var(--text-main, #EEF1FB) !important;
+        background: transparent !important;
+    }
+    html[data-pms-theme="dark"] .ledger-export-menu a:hover,
+    html[data-theme="dark"] .ledger-export-menu a:hover,
+    html[data-bs-theme="dark"] .ledger-export-menu a:hover,
+    html[data-pms-theme="dark"] .ledger-export-menu a:focus,
+    html[data-theme="dark"] .ledger-export-menu a:focus,
+    html[data-bs-theme="dark"] .ledger-export-menu a:focus,
+    html[data-pms-theme="dark"] .ledger-export-menu a:active,
+    html[data-theme="dark"] .ledger-export-menu a:active,
+    html[data-bs-theme="dark"] .ledger-export-menu a:active,
+    html[data-pms-theme="dark"] .ledger-export-item:hover,
+    html[data-theme="dark"] .ledger-export-item:hover,
+    html[data-bs-theme="dark"] .ledger-export-item:hover,
+    html[data-pms-theme="dark"] .ledger-export-item:focus,
+    html[data-theme="dark"] .ledger-export-item:focus,
+    html[data-bs-theme="dark"] .ledger-export-item:focus,
+    html[data-pms-theme="dark"] .ledger-export-item:active,
+    html[data-theme="dark"] .ledger-export-item:active,
+    html[data-bs-theme="dark"] .ledger-export-item:active {
+        background: var(--bg-surface-hover, #1A2247) !important;
+        color: #ffffff !important;
     }
     html[data-pms-theme="dark"] .ledger-entries-select,
     html[data-theme="dark"] .ledger-entries-select,
@@ -671,6 +768,12 @@
         color: #f87171 !important;
         border-color: rgba(220, 38, 38, 0.3) !important;
     }
+    html[data-pms-theme="dark"] .status-badge-item.status-expired,
+    html[data-theme="dark"] .status-badge-item.status-expired {
+        background: rgba(220, 38, 38, 0.15) !important;
+        color: #f87171 !important;
+        border-color: rgba(220, 38, 38, 0.3) !important;
+    }
 
     /* Dark Mode: Infrastructure Health Cards */
     html[data-pms-theme="dark"] .infra-health-card,
@@ -692,6 +795,31 @@
         background: var(--bg-surface, #0F1530) !important;
         border: 1px solid var(--border-color) !important;
         color: var(--text-main, #EEF1FB) !important;
+    }
+    html[data-pms-theme="dark"] .btn-export.btn-export-cancel,
+    html[data-theme="dark"] .btn-export.btn-export-cancel,
+    html[data-bs-theme="dark"] .btn-export.btn-export-cancel,
+    .dark .btn-export.btn-export-cancel,
+    html[data-pms-theme="dark"] #closeExportModalBtn,
+    html[data-theme="dark"] #closeExportModalBtn,
+    html[data-bs-theme="dark"] #closeExportModalBtn,
+    .dark #closeExportModalBtn {
+        background: var(--bg-surface-subtle, #141B3D) !important;
+        color: var(--text-main, #EEF1FB) !important;
+        border: 1px solid rgba(238, 241, 251, 0.18) !important;
+        box-shadow: none !important;
+    }
+    html[data-pms-theme="dark"] .btn-export.btn-export-cancel:hover,
+    html[data-theme="dark"] .btn-export.btn-export-cancel:hover,
+    html[data-bs-theme="dark"] .btn-export.btn-export-cancel:hover,
+    .dark .btn-export.btn-export-cancel:hover,
+    html[data-pms-theme="dark"] #closeExportModalBtn:hover,
+    html[data-theme="dark"] #closeExportModalBtn:hover,
+    html[data-bs-theme="dark"] #closeExportModalBtn:hover,
+    .dark #closeExportModalBtn:hover {
+        background: var(--bg-surface-hover, #1A2247) !important;
+        color: #ffffff !important;
+        border-color: rgba(238, 241, 251, 0.3) !important;
     }
     html[data-pms-theme="dark"] .storage-progress-track,
     html[data-theme="dark"] .storage-progress-track,
@@ -771,8 +899,19 @@
             background: var(--bg-surface, #0F1530) !important;
             border-color: var(--border-color) !important;
         }
-        html:not([data-pms-theme="light"]):not([data-theme="light"]) .ledger-export-menu a {
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .ledger-export-menu a,
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .ledger-export-item {
             color: var(--text-main, #EEF1FB) !important;
+            background: transparent !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .ledger-export-menu a:hover,
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .ledger-export-menu a:focus,
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .ledger-export-menu a:active,
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .ledger-export-item:hover,
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .ledger-export-item:focus,
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .ledger-export-item:active {
+            background: var(--bg-surface-hover, #1A2247) !important;
+            color: #ffffff !important;
         }
         html:not([data-pms-theme="light"]):not([data-theme="light"]) .ledger-entries-select {
             background: var(--bg-surface-subtle, #141B3D) !important;
@@ -816,6 +955,19 @@
             background: var(--bg-surface-subtle, #141B3D) !important;
             border: 1px solid var(--border-subtle, rgba(238, 241, 251, 0.1)) !important;
         }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .btn-export.btn-export-cancel,
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) #closeExportModalBtn {
+            background: var(--bg-surface-subtle, #141B3D) !important;
+            color: var(--text-main, #EEF1FB) !important;
+            border: 1px solid rgba(238, 241, 251, 0.18) !important;
+            box-shadow: none !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .btn-export.btn-export-cancel:hover,
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) #closeExportModalBtn:hover {
+            background: var(--bg-surface-hover, #1A2247) !important;
+            color: #ffffff !important;
+            border-color: rgba(238, 241, 251, 0.3) !important;
+        }
     }
 </style>
 
@@ -856,7 +1008,7 @@
             </div>
         </div>
     </div>
-    <form method="POST" action="{{ route('super-admin.leave-impersonation') }}" style="margin: 0;">
+    <form method="POST" action="{{ Route::has('superadmin.leave-impersonation') ? route('superadmin.leave-impersonation') : (Route::has('super-admin.leave-impersonation') ? route('super-admin.leave-impersonation') : url('/superadmin/leave-impersonation')) }}" style="margin: 0;">
         @csrf
         <button type="submit" class="btn-export metrics-impersonation-leave-btn" style="background: #ffffff; color: var(--warning); border: 1px solid var(--warning-border); box-shadow: none;">
             <i class="fas fa-arrow-left"></i> Leave Impersonation
@@ -967,16 +1119,16 @@
 <!-- ROW 1: COMPANY GROWTH CHART & SUBSCRIPTION DISTRIBUTION -->
 <div class="dashboard-grid-2col">
     <!-- Company Growth Analytics -->
-    <div class="analytics-card">
+    <div class="analytics-card" data-live-key="company-growth" id="companyGrowthCard" data-growth="{{ json_encode($companyGrowth) }}">
         <div class="analytics-card-header">
             <div>
                 <div class="analytics-card-title"><i class="fas fa-chart-line" style="color: var(--primary);"></i> Company Growth</div>
-                <div class="analytics-card-subtitle">Historical trajectory of registered vs active tenant companies</div>
+                <div class="analytics-card-subtitle">Registered companies and currently active companies by registration date</div>
             </div>
             <div class="chart-time-pills">
-                <button class="chart-time-btn" data-freq="daily">Daily</button>
-                <button class="chart-time-btn" data-freq="weekly">Weekly</button>
-                <button class="chart-time-btn active" data-freq="monthly">Monthly</button>
+                <button type="button" class="chart-time-btn" data-freq="daily">Daily</button>
+                <button type="button" class="chart-time-btn" data-freq="weekly">Weekly</button>
+                <button type="button" class="chart-time-btn active" data-freq="monthly">Monthly</button>
             </div>
         </div>
         <div style="height: 280px; position: relative;">
@@ -985,7 +1137,7 @@
     </div>
 
     <!-- Subscription Distribution Donut (STRICTLY 4 PLANS) -->
-    <div class="analytics-card">
+    <div class="analytics-card" id="subscriptionDistributionCard" data-live-key="subscription-distribution" data-distribution="{{ json_encode($distributionCounts) }}">
         <div class="analytics-card-header">
             <div>
                 <div class="analytics-card-title"><i class="fas fa-pie-chart" style="color: #7c3aed;"></i> Subscription Distribution</div>
@@ -1001,27 +1153,27 @@
         </div>
         <div class="plan-legend-grid">
             @php
-                $totalPlanSum = max(1, array_sum($planCounts ?? []));
-                $freePct = round((($planCounts['FREE'] ?? 0) / $totalPlanSum) * 100);
-                $goldPct = round((($planCounts['GOLD'] ?? 0) / $totalPlanSum) * 100);
-                $platPct = round((($planCounts['PLATINUM'] ?? 0) / $totalPlanSum) * 100);
-                $diaPct = round((($planCounts['DIAMOND'] ?? 0) / $totalPlanSum) * 100);
+                $totalPlanSum = max(1, array_sum($distributionCounts ?? []));
+                $freePct = round((($distributionCounts['FREE'] ?? 0) / $totalPlanSum) * 100);
+                $goldPct = round((($distributionCounts['GOLD'] ?? 0) / $totalPlanSum) * 100);
+                $platPct = round((($distributionCounts['PLATINUM'] ?? 0) / $totalPlanSum) * 100);
+                $diaPct = round((($distributionCounts['DIAMOND'] ?? 0) / $totalPlanSum) * 100);
             @endphp
             <div class="plan-legend-item">
                 <div><span class="plan-dot" style="background: var(--plan-free);"></span> <strong>FREE</strong></div>
-                <span>{{ $freePct }}% ({{ $planCounts['FREE'] ?? 0 }})</span>
+                <span>{{ $freePct }}% ({{ $distributionCounts['FREE'] ?? 0 }})</span>
             </div>
             <div class="plan-legend-item">
                 <div><span class="plan-dot" style="background: var(--plan-gold);"></span> <strong>GOLD</strong></div>
-                <span>{{ $goldPct }}% ({{ $planCounts['GOLD'] ?? 0 }})</span>
+                <span>{{ $goldPct }}% ({{ $distributionCounts['GOLD'] ?? 0 }})</span>
             </div>
             <div class="plan-legend-item">
                 <div><span class="plan-dot" style="background: var(--plan-platinum);"></span> <strong>PLATINUM</strong></div>
-                <span>{{ $platPct }}% ({{ $planCounts['PLATINUM'] ?? 0 }})</span>
+                <span>{{ $platPct }}% ({{ $distributionCounts['PLATINUM'] ?? 0 }})</span>
             </div>
             <div class="plan-legend-item">
                 <div><span class="plan-dot" style="background: var(--plan-diamond);"></span> <strong>DIAMOND</strong></div>
-                <span>{{ $diaPct }}% ({{ $planCounts['DIAMOND'] ?? 0 }})</span>
+                <span>{{ $diaPct }}% ({{ $distributionCounts['DIAMOND'] ?? 0 }})</span>
             </div>
         </div>
     </div>
@@ -1043,50 +1195,61 @@
                 <button class="chart-time-btn" data-range="1y">1Y</button>
             </div>
         </div>
-        <div style="height: 240px; position: relative;">
+        @php
+            // Indian digit grouping (₹2,48,500) for the server-rendered footer.
+            $inr = function ($amount) {
+                $amount = (float) $amount;
+                $negative = $amount < 0;
+                $whole = (string) (int) round(abs($amount));
+                $last3 = substr($whole, -3);
+                $rest = substr($whole, 0, -3);
+                $grouped = $rest !== '' ? preg_replace('/\B(?=(\d{2})+(?!\d))/', ',', $rest) . ',' . $last3 : $last3;
+                return ($negative ? '-' : '') . '₹' . $grouped;
+            };
+            $revenueSummary = $revenueOverview['30d']['summary'] ?? ['mrr' => 0, 'growth_pct' => 0, 'arpu' => 0, 'period' => '30D'];
+            $revenueGrowth = $revenueSummary['growth_pct'];
+        @endphp
+        <div style="height: 240px; position: relative;" id="revenueOverviewData" data-revenue='@json($revenueOverview ?? [])'>
             <canvas id="revenueChartCanvas"></canvas>
         </div>
         <div style="display: flex; justify-content: space-between; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border-subtle); font-size: 13px;">
-            <div><span style="color: var(--text-subtle);">MRR:</span> <strong style="color: var(--text-main);">₹2,48,500</strong></div>
-            <div><span style="color: var(--text-subtle);">Growth:</span> <strong style="color: var(--success);">+18.2% MoM</strong></div>
-            <div><span style="color: var(--text-subtle);">ARPU / Tenant:</span> <strong style="color: var(--text-main);">₹1,941</strong></div>
+            <div><span style="color: var(--text-subtle);">MRR:</span> <strong style="color: var(--text-main);" id="revenueMrrValue">{{ $inr($revenueSummary['mrr']) }}</strong></div>
+            <div><span style="color: var(--text-subtle);">Growth:</span> <strong style="color: {{ $revenueGrowth !== null && $revenueGrowth < 0 ? 'var(--danger, #dc2626)' : 'var(--success)' }};" id="revenueGrowthValue">{{ $revenueGrowth === null ? 'New revenue' : (($revenueGrowth > 0 ? '+' : '') . number_format($revenueGrowth, 1) . '%') }} <span id="revenueGrowthPeriod">vs {{ $revenueSummary['period'] }}</span></strong></div>
+            <div><span style="color: var(--text-subtle);">ARPU / Tenant:</span> <strong style="color: var(--text-main);" id="revenueArpuValue">{{ $inr($revenueSummary['arpu']) }}</strong></div>
         </div>
     </div>
 
     <!-- Company Status Distribution -->
-    <div class="analytics-card">
+    @php
+        $companyStatusCounts = array_fill_keys(['active', 'trial', 'suspended', 'expired', 'pending', 'inactive'], 0);
+        foreach ($companies as $statusCompany) {
+            $status = strtolower(trim((string) $statusCompany->status));
+            if (array_key_exists($status, $companyStatusCounts)) $companyStatusCounts[$status]++;
+        }
+    @endphp
+    <div class="analytics-card" id="companyStatusCard" data-live-key="company-status" data-status-counts="{{ json_encode($companyStatusCounts) }}">
         <div class="analytics-card-header">
             <div>
                 <div class="analytics-card-title"><i class="fas fa-sliders" style="color: #0284c7;"></i> Company Status</div>
-                <div class="analytics-card-subtitle">Active, trial, pending, and suspended status counts</div>
+                <div class="analytics-card-subtitle">Current tenant company status counts</div>
             </div>
         </div>
         <div style="height: 230px; position: relative;">
             <canvas id="statusChartCanvas"></canvas>
         </div>
-        <div style="display: flex; justify-content: space-around; font-size: 12px; margin-top: 12px;">
-            <div><span style="color: #16a34a; font-weight: 700;">● Active</span>: {{ $companies->where('status', 'active')->count() }}</div>
-            <div><span style="color: #d97706; font-weight: 700;">● Trial</span>: {{ $companies->where('status', 'trial')->count() }}</div>
-            <div><span style="color: #dc2626; font-weight: 700;">● Suspended</span>: {{ $companies->where('status', 'suspended')->count() }}</div>
+        <div style="display: flex; justify-content: space-around; font-size: 12px; margin-top: 12px; flex-wrap: wrap; gap: 8px;">
+            <div><span style="color: #16a34a; font-weight: 700;">● Active</span>: <span data-company-status="active">{{ $companyStatusCounts['active'] }}</span></div>
+            <div><span style="color: #d97706; font-weight: 700;">● Trial</span>: <span data-company-status="trial">{{ $companyStatusCounts['trial'] }}</span></div>
+            <div><span style="color: #dc2626; font-weight: 700;">● Suspended</span>: <span data-company-status="suspended">{{ $companyStatusCounts['suspended'] }}</span></div>
+            <div><span style="color: #f43f5e; font-weight: 700;">● Expired</span>: <span data-company-status="expired">{{ $companyStatusCounts['expired'] }}</span></div>
+            <div data-status-extra="pending" @if(!$companyStatusCounts['pending']) hidden @endif><span style="color:#0284c7; font-weight:700;">? Pending</span>: <span data-company-status="pending">{{ $companyStatusCounts['pending'] }}</span></div>
+            <div data-status-extra="inactive" @if(!$companyStatusCounts['inactive']) hidden @endif><span style="color:#64748b; font-weight:700;">? Inactive</span>: <span data-company-status="inactive">{{ $companyStatusCounts['inactive'] }}</span></div>
         </div>
     </div>
 </div>
 
-<!-- ROW 3: USER GROWTH & PLATFORM ACTIVITY -->
-<div class="dashboard-grid-2col">
-    <!-- User Growth Analytics -->
-    <div class="analytics-card">
-        <div class="analytics-card-header">
-            <div>
-                <div class="analytics-card-title"><i class="fas fa-users-line" style="color: #2563eb;"></i> Platform User Growth</div>
-                <div class="analytics-card-subtitle">Active vs total user onboarding trends</div>
-            </div>
-        </div>
-        <div style="height: 240px; position: relative;">
-            <canvas id="userGrowthCanvas"></canvas>
-        </div>
-    </div>
-
+<!-- ROW 3: PLATFORM ACTIVITY -->
+<div class="dashboard-grid-2col" style="grid-template-columns: 1fr;">
     <!-- Platform Activity Timeline -->
     <div class="analytics-card">
         <div class="analytics-card-header">
@@ -1094,7 +1257,7 @@
                 <div class="analytics-card-title"><i class="fas fa-clock-rotate-left" style="color: #d97706;"></i> Platform Activity</div>
                 <div class="analytics-card-subtitle">Live events across tenant databases</div>
             </div>
-            <a href="#" class="analytics-card-subtitle" style="color: var(--primary); font-weight: 600; text-decoration: none;">View All →</a>
+            <a href="{{ Route::has('super-admin.tenant-audit.index') ? route('super-admin.tenant-audit.index') : (Route::has('super-admin.activity-logs.index') ? route('super-admin.activity-logs.index') : url('/super-admin/tenant-audit')) }}" class="analytics-card-subtitle platform-activity-view-all" style="color: var(--primary); font-weight: 600; text-decoration: none; cursor: pointer; transition: color var(--transition-fast);">View All →</a>
         </div>
         <div class="activity-timeline">
             @forelse($companies->take(4) as $comp)
@@ -1216,14 +1379,14 @@
 
                 <!-- EXPORT DROPDOWN BUTTON -->
                 <div class="custom-export-dropdown" style="position: relative; display: inline-block;">
-                    <button type="button" id="exportDropdownBtn" class="ledger-export-btn" style="display: inline-flex; align-items: center; gap: 8px; background: #ffffff; color: var(--text-main); border: 1px solid var(--border-color); padding: 8px 14px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; box-shadow: var(--shadow-xs);">
+                    <button type="button" id="exportDropdownBtn" class="ledger-export-btn">
                         <i class="fas fa-download" style="color: var(--primary);"></i> Export <i class="fas fa-chevron-down" style="font-size: 10px; margin-left: 2px;"></i>
                     </button>
-                    <div id="exportMenuOptions" class="ledger-export-menu" style="display: none; position: absolute; right: 0; top: 100%; margin-top: 4px; background: #ffffff; border: 1px solid var(--border-color); border-radius: 10px; box-shadow: var(--shadow-md); padding: 6px; z-index: 100; min-width: 160px;">
-                        <a href="#" id="exportCsvBtn" style="display: flex; align-items: center; gap: 10px; padding: 8px 12px; color: var(--text-main); text-decoration: none; font-size: 13px; font-weight: 600; border-radius: 6px; transition: background 0.15s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'">
+                    <div id="exportMenuOptions" class="ledger-export-menu">
+                        <a href="#" id="exportCsvBtn" class="ledger-export-item">
                             <i class="fas fa-file-csv" style="color: #16a34a; font-size: 16px;"></i> Export as CSV
                         </a>
-                        <a href="#" id="exportPdfBtn" style="display: flex; align-items: center; gap: 10px; padding: 8px 12px; color: var(--text-main); text-decoration: none; font-size: 13px; font-weight: 600; border-radius: 6px; transition: background 0.15s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'">
+                        <a href="#" id="exportPdfBtn" class="ledger-export-item">
                             <i class="fas fa-file-pdf" style="color: #dc2626; font-size: 16px;"></i> Export as PDF
                         </a>
                     </div>
@@ -1273,7 +1436,13 @@
             <tbody>
                 @forelse($companies as $comp)
                     @php
-                        $sub = $comp->subscriptions->where('status', 'active')->first() ?? $comp->subscriptions->first();
+                        // Current subscription = the NEWEST running one (a plan change adds a newer row), so the
+                        // assigned plan, cycle, revenue and dates follow subscription changes.
+                        $ledgerSubs = $comp->subscriptions->sortByDesc('id');
+                        $sub = $ledgerSubs->first(fn ($s) => strtolower((string) $s->status) === 'active' && (! $s->ends_at || $s->ends_at->copy()->endOfDay()->gte(now())))
+                            ?? $ledgerSubs->first(fn ($s) => in_array(strtolower((string) $s->status), ['active', 'trial'], true))
+                            ?? $ledgerSubs->first(fn ($s) => strtolower((string) $s->status) !== 'cancelled')
+                            ?? $ledgerSubs->first();
                         $plan = $sub?->plan;
                         $planName = $plan ? strtoupper($plan->name) : 'FREE';
                         $cycle = $sub?->billing_cycle ? ucfirst($sub->billing_cycle) : 'Monthly';
@@ -1291,14 +1460,17 @@
                             <div class="company-db" style="font-size: 11.5px; color: var(--text-subtle); font-family: monospace; margin-top: 2px;">{{ $comp->db_name }}</div>
                         </td>
                         <td style="border: 1px solid #e2e8f0; padding: 12px 14px; text-align: center; white-space: nowrap;">
+                            {{-- data-live-key includes the plan, so a live refresh swaps the whole badge (text + colour) when the plan changes --}}
                             @if($planName === 'FREE')
-                                <span class="plan-badge-item badge-free" style="background: #f1f5f9; color: #475569; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 11px; border: 1px solid #cbd5e1; display: inline-block;">FREE</span>
+                                <span class="plan-badge-item badge-free" data-live-key="ledger-plan-{{ $comp->id }}-{{ $planName }}" style="background: #f1f5f9; color: #475569; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 11px; border: 1px solid #cbd5e1; display: inline-block;">FREE</span>
                             @elseif($planName === 'GOLD')
-                                <span class="plan-badge-item badge-gold" style="background: #fffbeb; color: #d97706; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 11px; border: 1px solid #fde68a; display: inline-block;">GOLD</span>
+                                <span class="plan-badge-item badge-gold" data-live-key="ledger-plan-{{ $comp->id }}-{{ $planName }}" style="background: #fffbeb; color: #d97706; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 11px; border: 1px solid #fde68a; display: inline-block;">GOLD</span>
                             @elseif($planName === 'PLATINUM')
-                                <span class="plan-badge-item badge-platinum" style="background: #f0f9ff; color: #0284c7; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 11px; border: 1px solid #bae6fd; display: inline-block;">PLATINUM</span>
+                                <span class="plan-badge-item badge-platinum" data-live-key="ledger-plan-{{ $comp->id }}-{{ $planName }}" style="background: #f0f9ff; color: #0284c7; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 11px; border: 1px solid #bae6fd; display: inline-block;">PLATINUM</span>
+                            @elseif($planName === 'DIAMOND')
+                                <span class="plan-badge-item badge-diamond" data-live-key="ledger-plan-{{ $comp->id }}-{{ $planName }}" style="background: #f5f3ff; color: #7c3aed; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 11px; border: 1px solid #ddd6fe; display: inline-block;">DIAMOND</span>
                             @else
-                                <span class="plan-badge-item badge-diamond" style="background: #f5f3ff; color: #7c3aed; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 11px; border: 1px solid #ddd6fe; display: inline-block;">DIAMOND</span>
+                                <span class="plan-badge-item badge-custom" data-live-key="ledger-plan-{{ $comp->id }}-{{ $planName }}" style="background: #f0fdfa; color: #0f766e; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 11px; border: 1px solid #99f6e4; display: inline-block;">{{ $planName }}</span>
                             @endif
                         </td>
                         <td style="border: 1px solid #e2e8f0; padding: 12px 14px; font-weight: 600; color: var(--text-main); white-space: nowrap;">
@@ -1325,14 +1497,17 @@
                                 <span class="status-badge-item status-trial" style="background: #fffbeb; color: #d97706; padding: 4px 10px; border-radius: 20px; font-size: 11.5px; font-weight: 700; border: 1px solid #fde68a; display: inline-flex; align-items: center; gap: 5px;">
                                     <span style="width: 6px; height: 6px; border-radius: 50%; background: #d97706;"></span> Trial
                                 </span>
-                            @else
+                            @elseif($status === 'suspended')
                                 <span class="status-badge-item status-suspended" style="background: #fef2f2; color: #dc2626; padding: 4px 10px; border-radius: 20px; font-size: 11.5px; font-weight: 700; border: 1px solid #fecaca; display: inline-flex; align-items: center; gap: 5px;">
                                     <span style="width: 6px; height: 6px; border-radius: 50%; background: #dc2626;"></span> Suspended
                                 </span>
+                            @else
+                                <span class="status-badge-item status-expired" style="background: #fef2f2; color: #dc2626; padding: 4px 10px; border-radius: 20px; font-size: 11.5px; font-weight: 700; border: 1px solid #fecaca; display: inline-flex; align-items: center; gap: 5px;">
+                                    <span style="width: 6px; height: 6px; border-radius: 50%; background: #dc2626;"></span> Expired
+                                </span>
                             @endif
-                        </td>
                         <td style="border: 1px solid #e2e8f0; padding: 12px 14px; text-align: right; white-space: nowrap;">
-                            <a href="{{ route('super-admin.companies.show', $comp->id) }}" class="ledger-action-btn" style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; background: #eff6ff; color: #2563eb; border-radius: 8px; font-weight: 600; font-size: 12.5px; text-decoration: none; border: 1px solid #bfdbfe; transition: all 0.2s;">
+                            <a href="{{ Route::has('super-admin.companies.show') ? route('super-admin.companies.show', $comp->id) : (Route::has('superadmin.companies.show') ? route('superadmin.companies.show', $comp->id) : url('/superadmin/companies/'.$comp->id)) }}" class="ledger-action-btn" style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; background: #eff6ff; color: #2563eb; border-radius: 8px; font-weight: 600; font-size: 12.5px; text-decoration: none; border: 1px solid #bfdbfe; transition: all 0.2s;">
                                 Workspace <i class="fas fa-arrow-right" style="font-size: 10px;"></i>
                             </a>
                         </td>
@@ -1426,8 +1601,8 @@
             </label>
         </div>
         <div style="display: flex; justify-content: flex-end; gap: 10px;">
-            <button class="btn-export" id="closeExportModalBtn" style="background: #ffffff; color: var(--text-main); border: 1px solid var(--border-color); box-shadow: none;">Cancel</button>
-            <button class="btn-export" id="confirmExportBtn">Download Report</button>
+            <button type="button" class="btn-export btn-export-cancel" id="closeExportModalBtn">Cancel</button>
+            <button type="button" class="btn-export" id="confirmExportBtn">Download Report</button>
         </div>
     </div>
 </div>
@@ -1435,163 +1610,119 @@
 @endsection
 
 @push('scripts')
+<script src="{{ asset('admin/assets/js/pms-company-status.js') }}?v={{ @filemtime(public_path('admin/assets/js/pms-company-status.js')) }}" defer></script>
+<script src="{{ asset('admin/assets/js/pms-subscription-distribution.js') }}?v={{ @filemtime(public_path('admin/assets/js/pms-subscription-distribution.js')) }}" defer></script>
+<script src="{{ asset('admin/assets/js/pms-company-growth.js') }}?v={{ @filemtime(public_path('admin/assets/js/pms-company-growth.js')) }}" defer></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // 1. Company Growth Line/Area Chart
-    const growthCtx = document.getElementById('growthChartCanvas')?.getContext('2d');
-    if (growthCtx) {
-        new Chart(growthCtx, {
+    // 3. Revenue Overview Area Chart
+    // Real MRR history per range (7D / 30D / 90D / 1Y), computed server-side from subscriptions.
+    const revCtx = document.getElementById('revenueChartCanvas')?.getContext('2d');
+    const revenueDataEl = document.getElementById('revenueOverviewData');
+    const revenueRangeBtns = document.querySelectorAll('.chart-time-btn[data-range]');
+    let revenueChart = null;
+    let revenueRange = document.querySelector('.chart-time-btn[data-range].active')?.getAttribute('data-range') || '30d';
+    let revenueJson = revenueDataEl ? revenueDataEl.getAttribute('data-revenue') : '{}';
+
+    const formatInr = (value) => '₹' + Math.round(Number(value) || 0).toLocaleString('en-IN');
+
+    function readRevenueData() {
+        try { return JSON.parse(revenueJson || '{}') || {}; } catch (e) { return {}; }
+    }
+
+    function renderRevenue(range) {
+        const series = readRevenueData()[range];
+        if (!series) return;
+        revenueRange = range;
+
+        revenueRangeBtns.forEach(btn => btn.classList.toggle('active', btn.getAttribute('data-range') === range));
+
+        if (revenueChart) {
+            revenueChart.data.labels = series.labels;
+            revenueChart.data.datasets[0].data = series.values;
+            revenueChart.data.datasets[0].pointRadius = series.values.length > 14 ? 2 : 4;
+            revenueChart.update();
+        }
+
+        renderRevenueSummary(range);
+    }
+
+    function renderRevenueSummary(range) {
+        const series = readRevenueData()[range];
+        if (!series) return;
+        const summary = series.summary || {};
+        const mrrEl = document.getElementById('revenueMrrValue');
+        const arpuEl = document.getElementById('revenueArpuValue');
+        const growthEl = document.getElementById('revenueGrowthValue');
+        if (mrrEl) mrrEl.textContent = formatInr(summary.mrr);
+        if (arpuEl) arpuEl.textContent = formatInr(summary.arpu);
+        if (growthEl) {
+            const growth = summary.growth_pct;
+            const text = growth === null || growth === undefined
+                ? 'New revenue'
+                : (growth > 0 ? '+' : '') + Number(growth).toFixed(1) + '%';
+            growthEl.innerHTML = '';
+            growthEl.append(document.createTextNode(text + ' '));
+            const period = document.createElement('span');
+            period.id = 'revenueGrowthPeriod';
+            period.textContent = 'vs ' + (summary.period || range.toUpperCase());
+            growthEl.append(period);
+            growthEl.style.color = growth !== null && growth < 0 ? 'var(--danger, #dc2626)' : 'var(--success)';
+        }
+    }
+
+    if (revCtx) {
+        const initial = readRevenueData()[revenueRange] || { labels: [], values: [] };
+        revenueChart = new Chart(revCtx, {
             type: 'line',
             data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
-                datasets: [
-                    {
-                        label: 'Total Companies',
-                        data: [4, 8, 12, 19, 25, 34, 42, {{ max(42, $companies->count()) }}],
-                        borderColor: '#2563eb',
-                        backgroundColor: 'rgba(37, 99, 235, 0.08)',
-                        fill: true,
-                        tension: 0.35,
-                        borderWidth: 3
-                    },
-                    {
-                        label: 'Active Companies',
-                        data: [4, 7, 11, 18, 23, 31, 39, {{ max(39, $companies->where('status', 'active')->count()) }}],
-                        borderColor: '#16a34a',
-                        backgroundColor: 'transparent',
-                        borderDash: [4, 4],
-                        tension: 0.35,
-                        borderWidth: 2
-                    }
-                ]
+                labels: initial.labels,
+                datasets: [{
+                    label: 'MRR (₹)',
+                    data: initial.values,
+                    borderColor: '#16a34a',
+                    backgroundColor: 'rgba(22, 163, 74, 0.08)',
+                    fill: true,
+                    tension: 0.35,
+                    borderWidth: 3,
+                    pointRadius: initial.values.length > 14 ? 2 : 4
+                }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: { position: 'top', labels: { font: { family: 'Inter', size: 12 } } }
+                    legend: { display: false },
+                    tooltip: { callbacks: { label: (item) => ' MRR ' + formatInr(item.raw) } }
                 },
                 scales: {
-                    y: { beginAtZero: true, grid: { color: '#f1f5f9' } },
-                    x: { grid: { display: false } }
+                    y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { callback: (value) => formatInr(value) } },
+                    x: { grid: { display: false }, ticks: { autoSkip: true, maxTicksLimit: 10, maxRotation: 0 } }
                 }
             }
         });
+        renderRevenue(revenueRange);
     }
 
-    // 2. Subscription Distribution Donut Chart (EXACTLY 4 PLANS)
-    const donutCtx = document.getElementById('subscriptionDonutCanvas')?.getContext('2d');
-    if (donutCtx) {
-        new Chart(donutCtx, {
-            type: 'doughnut',
-            data: {
-                labels: ['FREE', 'GOLD', 'PLATINUM', 'DIAMOND'],
-                datasets: [{
-                    data: [
-                        {{ $planCounts['FREE'] ?? 0 }},
-                        {{ $planCounts['GOLD'] ?? 0 }},
-                        {{ $planCounts['PLATINUM'] ?? 0 }},
-                        {{ $planCounts['DIAMOND'] ?? 0 }}
-                    ],
-                    backgroundColor: ['#64748b', '#d97706', '#0284c7', '#7c3aed'],
-                    borderWidth: 3,
-                    borderColor: '#ffffff'
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                cutout: '72%',
-                plugins: { legend: { display: false } }
-            }
+    revenueRangeBtns.forEach(btn => {
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            renderRevenue(this.getAttribute('data-range'));
         });
-    }
+    });
 
-    // 3. Revenue Overview Area Chart
-    const revCtx = document.getElementById('revenueChartCanvas')?.getContext('2d');
-    if (revCtx) {
-        new Chart(revCtx, {
-            type: 'line',
-            data: {
-                labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
-                datasets: [{
-                    label: 'MRR (₹)',
-                    data: [
-                        {{ round(($totalRevenue > 0 ? $totalRevenue : 248500) * 0.7) }},
-                        {{ round(($totalRevenue > 0 ? $totalRevenue : 248500) * 0.82) }},
-                        {{ round(($totalRevenue > 0 ? $totalRevenue : 248500) * 0.93) }},
-                        {{ $totalRevenue > 0 ? $totalRevenue : 248500 }}
-                    ],
-                    borderColor: '#16a34a',
-                    backgroundColor: 'rgba(22, 163, 74, 0.08)',
-                    fill: true,
-                    tension: 0.35,
-                    borderWidth: 3
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: {
-                    y: { beginAtZero: true, grid: { color: '#f1f5f9' } },
-                    x: { grid: { display: false } }
-                }
-            }
-        });
-    }
-
-    // 4. Company Status Donut Chart
-    const statusCtx = document.getElementById('statusChartCanvas')?.getContext('2d');
-    if (statusCtx) {
-        new Chart(statusCtx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Active', 'Trial', 'Suspended'],
-                datasets: [{
-                    data: [
-                        {{ max(1, $companies->where('status', 'active')->count()) }},
-                        {{ $companies->where('status', 'trial')->count() }},
-                        {{ $companies->where('status', 'suspended')->count() }}
-                    ],
-                    backgroundColor: ['#16a34a', '#d97706', '#dc2626'],
-                    borderWidth: 2
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                cutout: '65%',
-                plugins: { legend: { display: false } }
-            }
-        });
-    }
-
-    // 5. User Growth Line Chart
-    const userCtx = document.getElementById('userGrowthCanvas')?.getContext('2d');
-    if (userCtx) {
-        new Chart(userCtx, {
-            type: 'bar',
-            data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
-                datasets: [{
-                    label: 'Total Platform Users',
-                    data: [45, 90, 140, 210, 320, 410, 520, {{ max(520, $totalUsers) }}],
-                    backgroundColor: '#2563eb',
-                    borderRadius: 6
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: {
-                    y: { beginAtZero: true, grid: { color: '#f1f5f9' } },
-                    x: { grid: { display: false } }
-                }
-            }
-        });
-    }
+    // Live-records refresh updates data-revenue; redraw the selected range with the new figures.
+    // The refresh also rewrites the footer text with the server's default (30D) figures,
+    // so re-apply the selected range's footer every time; redraw the chart only when data changed.
+    document.addEventListener('pms:records-updated', function () {
+        const next = revenueDataEl ? revenueDataEl.getAttribute('data-revenue') : null;
+        if (next && next !== revenueJson) {
+            revenueJson = next;
+            renderRevenue(revenueRange);
+        } else {
+            renderRevenueSummary(revenueRange);
+        }
+    });
 
     // 6. Master Table Search Filter
     const searchInput = document.getElementById('companyMetricsSearchInput');
@@ -1606,6 +1737,39 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Selection Counter & Row Checkboxes
+    const selectAllCheckbox = document.getElementById('selectAllCompaniesCheckbox');
+    const rowCheckboxes = document.querySelectorAll('.company-row-checkbox');
+    const selectedCountBadge = document.getElementById('selectedCountBadge');
+    const selectedCountText = document.getElementById('selectedCountText');
+
+    function updateSelectedCount() {
+        const checked = document.querySelectorAll('.company-row-checkbox:checked');
+        if (selectedCountText) selectedCountText.textContent = checked.length;
+        if (selectedCountBadge) {
+            selectedCountBadge.style.display = checked.length > 0 ? 'inline-flex' : 'none';
+        }
+        if (selectAllCheckbox) {
+            selectAllCheckbox.checked = checked.length > 0 && checked.length === rowCheckboxes.length;
+        }
+    }
+
+    if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener('change', function() {
+            rowCheckboxes.forEach(cb => {
+                const row = cb.closest('tr');
+                if (!row || row.style.display !== 'none') {
+                    cb.checked = selectAllCheckbox.checked;
+                }
+            });
+            updateSelectedCount();
+        });
+    }
+
+    rowCheckboxes.forEach(cb => {
+        cb.addEventListener('change', updateSelectedCount);
+    });
+
     // Custom Export Dropdown Menu Toggle Handler
     const exportDropdownBtn = document.getElementById('exportDropdownBtn');
     const exportMenuOptions = document.getElementById('exportMenuOptions');
@@ -1616,6 +1780,192 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         document.addEventListener('click', function() {
             exportMenuOptions.style.display = 'none';
+        });
+    }
+
+    // Helper functions for report exports
+    function escapeHtml(str) {
+        if (str === null || str === undefined) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    function triggerDownload(blob, filename) {
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    function getExportRows() {
+        const checkedBoxes = Array.from(document.querySelectorAll('.company-row-checkbox:checked'));
+        let targetRows = [];
+        
+        if (checkedBoxes.length > 0) {
+            targetRows = checkedBoxes.map(cb => cb.closest('tr')).filter(Boolean);
+        } else {
+            targetRows = Array.from(document.querySelectorAll('.master-table-row'))
+                .filter(r => r.style.display !== 'none');
+        }
+
+        const headers = [
+            'Company Name',
+            'Database Name',
+            'Assigned Plan',
+            'Billing Cycle',
+            'Monthly Revenue',
+            'Active Users',
+            'Start Date & Time',
+            'Expiration Date',
+            'Status'
+        ];
+
+        const data = targetRows.map(row => {
+            const cb = row.querySelector('.company-row-checkbox');
+            const companyName = cb?.dataset.name || row.querySelector('.company-title')?.innerText?.trim() || '';
+            const dbName = cb?.dataset.db || row.querySelector('.company-db')?.innerText?.trim() || '';
+            const plan = row.querySelector('.plan-badge-item')?.innerText?.trim() || cb?.dataset.plan || '';
+            const cycle = row.querySelector('td:nth-child(4)')?.innerText?.trim() || cb?.dataset.cycle || '';
+            const revenue = row.querySelector('td:nth-child(5)')?.innerText?.trim() || cb?.dataset.price || '';
+            const users = row.querySelector('td:nth-child(6)')?.innerText?.trim() || '';
+            const starts = row.querySelector('td:nth-child(7)')?.innerText?.trim() || cb?.dataset.starts || '';
+            const ends = row.querySelector('td:nth-child(8)')?.innerText?.trim() || cb?.dataset.ends || '';
+            const status = row.querySelector('.status-badge-item')?.innerText?.trim() || cb?.dataset.status || '';
+
+            return [
+                companyName,
+                dbName,
+                plan,
+                cycle,
+                revenue,
+                users,
+                starts,
+                ends,
+                status
+            ];
+        });
+
+        return { headers, data };
+    }
+
+    function downloadCsv(headers, rows, filename) {
+        const csvLines = [];
+        csvLines.push(headers.map(h => `"${String(h).replace(/"/g, '""')}"`).join(','));
+        rows.forEach(row => {
+            csvLines.push(row.map(c => `"${String(c).replace(/"/g, '""')}"`).join(','));
+        });
+        const csvContent = "\uFEFF" + csvLines.join("\r\n");
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        triggerDownload(blob, filename);
+    }
+
+    function downloadExcel(headers, rows, filename) {
+        let excelContent = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">' +
+            '<head><meta charset="utf-8">' +
+            '<style>' +
+            'th { background-color: #2563eb; color: #ffffff; font-weight: bold; padding: 10px 14px; border: 1px solid #cbd5e1; font-family: sans-serif; font-size: 12px; }' +
+            'td { padding: 8px 12px; border: 1px solid #e2e8f0; font-family: sans-serif; font-size: 12px; }' +
+            'tr:nth-child(even) { background-color: #f8fafc; }' +
+            '</style></head>' +
+            '<body><table>' +
+            '<thead><tr>' + headers.map(h => '<th>' + escapeHtml(h) + '</th>').join('') + '</tr></thead>' +
+            '<tbody>' + rows.map(row => '<tr>' + row.map(cell => '<td>' + escapeHtml(cell) + '</td>').join('') + '</tr>').join('') + '</tbody>' +
+            '</table></body></html>';
+
+        const blob = new Blob([excelContent], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+        triggerDownload(blob, filename);
+    }
+
+    function downloadPdf(headers, rows) {
+        const printWindow = window.open('', '_blank');
+        if (!printWindow) {
+            alert('Please allow popups in your browser to view and print/save the PDF report.');
+            return;
+        }
+        const dateStr = new Date().toLocaleDateString('en-US', { timeZone: 'Asia/Kolkata',  year: 'numeric', month: 'short', day: 'numeric' });
+        const tableHeaderHtml = headers.map(h => `<th>${escapeHtml(h)}</th>`).join('');
+        const tableRowsHtml = rows.map(r => `<tr>${r.map(c => `<td>${escapeHtml(c)}</td>`).join('')}</tr>`).join('');
+
+        printWindow.document.write(`<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Company Metrics Analytics Report - ${dateStr}</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 24px; color: #0f172a; font-size: 12px; }
+  .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; border-bottom: 2px solid #2563eb; padding-bottom: 12px; }
+  h1 { font-size: 20px; font-weight: 800; margin: 0 0 4px 0; color: #1e293b; }
+  p { font-size: 12px; color: #64748b; margin: 0; }
+  .timestamp { font-size: 11px; color: #64748b; text-align: right; }
+  table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11.5px; }
+  th { background: #f1f5f9; color: #1e293b; font-weight: 700; text-align: left; padding: 9px 8px; border: 1px solid #cbd5e1; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.4px; }
+  td { padding: 8px; border: 1px solid #e2e8f0; color: #1e293b; }
+  tr:nth-child(even) { background: #f8fafc; }
+  @media print {
+    body { margin: 12px; }
+    @page { size: landscape; margin: 12mm; }
+  }
+</style>
+</head>
+<body>
+  <div class="header">
+    <div>
+      <h1>Company Metrics Analytics Report</h1>
+      <p>Platform-wide performance insights across all tenant companies</p>
+    </div>
+    <div class="timestamp">
+      <strong>Generated:</strong> ${dateStr}<br>
+      <strong>Total Records:</strong> ${rows.length}
+    </div>
+  </div>
+  <table>
+    <thead><tr>${tableHeaderHtml}</tr></thead>
+    <tbody>${tableRowsHtml}</tbody>
+  </table>
+</body>
+</html>`);
+        printWindow.document.close();
+        printWindow.focus();
+        setTimeout(() => {
+            printWindow.print();
+        }, 350);
+    }
+
+    // Dropdown direct CSV & PDF exports
+    const exportCsvBtn = document.getElementById('exportCsvBtn');
+    if (exportCsvBtn) {
+        exportCsvBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const { headers, data } = getExportRows();
+            if (data.length === 0) {
+                alert('No company records available to export.');
+                return;
+            }
+            const dateStr = new Date().toISOString().slice(0, 10);
+            downloadCsv(headers, data, `company_metrics_${dateStr}.csv`);
+            if (exportMenuOptions) exportMenuOptions.style.display = 'none';
+        });
+    }
+
+    const exportPdfBtn = document.getElementById('exportPdfBtn');
+    if (exportPdfBtn) {
+        exportPdfBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const { headers, data } = getExportRows();
+            if (data.length === 0) {
+                alert('No company records available to export.');
+                return;
+            }
+            downloadPdf(headers, data);
+            if (exportMenuOptions) exportMenuOptions.style.display = 'none';
         });
     }
 
@@ -1632,12 +1982,46 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     if (closeExportBtn && exportModal) {
-        closeExportBtn.addEventListener('click', function() {
+        closeExportBtn.addEventListener('click', function(e) {
+            e.preventDefault();
             exportModal.classList.remove('open');
         });
     }
+    if (exportModal) {
+        exportModal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.remove('open');
+            }
+        });
+    }
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && exportModal && exportModal.classList.contains('open')) {
+            exportModal.classList.remove('open');
+        }
+    });
+
     if (confirmExportBtn && exportModal) {
-        confirmExportBtn.addEventListener('click', function() {
+        confirmExportBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const formatInput = document.querySelector('input[name="exportFormat"]:checked');
+            const format = formatInput ? formatInput.value : 'csv';
+            
+            const { headers, data } = getExportRows();
+            if (data.length === 0) {
+                alert('No company records available to export.');
+                exportModal.classList.remove('open');
+                return;
+            }
+
+            const dateStr = new Date().toISOString().slice(0, 10);
+            if (format === 'csv') {
+                downloadCsv(headers, data, `company_metrics_${dateStr}.csv`);
+            } else if (format === 'excel') {
+                downloadExcel(headers, data, `company_metrics_${dateStr}.xls`);
+            } else if (format === 'pdf') {
+                downloadPdf(headers, data);
+            }
+
             exportModal.classList.remove('open');
         });
     }

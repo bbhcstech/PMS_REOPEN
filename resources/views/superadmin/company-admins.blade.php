@@ -1061,7 +1061,7 @@
                     <i class="bx bx-export"></i> Export <i class="bx bx-chevron-down" style="font-size: 12px;"></i>
                 </button>
                 <div id="exportDropdownMenu" style="display: none; position: absolute; right: 0; top: 100%; margin-top: 6px; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-md); box-shadow: var(--shadow-md); z-index: 100; min-width: 160px; overflow: hidden;">
-                    <a href="{{ Route::has('superadmin.admins.export') ? route('superadmin.admins.export', request()->only(['admin_search', 'admin_status'])) : (Route::has('super-admin.admins.export') ? route('super-admin.admins.export', request()->only(['admin_search', 'admin_status'])) : (Route::has('admins.export') ? route('admins.export', request()->only(['admin_search', 'admin_status'])) : url('/company-admins/export'))) }}" style="display: flex; align-items: center; gap: 8px; padding: 10px 14px; font-size: 13px; font-weight: 600; color: var(--text-main); text-decoration: none; transition: background 0.15s;">
+                    <a href="{{ Route::has('superadmin.admins.export') ? route('superadmin.admins.export', request()->only(['admin_search', 'admin_status', 'company_id', 'admin_role', 'admin_activity'])) : (Route::has('super-admin.admins.export') ? route('super-admin.admins.export', request()->only(['admin_search', 'admin_status', 'company_id', 'admin_role', 'admin_activity'])) : (Route::has('admins.export') ? route('admins.export', request()->only(['admin_search', 'admin_status', 'company_id', 'admin_role', 'admin_activity'])) : url('/company-admins/export'))) }}" style="display: flex; align-items: center; gap: 8px; padding: 10px 14px; font-size: 13px; font-weight: 600; color: var(--text-main); text-decoration: none; transition: background 0.15s;">
                         <i class="bx bx-file" style="color: #10b981;"></i> Export CSV
                     </a>
                     <a href="#" onclick="event.preventDefault(); window.print();" style="display: flex; align-items: center; gap: 8px; padding: 10px 14px; font-size: 13px; font-weight: 600; color: var(--text-main); text-decoration: none; border-top: 1px solid var(--border-color); transition: background 0.15s;">
@@ -1190,11 +1190,10 @@
 
                 <!-- ROLE Filter -->
                 <select name="admin_role" class="filter-select" id="roleFilter">
-                    <option value="">ROLE: All Roles</option>
-                    <option value="admin" selected>Company Admin</option>
-                    <option value="manager">Manager</option>
-                    <option value="hr">HR</option>
-                    <option value="custom">Custom Admin</option>
+                    <option value="" @selected(($adminRole ?? '') === '')>ROLE: All Roles</option>
+                    <option value="admin" @selected(($adminRole ?? '') === 'admin')>Company Admin</option>
+                    <option value="manager" @selected(($adminRole ?? '') === 'manager')>Manager</option>
+                    <option value="hr" @selected(($adminRole ?? '') === 'hr')>HR</option>
                 </select>
 
                 <!-- STATUS Filter -->
@@ -1207,10 +1206,10 @@
 
                 <!-- ACTIVITY Filter -->
                 <select name="admin_activity" class="filter-select" id="activityFilter">
-                    <option value="">ACTIVITY: All Time</option>
-                    <option value="today">Active Today</option>
-                    <option value="week">Active This Week</option>
-                    <option value="inactive">Inactive</option>
+                    <option value="" @selected(($adminActivity ?? '') === '')>ACTIVITY: All Time</option>
+                    <option value="today" @selected(($adminActivity ?? '') === 'today')>Active Today</option>
+                    <option value="week" @selected(($adminActivity ?? '') === 'week')>Active This Week</option>
+                    <option value="inactive" @selected(($adminActivity ?? '') === 'inactive')>Inactive (30+ days)</option>
                 </select>
 
                 <!-- Entries -->
@@ -1234,7 +1233,7 @@
     </div>
 
     <!-- 4. ADMINISTRATOR GRID TABLE (ROW AND COLUMN SEPARATED) -->
-    <div class="table-card">
+    <div class="table-card" id="companyAdminResults">
         <div class="table-container">
             <table class="grid-table" id="adminTable">
                 <thead>
@@ -1267,6 +1266,7 @@
                         $statusKey = $isSuspended ? 'suspended' : ($isBlocked ? 'inactive' : 'active');
                     @endphp
                     <tr class="admin-row"
+                        data-live-key="admin-{{ $admin->id }}"
                         data-id="{{ $admin->id }}"
                         data-name="{{ $admin->name }}"
                         data-email="{{ $admin->email }}"
@@ -1572,7 +1572,7 @@
                 <i class="bx bx-x"></i>
             </button>
         </div>
-        <form method="POST" action="{{ Route::has('superadmin.admins.store') ? route('superadmin.admins.store') : (Route::has('super-admin.admins.store') ? route('super-admin.admins.store') : (Route::has('admins.store') ? route('admins.store') : url('/company-admins'))) }}">
+        <form id="createAdminForm" method="POST" action="{{ Route::has('superadmin.admins.store') ? route('superadmin.admins.store') : (Route::has('super-admin.admins.store') ? route('super-admin.admins.store') : (Route::has('admins.store') ? route('admins.store') : url('/company-admins'))) }}">
             @csrf
             <div class="modal-body">
                 <div class="form-group">
@@ -1590,11 +1590,19 @@
                 </div>
                 <div class="form-group">
                     <label>Admin Login Email <span style="color: var(--danger);">*</span></label>
-                    <input name="email" required type="email" placeholder="admin@company.com" />
+                    <input name="email" id="createAdminEmail" required type="email" placeholder="admin@company.com" />
+                    <div id="createAdminEmail_error" class="field-error-feedback"></div>
                 </div>
                 <div class="form-group">
                     <label>Initial Account Password <span style="color: var(--danger);">*</span></label>
-                    <input name="password" required type="password" placeholder="••••••••" />
+                    <div style="position: relative;">
+                        <input name="password" id="createAdminPassword" required minlength="8" maxlength="128" type="password" placeholder="•••••••• (min 8 chars)" style="padding-right: 40px;" />
+                        <button type="button" onclick="togglePasswordVisibility('createAdminPassword', this)" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 18px;" title="Show/Hide Password">
+                            <i class="bx bx-show"></i>
+                        </button>
+                    </div>
+                    <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Must be between 8 and 128 characters.</div>
+                    <div id="createAdminPassword_error" class="field-error-feedback"></div>
                 </div>
             </div>
             <div class="modal-footer">
@@ -1638,10 +1646,18 @@
                 <div class="form-group">
                     <label>Login Email <span style="color: var(--danger);">*</span></label>
                     <input name="email" id="editEmail" required type="email" placeholder="Admin email" />
+                    <div id="editEmail_error" class="field-error-feedback"></div>
                 </div>
                 <div class="form-group">
-                    <label>Password (Leave blank to keep current)</label>
-                    <input name="password" type="password" placeholder="New password" />
+                    <label>Password <span style="font-size: 11px; color: var(--text-muted); font-weight: normal;">(Leave blank to keep current)</span></label>
+                    <div style="position: relative;">
+                        <input name="password" id="editAdminPassword" minlength="8" maxlength="128" type="password" placeholder="New password (min 8 chars)" style="padding-right: 40px;" />
+                        <button type="button" onclick="togglePasswordVisibility('editAdminPassword', this)" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 18px;" title="Show/Hide Password">
+                            <i class="bx bx-show"></i>
+                        </button>
+                    </div>
+                    <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Leave blank to preserve current password. If updating, must be 8–128 characters.</div>
+                    <div id="editAdminPassword_error" class="field-error-feedback"></div>
                 </div>
                 <div class="form-group" style="display: flex; align-items: center; gap: 8px;">
                     <input type="hidden" name="login_allowed" value="0">
@@ -1687,6 +1703,7 @@
 @endsection
 
 @push('scripts')
+<script src="{{ asset('admin/assets/js/pms-company-admin-search.js') }}?v={{ filemtime(public_path('admin/assets/js/pms-company-admin-search.js')) }}" defer></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // 1. Export Dropdown Menu
@@ -1710,8 +1727,10 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentAdminId = null;
     let currentAdminData = {};
 
-    document.querySelectorAll('.open-drawer-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
+    document.addEventListener('click', function(event) {
+        const btn = event.target.closest('.open-drawer-btn');
+        if (!btn) return;
+        (function() {
             currentAdminId = this.getAttribute('data-id');
             const name = this.getAttribute('data-name');
             const email = this.getAttribute('data-email');
@@ -1775,7 +1794,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('editLoginAllowed').checked = loginAllowed;
 
             drawerOverlay.classList.add('open');
-        });
+        }).call(btn);
     });
 
     closeDrawerBtn?.addEventListener('click', function() { drawerOverlay.classList.remove('open'); });
@@ -1850,6 +1869,19 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('filterForm').submit();
     };
 
+    // Filters apply as soon as they change (previously only "/ pg" submitted the form).
+    // requestSubmit() goes through pms-company-admin-search.js, which refreshes the table without a reload.
+    (function () {
+        const form = document.getElementById('filterForm');
+        if (!form) return;
+        ['companyFilter', 'roleFilter', 'statusFilter', 'activityFilter'].forEach(function (id) {
+            document.getElementById(id)?.addEventListener('change', function () {
+                if (typeof form.requestSubmit === 'function') form.requestSubmit();
+                else form.submit();
+            });
+        });
+    })();
+
     window.clearAllFilters = function() {
         window.location.href = '{{ Route::has("superadmin.admins.index") ? route("superadmin.admins.index") : (Route::has("super-admin.admins.index") ? route("super-admin.admins.index") : (Route::has("admins.index") ? route("admins.index") : url("/company-admins"))) }}';
     };
@@ -1872,6 +1904,170 @@ document.addEventListener('DOMContentLoaded', function() {
 
         rowsArr.forEach(r => tbody.appendChild(r));
     };
+
+    // Strict Email Validation for Company Admins
+    function validateAdminEmailFormat(email, isRequired = true) {
+        const val = (email || '').trim();
+        if (!val) {
+            return isRequired ? { valid: false, message: 'Email address is required.' } : { valid: true };
+        }
+        if (/\s/.test(val)) {
+            return { valid: false, message: 'Email address cannot contain spaces.' };
+        }
+        if (!val.includes('@')) {
+            return { valid: false, message: "Email address must include an '@' symbol." };
+        }
+        const parts = val.split('@');
+        if (parts.length !== 2) {
+            return { valid: false, message: "Email address must contain only one '@' symbol." };
+        }
+        const [local, domain] = parts;
+        if (!local) return { valid: false, message: "Missing username before '@'." };
+        if (!domain) return { valid: false, message: "Missing domain after '@'." };
+        if (!domain.includes('.')) return { valid: false, message: "Domain name must include a valid extension (e.g. .com)." };
+        if (domain.startsWith('.') || domain.endsWith('.')) return { valid: false, message: "Domain name cannot start or end with a dot." };
+        if (domain.includes('..')) return { valid: false, message: "Domain name cannot contain consecutive dots." };
+        const strictRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        if (!strictRegex.test(val)) {
+            return { valid: false, message: 'Please enter a valid email address (e.g. name@company.com).' };
+        }
+        return { valid: true };
+    }
+
+    function setupAdminEmailValidator(inputId, errorDivId) {
+        const input = document.getElementById(inputId);
+        const errorDiv = document.getElementById(errorDivId);
+        if (!input) return null;
+
+        function validate(showEmptyError = true) {
+            const val = input.value.trim();
+            const res = validateAdminEmailFormat(val, true);
+            if (!res.valid) {
+                if (val || showEmptyError) {
+                    showError(res.message);
+                    return false;
+                }
+                return false;
+            }
+            clearError();
+            return true;
+        }
+
+        function showError(msg) {
+            if (errorDiv) {
+                errorDiv.textContent = msg;
+                errorDiv.classList.add('visible');
+            }
+            input.classList.add('is-invalid');
+        }
+
+        function clearError() {
+            if (errorDiv) {
+                errorDiv.textContent = '';
+                errorDiv.classList.remove('visible');
+            }
+            input.classList.remove('is-invalid');
+        }
+
+        input.addEventListener('input', function() {
+            if (/\s/.test(this.value)) {
+                this.value = this.value.replace(/\s+/g, '');
+            }
+            validate(false);
+        });
+
+        input.addEventListener('blur', function() {
+            validate(true);
+        });
+
+        return { validate, input };
+    }
+
+    window.togglePasswordVisibility = function(inputId, btnEl) {
+        const input = document.getElementById(inputId);
+        if (!input) return;
+        const icon = btnEl?.querySelector('i');
+        if (input.type === 'password') {
+            input.type = 'text';
+            if (icon) { icon.classList.remove('bx-show'); icon.classList.add('bx-hide'); }
+        } else {
+            input.type = 'password';
+            if (icon) { icon.classList.remove('bx-hide'); icon.classList.add('bx-show'); }
+        }
+    };
+
+    function validateAdminPasswordField(inputId, errorId, isRequired = true) {
+        const input = document.getElementById(inputId);
+        const errorDiv = document.getElementById(errorId);
+        if (!input) return true;
+        const val = input.value;
+        if (!val) {
+            if (isRequired) {
+                if (errorDiv) { errorDiv.textContent = 'Password is required.'; errorDiv.classList.add('visible'); errorDiv.style.display = 'block'; }
+                input.classList.add('is-invalid');
+                return false;
+            }
+            if (errorDiv) { errorDiv.textContent = ''; errorDiv.classList.remove('visible'); errorDiv.style.display = 'none'; }
+            input.classList.remove('is-invalid');
+            return true;
+        }
+        if (val.length < 8) {
+            if (errorDiv) { errorDiv.textContent = 'Password must be at least 8 characters long.'; errorDiv.classList.add('visible'); errorDiv.style.display = 'block'; }
+            input.classList.add('is-invalid');
+            return false;
+        }
+        if (val.length > 128) {
+            if (errorDiv) { errorDiv.textContent = 'Password cannot exceed 128 characters.'; errorDiv.classList.add('visible'); errorDiv.style.display = 'block'; }
+            input.classList.add('is-invalid');
+            return false;
+        }
+        if (errorDiv) { errorDiv.textContent = ''; errorDiv.classList.remove('visible'); errorDiv.style.display = 'none'; }
+        input.classList.remove('is-invalid');
+        return true;
+    }
+
+    const createAdminPwdInput = document.getElementById('createAdminPassword');
+    if (createAdminPwdInput) {
+        createAdminPwdInput.addEventListener('input', function() { validateAdminPasswordField('createAdminPassword', 'createAdminPassword_error', true); });
+        createAdminPwdInput.addEventListener('blur', function() { validateAdminPasswordField('createAdminPassword', 'createAdminPassword_error', true); });
+    }
+
+    const editAdminPwdInput = document.getElementById('editAdminPassword');
+    if (editAdminPwdInput) {
+        editAdminPwdInput.addEventListener('input', function() { validateAdminPasswordField('editAdminPassword', 'editAdminPassword_error', false); });
+        editAdminPwdInput.addEventListener('blur', function() { validateAdminPasswordField('editAdminPassword', 'editAdminPassword_error', false); });
+    }
+
+    const createAdminEmailVal = setupAdminEmailValidator('createAdminEmail', 'createAdminEmail_error');
+    const editAdminEmailVal = setupAdminEmailValidator('editEmail', 'editEmail_error');
+
+    const createAdminForm = document.getElementById('createAdminForm');
+    if (createAdminForm) {
+        createAdminForm.addEventListener('submit', function(e) {
+            const isEmailValid = createAdminEmailVal ? createAdminEmailVal.validate(true) : true;
+            const isPwdValid = validateAdminPasswordField('createAdminPassword', 'createAdminPassword_error', true);
+            if (!isEmailValid || !isPwdValid) {
+                e.preventDefault();
+                if (!isEmailValid && createAdminEmailVal) createAdminEmailVal.input.focus();
+                else if (!isPwdValid && createAdminPwdInput) createAdminPwdInput.focus();
+                return false;
+            }
+        });
+    }
+
+    const editAdminForm = document.getElementById('editAdminForm');
+    if (editAdminForm) {
+        editAdminForm.addEventListener('submit', function(e) {
+            const isEmailValid = editAdminEmailVal ? editAdminEmailVal.validate(true) : true;
+            const isPwdValid = validateAdminPasswordField('editAdminPassword', 'editAdminPassword_error', false);
+            if (!isEmailValid || !isPwdValid) {
+                e.preventDefault();
+                if (!isEmailValid && editAdminEmailVal) editAdminEmailVal.input.focus();
+                else if (!isPwdValid && editAdminPwdInput) editAdminPwdInput.focus();
+                return false;
+            }
+        });
+    }
 });
 </script>
 @endpush

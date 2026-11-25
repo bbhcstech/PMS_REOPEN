@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class EventController extends Controller
 {
@@ -22,7 +23,38 @@ class EventController extends Controller
     protected function getCompanyId(): ?int
     {
         $context = app(CompanyContext::class);
-        return $context->id() ?? Auth::user()?->company_id;
+        $companyId = $context->id() ?? Auth::user()?->company_id;
+        abort_unless($companyId && $companyId > 0, 403, 'No active company is available.');
+        $user = Auth::user();
+        if ($user && $user->normalizedRole() !== 'superadmin' && ! Auth::guard('super_admin')->check()) {
+            abort_unless((int) $user->company_id === (int) $companyId, 403, 'The active company does not match your account.');
+        }
+        return (int) $companyId;
+    }
+
+    protected function organizerQuery(int $companyId)
+    {
+        return User::query()->where('company_id', $companyId)
+            ->whereRaw('LOWER(TRIM(role)) IN (?, ?, ?)', ['hr', 'admin', 'administrator']);
+    }
+
+    protected function resolveOrganizerId(int $companyId, ?int $existingId = null): ?int
+    {
+        if ($existingId && $this->organizerQuery($companyId)->whereKey($existingId)->exists()) {
+            return $existingId;
+        }
+        return $this->organizerQuery($companyId)->whereKey(Auth::id())->value('id');
+    }
+
+    protected function notifyCompanyUsers(string $title, string $message, ?string $url = null): void
+    {
+        $companyId = $this->getCompanyId();
+        $users = SystemNotificationService::roleUsers($companyId)
+            ->filter(fn ($user) => (int) $user->company_id === $companyId);
+        SystemNotificationService::send($users, $title, $message, $url, [
+            'type' => 'erp_activity', 'icon' => 'fa-bell', 'color' => 'info',
+            'actor_role' => Auth::user()?->role, 'audience' => 'all_roles',
+        ]);
     }
 
     /**
@@ -33,16 +65,7 @@ class EventController extends Controller
         $user ??= Auth::user();
         if (! $user) return false;
 
-        $role = $user->normalizedRole();
-        if (in_array($role, ['admin', 'superadmin'], true)) {
-            return true;
-        }
-
-        if (in_array($role, ['hr', 'manager'], true)) {
-            return true;
-        }
-
-        return $user->hasModulePermission('events', 'create');
+        return in_array(strtolower(trim((string) $user->role)), ['admin', 'administrator', 'hr'], true);
     }
 
     /**
@@ -50,18 +73,21 @@ class EventController extends Controller
      */
     protected function validateEventRequest(Request $request): array
     {
+        $companyId = $this->getCompanyId();
         $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
             'title' => 'required|string|max:255',
             'event_type' => 'required|string|max:100',
             'description' => 'required|string',
-            'start_date' => 'required|date',
-            'start_time' => 'nullable',
-            'end_date' => 'nullable|date|after_or_equal:start_date',
-            'end_time' => 'nullable',
+            'start_date' => 'bail|required|string|date',
+            'start_time' => 'nullable|date_format:H:i,H:i:s',
+            'end_date' => 'bail|nullable|string|date',
+            'end_time' => 'nullable|date_format:H:i,H:i:s',
             'location_type' => 'required|in:physical,online,hybrid',
             'location' => 'nullable|string|max:255',
             'meeting_url' => 'nullable|url|max:500',
-            'organizer_id' => 'nullable|exists:users,id',
+            'organizer_id' => ['nullable', 'integer', Rule::exists(User::class, 'id')
+                ->where(fn ($query) => $query->where('company_id', $companyId)
+                    ->whereRaw('LOWER(TRIM(role)) IN (?, ?, ?)', ['hr', 'admin', 'administrator']))],
             'max_participants' => 'nullable|integer|min:1',
             'reminder' => 'nullable|string',
             'status' => 'required|in:draft,published,cancelled,completed',
@@ -69,6 +95,9 @@ class EventController extends Controller
         ]);
 
         $validator->after(function ($validator) use ($request) {
+            foreach (['start_date', 'end_date', 'start_time', 'end_time'] as $field) {
+                if ($validator->errors()->has($field)) return;
+            }
             $startDate = $request->start_date;
             $endDate = $request->end_date ?: $startDate;
             $startTime = $request->start_time;
@@ -97,10 +126,12 @@ class EventController extends Controller
         $companyId = $this->getCompanyId();
         $canManage = $this->canManageEvents($user);
 
-        $query = Event::with(['organizer', 'creator', 'rsvps.user', 'photos' => function ($q) {
-            $q->ordered();
+        $companyUser = fn ($query) => $query->where('users.company_id', $companyId);
+        $query = Event::with(['organizer' => $companyUser, 'creator' => $companyUser,
+            'rsvps' => fn ($query) => $query->where('company_id', $companyId), 'rsvps.user' => $companyUser, 'photos' => function ($q) use ($companyId) {
+            $q->where('company_id', $companyId)->ordered();
         }])
-        ->withCount('photos')
+        ->withCount(['photos' => fn ($query) => $query->where('company_id', $companyId)])
         ->forTenant($companyId);
 
         // Employee role cannot see drafts created by others
@@ -171,12 +202,8 @@ class EventController extends Controller
             ->paginate(12)
             ->withQueryString();
 
-        // Get company users for Organizer dropdown (Admins, HRs, Managers)
-        $users = User::query()
-            ->when($companyId, fn ($q) => $q->where('company_id', $companyId))
-            ->whereIn('role', ['admin', 'hr', 'manager', 'employee'])
-            ->orderBy('name')
-            ->get();
+        // Organizer choices remain scoped to this company.
+        $users = $this->organizerQuery($companyId)->orderBy('name')->get();
 
         // Preset Event Types
         $eventTypes = [
@@ -201,6 +228,7 @@ class EventController extends Controller
             'todayEvents',
             'pastEvents',
             'canManage',
+            'companyId',
             'users',
             'eventTypes'
         ));
@@ -215,7 +243,7 @@ class EventController extends Controller
         $companyId = $this->getCompanyId();
         $canManage = $this->canManageEvents($user);
 
-        $query = Event::forTenant($companyId)->with('organizer');
+        $query = Event::forTenant($companyId)->with(['organizer' => fn ($query) => $query->where('users.company_id', $companyId)]);
 
         if (! $canManage) {
             $query->where('status', '!=', 'draft');
@@ -229,7 +257,7 @@ class EventController extends Controller
             $query->where('start_date', '<=', date('Y-m-d', strtotime($request->end)));
         }
 
-        $events = $query->get()->map(function ($e) {
+        $events = $query->get()->map(function ($e) use ($request) {
             $color = match ($e->status) {
                 'draft' => '#f59e0b',
                 'cancelled' => '#ef4444',
@@ -247,15 +275,21 @@ class EventController extends Controller
                 $end .= 'T' . date('H:i:s', strtotime($e->end_time));
             }
 
+            $bannerUrl = $e->banner_url;
+            $singleDateBanner = $request->input('view') === 'dayGridMonth' && $bannerUrl;
+
             return [
                 'id' => $e->id,
                 'title' => $e->title,
-                'start' => $start,
-                'end' => $end,
+                'start' => $singleDateBanner ? $e->start_date->format('Y-m-d') : $start,
+                'end' => $singleDateBanner ? $e->start_date->copy()->addDay()->format('Y-m-d') : $end,
+                'allDay' => $singleDateBanner ? true : ! $e->start_time,
                 'backgroundColor' => $color,
                 'borderColor' => $color,
                 'textColor' => '#ffffff',
                 'extendedProps' => [
+                    'banner_url' => $bannerUrl,
+                    'display_time' => $e->start_time ? date('h:i A', strtotime($e->start_time)) : '',
                     'event_type' => $e->event_type,
                     'status' => $e->status,
                     'location' => $e->location ?: ($e->meeting_url ?: 'N/A'),
@@ -266,7 +300,7 @@ class EventController extends Controller
             ];
         });
 
-        return response()->json($events);
+        return response()->json($events)->header('Cache-Control', 'no-store, private');
     }
 
     /**
@@ -312,7 +346,7 @@ class EventController extends Controller
             'location_type' => $request->location_type,
             'location' => $request->location,
             'meeting_url' => $request->meeting_url,
-            'organizer_id' => $request->organizer_id ?: $user->id,
+            'organizer_id' => $request->organizer_id ?: $this->resolveOrganizerId($companyId),
             'max_participants' => $request->max_participants,
             'rsvp_required' => $request->has('rsvp_required') ? 1 : 0,
             'reminder' => $request->reminder,
@@ -335,7 +369,7 @@ class EventController extends Controller
             try {
                 $startFmt = date('d M Y', strtotime($event->start_date));
                 $timeFmt = $event->start_time ? ' at ' . date('h:i A', strtotime($event->start_time)) : '';
-                SystemNotificationService::notifyAllRoles(
+                $this->notifyCompanyUsers(
                     '🎉 New Company Event',
                     "{$event->title} scheduled for {$startFmt}{$timeFmt}.",
                     route('events.index')
@@ -360,8 +394,11 @@ class EventController extends Controller
     public function show(Request $request, $id)
     {
         $companyId = $this->getCompanyId();
-        $event = Event::with(['organizer', 'creator', 'rsvps.user', 'photos.uploader'])
-            ->withCount('photos')
+        $companyUser = fn ($query) => $query->where('users.company_id', $companyId);
+        $event = Event::with(['organizer' => $companyUser, 'creator' => $companyUser,
+            'rsvps' => fn ($query) => $query->where('company_id', $companyId), 'rsvps.user' => $companyUser,
+            'photos' => fn ($query) => $query->where('company_id', $companyId), 'photos.uploader' => $companyUser])
+            ->withCount(['photos' => fn ($query) => $query->where('company_id', $companyId)])
             ->forTenant($companyId)
             ->findOrFail($id);
 
@@ -431,7 +468,7 @@ class EventController extends Controller
             'location_type' => $request->location_type,
             'location' => $request->location,
             'meeting_url' => $request->meeting_url,
-            'organizer_id' => $request->organizer_id ?: $event->organizer_id,
+            'organizer_id' => $request->organizer_id ?: $this->resolveOrganizerId($companyId, $event->organizer_id),
             'max_participants' => $request->max_participants,
             'rsvp_required' => $request->has('rsvp_required') ? 1 : 0,
             'reminder' => $request->reminder,
@@ -452,7 +489,7 @@ class EventController extends Controller
         if ($event->status === 'published') {
             try {
                 $titleNotif = ($oldStatus === 'draft') ? '🎉 New Company Event Published' : '📢 Company Event Updated';
-                SystemNotificationService::notifyAllRoles(
+                $this->notifyCompanyUsers(
                     $titleNotif,
                     "{$event->title} has been updated.",
                     route('events.index')
@@ -491,7 +528,7 @@ class EventController extends Controller
 
         try {
             $startFmt = date('d M Y', strtotime($event->start_date));
-            SystemNotificationService::notifyAllRoles(
+            $this->notifyCompanyUsers(
                 '🎉 New Company Event Published',
                 "{$event->title} scheduled for {$startFmt}.",
                 route('events.index')
@@ -523,7 +560,7 @@ class EventController extends Controller
         ]);
 
         try {
-            SystemNotificationService::notifyAllRoles(
+            $this->notifyCompanyUsers(
                 '⚠️ Company Event Cancelled',
                 "The event '{$event->title}' scheduled for {$event->start_date->format('d M Y')} has been cancelled.",
                 route('events.index')
@@ -599,7 +636,7 @@ class EventController extends Controller
             'success' => true,
             'message' => 'RSVP response updated!',
             'response' => $rsvp->response,
-            'counts' => $event->fresh()->rsvp_counts,
+            'counts' => $event->fresh(['rsvps' => fn ($query) => $query->where('company_id', $companyId)])->rsvp_counts,
         ]);
     }
 
@@ -653,7 +690,7 @@ class EventController extends Controller
                     'is_gallery_cover' => false,
                 ]);
 
-                $uploadedPhotos[] = $photo->load('uploader');
+                $uploadedPhotos[] = $photo->load(['uploader' => fn ($query) => $query->where('users.company_id', $companyId)]);
             } catch (\Throwable $e) {
                 $failedCount++;
             }
@@ -673,7 +710,7 @@ class EventController extends Controller
         try {
             $photoCount = count($uploadedPhotos);
             if ($photoCount > 0 && $event->status === 'published') {
-                SystemNotificationService::notifyAllRoles(
+                $this->notifyCompanyUsers(
                     '📸 New Event Memories Added',
                     "{$photoCount} new photo(s) added to {$event->title}.",
                     route('events.index')
@@ -687,7 +724,7 @@ class EventController extends Controller
             'uploaded_count' => count($uploadedPhotos),
             'failed_count' => $failedCount,
             'photos' => $uploadedPhotos,
-            'total_photos_count' => $event->photos()->count(),
+            'total_photos_count' => $event->photos()->where('company_id', $companyId)->count(),
         ]);
     }
 
@@ -698,7 +735,8 @@ class EventController extends Controller
     {
         $companyId = $this->getCompanyId();
         $event = Event::forTenant($companyId)->findOrFail($id);
-        $photos = $event->photos()->with('uploader')->get();
+        $photos = $event->photos()->where('company_id', $companyId)
+            ->with(['uploader' => fn ($query) => $query->where('users.company_id', $companyId)])->get();
 
         return response()->json([
             'success' => true,
@@ -735,7 +773,7 @@ class EventController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Photo caption updated successfully.',
-            'photo' => $photo->load('uploader'),
+            'photo' => $photo->load(['uploader' => fn ($query) => $query->where('users.company_id', $companyId)]),
         ]);
     }
 

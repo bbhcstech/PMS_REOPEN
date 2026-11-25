@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html>
 <head>
+    @include('documents.pdf-styles')
   <meta charset="utf-8">
   <title>Complaints Export Report</title>
   <style>
     body {
-      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      font-family: 'DejaVu Sans', sans-serif;
       font-size: 11px;
       color: #1e293b;
       margin: 0;

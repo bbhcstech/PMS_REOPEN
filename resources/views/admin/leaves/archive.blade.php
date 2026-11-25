@@ -9,7 +9,7 @@
             <h1><i class="fas fa-box-archive me-2"></i>Archived Leaves</h1>
             <p>Restore archived leave requests whenever they need to return to the active leave section.</p>
         </div>
-        <a href="{{ route('leaves.index') }}" class="btn btn-light"><i class="fas fa-arrow-left"></i> Back to Leaves</a>
+        <a href="{{ route(request('staff_category') === 'authority' ? 'admin.authority-leaves' : 'leaves.index') }}" class="btn btn-light"><i class="fas fa-arrow-left"></i> Back to Leaves</a>
     </section>
 
     @if(session('success'))
@@ -29,10 +29,11 @@
             <span class="total-badge">Total: {{ method_exists($leaves, 'total') ? $leaves->total() : $leaves->count() }}</span>
         </div>
 
-        <form method="GET" action="{{ route('leaves.archive') }}" class="archive-search">
+        <form method="GET" action="{{ route('leaves.archive', ['staff_category' => request('staff_category')]) }}" class="archive-search">
+            <input type="hidden" name="staff_category" value="{{ request('staff_category', 'employee') }}">
             <input type="text" name="search" class="form-control" value="{{ request('search') }}" placeholder="Search by employee, type, status, or reason">
             <button class="btn btn-primary"><i class="fas fa-search"></i> Search</button>
-            <a href="{{ route('leaves.archive') }}" class="btn btn-secondary"><i class="fas fa-rotate-left"></i> Reset</a>
+            <a href="{{ route('leaves.archive', ['staff_category' => request('staff_category')]) }}" class="btn btn-secondary"><i class="fas fa-rotate-left"></i> Reset</a>
         </form>
 
         <div class="table-responsive">
@@ -63,7 +64,7 @@
                             </td>
                             <td>{{ number_format((float) $leave->total_days, 1) }}</td>
                             <td><span class="status-badge {{ $leave->status }}">{{ ucfirst($leave->status) }}</span></td>
-                            <td><span class="pay-badge {{ $leave->is_unpaid ? 'unpaid' : 'paid' }}">{{ $leave->is_unpaid ? 'Unpaid' : 'Paid' }}</span></td>
+                            <td><span class="pay-badge {{ $leave->status === 'rejected' ? 'rejected' : ($leave->is_unpaid ? 'unpaid' : 'paid') }}">{{ $leave->status === 'rejected' ? 'N/A' : ($leave->is_unpaid ? 'Unpaid' : 'Paid') }}</span></td>
                             <td>{{ $leave->archived_at?->format('d M Y h:i A') ?? 'Unknown' }}</td>
                             <td class="text-end">
                                 <div class="action-buttons">
@@ -246,7 +247,8 @@
         color: #047857;
     }
 
-    .status-badge.rejected {
+    .status-badge.rejected,
+    .pay-badge.rejected {
         background: #fee2e2;
         color: #b91c1c;
     }
@@ -418,7 +420,9 @@
     }
 
     html[data-pms-theme="dark"] .status-badge.rejected,
-    html[data-bs-theme="dark"] .status-badge.rejected {
+    html[data-bs-theme="dark"] .status-badge.rejected,
+    html[data-pms-theme="dark"] .pay-badge.rejected,
+    html[data-bs-theme="dark"] .pay-badge.rejected {
         background: rgba(239, 68, 68, 0.2) !important;
         color: #f87171 !important;
     }

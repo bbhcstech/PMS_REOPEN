@@ -556,6 +556,27 @@
             transform: none;
         }
 
+        #employee-create-page .employee-mobile-group {
+            display: flex;
+            flex-wrap: nowrap;
+            width: 100%;
+            min-width: 0;
+        }
+        #employee-create-page .employee-mobile-group > .select2-container {
+            flex: 0 0 125px;
+            max-width: 125px;
+        }
+        #employee-create-page .employee-mobile-group > .mobile-input {
+            flex: 1 1 0;
+            min-width: 0;
+            width: 0;
+        }
+        #employee-create-page #mobile-error {
+            width: 100%;
+            white-space: normal;
+            overflow-wrap: anywhere;
+        }
+
         .invalid-feedback {
             font-size: 0.75rem;
             font-weight: 500;
@@ -875,6 +896,24 @@
             color: #EEF1FB !important;
         }
 
+        /* Country / Language dropdown options: the page-wide span colour rule made the names unreadable in dark mode. */
+        :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) .select2-container--bootstrap-5 .select2-results__option,
+        :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) .select2-container--bootstrap-5 .select2-results__option span {
+            color: #EEF1FB !important;
+            -webkit-text-fill-color: #EEF1FB !important;
+        }
+
+        :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) .select2-container--bootstrap-5 .select2-results__option--highlighted,
+        :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) .select2-container--bootstrap-5 .select2-results__option--highlighted span {
+            color: #FFFFFF !important;
+            -webkit-text-fill-color: #FFFFFF !important;
+        }
+
+        :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) .select2-container--bootstrap-5 .select2-selection--single .select2-selection__rendered > span {
+            color: #EEF1FB !important;
+            -webkit-text-fill-color: #EEF1FB !important;
+        }
+
         html[data-pms-theme="dark"] .form-check-label,
         html[data-bs-theme="dark"] .form-check-label,
         html[data-theme="dark"] .form-check-label {
@@ -1150,14 +1189,18 @@
         <div class="orb orb-2"></div>
     </div>
 
-    <div class="container-fluid">
+    @php
+        $returnUrl = request('return_url') ?: old('return_url', route('employees.index'));
+    @endphp
+
+    <div class="container-fluid" id="employee-create-page" data-live-preserve>
         <div class="page-header-enterprise fade-up-stagger">
             <div class="header-title">
                 <h1 style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; font-weight: 800 !important;"><i class="fas fa-user-plus" style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important;"></i> Add New Employee</h1>
                 <p style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; font-weight: 800 !important;">Create employee profile and configuration settings</p>
             </div>
             <div>
-                <a href="{{ route('employees.index') }}" class="btn-header-enterprise">
+                <a href="{{ $returnUrl }}" class="btn-header-enterprise">
                     <i class="fas fa-arrow-left"></i>
                     BACK TO DIRECTORY
                 </a>
@@ -1165,18 +1208,18 @@
         </div>
 
         @if(session('success'))
-            <div class="alert-custom-success fade-up-stagger" style="animation-delay: 0.05s;">
+            <div class="alert-custom-success fade-up-stagger" role="status" style="animation-delay: 0.05s;">
                 <i class="fas fa-check-circle me-2"></i> {{ session('success') }}
             </div>
         @endif
 
         @if ($errors->any())
-            <div class="alert-custom-err fade-up-stagger" style="animation-delay: 0.05s;">
+            <div class="alert-custom-err fade-up-stagger" data-validation-summary role="alert" style="animation-delay: 0.05s;">
                 <div class="fw-bold mb-2"><i class="fas fa-exclamation-circle me-2"></i>Please fix the following errors:</div>
                 <ul class="mb-0 ps-4">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
+                    @foreach ($errors->getMessages() as $field => $messages) @foreach ($messages as $error)
+                        <li data-validation-field="{{ $field }}">{{ $error }}</li>
+                    @endforeach @endforeach
                 </ul>
             </div>
         @endif
@@ -1201,6 +1244,8 @@
             <div class="card-body-premium">
                 <form id="employeeForm" action="{{ route('employees.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
+
+                    <input type="hidden" name="return_url" value="{{ $returnUrl }}">
 
                     <!-- Hidden fields for new designation/department -->
                     <input type="hidden" name="new_designation" id="new_designation" value="{{ old('new_designation') }}">
@@ -1240,24 +1285,8 @@
                             @enderror
                         </div>
 
-                        <div class="col-md-4">
-                            <label class="form-label-premium">
-                                <span><i class="fas fa-building"></i> Company</span>
-                                <span class="mandatory-badge">Required</span>
-                            </label>
-                            @php $selectedCompany = old('company_id') ?? auth()->user()?->company_id; @endphp
-                            <select name="company_id" id="company_id" class="form-select-premium" required>
-                                <option value="">Select Company</option>
-                                @foreach($companies as $company)
-                                    <option value="{{ $company->id }}" {{ (string) $selectedCompany === (string) $company->id ? 'selected' : '' }}>
-                                        {{ $company->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('company_id')
-                                <div class="invalid-feedback d-block">{{ $message }}</div>
-                            @enderror
-                        </div>
+                        @php $selectedCompany = $companies->first()?->id; @endphp
+                        <input type="hidden" name="company_id" id="company_id" value="{{ $selectedCompany }}">
 
                         <div class="col-md-4">
                             <label class="form-label-premium">
@@ -1312,7 +1341,7 @@
                                 <select name="designation_id" id="designation_id" class="form-select-premium" required style="flex: 1;">
                                     <option value="">Select Designation</option>
                                     @if(old('designation_id') === 'new' && old('new_designation'))
-                                        <option value="new" selected>{{ old('new_designation') }} - Level {{ old('new_designation_level') }} (New, pending employee save)</option>
+                                        <option value="new" selected>{{ old('new_designation') }} - Level {{ old('new_designation_level') }}</option>
                                     @endif
                                     @foreach($designations as $designation)
                                         <option value="{{ $designation->id }}" {{ $selectedDesignation == $designation->id ? 'selected' : '' }}>
@@ -1320,7 +1349,7 @@
                                             @if(!empty($designation->unique_code))
                                                 ({{ $designation->unique_code }})
                                             @endif
-                                            @if(!empty($designation->level))
+                                            @if($designation->level !== null)
                                                 - Level {{ $designation->level }}
                                             @endif
                                         </option>
@@ -1427,7 +1456,7 @@
                                 <span><i class="fas fa-mobile-alt"></i> Mobile</span>
                                 <span class="mandatory-badge">Required</span>
                             </label>
-                            <div class="input-group-premium">
+                            <div class="input-group-premium employee-mobile-group">
                                 @php
                                     $selectedMobileCode = old('mobile_country_code') ?? '+91';
                                     $mobileValue = old('mobile') ?? (($ed?->mobile ?? null) ? preg_replace('/^\+91/', '', $ed->mobile) : preg_replace('/^\+91/', '', ($employee?->mobile ?? '')));
@@ -1444,17 +1473,17 @@
                                         </option>
                                     @endforeach
                                 </select>
-                                <input id="mobile_only_digits" type="text" name="mobile" class="form-control-premium mobile-input" required maxlength="10" placeholder="9876543210"
+                                <input id="mobile_only_digits" type="text" name="mobile" class="form-control-premium mobile-input" required maxlength="10" placeholder="9876543210" aria-describedby="mobile_help_text mobile-error"
                                        value="{{ $mobileValue }}" style="border: none;">
-                                <div id="mobile-error" class="invalid-feedback mobile-error d-none"></div>
                             </div>
+                            <div id="mobile-error" class="invalid-feedback mobile-error d-none" role="alert"></div>
                             <small id="mobile_help_text" class="text-muted d-block mt-1" style="font-size: 0.7rem;">Select the country code and enter a 10-digit phone number.</small>
                             <input type="hidden" name="mobile_with_code" id="mobile_with_code" value="{{ old('mobile_with_code') ?? ($ed->mobile ?? $employee?->mobile ?? '') }}">
                             @error('mobile_country_code')
-                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                                <div data-validation-field="mobile_country_code" class="invalid-feedback d-block">{{ $message }}</div>
                             @enderror
                             @error('mobile')
-                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                                <div data-validation-field="mobile" class="invalid-feedback d-block">{{ $message }}</div>
                             @enderror
                         </div>
 
@@ -1499,21 +1528,10 @@
                             @enderror
                         </div>
 
-                        <div class="col-md-4">
-                            <label class="form-label-premium">
-                                <span><i class="fas fa-id-card"></i> Government ID Card</span>
-                                <span class="mandatory-badge">Required</span>
-                            </label>
-                            <input type="file" name="government_id_card" class="form-control-premium" id="government_id_card" accept=".jpeg,.jpg,.png,image/jpeg,image/png" required>
-                            <small class="text-muted d-block mt-1" style="font-size: 0.7rem;">Upload a clear, straight, full-frame government ID photo without glare or shadows. Supported formats: JPEG, PNG, JPG. DOB on the ID must match the DOB above.</small>
-                            @error('government_id_card')
-                                <div class="invalid-feedback d-block">{{ $message }}</div>
-                            @enderror
-                        </div>
 
                         <div class="col-md-4">
                             <label class="form-label-premium">
-                                <span><i class="fas fa-user-friends"></i> Reporting To</span>
+                                <span><i class="fas fa-users"></i> Reporting To</span>
                                 <span class="mandatory-badge">Required</span>
                             </label>
                             @php $selectedReporting = old('reporting_to') ?? ($ed->reporting_to ?? ''); @endphp
@@ -1588,7 +1606,7 @@
                                 <span><i class="fas fa-code"></i> Skills</span>
                                 <span class="optional-badge">Optional</span>
                             </label>
-                            <textarea name="skills" class="form-control-premium" rows="2" placeholder="Comma separated skills (e.g., Laravel, Vue.js, React)">{{ old('skills') ?? ($ed->skills ?? $employee?->skills ?? '') }}</textarea>
+                            <textarea name="skills" class="form-control-premium" rows="2" placeholder="Comma separated skills (e.g., Laravel, Vue.js, React)">{{ old('skills') }}</textarea>
                         </div>
 
                         <div class="col-12">
@@ -1682,9 +1700,9 @@
                         <div class="col-md-4">
                             <label class="form-label-premium">
                                 <span><i class="fas fa-building"></i> Business Address</span>
-                                <span class="mandatory-badge">Required</span>
+                                <span class="optional-badge">Optional</span>
                             </label>
-                            <textarea name="business_address" class="form-control-premium" required rows="2">{{ old('business_address') ?? ($ed->business_address ?? $employee?->business_address ?? 'Kolkata') }}</textarea>
+                            <textarea name="business_address" class="form-control-premium" rows="2">{{ old('business_address') ?? ($ed->business_address ?? $employee?->business_address ?? 'Kolkata') }}</textarea>
                             @error('business_address')
                                 <div class="invalid-feedback d-block">{{ $message }}</div>
                             @enderror
@@ -1711,14 +1729,17 @@
                         <div class="col-md-4" id="exit-date-container" style="display: {{ $status === 'Inactive' ? 'block' : 'none' }};">
                             <label class="form-label-premium">
                                 <span><i class="fas fa-calendar-times"></i> Exit Date</span>
-                                <span class="optional-badge">Optional</span>
+                                <span class="mandatory-badge" id="exit-date-badge">Required</span>
                             </label>
-                            <input type="date" name="exit_date" id="exit_date" class="form-control-premium" value="{{ old('exit_date') ?? fmtDate($ed->exit_date ?? '') }}">
+                            <input type="date" name="exit_date" id="exit_date" class="form-control-premium @error('exit_date') is-invalid @enderror" value="{{ old('exit_date') ?? fmtDate($ed->exit_date ?? '') }}">
+                            @error('exit_date')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
                         </div>
                     </div>
 
                     <div class="action-buttons">
-                        <a href="{{ route('employees.index') }}" class="btn-cancel">
+                        <a href="{{ $returnUrl }}" class="btn-cancel">
                             <i class="fas fa-times"></i> Discard
                         </a>
                         <button type="submit" class="btn-submit" id="submitBtn">
@@ -1812,8 +1833,8 @@
 
                             <div class="mb-3">
                                 <label class="form-label fw-bold" style="color: var(--primary);">Designation Level <span class="text-danger">*</span></label>
-                                <input type="number" min="0" max="6" name="level" class="form-control-premium" id="designationLevel" placeholder="Enter level (0-6)" required>
-                                <small class="text-muted">Level range: 0-6 (e.g., 0=Intern, 1=Associate, 2=Sr. Associate, etc.)</small>
+                                <input type="number" min="0" max="{{ \App\Services\DesignationLevels::maximum() }}" name="level" class="form-control-premium" id="designationLevel" placeholder="Enter level (0-{{ \App\Services\DesignationLevels::maximum() }})" required>
+                                <small class="text-muted">Level range: 0-{{ \App\Services\DesignationLevels::maximum() }} (e.g., 0=Intern, 1=Associate, 2=Sr. Associate, etc.)</small>
                             </div>
                         </div>
 
@@ -1877,6 +1898,86 @@
         font-size: 0.82rem;
         margin-bottom: 1rem;
     }
+    .employee-department-feedback.swal2-popup {
+        background: var(--department-feedback-bg) !important;
+        color: var(--department-feedback-text) !important;
+        border: 1px solid var(--department-feedback-border);
+    }
+    .employee-department-feedback :is(.swal2-title, .swal2-html-container, .swal2-close) {
+        color: var(--department-feedback-text) !important;
+        -webkit-text-fill-color: var(--department-feedback-text) !important;
+    }
+    .employee-department-feedback .swal2-html-container {
+        line-height: 1.5;
+    }
+    /* This informational toast has no input. Keep SweetAlert's dormant
+       checkbox container hidden even when form/theme styles are applied. */
+    .employee-department-feedback.swal2-popup .swal2-checkbox {
+        display: none !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"]) #employee-create-page .alert-custom-err {
+        background: #321c2b;
+        color: #fecaca;
+        border-left-color: #f87171;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"]) #employee-create-page .alert-custom-success {
+        background: #142d30;
+        color: #a7f3d0;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"]) .employee-pending-success {
+        background: #151b38;
+        border: 1px solid rgba(148, 163, 184, 0.25);
+        color: #e2e8f0;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"]) .employee-pending-success :is(.swal2-title, .swal2-html-container) {
+        color: #e2e8f0;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"]) :is(#prtModal, #dptModal, #designationModal) .pending-option-note {
+        background: #1e294b;
+        border-color: rgba(96, 165, 250, 0.35);
+        color: #bfdbfe;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"]) :is(#prtModal, #dptModal, #designationModal) .modal-helper-text {
+        color: #cbd5e1;
+    }
+    /* Pending note: theme-wide span/icon colour rules must not wash out its text on its own background. */
+    html body :is(#prtModal, #dptModal, #designationModal) .pending-option-note {
+        background: #EEF2FF !important;
+        border: 1px solid rgba(47, 107, 255, 0.28) !important;
+    }
+    html body :is(#prtModal, #dptModal, #designationModal) .pending-option-note span {
+        color: #1E3A8A !important;
+        -webkit-text-fill-color: #1E3A8A !important;
+    }
+    html body :is(#prtModal, #dptModal, #designationModal) .pending-option-note i {
+        color: #2F6BFF !important;
+        -webkit-text-fill-color: #2F6BFF !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"]) body :is(#prtModal, #dptModal, #designationModal) .pending-option-note,
+    html body.dark-mode :is(#prtModal, #dptModal, #designationModal) .pending-option-note {
+        background: #1E294B !important;
+        border-color: rgba(96, 165, 250, 0.35) !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"]) body :is(#prtModal, #dptModal, #designationModal) .pending-option-note :is(span, i),
+    html body.dark-mode :is(#prtModal, #dptModal, #designationModal) .pending-option-note :is(span, i) {
+        color: #BFDBFE !important;
+        -webkit-text-fill-color: #BFDBFE !important;
+    }
+    /* Keep this note readable when light mode overrides stale modal theme styles. */
+    :is(html[data-pms-theme="light"], html[data-bs-theme="light"], html[data-theme="light"]) body #dptModal .modal-body .pending-option-note {
+        background: #EEF2FF !important;
+        border-color: rgba(47, 107, 255, 0.28) !important;
+        color: #1E3A8A !important;
+        -webkit-text-fill-color: #1E3A8A !important;
+    }
+    :is(html[data-pms-theme="light"], html[data-bs-theme="light"], html[data-theme="light"]) body #dptModal .modal-body .pending-option-note span {
+        color: #1E3A8A !important;
+        -webkit-text-fill-color: #1E3A8A !important;
+    }
+    :is(html[data-pms-theme="light"], html[data-bs-theme="light"], html[data-theme="light"]) body #dptModal .modal-body .pending-option-note i {
+        color: #2F6BFF !important;
+        -webkit-text-fill-color: #2F6BFF !important;
+    }
     @media (max-width: 576px) {
         .page-header-enterprise {
             border-radius: 18px;
@@ -1910,7 +2011,7 @@
 @endpush
 
 @push('js')
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="{{ asset('admin/assets/js/pms-employee-mobile-check.js') }}?v={{ @filemtime(public_path('admin/assets/js/pms-employee-mobile-check.js')) ?: 1 }}"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
@@ -1920,7 +2021,11 @@ const $el = id => document.getElementById(id);
 function toggleExitDate() {
     const isInactive = $el('status-inactive') && $el('status-inactive').checked;
     const container = $el('exit-date-container');
+    const exitDateInput = $el('exit_date');
     if (container) container.style.display = isInactive ? 'block' : 'none';
+    if (!isInactive && exitDateInput) {
+        exitDateInput.value = '';
+    }
 }
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -2046,13 +2151,13 @@ document.addEventListener('DOMContentLoaded', function () {
         $('#addDesignationForm')[0].reset();
         $('#saveDesignationBtn').text('Add Designation');
         $('#designation-error').addClass('d-none').text('');
-        const modal = new bootstrap.Modal($el('designationModal'));
+        const modal = bootstrap.Modal.getOrCreateInstance($el('designationModal'));
         modal.show();
     });
 
     const prtBtn = $el('openPrtModalBtn');
     if (prtBtn) prtBtn.addEventListener('click', function () {
-        const modal = new bootstrap.Modal($el('prtModal'));
+        const modal = bootstrap.Modal.getOrCreateInstance($el('prtModal'));
         modal.show();
     });
 
@@ -2070,14 +2175,14 @@ document.addEventListener('DOMContentLoaded', function () {
             $('#dpt_parent_select').val(currentParent);
         }
         $('#dpt-group-error').addClass('d-none').text('');
-        const modal = new bootstrap.Modal($el('dptModal'));
+        const modal = bootstrap.Modal.getOrCreateInstance($el('dptModal'));
         modal.show();
     });
 
     const mobileOnly = $el('mobile_only_digits');
     if (mobileOnly) {
         mobileOnly.addEventListener('input', function () {
-            let v = this.value.replace(/\D/g, '').slice(0, 10);
+            let v = this.value.replace(/\D/g, '').slice(0, Number(document.getElementById('mobile_only_digits').maxLength) || 15);
             if (v.length > 0 && v[0] === '0') v = v.replace(/^0+/, '');
             this.value = v;
             if (typeof syncMobileHidden === 'function') syncMobileHidden();
@@ -2203,10 +2308,52 @@ $(document).ready(function() {
         $select.find('option[value="' + value + '"]').remove();
         $select.append($('<option>', {
             value: value,
-            text: label + ' (New, pending employee save)',
+            text: label + ($select.attr('id') === 'designation_id' ? '' : ' (New, pending employee save)'),
             selected: true
         }));
         $select.trigger('change');
+    }
+
+    function closePendingModal(modalId, text) {
+        const modalElement = document.getElementById(modalId);
+        // Release Bootstrap's backdrop and focus trap before showing feedback.
+        modalElement.addEventListener('hidden.bs.modal', function () {
+            if (modalId === 'prtModal') {
+                const root = document.documentElement;
+                const theme = root.getAttribute('data-pms-theme') || root.getAttribute('data-bs-theme') || root.getAttribute('data-theme');
+                const dark = theme ? theme === 'dark' : document.body.classList.contains('dark-mode');
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'info',
+                    iconColor: dark ? '#60a5fa' : '#2563eb',
+                    title: 'Department added to form',
+                    text: 'Save the employee to create this department. It has not been saved yet.',
+                    showConfirmButton: false,
+                    showCloseButton: true,
+                    timer: 6000,
+                    timerProgressBar: true,
+                    customClass: { popup: 'employee-department-feedback' },
+                    didOpen: popup => {
+                        popup.style.setProperty('--department-feedback-bg', dark ? '#151b38' : '#ffffff');
+                        popup.style.setProperty('--department-feedback-text', dark ? '#e2e8f0' : '#1e293b');
+                        popup.style.setProperty('--department-feedback-border', dark ? '#334155' : '#cbd5e1');
+                        popup.addEventListener('mouseenter', Swal.stopTimer);
+                        popup.addEventListener('mouseleave', Swal.resumeTimer);
+                    }
+                });
+                return;
+            }
+            Swal.fire({
+                icon: 'success',
+                title: 'Added to employee form',
+                text: text,
+                timer: 1700,
+                showConfirmButton: false,
+                customClass: { popup: 'employee-pending-success' }
+            });
+        }, { once: true });
+        bootstrap.Modal.getOrCreateInstance(modalElement).hide();
     }
 
     function pendingNote(text) {
@@ -2281,36 +2428,11 @@ $(document).ready(function() {
         return true;
     }
 
-    let mobileCheckAjax = null;
-    $('#mobile_only_digits').on('blur', function() {
-        if (!validateMobileInput()) return;
-
-        const value = $(this).val().trim();
-        if (!value) return;
-
-        const selectedCountryCode = $('#mobile_country_code').val() || '+91';
-        $('#mobile_with_code').val(selectedCountryCode + value);
-
-        if (mobileCheckAjax) mobileCheckAjax.abort();
-
-        mobileCheckAjax = $.ajax({
-            url: '{{ route("employees.check-mobile") }}',
-            method: 'POST',
-            data: {
-                mobile: value,
-                mobile_country_code: selectedCountryCode,
-                _token: '{{ csrf_token() }}'
-            },
-            success: function(response) {
-                if (response.exists) {
-                    $('#mobile_only_digits').addClass('is-invalid');
-                    $('#mobile-error').text('This mobile number is already registered').removeClass('d-none').addClass('d-block');
-                }
-            },
-            error: function(xhr, status) {
-                if (status !== 'abort') console.error('Mobile check failed');
-            }
-        });
+    window.validateMobileInput = validateMobileInput;
+    window.PMSEmployeeMobileCheck.init({
+        url: '{{ route("employees.check-mobile") }}',
+        csrf: '{{ csrf_token() }}',
+        validate: validateMobileInput
     });
 
     $('.email-input').on('blur', function() {
@@ -2346,8 +2468,7 @@ $(document).ready(function() {
         $('#prtModal .modal-body').append(pendingNote('This department will be created only after the employee is saved successfully.'));
 
         $form[0].reset();
-        $('#prtModal').modal('hide');
-        Swal.fire({ icon: 'success', title: 'Added to employee form', text: 'Department is pending until employee creation succeeds.', timer: 1700, showConfirmButton: false });
+        closePendingModal('prtModal', 'Department is pending until employee creation succeeds.');
     });
 
     // Handle department form submission
@@ -2380,8 +2501,7 @@ $(document).ready(function() {
         $('#dptModal .modal-body').append(pendingNote('This sub department will be created only after the employee is saved successfully.'));
 
         $form[0].reset();
-        $('#dptModal').modal('hide');
-        Swal.fire({ icon: 'success', title: 'Added to employee form', text: 'Sub department is pending until employee creation succeeds.', timer: 1700, showConfirmButton: false });
+        closePendingModal('dptModal', 'Sub department is pending until employee creation succeeds.');
     });
 
     // Handle designation form submission
@@ -2398,13 +2518,13 @@ $(document).ready(function() {
         }
 
         if (level === '' || level === null) {
-            $('#designation-error').removeClass('d-none').text('Please enter a level between 0-6.');
+            $('#designation-error').removeClass('d-none').text('Please enter a level between 0-{{ \App\Services\DesignationLevels::maximum() }}.');
             return;
         }
 
         const levelNum = parseInt(level);
-        if (isNaN(levelNum) || levelNum < 0 || levelNum > 6) {
-            $('#designation-error').removeClass('d-none').text('Level must be a whole number between 0-6.');
+        if (isNaN(levelNum) || levelNum < 0 || levelNum > {{ \App\Services\DesignationLevels::maximum() }}) {
+            $('#designation-error').removeClass('d-none').text('Level must be a whole number between 0-{{ \App\Services\DesignationLevels::maximum() }}.');
             return;
         }
 
@@ -2416,8 +2536,7 @@ $(document).ready(function() {
         $('#designationModal .modal-body').append(pendingNote('This designation will be created only after the employee is saved successfully.'));
 
         $('#addDesignationForm')[0].reset();
-        $('#designationModal').modal('hide');
-        Swal.fire({ icon: 'success', title: 'Added to employee form', text: 'Designation is pending until employee creation succeeds.', timer: 1700, showConfirmButton: false });
+        closePendingModal('designationModal', 'Designation is pending until employee creation succeeds.');
     });
 
     // Initialize Select2 for country and language
