@@ -53,4 +53,45 @@ class RecruitmentPdfBranding
         }
         return $messages;
     }
+
+    /**
+     * Branding images are stored base64-encoded in one INSERT, which must fit the MySQL server's
+     * max_allowed_packet (1 MB on a default XAMPP install). Keeps the original bytes when they fit;
+     * otherwise re-encodes the same pixels (same width × height) as a high-quality JPEG on white.
+     * Returns null when the image cannot be made to fit.
+     *
+     * @return array{bytes: string, mime: string}|null
+     */
+    public static function fitForDatabase(string $bytes, string $mime, int $packetBytes): ?array
+    {
+        // Leave room for the rest of the INSERT statement and protocol overhead.
+        $budget = max(64 * 1024, $packetBytes - 64 * 1024);
+        $fits = fn (string $data) => 4 * (int) ceil(strlen($data) / 3) <= $budget;
+        if ($fits($bytes)) {
+            return ['bytes' => $bytes, 'mime' => $mime];
+        }
+        if (! function_exists('imagecreatefromstring') || ! ($source = @imagecreatefromstring($bytes))) {
+            return null;
+        }
+        $width = imagesx($source);
+        $height = imagesy($source);
+        $canvas = imagecreatetruecolor($width, $height);
+        imagefill($canvas, 0, 0, imagecolorallocate($canvas, 255, 255, 255));
+        imagecopy($canvas, $source, 0, 0, 0, 0, $width, $height);
+        imagedestroy($source);
+        try {
+            foreach ([92, 86, 80, 72, 64, 56] as $quality) {
+                ob_start();
+                imagejpeg($canvas, null, $quality);
+                $jpeg = (string) ob_get_clean();
+                if ($jpeg !== '' && $fits($jpeg)) {
+                    return ['bytes' => $jpeg, 'mime' => 'image/jpeg'];
+                }
+            }
+        } finally {
+            imagedestroy($canvas);
+        }
+
+        return null;
+    }
 }

@@ -1142,12 +1142,14 @@
                     </div>
                     <div class="card-body-premium" style="padding: 2rem;">
                         @php
-                            $role = strtolower(auth()->user()->roleMaster->role_name ?? (auth()->user()->role ?? ''));
+                            $profileEditor = auth()->user();
                         @endphp
 
-                        <a href="{{ route('employees.edit', $employee->id) }}" class="action-btn btn-edit">
-                            <i class="fas fa-pen-nib"></i> Edit Employee Profile
-                        </a>
+                        @if(\App\Support\EmployeeProfileAccess::canShowEditLinks($profileEditor) && \App\Support\EmployeeProfileAccess::canEditTarget($profileEditor, $employee))
+                            <a href="{{ route('employees.edit', $employee->id) }}" class="action-btn btn-edit">
+                                <i class="fas fa-pen-nib"></i> Edit Employee Profile
+                            </a>
+                        @endif
 
                         <button onclick="window.print()" class="action-btn btn-print">
                             <i class="fas fa-print"></i> Print Profile

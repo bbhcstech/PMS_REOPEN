@@ -78,9 +78,11 @@
 
             <div class="d-flex align-items-center gap-2 flex-wrap">
                 @if($canManageDirectory)
-                    <a href="{{ route('employees.edit', ['employee' => $employee, 'return_url' => url()->full()]) }}" class="org-btn org-btn-primary">
-                        <i class="fas fa-user-pen"></i> Full HR Edit
-                    </a>
+                    @if(\App\Support\EmployeeProfileAccess::canShowEditLinks(auth()->user()) && \App\Support\EmployeeProfileAccess::canEditTarget(auth()->user(), $employee))
+                        <a href="{{ route('employees.edit', ['employee' => $employee, 'return_url' => url()->full()]) }}" class="org-btn org-btn-primary">
+                            <i class="fas fa-user-pen"></i> Full HR Edit
+                        </a>
+                    @endif
                     <a href="#directory-editor" class="org-btn org-btn-secondary">
                         <i class="fas fa-pen-to-square"></i> Edit Public Info
                     </a>

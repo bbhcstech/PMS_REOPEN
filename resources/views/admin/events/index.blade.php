@@ -1211,6 +1211,7 @@
 </style>
 @include('admin.events.dark-theme')
 @include('admin.events.presentation')
+@include('admin.events.partials.catalog-style')
 @endpush
 
 @section('content')
@@ -1228,12 +1229,11 @@
             </div>
         </div>
         @if($canManage)
-        <div>
             <button type="button" class="btn pms-events-btn-primary" onclick="openCreateModal()">
                 <i class="bx bx-plus"></i> Create Event
             </button>
         @endif
-    </header>
+    </div>
 
     {{-- FLASH MESSAGES --}}
     @if($errors->any())
@@ -1315,7 +1315,7 @@
                 </div>
             </div>
         </div>
-    </dl>
+    </div>
 
     {{-- FILTER BAR & VIEW TOGGLE --}}
     <div class="card events-filter-card border-0 mb-4">
@@ -1372,28 +1372,16 @@
                             <i class="bx bx-reset"></i> Reset
                         </a>
 
-                        {{-- ENHANCED VIEW TOGGLE BUTTONS [LIST] [CALENDAR] [GALLERY] --}}
-                        <div class="pms-events-switcher filter-btn-group ms-1" role="group">
-                            <button type="button" class="btn active" id="btnListView" onclick="switchView('list')">
-                                <i class="bx bx-list-ul"></i> List
-                            </button>
-                            <button type="button" class="btn" id="btnCalendarView" onclick="switchView('calendar')">
-                                <i class="bx bx-calendar"></i> Calendar
-                            </button>
-                            <button type="button" class="btn" id="btnGalleryView" onclick="switchView('gallery')">
-                                <i class="bx bx-images"></i> Gallery
-                            </button>
-                        </div>
                     </div>
                 </div>
-                <div class="btn-group filter-btn-group" role="group" aria-label="Event view">
-                    <button type="button" class="btn btn-outline-primary active" id="btnListView" aria-controls="eventsListView" onclick="switchView('list')">
+                <div class="pms-events-switcher filter-btn-group events-view-switcher" role="group" aria-label="Event view">
+                    <button type="button" class="btn active" id="btnListView" aria-controls="eventsListView" onclick="switchView('list')">
                         <i class="bx bx-list-ul" aria-hidden="true"></i> List
                     </button>
-                    <button type="button" class="btn btn-outline-primary" id="btnCalendarView" aria-controls="eventsCalendarView" onclick="switchView('calendar')">
+                    <button type="button" class="btn" id="btnCalendarView" aria-controls="eventsCalendarView" onclick="switchView('calendar')">
                         <i class="bx bx-calendar" aria-hidden="true"></i> Calendar
                     </button>
-                    <button type="button" class="btn btn-outline-primary" id="btnGalleryView" aria-controls="eventsGalleryView" onclick="switchView('gallery')">
+                    <button type="button" class="btn" id="btnGalleryView" aria-controls="eventsGalleryView" onclick="switchView('gallery')">
                         <i class="bx bx-images" aria-hidden="true"></i> Gallery
                     </button>
                 </div>
@@ -1402,20 +1390,22 @@
     </div>
 
     {{-- LIST VIEW SECTION --}}
-    <div id="eventsListView">
+    <div id="eventsListView" class="events-catalog-pane">
         @if($events->count() > 0)
-            <div class="events-card-grid">
+            <div class="events-card-grid events-list-grid">
                 @foreach($events as $event)
                 <div class="events-card-item">
                     <div class="card event-card h-100 d-flex flex-column">
                         {{-- Banner / Header Image --}}
-                        @if($event->banner_url)
-                            <img src="{{ $event->banner_url }}" alt="{{ $event->title }}" class="event-banner-img">
-                        @else
-                            <div class="event-banner-placeholder" aria-hidden="true">
-                                <span class="events-cover-icon"><i class="bx bx-calendar-event"></i></span>
-                            </div>
-                        @endif
+                        <div class="events-list-cover">
+                            @if($event->banner_url)
+                                <img src="{{ $event->banner_url }}" alt="{{ $event->title }}" class="event-banner-img">
+                            @else
+                                <div class="event-banner-placeholder" aria-hidden="true">
+                                    <span class="events-cover-icon"><i class="bx bx-calendar-event"></i></span>
+                                </div>
+                            @endif
+                        </div>
 
                         <div class="card-body event-card-content d-flex flex-column flex-grow-1">
                             {{-- Badges Row --}}
@@ -1442,27 +1432,26 @@
                                 {{ $event->title }}
                             </h2>
 
-                            {{-- Date & Time --}}
-                            <div class="events-card-meta">
-                                <span class="events-meta-icon" aria-hidden="true"><i class="bx bx-calendar"></i></span>
-                                <span>{{ $event->start_date->format('d M Y') }}
-                                    @if($event->start_time)
-                                        <span class="events-card-time">{{ date('h:i A', strtotime($event->start_time)) }}</span>
+                            <div class="events-card-facts">
+                                <div class="events-card-meta">
+                                    <span class="events-meta-icon" aria-hidden="true"><i class="bx bx-calendar"></i></span>
+                                    <span>{{ $event->start_date->format('d M Y') }}
+                                        @if($event->start_time)
+                                            <span class="events-card-time">{{ date('h:i A', strtotime($event->start_time)) }}</span>
+                                        @endif
+                                    </span>
+                                </div>
+                                <div class="events-card-meta events-card-location">
+                                    @if($event->location_type === 'online')
+                                        <span class="events-meta-icon" aria-hidden="true"><i class="bx bx-video"></i></span>
+                                        <a href="{{ $event->meeting_url }}" target="_blank" class="text-decoration-none text-truncate">
+                                            Online Meeting
+                                        </a>
+                                    @else
+                                        <span class="events-meta-icon" aria-hidden="true"><i class="bx bx-map-pin"></i></span>
+                                        <span class="text-truncate" title="{{ $event->location }}">{{ $event->location ?: 'Physical Venue' }}</span>
                                     @endif
-                                </span>
-                            </div>
-
-                            {{-- Location --}}
-                            <div class="events-card-meta events-card-location">
-                                @if($event->location_type === 'online')
-                                    <span class="events-meta-icon" aria-hidden="true"><i class="bx bx-video"></i></span>
-                                    <a href="{{ $event->meeting_url }}" target="_blank" class="text-decoration-none text-truncate">
-                                        Online Meeting
-                                    </a>
-                                @else
-                                    <span class="events-meta-icon" aria-hidden="true"><i class="bx bx-map-pin"></i></span>
-                                    <span class="text-truncate" title="{{ $event->location }}">{{ $event->location ?: 'Physical Venue' }}</span>
-                                @endif
+                                </div>
                             </div>
 
                             {{-- Description snippet --}}
@@ -1571,7 +1560,7 @@
     </div>
 
     {{-- GALLERY VIEW SECTION (NEW) --}}
-    <div id="eventsGalleryView" class="d-none">
+    <div id="eventsGalleryView" class="events-catalog-pane d-none">
         <div class="events-gallery-heading">
             <span class="events-empty-icon" aria-hidden="true"><i class="bx bx-images"></i></span>
             <div>

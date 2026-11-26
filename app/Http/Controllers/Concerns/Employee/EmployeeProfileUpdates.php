@@ -11,6 +11,7 @@ use App\Models\ParentDepartment;
 use App\Models\User;
 use App\Services\SystemNotificationService;
 use App\Support\CountryPhone;
+use App\Support\EmployeeProfileAccess;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -20,6 +21,12 @@ use Illuminate\Support\Facades\Schema;
 
 trait EmployeeProfileUpdates
 {
+    private function authorizeProfileEdit(User $employee): void
+    {
+        abort_unless(EmployeeProfileAccess::canEditTarget(auth()->user(), $employee), 403,
+            'You do not have permission to edit this employee profile.');
+    }
+
     /**
      * Edit form.
      */
@@ -28,11 +35,7 @@ trait EmployeeProfileUpdates
         $this->ensureAdmin();
 
         $employee = User::with('employeeDetail')->findOrFail($id);
-        if ($employee->company_staff_role_id) {
-            // Company-role accounts are edited by a company admin in this form; their access role stays fixed.
-            abort_unless(in_array(auth()->user()?->normalizedRole(), ['admin', 'administrator'], true)
-                && (int) $employee->company_id === (int) auth()->user()?->company_id, 403);
-        }
+        $this->authorizeProfileEdit($employee);
 
         return view('admin.employees.edit', [
             'employee' => $employee,
@@ -58,12 +61,12 @@ trait EmployeeProfileUpdates
     public function update(Request $request, $id)
     {
         $this->ensureAdmin();
-        $this->validateJoiningAge($request);
 
         // load user & detail first so we can build validation rules that ignore current records
         $user = User::findOrFail($id);
-        abort_if(auth()->user()->normalizedRole() !== 'superadmin' && (int) $user->company_id !== (int) auth()->user()->company_id, 403);
-        $this->guardEmployeeRole($request, $user);
+        $this->authorizeProfileEdit($user);
+        $this->guardEmployeeRole($request);
+        $this->validateJoiningAge($request);
         $detail = $user->employeeDetail;
 
         // ==============================================

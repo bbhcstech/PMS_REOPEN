@@ -23,6 +23,9 @@
     </div>
 
     @php
+        $profileEditor = auth()->user();
+        $canShowProfileEditLinks = \App\Support\EmployeeProfileAccess::canShowEditLinks($profileEditor);
+
         // Calculate employee counts for statistics - FUNCTIONALITY UNCHANGED
         $totalEmployees = $companyEmployeeTotal ?? $employees->count();
         $activeEmployees = $employees->where('employeeDetail.status', 'Active')->count();
@@ -428,7 +431,8 @@
         .emp-lifecycle-modal .elm-input::placeholder { color: var(--elm-muted) !important; -webkit-text-fill-color: var(--elm-muted) !important; opacity: .6; }
         .emp-lifecycle-modal .elm-hint { margin: 8px 0 0; font-size: .8rem; line-height: 1.5; color: var(--elm-muted) !important; -webkit-text-fill-color: var(--elm-muted) !important; }
         .emp-lifecycle-modal .elm-foot { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; padding: 16px 22px 20px; }
-        .emp-lifecycle-modal .elm-btn { display: inline-flex !important; align-items: center; justify-content: center; gap: 7px; height: 42px; padding: 0 18px !important; border-radius: 12px !important; border: 1px solid transparent !important; font: inherit; font-size: .88rem; font-weight: 600; cursor: pointer; width: auto !important; box-shadow: none !important; transition: filter .15s, opacity .15s; }
+        .emp-lifecycle-modal .elm-btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; height: 42px; padding: 0 18px !important; border-radius: 12px !important; border: 1px solid transparent !important; font: inherit; font-size: .88rem; font-weight: 600; cursor: pointer; width: auto !important; box-shadow: none !important; transition: filter .15s, opacity .15s; }
+        .emp-lifecycle-modal .elm-btn[hidden] { display: none !important; }
         .emp-lifecycle-modal .elm-btn i { color: inherit !important; -webkit-text-fill-color: currentColor !important; }
         .emp-lifecycle-modal .elm-btn.is-ghost { background: transparent !important; border-color: var(--elm-border) !important; color: var(--elm-ink) !important; -webkit-text-fill-color: var(--elm-ink) !important; }
         .emp-lifecycle-modal .elm-btn.is-danger { background: #dc2626 !important; color: #fff !important; -webkit-text-fill-color: #fff !important; }
@@ -745,11 +749,13 @@
                                                 <i class="fas fa-eye text-primary me-2"></i> View Details
                                             </a>
                                         </li>
-                                        <li>
-                                            <a class="dropdown-item" href="{{ route('employees.edit', $employee->id) }}">
-                                                <i class="fas fa-edit text-info me-2"></i> Edit Profile
-                                            </a>
-                                        </li>
+                                        @if($canShowProfileEditLinks && \App\Support\EmployeeProfileAccess::canEditTarget($profileEditor, $employee))
+                                            <li>
+                                                <a class="dropdown-item" href="{{ route('employees.edit', $employee->id) }}">
+                                                    <i class="fas fa-edit text-info me-2"></i> Edit Profile
+                                                </a>
+                                            </li>
+                                        @endif
                                         <li>
                                             <button type="button" class="dropdown-item text-warning" onclick="openResetPasswordModal({{ $employee->id }}, '{{ addslashes($employee->name) }}')">
                                                 <i class="fas fa-key me-2"></i> Reset Password
@@ -784,15 +790,16 @@
                                         </li>
                                         @endif
                                         @php
+                                            $employeeRole = strtolower(trim((string) ($employee->role ?? '')));
                                             $isInactiveEmployee = strcasecmp((string) ($employee->employeeDetail?->status ?? ''), 'Inactive') === 0;
                                             $deleteState = match (true) {
-                                                ($employee->role ?? '') !== 'employee' => 'privileged',
+                                                $employeeRole !== 'employee' => 'privileged',
                                                 isset($employee->subordinate_count) && $employee->subordinate_count > 0 => 'has-team',
                                                 ! $isInactiveEmployee => 'active',
                                                 default => 'ready',
                                             };
                                         @endphp
-                                        @if(! $isInactiveEmployee && $employee->employeeDetail && ($employee->role ?? '') === 'employee')
+                                        @if(! $isInactiveEmployee && $employee->employeeDetail && $employeeRole === 'employee')
                                             <li>
                                                 <button type="button" class="dropdown-item text-warning employee-inactive-trigger"
                                                         data-employee-name="{{ $employee->name }}"
@@ -1362,6 +1369,13 @@ $(document).ready(function () {
     // ===== Delete employee (permanent) — only after the employee is inactive =====
     const deleteModalEl = document.getElementById('employeeDeleteModal');
     const inactiveModalEl = document.getElementById('employeeInactiveModal');
+    // Move lifecycle and action modals to document.body so they sit above Bootstrap's backdrop.
+    ['blockedDeleteModal', 'employeeDeleteModal', 'employeeInactiveModal', 'quickResetPasswordModal'].forEach(id => {
+        const modalEl = document.getElementById(id);
+        if (modalEl && modalEl.parentElement !== document.body) {
+            document.body.appendChild(modalEl);
+        }
+    });
     const initialsOf = name => String(name || 'E').trim().split(/\s+/).slice(0, 2).map(part => part.charAt(0)).join('').toUpperCase() || 'E';
     let deleteContext = null;
 
@@ -1408,8 +1422,8 @@ $(document).ready(function () {
         $('#employeeDeleteForm').toggle(ready).attr('action', ready ? $btn.data('delete-url') : '#');
         $('#employeeDeleteCode').text(expected);
         $('#employeeDeleteConfirm').val('').attr('placeholder', expected).data('expected', expected);
-        $('#employeeDeleteSubmit').toggle(ready).prop('disabled', true);
-        $('#employeeDeleteMakeInactive').toggle(state === 'active');
+        $('#employeeDeleteSubmit').prop('hidden', !ready).toggle(ready).prop('disabled', true);
+        $('#employeeDeleteMakeInactive').prop('hidden', state !== 'active').toggle(state === 'active');
         bootstrap.Modal.getOrCreateInstance(deleteModalEl).show();
     });
 
@@ -1425,7 +1439,11 @@ $(document).ready(function () {
     });
     $('#employeeDeleteMakeInactive').on('click', function () {
         const context = deleteContext;
-        if (!context) return;
+        if (!context || !deleteModalEl) return;
+        if (!deleteModalEl.classList.contains('show')) {
+            openInactiveModal(context);
+            return;
+        }
         deleteModalEl.addEventListener('hidden.bs.modal', () => openInactiveModal(context), { once: true });
         bootstrap.Modal.getOrCreateInstance(deleteModalEl).hide();
     });
@@ -1482,9 +1500,13 @@ $(document).ready(function () {
 
 <script>
 function openResetPasswordModal(id, name) {
+    const modalEl = document.getElementById('quickResetPasswordModal');
+    if (modalEl && modalEl.parentElement !== document.body) {
+        document.body.appendChild(modalEl);
+    }
     document.getElementById('quickResetEmployeeName').textContent = name;
     document.getElementById('quickResetPasswordForm').action = "{{ url('/users') }}/" + id + "/change-password";
-    new bootstrap.Modal(document.getElementById('quickResetPasswordModal')).show();
+    bootstrap.Modal.getOrCreateInstance(modalEl).show();
 }
 </script>
 

@@ -23,6 +23,7 @@ class RecruitmentController extends Controller
 {
     public function index(Request $request)
     {
+        \App\Services\RecruitmentBrandingSchema::ensure();
         $query = RecruitmentRequirement::with(['department', 'creator'])
             ->orderBy('id', 'desc');
 
@@ -187,6 +188,7 @@ class RecruitmentController extends Controller
 
         $companyId = TenantScope::companyId();
         abort_unless($companyId, 403);
+        \App\Services\RecruitmentBrandingSchema::ensure();
 
         $validated = $request->validate([
             'title' => 'required|string|max:255',
@@ -235,17 +237,24 @@ class RecruitmentController extends Controller
             'created_by' => $user?->id,
         ];
 
-        $requirement = DB::connection('tenant')->transaction(function () use ($validated, $attributes, $companyId) {
-            foreach (array_keys(RecruitmentPdfBranding::HEIGHTS) as $kind) {
-                $column = 'pdf_'.$kind.'_asset_id';
-                $upload = $validated['pdf_'.$kind.'_image'] ?? null;
-                $attributes[$column] = $upload
-                    ? $this->storePdfBrandingImage($companyId, $kind, $upload, $validated['pdf_'.$kind.'_name'] ?? null)
-                    : $validated[$column];
-            }
+        try {
+            $requirement = DB::connection('tenant')->transaction(function () use ($validated, $attributes, $companyId) {
+                foreach (array_keys(RecruitmentPdfBranding::HEIGHTS) as $kind) {
+                    $column = 'pdf_'.$kind.'_asset_id';
+                    $upload = $validated['pdf_'.$kind.'_image'] ?? null;
+                    $attributes[$column] = $upload
+                        ? $this->storePdfBrandingImage($companyId, $kind, $upload, $validated['pdf_'.$kind.'_name'] ?? null)
+                        : ($validated[$column] ?? null);
+                }
 
-            return RecruitmentRequirement::create($attributes);
-        }, 3);
+                return RecruitmentRequirement::create($attributes);
+            }, 3);
+        } catch (\Illuminate\Database\QueryException $e) {
+            // Never show a server error page for a failed save: keep the form and explain.
+            \Illuminate\Support\Facades\Log::error('Recruitment requirement could not be saved: ' . $e->getMessage());
+            return back()->withInput($request->except(['pdf_header_image', 'pdf_footer_image']))
+                ->with('error', 'The requirement could not be saved because of a database problem. Please try again, or contact your administrator if it keeps happening.');
+        }
 
         // SHARE NOTIFICATION WITH ALL EMPLOYEES, MANAGERS, AND HR STAFF
         $title = "📢 New Job Requirement: {$requirement->title}";
@@ -281,6 +290,7 @@ class RecruitmentController extends Controller
         abort_unless(auth()->user()?->role === 'admin', 403);
         $companyId = TenantScope::companyId();
         abort_unless($companyId, 403);
+        \App\Services\RecruitmentBrandingSchema::ensure();
 
         $image = RecruitmentBrandingAsset::where('company_id', $companyId)->findOrFail($asset);
 
@@ -453,7 +463,14 @@ class RecruitmentController extends Controller
         $filename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
         $defaultName = Str::of($filename)->replaceMatches('/[_-]+/u', ' ')->squish()->limit(100, '')->trim()->toString();
         $name = Str::squish($name ?? '');
-        $image = $file->get();
+        // The image is saved in a single INSERT; keep it within the MySQL server's packet limit.
+        $fitted = RecruitmentPdfBranding::fitForDatabase($file->get(), (string) $file->getMimeType(), $this->databasePacketBytes());
+        if (! $fitted) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'pdf_'.$kind.'_image' => 'Company '.$kind.' image is too large to save. Please upload a smaller (more compressed) JPG or PNG.',
+            ]);
+        }
+        $image = $fitted['bytes'];
 
         return RecruitmentBrandingAsset::query()->select('id')->lockForUpdate()->firstOrCreate([
             'company_id' => $companyId,
@@ -461,9 +478,23 @@ class RecruitmentController extends Controller
             'name' => $name !== '' ? $name : ($defaultName !== '' ? $defaultName : 'Company '.$kind),
             'sha256' => hash('sha256', $image),
         ], [
-            'mime_type' => $file->getMimeType(),
+            'mime_type' => $fitted['mime'],
             'image_data' => base64_encode($image),
         ])->id;
+    }
+
+    /** The company database's max_allowed_packet (MySQL/MariaDB); generous default when unknown. */
+    private function databasePacketBytes(): int
+    {
+        try {
+            $connection = DB::connection('tenant');
+            if (in_array($connection->getDriverName(), ['mysql', 'mariadb'], true)) {
+                return (int) ($connection->selectOne('SELECT @@max_allowed_packet AS packet')->packet ?? 0) ?: 16 * 1024 * 1024;
+            }
+        } catch (\Throwable $e) {
+            report($e);
+        }
+        return 64 * 1024 * 1024;
     }
 
     /**
