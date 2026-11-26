@@ -130,6 +130,64 @@ class CompanyNotificationController extends Controller
     }
 
     /**
+     * Delete single central notification.
+     */
+    public function destroy($id): JsonResponse|RedirectResponse
+    {
+        $companyId = $this->getActiveCompanyId();
+
+        $notification = CentralNotification::on('central')
+            ->where('company_id', $companyId)
+            ->whereIn('target_audience', ['company_admin', 'all'])
+            ->findOrFail($id);
+
+        $notification->delete();
+
+        if (request()->wantsJson() || request()->ajax()) {
+            return response()->json(['success' => true, 'message' => 'Notification deleted.']);
+        }
+
+        return redirect()->back()->with('success', 'Notification deleted.');
+    }
+
+    /**
+     * Delete selected central notifications in one query.
+     */
+    public function deleteSelected(Request $request): JsonResponse|RedirectResponse
+    {
+        $companyId = $this->getActiveCompanyId();
+
+        $validated = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['required', 'string', 'max:100'],
+        ]);
+
+        $centralIds = [];
+        foreach (array_unique($validated['ids']) as $rawId) {
+            $cleanId = str_starts_with($rawId, 'central:') ? substr($rawId, 8) : $rawId;
+            if (ctype_digit($cleanId)) {
+                $centralIds[] = (int) $cleanId;
+            }
+        }
+
+        $deletedCount = empty($centralIds) ? 0 : CentralNotification::on('central')
+            ->where('company_id', $companyId)
+            ->whereIn('target_audience', ['company_admin', 'all'])
+            ->whereIn('id', $centralIds)
+            ->delete();
+
+        $message = $deletedCount === 1
+            ? '1 notification deleted.'
+            : "{$deletedCount} notifications deleted.";
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json(['success' => true, 'deleted' => $deletedCount, 'message' => $message]);
+        }
+
+        return redirect()->back()->with('success', $message);
+    }
+
+    /**
      * Unread count API for Company Admin header.
      */
     public function unreadCount(): JsonResponse
