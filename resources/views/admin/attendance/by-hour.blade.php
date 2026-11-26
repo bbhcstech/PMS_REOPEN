@@ -1530,7 +1530,7 @@
     }
 </style>
 
-<div class="attendance-hour-container">
+<div class="attendance-hour-container" data-live-preserve data-live-records-off>
     <div class="content-wrapper">
         <div class="container-fluid">
             <div class="header-card">

@@ -5,7 +5,7 @@
 
 @section('content')
 @include('admin.settings.partials.workforce-navigation')
-<div class="designation-page">
+<div class="designation-page" data-live-preserve data-live-records-off>
     <!-- Breadcrumb -->
     <div class="breadcrumb" data-live-key="designation-breadcrumb">
         <i class="fas fa-building"></i> Admin / Settings / Designations
@@ -47,6 +47,35 @@
             </a>
         </div>
     </div>
+
+    <!-- Alert Messages -->
+    @if(session('success'))
+    <div class="alert alert-success alert-dismissible fade show mt-3" role="alert" data-live-key="designation-success">
+        <i class="fas fa-check-circle"></i>
+        <strong>Success!</strong> {{ session('success') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    @endif
+
+    @if(session('error'))
+    <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert" data-live-key="designation-error">
+        <i class="fas fa-exclamation-triangle"></i>
+        <div>
+            <strong>{{ str_contains(strtolower((string) session('error')), 'archive') ? 'Archive Failed:' : 'Error!' }}</strong> {{ session('error') }}
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    @endif
+
+    @if($errors->any())
+    <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+        <i class="fas fa-exclamation-triangle"></i>
+        <div>
+            <strong>Error!</strong> {{ $errors->first() }}
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    @endif
 
     @php
         $levelsCount = $levelsCount ?? $designations->groupBy('level')->count();
@@ -118,23 +147,6 @@
             </div>
         </div>
     </div>
-
-    <!-- Alert Messages -->
-    @if(session('success'))
-    <div class="alert alert-success alert-dismissible fade show" role="alert" data-live-key="designation-success">
-        <i class="fas fa-check-circle"></i>
-        <strong>Success!</strong> {{ session('success') }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-    @endif
-
-    @if(session('error'))
-    <div class="alert alert-danger alert-dismissible fade show" role="alert" data-live-key="designation-error">
-        <i class="fas fa-exclamation-triangle"></i>
-        <strong>Error!</strong> {{ session('error') }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-    @endif
 
     <!-- Main Table Card -->
     <div class="table-card" data-live-key="designation-list">
@@ -254,7 +266,7 @@
                                     </li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li>
-                                        <form action="{{ \App\Support\WorkforceSettings::route('designations.archive.action', $designation->id) }}" method="POST" class="d-inline delete-form" onsubmit="return confirm('Archive this designation? It will move to Archived Designations and can be restored later.')">
+                                        <form action="{{ \App\Support\WorkforceSettings::route('designations.archive.action', $designation->id) }}" method="POST" class="d-inline delete-form" data-designation-name="{{ $designation->name }}">
                                             @csrf
                                             <button type="submit" class="dropdown-item text-warning">
                                                 <i class="fas fa-box-archive"></i> Archive Designation
@@ -2344,6 +2356,64 @@
         color: #ffffff !important;
         -webkit-text-fill-color: #ffffff !important;
     }
+
+    /* Solid floating archive feedback toast (never transparent over underlying buttons/inputs) */
+    .designation-toast-alert {
+        position: fixed !important;
+        top: 76px !important;
+        right: 20px !important;
+        z-index: 2147483647 !important;
+        width: min(420px, calc(100vw - 24px)) !important;
+        padding: 0 !important;
+        pointer-events: auto !important;
+    }
+
+    .designation-toast-alert > .alert {
+        background: #ffffff !important;
+        background-color: #ffffff !important;
+        border: 1px solid rgba(15, 23, 42, 0.12) !important;
+        border-radius: 18px !important;
+        box-shadow: 0 22px 50px rgba(15, 23, 42, 0.22) !important;
+        padding: 18px 20px !important;
+        margin: 0 !important;
+        opacity: 1 !important;
+        color: #1e293b !important;
+    }
+
+    .designation-toast-alert > .alert.alert-warning {
+        border-left: 4px solid #f59e0b !important;
+        color: #78350f !important;
+    }
+
+    .designation-toast-alert > .alert.alert-danger {
+        border-left: 4px solid #ef4444 !important;
+        color: #7f1d1d !important;
+    }
+
+    .designation-toast-alert > .alert.alert-success {
+        border-left: 4px solid #10b981 !important;
+        color: #065f46 !important;
+    }
+
+    html[data-pms-theme="dark"] .designation-toast-alert > .alert,
+    html[data-bs-theme="dark"] .designation-toast-alert > .alert,
+    html[data-theme="dark"] .designation-toast-alert > .alert,
+    html.dark .designation-toast-alert > .alert,
+    body.dark-mode .designation-toast-alert > .alert {
+        background: #0F1530 !important;
+        background-color: #0F1530 !important;
+        border-color: rgba(148, 163, 184, 0.25) !important;
+        box-shadow: 0 24px 56px rgba(0, 0, 0, 0.55) !important;
+        color: #f1f5f9 !important;
+    }
+
+    html[data-pms-theme="dark"] .designation-toast-alert .text-muted,
+    html[data-bs-theme="dark"] .designation-toast-alert .text-muted,
+    html[data-theme="dark"] .designation-toast-alert .text-muted,
+    html.dark .designation-toast-alert .text-muted,
+    body.dark-mode .designation-toast-alert .text-muted {
+        color: #cbd5e1 !important;
+    }
 </style>
 
 @push('js')
@@ -2555,7 +2625,7 @@ $(document).ready(function() {
     };
 
     // Row click for view details
-    $('.designation-row').on('click', function(e) {
+    $(document).on('click', '#designationTable tbody tr.designation-row', function(e) {
         if (!$(e.target).closest('input, a, button, .dropdown, .form-check, .action-btn, .dropdown-menu, .btn, .level').length) {
             var designationId = $(this).find('.select-item').val();
             if (designationId) {
@@ -2563,6 +2633,159 @@ $(document).ready(function() {
             }
         }
     });
+
+    // Floating toast notification matching parent_departments style
+    function showArchiveToast(type, contentNodeOrText) {
+        $('.designation-toast-alert').remove();
+
+        var icons = {
+            success: 'fas fa-check-circle text-success',
+            danger: 'fas fa-times-circle text-danger',
+            warning: 'fas fa-exclamation-triangle text-warning',
+            info: 'fas fa-info-circle text-info'
+        };
+        var colors = {
+            success: 'alert-success',
+            danger: 'alert-danger',
+            warning: 'alert-warning',
+            info: 'alert-info'
+        };
+
+        var wrapper = document.createElement('div');
+        wrapper.className = 'designation-toast-alert';
+
+        var alertBox = document.createElement('div');
+        alertBox.className = 'alert ' + (colors[type] || 'alert-warning') + ' fade show d-flex align-items-start gap-3';
+        alertBox.setAttribute('role', 'alert');
+
+        var icon = document.createElement('i');
+        icon.className = (icons[type] || 'fas fa-info-circle') + ' fs-4';
+
+        var body = document.createElement('div');
+        body.className = 'flex-grow-1';
+        if (typeof contentNodeOrText === 'string') {
+            body.textContent = contentNodeOrText;
+        } else {
+            body.appendChild(contentNodeOrText);
+        }
+
+        var closeBtn = document.createElement('button');
+        closeBtn.type = 'button';
+        closeBtn.className = 'btn-close';
+        closeBtn.setAttribute('data-bs-dismiss', 'alert');
+
+        alertBox.append(icon, body, closeBtn);
+        wrapper.appendChild(alertBox);
+        document.body.appendChild(wrapper);
+
+        setTimeout(function () {
+            if (window.jQuery && $(alertBox).alert) {
+                try { $(alertBox).alert('close'); } catch (_) {}
+            }
+            setTimeout(function () { wrapper.remove(); }, 300);
+        }, 7000);
+    }
+
+    function handleDesignationArchiveError(message) {
+        var box = document.createElement('div');
+        var lower = String(message || '').toLowerCase();
+        var isEmployeeBlocked = lower.includes('tagged') || lower.includes('assigned') || lower.includes('employee');
+
+        var titleWrap = document.createElement('div');
+        titleWrap.className = 'mb-2';
+        var title = document.createElement('strong');
+        title.textContent = 'Cannot Archive Designation';
+        titleWrap.appendChild(title);
+        box.appendChild(titleWrap);
+
+        var msgDiv = document.createElement('div');
+        msgDiv.textContent = message || 'Unable to archive designation.';
+        box.appendChild(msgDiv);
+
+        if (isEmployeeBlocked) {
+            var hint = document.createElement('div');
+            hint.className = 'mt-2 small text-muted';
+            var hintIcon = document.createElement('i');
+            hintIcon.className = 'fas fa-info-circle me-1';
+            hint.append(hintIcon, document.createTextNode('Reassign employees to another designation before archiving.'));
+            box.appendChild(hint);
+        }
+
+        showArchiveToast(isEmployeeBlocked ? 'warning' : 'danger', box);
+    }
+
+    // Individual archive via AJAX so errors render immediately without page reload
+    $(document).on('submit', 'form.delete-form', function(e) {
+        e.preventDefault();
+        var form = $(this);
+        var designationName = form.data('designation-name') || 'this designation';
+
+        if (!confirm('Archive designation "' + designationName + '"?\n\nIt will move to Archived Designations and can be restored later.')) {
+            return;
+        }
+
+        var toggleBtn = form.closest('.dropdown').find('[data-bs-toggle="dropdown"]')[0];
+        if (toggleBtn && window.bootstrap && bootstrap.Dropdown) {
+            try { bootstrap.Dropdown.getOrCreateInstance(toggleBtn).hide(); } catch (_) {}
+        }
+
+        var btn = form.find('button[type="submit"]');
+        var originalHtml = btn.html();
+        btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Archiving...');
+
+        $.ajax({
+            url: form.attr('action'),
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') || '{{ csrf_token() }}',
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            },
+            data: form.serialize(),
+            dataType: 'json',
+            success: function(response) {
+                if (response && response.status === 'success') {
+                    var row = form.closest('tr');
+                    row.fadeOut(350, function() {
+                        if (table) {
+                            table.row(row).remove().draw(false);
+                        } else {
+                            $(this).remove();
+                        }
+                        var totalEl = $('.designation-page .stat-card:first h3');
+                        var currentTotal = parseInt(totalEl.text(), 10);
+                        if (!isNaN(currentTotal) && currentTotal > 0) {
+                            totalEl.text(currentTotal - 1);
+                        }
+                        var badgeEl = $('.designation-page .archive-count-badge');
+                        if (badgeEl.length) {
+                            var archCount = parseInt(badgeEl.text(), 10);
+                            if (!isNaN(archCount)) badgeEl.text(archCount + 1);
+                        }
+                        showArchiveToast('success', response.message || 'Designation archived successfully.');
+                        if ($('.designation-row').length === 0) {
+                            setTimeout(function() { location.reload(); }, 600);
+                        }
+                    });
+                } else {
+                    handleDesignationArchiveError(response && response.message ? response.message : 'Cannot archive designation.');
+                }
+            },
+            error: function(xhr) {
+                var message = (xhr.responseJSON && xhr.responseJSON.message)
+                    ? xhr.responseJSON.message
+                    : 'Unable to archive designation.';
+                handleDesignationArchiveError(message);
+            },
+            complete: function() {
+                btn.prop('disabled', false).html(originalHtml);
+            }
+        });
+    });
+
+    @if(session('error'))
+        handleDesignationArchiveError(@json(session('error')));
+    @endif
 
     // Toastr options
     if (typeof toastr !== 'undefined') {
@@ -2576,14 +2799,6 @@ $(document).ready(function() {
         };
     }
 });
-
-@if(session('error'))
-    $(document).ready(function() {
-        if (typeof toastr !== 'undefined') {
-            toastr.error('{{ session('error') }}');
-        }
-    });
-@endif
 </script>
 @endpush
 

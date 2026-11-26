@@ -108,6 +108,11 @@ class Designation extends TenantModel
         return $this->hasMany(EmployeeDetail::class, 'designation_id');
     }
 
+    public function activeEmployeeDetails()
+    {
+        return $this->employeeDetails()->tap(fn ($q) => Department::applyActiveEmployeeConstraint($q));
+    }
+
     public function parent()
     {
         return $this->belongsTo(Designation::class, 'parent_id');

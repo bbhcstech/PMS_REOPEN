@@ -990,7 +990,7 @@
     $missedOut = old('missed_clock_out_status', $setting->missed_clock_out_status ?? 'half_day');
 @endphp
 
-<div class="attendance-settings-page">
+<div class="attendance-settings-page" data-live-preserve data-live-records-off>
     <div class="as-shell">
         <!-- Breadcrumb & Live Status Bar -->
         <div class="as-topbar">

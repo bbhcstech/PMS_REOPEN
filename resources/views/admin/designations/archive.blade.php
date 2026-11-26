@@ -1586,7 +1586,7 @@
     }
 </style>
 
-<div class="archive-container">
+<div class="archive-container" data-live-preserve data-live-records-off>
     <div class="ambient-orb orb-1"></div>
     <div class="ambient-orb orb-2"></div>
     <div class="ambient-orb orb-3"></div>
@@ -1616,6 +1616,12 @@
         @if(session('error'))
             <div class="alert-premium alert-error">
                 <i class="fas fa-exclamation-circle"></i> {{ session('error') }}
+            </div>
+        @endif
+
+        @if($errors->any())
+            <div class="alert-premium alert-error">
+                <i class="fas fa-exclamation-circle"></i> {{ $errors->first() }}
             </div>
         @endif
 

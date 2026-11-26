@@ -8,15 +8,36 @@
     $link = fn ($date) => route($attendanceRoute, ['view' => 'team', 'month' => $date->month, 'year' => $date->year, 'search' => request('search')]);
     $totalColumns = ['present' => 'Present', 'late' => 'Late', 'absent' => 'Absent', 'half_day' => 'Half day', 'holiday' => 'Holiday', 'leave' => 'Leave', 'unpaid_leave' => 'Unpaid', 'day_off' => 'Day off', 'weekend' => 'Weekend', 'scheduled_off' => 'Scheduled off', 'wfh' => 'WFH'];
 @endphp
-<div id="attendance-team-page" class="attendance-team-page">
+<div id="attendance-team-page" class="attendance-team-page" data-live-preserve data-live-records-off>
     <header class="at-panel at-header">
         <div><span class="at-eyebrow">PEOPLE / ATTENDANCE</span><h1>{{ request('staff_category') === 'authority' ? 'Higher-level attendance' : 'Employee attendance' }}</h1><p>Every employee, every day — one monthly overview.</p></div>
         <div class="at-actions">
-            @if(\App\Services\WorkforceAccess::isAdmin(auth()->user()) && auth()->user()->canViewModule('higher-level-attendance'))
-                <a class="at-button" href="{{ route(request('staff_category') === 'authority' ? 'attendance.index' : 'admin.authority-attendance', ['view' => 'team', 'month' => $month, 'year' => $year]) }}">{{ request('staff_category') === 'authority' ? 'Employee attendance' : 'Higher-level attendance' }}</a>
-            @endif
-            <a class="at-button" href="{{ route($attendanceRoute, ['month' => $month, 'year' => $year]) }}">Employee calendar</a>
-            <a class="at-button" href="{{ route($attendanceRoute, ['view' => 'team', 'month' => $month, 'year' => $year, 'search' => request('search'), 'format' => 'csv']) }}">Export CSV</a>
+            <a class="at-button at-primary" href="{{ route($attendanceRoute, ['view' => 'team', 'month' => $month, 'year' => $year, 'search' => request('search')]) }}" aria-current="page">Table view</a>
+            <a class="at-button" href="{{ route($attendanceRoute, ['month' => $month, 'year' => $year]) }}">Calendar view</a>
+            <details class="at-export-menu">
+                <summary class="at-button" id="at-export-summary">Export CSV ▾</summary>
+                <div class="at-export-dropdown" role="menu" aria-label="Export CSV options">
+                    <div class="at-export-selection">
+                        <span id="at-export-scope-note">Exporting all matching employees</span>
+                        <button type="button" class="at-clear-selection" id="at-clear-selection" hidden>Clear</button>
+                    </div>
+                    <a class="at-export-option" data-base-href="{{ route($attendanceRoute, ['view' => 'team', 'month' => $month, 'year' => $year, 'search' => request('search'), 'format' => 'csv', 'export_scope' => 'month']) }}" href="{{ route($attendanceRoute, ['view' => 'team', 'month' => $month, 'year' => $year, 'search' => request('search'), 'format' => 'csv', 'export_scope' => 'month']) }}">Selected month ({{ $start->format('F Y') }})</a>
+                    <a class="at-export-option" data-base-href="{{ route($attendanceRoute, ['view' => 'team', 'month' => $month, 'year' => $year, 'search' => request('search'), 'format' => 'csv', 'export_scope' => 'today']) }}" href="{{ route($attendanceRoute, ['view' => 'team', 'month' => $month, 'year' => $year, 'search' => request('search'), 'format' => 'csv', 'export_scope' => 'today']) }}">Today ({{ now()->format('d M Y') }})</a>
+                    <form class="at-export-range" method="GET" action="{{ route($attendanceRoute) }}">
+                        <input type="hidden" name="view" value="team">
+                        <input type="hidden" name="month" value="{{ $month }}">
+                        <input type="hidden" name="year" value="{{ $year }}">
+                        @if(request()->filled('search'))<input type="hidden" name="search" value="{{ request('search') }}">@endif
+                        <input type="hidden" name="format" value="csv">
+                        <input type="hidden" name="export_scope" value="range">
+                        <div class="at-range-users"></div>
+                        <span class="at-export-title">Selected range of days</span>
+                        <label>From<input type="date" name="start_date" value="{{ request('start_date', $start->toDateString()) }}" required></label>
+                        <label>To<input type="date" name="end_date" value="{{ request('end_date', $start->copy()->endOfMonth()->toDateString()) }}" required></label>
+                        <button type="submit" class="at-button at-primary">Download range CSV</button>
+                    </form>
+                </div>
+            </details>
             @if(\App\Services\WorkforceAccess::isAdmin(auth()->user()))<a class="at-button at-primary" href="{{ route('attendance.create', ['staff_category' => request('staff_category')]) }}">+ Mark attendance</a>@endif
         </div>
     </header>
@@ -27,7 +48,7 @@
         <label>Year<input type="number" name="year" min="2000" max="2100" value="{{ $year }}" required></label>
         <button class="at-button at-primary" type="submit">Apply filters</button>
         <a class="at-button" href="{{ route($attendanceRoute, ['view' => 'team']) }}">Reset</a>
-        @foreach(['search', 'month', 'year'] as $field)
+        @foreach(['search', 'month', 'year', 'start_date', 'end_date'] as $field)
             @error($field)<span role="alert">{{ $message }}</span>@enderror
         @endforeach
     </form>
@@ -48,14 +69,14 @@
         <div class="at-scroll" tabindex="0" role="region" aria-label="Monthly employee attendance table">
             <table class="at-table" data-pms-export="off">
                 <caption class="visually-hidden">{{ $start->format('F Y') }} attendance for employees within your permissions. Present totals exclude late and half days, shown separately.</caption>
-                <thead><tr><th scope="col" class="at-person">Employee</th>
+                <thead><tr><th scope="col" class="at-person"><label class="at-select-all"><input type="checkbox" id="at-select-all" aria-label="Select all employees on this page"><span>Employee</span></label></th>
                     @for($d = 1; $d <= $start->daysInMonth; $d++)@php $date = $start->copy()->day($d); @endphp<th scope="col" class="{{ $date->isToday() ? 'at-today' : '' }}"><strong>{{ $d }}</strong><small>{{ $date->format('D') }}</small></th>@endfor
                     @foreach($totalColumns as $label)<th scope="col">{{ $label }}</th>@endforeach<th scope="col">Hours</th><th scope="col">Attendance</th>
                 </tr></thead>
                 <tbody>
                 @forelse($teamRows as $row)
                     @php $employee = $row['employee']; $totals = $row['calendar']['totals']; @endphp
-                    <tr><th scope="row" class="at-person"><a href="{{ route($attendanceRoute, ['user_id' => $employee->id, 'month' => $month, 'year' => $year]) }}">{{ $employee->name }}</a><small>{{ $employee->employeeDetail?->employee_id ?: 'ID not assigned' }}</small><small>{{ $employee->companyStaffRole?->name ?? ucfirst($employee->role) }} &middot; {{ $employee->employeeDetail?->designation?->name }} @if($employee->employeeDetail?->designation) &middot; Level {{ $employee->employeeDetail->designation->level }} @endif</small><small>{{ $employee->email }}</small></th>
+                    <tr><th scope="row" class="at-person"><div class="at-person-row"><input type="checkbox" class="at-emp-check" value="{{ $employee->id }}" aria-label="Select {{ $employee->name }} for export"><div class="at-person-info"><a href="{{ route($attendanceRoute, ['user_id' => $employee->id, 'month' => $month, 'year' => $year]) }}">{{ $employee->name }}</a><small>{{ $employee->employeeDetail?->employee_id ?: 'ID not assigned' }}</small><small>{{ $employee->companyStaffRole?->name ?? ucfirst($employee->role) }} &middot; {{ $employee->employeeDetail?->designation?->name }} @if($employee->employeeDetail?->designation) &middot; Level {{ $employee->employeeDetail->designation->level }} @endif</small><small>{{ $employee->email }}</small></div></div></th>
                     @foreach($row['calendar']['days'] as $day)
                         @php [$code, $label] = $statuses[$day['status']] ?? ['?', ucfirst(str_replace('_', ' ', $day['status']))]; @endphp
                         <td class="{{ $day['date']->isToday() ? 'at-today' : '' }}">
@@ -94,7 +115,8 @@
 .attendance-team-page .at-scroll{overflow:auto;max-height:70vh;border:1px solid var(--at-border);border-radius:12px}.attendance-team-page .at-table{border-collapse:separate;border-spacing:0;width:100%;font-size:12px}.attendance-team-page .at-table :is(th,td){border-bottom:1px solid var(--at-border);border-right:1px solid var(--at-border);padding:12px 8px;text-align:center;min-width:58px;background:var(--at-panel);color:var(--at-text)!important}.attendance-team-page .at-table thead th{position:sticky;top:0;z-index:3;background:var(--at-bg);font-size:11px;white-space:nowrap}.attendance-team-page .at-table small{display:block;font-weight:400;font-size:10px;margin-top:4px}.attendance-team-page .at-table .at-person{position:sticky;left:0;text-align:left;min-width:230px;max-width:270px;z-index:2;box-shadow:4px 0 8px #00000008}.attendance-team-page .at-table thead .at-person{z-index:4}.attendance-team-page .at-person a{color:var(--at-text)!important;text-decoration:none;font-weight:750}.attendance-team-page .at-person small{overflow-wrap:anywhere;color:var(--at-muted)!important;-webkit-text-fill-color:var(--at-muted)!important}.attendance-team-page .at-table tbody tr:hover> :is(td,th){background:var(--at-bg)}.attendance-team-page .at-table .at-today{box-shadow:inset 0 3px #427bfa}.attendance-team-page .at-total{font-weight:700}.attendance-team-page .at-hours{white-space:nowrap}
 .attendance-team-page .at-status{display:inline-flex;align-items:center;justify-content:center;min-width:32px;height:29px;padding:0 5px;border-radius:8px;font-size:10px;font-weight:750;background:#e8edf5;color:#50627e!important;-webkit-text-fill-color:#50627e!important}.attendance-team-page :is(.at-present,.at-wfh){background:#d8f5e8;color:#116247!important;-webkit-text-fill-color:#116247!important}.attendance-team-page .at-late{background:#fff0cc;color:#825000!important;-webkit-text-fill-color:#825000!important}.attendance-team-page .at-absent{background:#ffe1e6;color:#a5263e!important;-webkit-text-fill-color:#a5263e!important}.attendance-team-page :is(.at-half_day,.at-leave){background:#ece3ff;color:#6534a4!important;-webkit-text-fill-color:#6534a4!important}.attendance-team-page .at-holiday{background:#dce9ff;color:#2358a7!important;-webkit-text-fill-color:#2358a7!important}.attendance-team-page .at-unpaid_leave{background:#ffe5f1;color:#972b61!important;-webkit-text-fill-color:#972b61!important}
 .attendance-team-page .at-day summary{cursor:pointer;list-style:none}.attendance-team-page .at-day summary::-webkit-details-marker{display:none}.attendance-team-page .at-day[open]{min-width:260px;text-align:left}.attendance-team-page .at-detail{max-width:310px;min-width:250px;padding:12px;border:1px solid var(--at-border);border-radius:10px;margin-top:10px;overflow-wrap:anywhere}.attendance-team-page .at-detail p{margin:8px 0}.attendance-team-page .at-session{border-top:1px solid var(--at-border);padding-top:10px;margin-top:10px}.attendance-team-page .at-footer{margin-top:18px}.attendance-team-page .at-note{margin-top:14px;font-size:11px}.attendance-team-page .at-empty{padding:40px!important}
-@media(max-width:900px){.attendance-team-page{padding:12px}.attendance-team-page .at-panel{padding:18px}.attendance-team-page .at-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.attendance-team-page .at-table .at-person{min-width:180px;max-width:200px}.attendance-team-page .at-filters .at-search{flex-basis:100%}}
+.attendance-team-page .at-export-menu{position:relative}.attendance-team-page .at-export-menu summary{list-style:none}.attendance-team-page .at-export-menu summary::-webkit-details-marker{display:none}.attendance-team-page .at-export-dropdown{position:absolute;right:0;top:calc(100% + 8px);z-index:30;width:270px;padding:12px;border-radius:14px;border:1px solid var(--at-border);background:var(--at-panel);box-shadow:0 12px 28px rgba(15,23,42,.14);display:grid;gap:8px}.attendance-team-page .at-export-selection{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:11px;font-weight:700;color:var(--at-muted)}.attendance-team-page .at-clear-selection{border:0;background:transparent;color:#245be0;font-size:11px;font-weight:750;padding:0;cursor:pointer}.attendance-team-page .at-export-option{display:block;padding:9px 11px;border-radius:10px;border:1px solid var(--at-border);color:var(--at-text)!important;-webkit-text-fill-color:var(--at-text)!important;text-decoration:none;font-size:12px;font-weight:650}.attendance-team-page .at-export-option:hover{background:var(--at-bg)}.attendance-team-page .at-export-range{border-top:1px solid var(--at-border);padding-top:10px;margin-top:2px;display:grid;gap:8px}.attendance-team-page .at-export-title{font-size:11px;font-weight:750;color:var(--at-muted)}.attendance-team-page .at-export-range input{width:100%;min-height:38px;padding:6px 10px}.attendance-team-page input[type="checkbox"]{min-height:17px;width:17px;height:17px;padding:0;margin:0;border-radius:5px;accent-color:#245be0;cursor:pointer;flex-shrink:0}.attendance-team-page .at-select-all{display:flex;align-items:center;gap:10px;cursor:pointer;margin:0}.attendance-team-page .at-person-row{display:flex;align-items:flex-start;gap:10px}.attendance-team-page .at-person-row .at-emp-check{margin-top:2px}.attendance-team-page .at-person-info{min-width:0}
+@media(max-width:900px){.attendance-team-page{padding:12px}.attendance-team-page .at-panel{padding:18px}.attendance-team-page .at-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.attendance-team-page .at-table .at-person{min-width:180px;max-width:200px}.attendance-team-page .at-filters .at-search{flex-basis:100%}.attendance-team-page .at-export-dropdown{left:0;right:auto;max-width:calc(100vw - 48px)}}
 
 /* Status badges keep their own colours everywhere (global dark-mode table rules turned the codes white in the grid). */
 html body .attendance-team-page .at-status{background:#e8edf5!important;color:#50627e!important;-webkit-text-fill-color:#50627e!important;opacity:1!important;filter:none!important}
@@ -121,3 +143,73 @@ html body .attendance-team-page .at-status.at-unpaid_leave{background:#ffe5f1!im
 #attendance-team-page .at-status.at-unpaid_leave{--at-status-bg:#ffe5f1;--at-status-ink:#972b61}
 </style>
 @endsection
+@push('js')
+<script>
+document.addEventListener('click', event => {
+    document.querySelectorAll('#attendance-team-page .at-export-menu[open]').forEach(menu => {
+        if (!menu.contains(event.target)) menu.removeAttribute('open');
+    });
+});
+(() => {
+    const page = document.getElementById('attendance-team-page');
+    if (!page) return;
+    const selectAll = document.getElementById('at-select-all');
+    const checks = Array.from(page.querySelectorAll('.at-emp-check'));
+    const summaryLabel = document.getElementById('at-export-summary');
+    const scopeNote = document.getElementById('at-export-scope-note');
+    const clearButton = document.getElementById('at-clear-selection');
+    const exportLinks = Array.from(page.querySelectorAll('.at-export-option[data-base-href]'));
+    const rangeUsers = page.querySelector('.at-range-users');
+
+    const syncSelection = () => {
+        const selectedIds = checks.filter(input => input.checked).map(input => input.value);
+        const count = selectedIds.length;
+        if (selectAll) {
+            selectAll.checked = checks.length > 0 && count === checks.length;
+            selectAll.indeterminate = count > 0 && count < checks.length;
+        }
+        if (summaryLabel) summaryLabel.textContent = count > 0 ? `Export CSV (${count} selected) ▾` : 'Export CSV ▾';
+        if (scopeNote) scopeNote.textContent = count > 0 ? `Exporting ${count} selected employee${count === 1 ? '' : 's'}` : 'Exporting all matching employees';
+        if (clearButton) clearButton.hidden = count === 0;
+        exportLinks.forEach(link => {
+            const url = new URL(link.dataset.baseHref, window.location.origin);
+            url.searchParams.delete('user_ids[]');
+            selectedIds.forEach(id => url.searchParams.append('user_ids[]', id));
+            link.href = url.toString();
+        });
+        if (rangeUsers) {
+            rangeUsers.replaceChildren(...selectedIds.map(id => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'user_ids[]';
+                input.value = id;
+                return input;
+            }));
+        }
+    };
+
+    selectAll?.addEventListener('change', () => {
+        checks.forEach(input => { input.checked = selectAll.checked; });
+        syncSelection();
+    });
+    checks.forEach(input => input.addEventListener('change', syncSelection));
+    clearButton?.addEventListener('click', () => {
+        checks.forEach(input => { input.checked = false; });
+        syncSelection();
+    });
+    page.querySelector('.at-export-range')?.addEventListener('submit', syncSelection);
+    window.addEventListener('pageshow', syncSelection);
+    syncSelection();
+})();
+document.querySelectorAll('#attendance-team-page .at-export-range').forEach(form => {
+    const startInput = form.querySelector('input[name="start_date"]');
+    const endInput = form.querySelector('input[name="end_date"]');
+    if (!startInput || !endInput) return;
+    endInput.min = startInput.value || '';
+    startInput.addEventListener('change', () => {
+        endInput.min = startInput.value || '';
+        if (endInput.value && endInput.value < startInput.value) endInput.value = startInput.value;
+    });
+});
+</script>
+@endpush

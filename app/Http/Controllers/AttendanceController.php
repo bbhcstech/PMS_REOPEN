@@ -118,19 +118,61 @@ class AttendanceController extends Controller
             'month' => 'nullable|integer|min:1|max:12',
             'year' => 'nullable|integer|min:2000|max:2100',
             'user_id' => 'nullable|integer',
+            'user_ids' => 'nullable|array',
+            'user_ids.*' => 'integer',
             'search' => 'nullable|string|max:100',
             'page' => 'nullable|integer|min:1',
+            'format' => 'nullable|in:csv',
+            'export_scope' => 'nullable|in:month,today,range',
+            'start_date' => 'nullable|required_if:export_scope,range|date_format:Y-m-d',
+            'end_date' => [
+                'nullable',
+                'required_if:export_scope,range',
+                'date_format:Y-m-d',
+                'after_or_equal:start_date',
+                function ($attribute, $value, $fail) use ($request) {
+                    if ($request->query('export_scope') === 'range' && $request->filled('start_date') && $value) {
+                        $from = Carbon::createFromFormat('Y-m-d', (string) $request->query('start_date'));
+                        $to = Carbon::createFromFormat('Y-m-d', (string) $value);
+                        if ($from->diffInDays($to) > 366) {
+                            $fail('Select a date range of up to 366 days.');
+                        }
+                    }
+                },
+            ],
         ]);
         $month = $request->integer('month') ?: now()->month;
         $year = $request->integer('year') ?: now()->year;
         $start = Carbon::create($year, $month, 1)->startOfDay();
         $end = $start->copy()->endOfMonth();
+        $isCsvExport = $request->query('format') === 'csv';
+        $exportScope = $request->query('export_scope', 'month');
+        if ($isCsvExport && $exportScope === 'today') {
+            $exportStart = now()->startOfDay();
+            $exportEnd = $exportStart->copy();
+            $exportFilename = sprintf('attendance-%s.csv', $exportStart->toDateString());
+        } elseif ($isCsvExport && $exportScope === 'range') {
+            $exportStart = Carbon::createFromFormat('Y-m-d', (string) $request->query('start_date'))->startOfDay();
+            $exportEnd = Carbon::createFromFormat('Y-m-d', (string) $request->query('end_date'))->startOfDay();
+            $exportFilename = sprintf('attendance-%s-to-%s.csv', $exportStart->toDateString(), $exportEnd->toDateString());
+        } else {
+            $exportStart = $start->copy();
+            $exportEnd = $end->copy()->startOfDay();
+            $exportFilename = sprintf('attendance-%04d-%02d.csv', $year, $month);
+        }
+        $rangeStart = $isCsvExport ? $exportStart->copy()->startOfMonth() : $start;
+        $rangeEnd = $isCsvExport ? $exportEnd->copy()->endOfMonth() : $end;
         $canManage = $this->canManageAttendance($actor);
-        $staffCategory = $canManage ? ($request->input('staff_category') === 'authority' ? 'authority' : 'employee') : null;
+        $authorityView = $canManage && $request->input('staff_category') === 'authority';
         $query = User::with(['employeeDetail.designation', 'companyStaffRole'])->where('company_id', $actor->company_id)
             ->whereRaw('LOWER(COALESCE(role, ?)) <> ?', ['', 'client'])->whereNull('archived_at');
-        if ($canManage) \App\Services\WorkforceAccess::usersWithHistory($query, $staffCategory, 'attendances');
-        else $query->whereKey($actor->id);
+        if ($authorityView) {
+            \App\Services\WorkforceAccess::usersWithHistory($query, 'authority', 'attendances');
+        } elseif ($canManage) {
+            \App\Services\WorkforceAccess::attendanceEmployees($query);
+        } else {
+            $query->whereKey($actor->id);
+        }
         $employees = $query->orderBy('name')->get();
         $teamView = $request->query('view') === 'team';
         $visibleEmployees = $employees;
@@ -138,16 +180,32 @@ class AttendanceController extends Controller
             $search = mb_strtolower(trim($request->query('search')));
             $visibleEmployees = $employees->filter(fn ($employee) => str_contains(mb_strtolower($employee->name . ' ' . $employee->email . ' ' . ($employee->employeeDetail?->employee_id ?? '')), $search))->values();
         }
+        $selectedUserIds = collect($request->input('user_ids', []))->map(fn ($id) => (int) $id)->filter()->unique()->values();
         $selectedEmployee = $request->filled('user_id')
             ? $employees->firstWhere('id', $request->integer('user_id'))
             : ($employees->firstWhere('id', $actor->id) ?? $employees->first());
         abort_if($request->filled('user_id') && ! $selectedEmployee, 403, 'You cannot view this employee.');
-        $recordEmployeeIds = $teamView ? $visibleEmployees->pluck('id') : collect($selectedEmployee ? [$selectedEmployee->id] : []);
+        if ($isCsvExport) {
+            if ($teamView) {
+                $exportEmployees = $selectedUserIds->isNotEmpty()
+                    ? $visibleEmployees->whereIn('id', $selectedUserIds->all())->values()
+                    : $visibleEmployees;
+            } elseif ($selectedUserIds->isNotEmpty()) {
+                $exportEmployees = $employees->whereIn('id', $selectedUserIds->all())->values();
+            } elseif ($request->filled('user_id') && $selectedEmployee) {
+                $exportEmployees = collect([$selectedEmployee]);
+            } else {
+                $exportEmployees = $employees;
+            }
+            $recordEmployeeIds = $exportEmployees->pluck('id');
+        } else {
+            $recordEmployeeIds = $teamView ? $visibleEmployees->pluck('id') : collect($selectedEmployee ? [$selectedEmployee->id] : []);
+        }
         $recordsQuery = Attendance::whereIn('user_id', $recordEmployeeIds)
-            ->whereNull('archived_at')->whereBetween('date', [$start->toDateString(), $end->toDateString()])->orderBy('id');
-        if ($canManage) \App\Services\WorkforceAccess::records($recordsQuery, $staffCategory);
+            ->whereNull('archived_at')->whereBetween('date', [$rangeStart->toDateString(), $rangeEnd->toDateString()])->orderBy('id');
+        if ($authorityView) \App\Services\WorkforceAccess::records($recordsQuery, 'authority');
         $records = $recordEmployeeIds->isNotEmpty() ? $recordsQuery->get() : collect();
-        $holidayQuery = Holiday::whereBetween('date', [$start->toDateString(), $end->toDateString()]);
+        $holidayQuery = Holiday::whereBetween('date', [$rangeStart->toDateString(), $rangeEnd->toDateString()]);
         if (Schema::connection('tenant')->hasColumn('holidays', 'archived_at')) $holidayQuery->whereNull('archived_at');
         if (Schema::connection('tenant')->hasColumn('holidays', 'company_id')) {
             // Older holiday rows belong to the current tenant database and have no company_id.
@@ -157,19 +215,22 @@ class AttendanceController extends Controller
         $leaves = collect();
         if ($recordEmployeeIds->isNotEmpty()) {
             $leaveQuery = Leave::whereIn('user_id', $recordEmployeeIds)->where('status', 'approved');
-            if ($canManage) \App\Services\WorkforceAccess::records($leaveQuery, $staffCategory);
+            if ($authorityView) \App\Services\WorkforceAccess::records($leaveQuery, 'authority');
             if (Schema::connection('tenant')->hasColumn('leaves', 'archived_at')) $leaveQuery->whereNull('archived_at');
-            $leaveQuery->where(function ($query) use ($start, $end) {
-                $query->whereBetween('date', [$start->toDateString(), $end->toDateString()]);
+            $leaveQuery->where(function ($query) use ($rangeStart, $rangeEnd) {
+                $query->whereBetween('date', [$rangeStart->toDateString(), $rangeEnd->toDateString()]);
                 if (Schema::connection('tenant')->hasColumn('leaves', 'start_date')) {
-                    $query->orWhere(function ($range) use ($start, $end) {
-                        $range->whereDate('start_date', '<=', $end)->whereDate('end_date', '>=', $start);
+                    $query->orWhere(function ($range) use ($rangeStart, $rangeEnd) {
+                        $range->whereDate('start_date', '<=', $rangeEnd)->whereDate('end_date', '>=', $rangeStart);
                     });
                 }
             });
             $leaves = $leaveQuery->get();
         }
         $schedule = WorkScheduleService::getSettings();
+        if ($isCsvExport) {
+            return $this->streamAttendanceCsv($exportEmployees, $exportStart, $exportEnd, $exportFilename, $records, $holidays, $leaves, $schedule);
+        }
         if ($teamView) {
             $builder = app(\App\Services\AttendanceCalendar::class);
             $workingDays = \App\Models\AppSetting::getCompanyWorkingDays();
@@ -179,22 +240,6 @@ class AttendanceController extends Controller
                 'employee' => $employee,
                 'calendar' => $builder->build($start, $recordsByEmployee->get($employee->id, collect()), $holidays, $leavesByEmployee->get($employee->id, collect()), $employee->employeeDetail, $workingDays, $employee->id, $schedule),
             ]);
-            if ($request->query('format') === 'csv') {
-                return response()->streamDownload(function () use ($rows) {
-                    $output = fopen('php://output', 'w');
-                    fputcsv($output, ['Employee', 'Employee ID', 'Email', 'Date', 'Status', 'Work from home', 'Hours', 'Clock in', 'Clock out', 'Clock-in address', 'Clock-out address']);
-                    $safe = static fn ($value) => preg_match('/^[=+@\-\t\r\n]/u', (string) $value) ? "'" . $value : $value;
-                    foreach ($rows as $row) {
-                        foreach ($row['calendar']['days'] as $day) {
-                            $sessions = $day['daily']->isEmpty() ? collect([null]) : $day['daily'];
-                            foreach ($sessions as $session) {
-                                fputcsv($output, array_map($safe, [$row['employee']->name, $row['employee']->employeeDetail?->employee_id, $row['employee']->email, $day['key'], $day['status'], $day['wfh'] ? 'Yes' : 'No', $this->secondsToHhmm($session ? (int) $session->total_seconds : 0), $session?->clock_in, $session?->clock_out, $session?->clock_in_address, $session?->clock_out_address]));
-                            }
-                        }
-                    }
-                    fclose($output);
-                }, sprintf('attendance-%04d-%02d.csv', $year, $month), ['Content-Type' => 'text/csv; charset=UTF-8']);
-            }
             $summary = ['employees' => $rows->count(), 'present' => 0, 'absent' => 0, 'seconds' => 0];
             foreach ($rows as $row) {
                 $summary['present'] += $row['calendar']['totals']['present'] + $row['calendar']['totals']['late'] + $row['calendar']['totals']['wfh_present'];
@@ -210,6 +255,50 @@ class AttendanceController extends Controller
             \App\Models\AppSetting::getCompanyWorkingDays(), $selectedEmployee?->id, $schedule
         );
         return view('admin.attendance.calendar', compact('employees', 'selectedEmployee', 'month', 'year', 'start', 'calendar', 'canManage'));
+    }
+
+    /**
+     * Stream attendance CSV rows for a selected month, today, or custom date range.
+     */
+    private function streamAttendanceCsv($employees, Carbon $exportStart, Carbon $exportEnd, string $filename, $records, $holidays, $leaves, array $schedule)
+    {
+        $builder = app(\App\Services\AttendanceCalendar::class);
+        $workingDays = \App\Models\AppSetting::getCompanyWorkingDays();
+        $recordsByEmployee = $records->groupBy('user_id');
+        $leavesByEmployee = $leaves->groupBy('user_id');
+        $singleMonth = $exportStart->isSameDay($exportStart->copy()->startOfMonth())
+            && $exportEnd->isSameDay($exportStart->copy()->endOfMonth()->startOfDay());
+
+        $rows = $employees->map(function ($employee) use ($builder, $exportStart, $exportEnd, $singleMonth, $recordsByEmployee, $holidays, $leavesByEmployee, $workingDays, $schedule) {
+            $empRecords = $recordsByEmployee->get($employee->id, collect());
+            $empLeaves = $leavesByEmployee->get($employee->id, collect());
+            if ($singleMonth) {
+                $days = collect($builder->build($exportStart->copy(), $empRecords, $holidays, $empLeaves, $employee->employeeDetail, $workingDays, $employee->id, $schedule)['days']);
+            } else {
+                $days = collect();
+                for ($cursor = $exportStart->copy()->startOfMonth(); $cursor->lte($exportEnd); $cursor->addMonthNoOverflow()->startOfMonth()) {
+                    $monthCalendar = $builder->build($cursor->copy(), $empRecords, $holidays, $empLeaves, $employee->employeeDetail, $workingDays, $employee->id, $schedule);
+                    $days = $days->merge(array_filter($monthCalendar['days'], fn ($day) => $day['date']->betweenIncluded($exportStart, $exportEnd)));
+                }
+            }
+
+            return ['employee' => $employee, 'days' => $days->values()];
+        });
+
+        return response()->streamDownload(function () use ($rows) {
+            $output = fopen('php://output', 'w');
+            fputcsv($output, ['Employee', 'Employee ID', 'Email', 'Date', 'Status', 'Work from home', 'Hours', 'Clock in', 'Clock out', 'Clock-in address', 'Clock-out address']);
+            $safe = static fn ($value) => preg_match('/^[=+@\-\t\r\n]/u', (string) $value) ? "'" . $value : $value;
+            foreach ($rows as $row) {
+                foreach ($row['days'] as $day) {
+                    $sessions = $day['daily']->isEmpty() ? collect([null]) : $day['daily'];
+                    foreach ($sessions as $session) {
+                        fputcsv($output, array_map($safe, [$row['employee']->name, $row['employee']->employeeDetail?->employee_id, $row['employee']->email, $day['key'], $day['status'], $day['wfh'] ? 'Yes' : 'No', $this->secondsToHhmm($session ? (int) $session->total_seconds : 0), $session?->clock_in, $session?->clock_out, $session?->clock_in_address, $session?->clock_out_address]));
+                    }
+                }
+            }
+            fclose($output);
+        }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);
     }
 
     /**
@@ -251,11 +340,11 @@ class AttendanceController extends Controller
         $isManagerOrHr = $this->isManagerOrHrUser($user);
 
         if ($isAdmin || $canManage) {
-            $usersQuery = User::with('employeeDetail')->where(function ($q) {
-                $q->whereNotIn(DB::raw('LOWER(COALESCE(role, ""))'), ['client']);
-            });
+            $usersQuery = \App\Services\WorkforceAccess::attendanceEmployees(
+                User::with('employeeDetail')->whereNull('archived_at')
+            );
 
-            if ($user->company_id && strtolower((string)$user->role) === 'hr') {
+            if ($user->company_id) {
                 $usersQuery->where('company_id', $user->company_id);
             }
 

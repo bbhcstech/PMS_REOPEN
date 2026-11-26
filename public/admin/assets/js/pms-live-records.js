@@ -42,7 +42,10 @@
     document.addEventListener('visibilitychange', checkCompanySession);
     window.addEventListener('pagehide', () => clearInterval(sessionTimer));
     const region = document.querySelector('[data-live-records]');
-    if (!region) return;
+    const hasLiveContent = region
+        && !region.querySelector('[data-live-records-off]')
+        && Array.from(region.children).some(node => !node.matches('script, style, link, [data-live-preserve]'));
+    if (!hasLiveContent) return;
     let busy = false, stopped = false, timer, failures = 0;
     // .alert-dismissible: one-time flash messages exist only in the page after a save; the refreshed copy has none,
     // so they must never take part in positional matching (that shifted every following block into its neighbour).
@@ -115,15 +118,21 @@
     function syncDataTables(fresh) {
         const jq = window.jQuery;
         if (!jq?.fn?.dataTable) return;
+        const rowSignature = tbody => Array.from(tbody?.rows || [])
+            .filter(row => !row.querySelector('td[colspan], td.dataTables_empty'))
+            .map(row => row.innerHTML.trim())
+            .join('\n');
         region.querySelectorAll('table[id]').forEach(table => {
-            if (!jq.fn.dataTable.isDataTable(table)) return;
+            if (table.closest('[data-live-preserve]') || !jq.fn.dataTable.isDataTable(table)) return;
             const replacement = fresh.querySelector(`#${CSS.escape(table.id)}`);
             if (!replacement?.tBodies[0]) return;
             const api = jq(table).DataTable();
-            const selected = new Set(Array.from(table.querySelectorAll('input[type="checkbox"]:checked')).map(input => input.value));
-            const rows = Array.from(replacement.tBodies[0].rows).filter(row => !row.querySelector('td[colspan]')).map(row => row.cloneNode(true));
-            api.clear().rows.add(rows).draw(false);
-            table.querySelectorAll('input[type="checkbox"]').forEach(input => { input.checked = selected.has(input.value); });
+            if (rowSignature(table.tBodies[0]) !== rowSignature(replacement.tBodies[0])) {
+                const selected = new Set(Array.from(table.querySelectorAll('input[type="checkbox"]:checked')).map(input => input.value));
+                const rows = Array.from(replacement.tBodies[0].rows).filter(row => !row.querySelector('td[colspan]')).map(row => row.cloneNode(true));
+                api.clear().rows.add(rows).draw(false);
+                table.querySelectorAll('input[type="checkbox"]').forEach(input => { input.checked = selected.has(input.value); });
+            }
             // Align the fetched DOM with the client-generated widget wrapper so
             // the general reconciler preserves search, order and pagination.
             const wrapper = table.closest('.dataTables_wrapper');
@@ -132,7 +141,7 @@
     }
     async function refresh() {
         if (busy || stopped) return;
-        if (document.hidden || document.body.classList.contains('modal-open') || document.querySelector('.modal.show, .modal.showing, .offcanvas.show, .drawer-overlay.active, .drawer-overlay.open, .modal-overlay.active, .modal-overlay.show, .plan-modal-backdrop.open')) { timer = setTimeout(refresh, 5000); return; }
+        if (document.hidden || document.body.classList.contains('modal-open') || document.querySelector('.modal.show, .modal.showing, .offcanvas.show, .drawer-overlay.active, .drawer-overlay.open, .modal-overlay.active, .modal-overlay.show, .plan-modal-backdrop.open, .dropdown-menu.show, .pms-table-export.is-open')) { timer = setTimeout(refresh, 5000); return; }
         busy = true;
         const url = location.href;
         try {

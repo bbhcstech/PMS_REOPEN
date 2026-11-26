@@ -769,7 +769,7 @@
     }
 </style>
 
-<div class="attendance-create-container">
+<div class="attendance-create-container" data-live-preserve data-live-records-off>
     <div class="ambient-orb orb-1"></div>
     <div class="ambient-orb orb-2"></div>
     <div class="ambient-orb orb-3"></div>
