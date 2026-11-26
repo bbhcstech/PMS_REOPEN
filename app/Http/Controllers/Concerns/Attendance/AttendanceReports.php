@@ -10,6 +10,7 @@ use App\Models\Leave;
 use App\Models\User;
 use App\Services\AttendanceCalendar;
 use App\Services\PdfDocument as Pdf;
+use App\Services\TenantScope;
 use App\Services\WorkforceAccess;
 use App\Services\WorkScheduleService;
 use Carbon\Carbon;
@@ -22,7 +23,7 @@ trait AttendanceReports
 {
     private function personalReport(Request $request, User $employee)
     {
-        abort_unless($employee->company_id, 403, 'No company assigned to this account.');
+        TenantScope::companyFilter($request->integer('company_id') ?: null);
         $filters = $request->validate([
             'period' => 'nullable|in:day,week,month',
             'date' => 'nullable|date_format:Y-m-d',

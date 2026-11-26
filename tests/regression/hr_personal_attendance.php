@@ -3,6 +3,7 @@
 require __DIR__.'/attendance_calendar.php';
 
 use App\Http\Controllers\WorkforceFileController;
+use App\Http\Middleware\EnsureModuleAccess;
 use App\Http\Middleware\ProtectWorkforceRecords;
 use App\Models\{Attendance, User};
 use Carbon\Carbon;
@@ -19,8 +20,10 @@ DB::table('attendances')->insert([
     ['user_id' => 40, 'date' => '2026-10-06', 'status' => 'present', 'clock_in' => '07:00:00', 'clock_out' => '08:30:00', 'archived_at' => null],
     ['user_id' => 40, 'date' => '2026-10-02', 'status' => 'present', 'clock_in' => '03:00:00', 'clock_out' => '13:00:00', 'archived_at' => '2026-10-03 00:00:00'],
 ]);
+$foreignRecord = Attendance::where('user_id', 3)->firstOrFail();
 $hr = User::findOrFail(40);
 Auth::guard('web')->setUser($hr);
+checkCalendar(Attendance::query()->distinct()->pluck('user_id')->all() === [40], 'An unfiltered HR attendance query returned another employee.');
 $personalRequest = fn ($extra = []) => Request::create('/attendance', 'GET', $extra + ['date' => '2026-10-01']);
 foreach (['day' => [1, '08:00'], 'week' => [7, '11:00'], 'month' => [31, '11:30']] as $period => [$count, $hours]) {
     $params = ['period' => $period, 'view' => 'team'];
@@ -43,9 +46,9 @@ $html = Blade::render(
     preg_replace('/^@(extends|section|endsection).*$/m', '', file_get_contents(resource_path('views/admin/attendance/personal.blade.php'))),
     $data
 );
-checkCalendar(str_contains($html, 'Read only') && str_contains($html, 'Export CSV') && ! str_contains($html, 'name="user_id"') && ! str_contains($html, 'attendance/edit'), 'The personal report is missing export or renders employee/override controls.');
+checkCalendar(str_contains($html, 'Read only') && str_contains($html, 'Export CSV') && str_contains($html, '/hr/attendance') && ! str_contains($html, 'name="user_id"') && ! str_contains($html, 'attendance/edit'), 'The HR report links are incorrect or employee/override controls are exposed.');
 
-foreach (['index', 'employeeIndex', 'attendanceReport'] as $action) {
+foreach (['hrAttendance', 'index', 'employeeIndex', 'attendanceReport', 'authorityIndex'] as $action) {
     checkCalendar($controller->$action($personalRequest())->getData()['employee']->id === 40, "$action lost the personal report.");
     foreach ([3, 2] as $otherUser) {
         try {
@@ -64,15 +67,43 @@ Schema::connection('central')->create('companies', function ($table) {
     $table->softDeletes();
 });
 DB::connection('central')->table('companies')->insert(['id' => 1, 'db_name' => ':memory:']);
-$guarded = function ($path, $method = 'GET', $params = []) use ($hr) {
+Schema::create('modules', function ($table) {
+    $table->id();
+    $table->string('slug');
+    $table->string('route_name')->nullable();
+    $table->string('route_prefix')->nullable();
+});
+DB::table('modules')->insert(['slug' => 'attendance', 'route_name' => 'attendance.index']);
+$guarded = function ($path, $method = 'GET', $params = [], $runAction = false) {
     $request = Request::create($path, $method, $params);
     $route = app('router')->getRoutes()->match($request);
     $request->setRouteResolver(fn () => $route);
-    $request->setUserResolver(fn () => $hr);
+    $request->setUserResolver(fn () => Auth::user());
+    app()->instance('request', $request);
 
-    return (new ProtectWorkforceRecords)->handle($request, fn () => response('Allowed'));
+    return (new ProtectWorkforceRecords)->handle($request, fn () => $runAction ? $route->run() : response('Allowed'));
 };
-checkCalendar($guarded('/attendance/report')->getStatusCode() === 200, 'HR report is blocked by middleware.');
+checkCalendar(app(EnsureModuleAccess::class)->moduleForRoute('attendance.hr')->slug === 'attendance', 'The HR report did not inherit Attendance permissions.');
+foreach (['/hr/attendance', '/attendance', '/attendance/report', '/my-attendance', '/admin/authority-attendance'] as $path) {
+    $params = ['view' => 'team', 'staff_category' => 'authority', 'period' => 'week', 'date' => '2026-10-01'];
+    $view = $guarded($path, 'GET', $params, true);
+    $data = $view->getData();
+    checkCalendar($view->name() === 'admin.attendance.personal' && $data['employee']->id === 40 && $data['totalSeconds'] === 39600, "$path did not open the personal HR report.");
+    try {
+        $guarded($path, 'GET', $params + ['user_id' => 3, 'format' => 'csv'], true);
+        throw new RuntimeException("$path exposed employee CSV data.");
+    } catch (\Symfony\Component\HttpKernel\Exception\HttpException $e) {
+        checkCalendar($e->getStatusCode() === 403, 'Wrong rejection for an employee CSV request.');
+    }
+}
+$csv = $guarded('/hr/attendance', 'GET', ['period' => 'day', 'date' => '2026-10-01', 'format' => 'csv'], true);
+checkCalendar(str_contains($csv->headers->get('Content-Disposition'), 'my-attendance-day-2026-10-01.csv'), 'The HR route does not export a personal CSV.');
+try {
+    $guarded('/hr/attendance', 'GET', ['company_id' => 2], true);
+    throw new RuntimeException('HR report accepted a different company.');
+} catch (\Symfony\Component\HttpKernel\Exception\HttpException $e) {
+    checkCalendar($e->getStatusCode() === 403, 'Wrong rejection for a foreign company.');
+}
 foreach ([
     ['/attendance/'.$record->id, 'PUT'],
     ['/attendance/store', 'POST'],
@@ -80,6 +111,8 @@ foreach ([
     ['/attendance/month/archive', 'POST'],
     ['/attendance/'.$record->id.'/restore', 'POST'],
     ['/attendance/export/excel', 'GET'],
+    ['/attendance/filter', 'GET'],
+    ['/attendance/by-member', 'GET'],
     ['/attendance/details', 'GET'],
 ] as [$path, $method]) {
     try {
@@ -89,9 +122,8 @@ foreach ([
         checkCalendar($e->getStatusCode() === 403, "Wrong denial for $path.");
     }
 }
-$foreignRecord = Attendance::where('user_id', 3)->firstOrFail();
 $details = $controller->showAttendanceDetails($personalRequest(['user_id' => 40, 'attendance_id' => $foreignRecord->id]));
-checkCalendar($details->getStatusCode() === 403, 'A different record ID bypassed HR attendance detail ownership.');
+checkCalendar($details->getStatusCode() === 404, 'A different record ID bypassed HR attendance detail ownership.');
 $photoPath = 'authority-attendance/1/hr-report-test.jpg';
 Storage::fake('local')->put($photoPath, 'fixture');
 $record->clock_in_photo = $photoPath;
@@ -126,6 +158,12 @@ checkCalendar($admin['selectedEmployee']->id === 40 && $admin['canManage'], 'Adm
 DB::table('users')->insert(['id' => 41, 'company_id' => 1, 'name' => 'Manager', 'email' => 'manager@local.test', 'role' => 'manager']);
 DB::table('attendances')->insert(['user_id' => 41, 'date' => '2026-10-01', 'status' => 'present', 'clock_in' => '09:00:00', 'clock_out' => '17:00:00']);
 Auth::guard('web')->setUser(User::findOrFail(41));
+try {
+    $guarded('/hr/attendance', 'GET', [], true);
+    throw new RuntimeException('The HR report route accepted a non-HR viewer.');
+} catch (\Symfony\Component\HttpKernel\Exception\HttpException $e) {
+    checkCalendar($e->getStatusCode() === 403, 'Wrong rejection for a non-HR viewer.');
+}
 $managerData = $controller->index(Request::create('/attendance', 'GET', ['view' => 'personal', 'month' => 10, 'year' => 2026]))->getData();
 checkCalendar($managerData['employees']->pluck('id')->all() === [41] && !$managerData['canManage'], 'Manager personal attendance is not isolated/read-only');
 checkCalendar($managerData['calendar']['totals']['seconds'] === 28800, 'Manager personal working hours missing');
@@ -136,4 +174,4 @@ try {
     checkCalendar($e->getStatusCode() === 403, 'Wrong manager attendance isolation rejection');
 }
 Carbon::setTestNow();
-echo "PASS: HR day/week/month attendance and CSV, isolated report and details, read-only markup, self-override protection and admin access.\n";
+echo "PASS: HR model and report route isolation, day/week/month totals, personal CSV, detail and photo ownership, self-override protection, and admin access.\n";

@@ -23,7 +23,7 @@ $request = function (array $data) use ($app) {
     $app->instance('request', $r);
     return $r;
 };
-foreach ([2, 3, 4] as $userId) {
+foreach ([2, 3, 6] as $userId) {
     Auth::guard('web')->setUser(User::findOrFail($userId));
     Carbon::setTestNow(Carbon::parse('2026-10-12 18:00:00', 'Asia/Kolkata'));
     $session = $makeSession($userId, '2026-10-12', '09:00:00');

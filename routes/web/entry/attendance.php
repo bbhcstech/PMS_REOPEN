@@ -35,7 +35,6 @@ Route::post('/attendance/get-employee-timeline', [AttendanceController::class, '
 
 
 
-Route::get('/attendance', [AttendanceController::class, 'index'])->name('attendance.index');
 Route::get('/attendance/filter', [AttendanceController::class, 'filter'])->name('attendance.filter');
 Route::post('/attendance/clock-in', [AttendanceController::class, 'clockIn'])->name('attendance.clockIn');
 

@@ -157,7 +157,6 @@ public function hrindex(Request $request)
         $activeEmployees = EmployeeDetail::where('status', 'Active')->count();
         $departmentsCount = Department::count();
         $designationsCount = Designation::count();
-        $presentToday = Attendance::query()->whereHas('user', fn ($users) => \App\Services\WorkforceAccess::users($users, 'employee'))->where('date', $today)->where('status', 'present')->count();
         $myLeaves = Leave::where('user_id', auth()->id())->whereNull('archived_at');
         $onLeaveToday = (clone $myLeaves)->whereDate('start_date', '<=', $today)
                             ->whereDate('end_date', '>=', $today)
@@ -170,9 +169,6 @@ public function hrindex(Request $request)
          $approvedLeaves = (clone $myLeaves)->where('status', 'approved')
                         ->whereDate('start_date', '<=', $endDate)->whereDate('end_date', '>=', $startDate)
                         ->count();
-
-        $todayPresent = Attendance::query()->whereHas('user', fn ($users) => \App\Services\WorkforceAccess::users($users, 'employee'))->whereDate('date', today())->count();
-        $averageAttendance = ($totalEmployees > 0) ? round(($todayPresent / $totalEmployees) * 100, 2) : 0;
 
         $pendingTasks = Task::where('status', 'Pending Task')->count();
 
@@ -189,12 +185,16 @@ public function hrindex(Request $request)
                         ->groupBy('month')
                         ->pluck('attritions', 'month');
 
-         $lateAttendances = Attendance::query()->whereHas('user', fn ($users) => \App\Services\WorkforceAccess::users($users, 'employee'))->with('user.employeeDetail.designation')
-            ->where('status', 'Late')
-            ->whereBetween('date', [$startDate, $endDate])
-            ->orderBy('user_id')
-            ->get()
-            ->groupBy('user_id');
+        $hasLateFlag = Schema::connection('tenant')->hasColumn('attendances', 'late');
+        $lateDates = Attendance::where('user_id', Auth::id())->whereNull('archived_at')
+            ->whereBetween('date', [$startDate->toDateString(), $endDate->toDateString()])
+            ->where(function ($query) use ($hasLateFlag) {
+                $query->whereRaw('LOWER(status) = ?', ['late']);
+                if ($hasLateFlag) {
+                    $query->orWhere('late', 'yes');
+                }
+            })
+            ->orderByDesc('date')->distinct()->pluck('date');
 
               $leavesTaken = (clone $myLeaves)->with(['user.employeeDetail.designation'])
             ->where('status', 'approved')
@@ -275,19 +275,16 @@ public function hrindex(Request $request)
             'activeEmployees',
             'departmentsCount',
             'designationsCount',
-            'presentToday',
             'onLeaveToday',
             'pendingLeaves',
             'newEmployees',
             'exits',
             'approvedLeaves',
-            'todayPresent',
-            'averageAttendance',
             'pendingTasks',
             'monthlyHeadcount',
             'monthlyJoinings',
             'monthlyAttrition',
-            'lateAttendances',
+            'lateDates',
             'leavesTaken',
             'departmentWise',
             'designationWise',

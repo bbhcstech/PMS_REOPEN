@@ -96,6 +96,7 @@ $modules['payroll-processing']['route_names'] = [
 $modules['payroll-history']['route_names'] = ['payroll.history'];
 $modules['leaves-apply']['route_names'] = ['leaves.store'];
 $modules['leaves']['route_names'] = ['leaves.mine'];
+$modules['attendance']['route_names'] = ['attendance.hr'];
 $modules['department-parent']['route_prefixes'] = ['parent-departments', 'admin.settings.parent-departments'];
 $modules['department-sub']['route_prefixes'] = ['departments', 'admin.settings.departments'];
 $modules['designations']['route_prefixes'] = ['designations', 'admin.settings.designations'];

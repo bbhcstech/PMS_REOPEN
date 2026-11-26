@@ -18,18 +18,16 @@
         $roleName = 'HR';
     }
     $canSeeModule = fn (string $slug) => auth()->user()?->canViewModule($slug) ?? false;
-    $attendancePercent = $totalEmployees > 0 ? round(($todayPresent / $totalEmployees) * 100) : 0;
-    $notClockedIn = max(($totalEmployees ?? 0) - ($todayPresent ?? 0), 0);
-    $roleScale = max($totalEmployees ?? 0, $totalProjects ?? 0, $newEmployees ?? 0, $exits ?? 0, $approvedLeaves ?? 0, $todayPresent ?? 0, $pendingTasks ?? 0, $pendingLeaves ?? 0, 1);
+    $attendanceRoute = \App\Services\WorkforceAccess::isHr(auth()->user()) ? 'attendance.hr' : 'attendance.index';
+    $clockedInToday = $attendance?->date?->isToday() && filled($attendance->clock_in);
+    $roleScale = max($totalEmployees ?? 0, $totalProjects ?? 0, $newEmployees ?? 0, $exits ?? 0, $approvedLeaves ?? 0, $pendingTasks ?? 0, $pendingLeaves ?? 0, 1);
     $rolePieCharts = [
         ['slug' => 'projects', 'route' => 'projects.index', 'label' => 'Projects', 'value' => $totalProjects ?? 0, 'hint' => ($activeProjects ?? 0) . ' active projects', 'percent' => round((($totalProjects ?? 0) / $roleScale) * 100), 'color' => '#2F6BFF'],
         ['slug' => 'tasks', 'route' => 'tasks.index', 'label' => 'Pending Tasks', 'value' => $pendingTasks ?? 0, 'hint' => 'Open work queue', 'percent' => round((($pendingTasks ?? 0) / $roleScale) * 100), 'color' => '#8B5CF6'],
         ['slug' => 'timelogs', 'route' => 'timelogs.index', 'label' => 'Timesheet Hours', 'value' => $totalTimelogHours ?? 0, 'hint' => ($totalTimelogsCount ?? 0) . ' logged entries', 'percent' => min(100, round((($totalTimelogHours ?? 0) / max($roleScale * 8, 1)) * 100)), 'color' => '#10B981'],
         ['slug' => 'employees', 'route' => 'employees.index', 'label' => 'Employees', 'value' => $totalEmployees ?? 0, 'hint' => 'Total workforce', 'percent' => round((($totalEmployees ?? 0) / $roleScale) * 100), 'color' => '#22D3EE'],
-        ['slug' => 'attendance', 'route' => 'attendance.index', 'label' => 'Presence', 'value' => $todayPresent ?? 0, 'hint' => "{$attendancePercent}% present today", 'percent' => $attendancePercent, 'color' => '#06B6D4'],
         ['slug' => 'leaves', 'route' => 'leaves.mine', 'label' => 'My Pending Leave', 'value' => $pendingLeaves ?? 0, 'hint' => 'Awaiting review', 'percent' => round((($pendingLeaves ?? 0) / $roleScale) * 100), 'color' => '#F59E0B'],
         ['slug' => 'employees', 'route' => 'employees.index', 'label' => 'New Joiners', 'value' => $newEmployees ?? 0, 'hint' => 'In selected range', 'percent' => round((($newEmployees ?? 0) / $roleScale) * 100), 'color' => '#6366F1'],
-        ['slug' => 'attendance', 'route' => 'attendance.report', 'label' => 'No Clock-in Today', 'value' => $notClockedIn, 'hint' => 'Employee clock-ins', 'percent' => $totalEmployees > 0 ? round(($notClockedIn / $totalEmployees) * 100) : 0, 'color' => '#64748B'],
     ];
 
     $clockInLabel = $attendance && $attendance->clock_in ? Carbon::parse($attendance->clock_in)->format('h:i A') : 'Not Clocked In';
@@ -905,8 +903,8 @@
                     @if(Route::has('leaves.mine') && $canSeeModule('leaves'))
                         <a href="{{ route('leaves.mine') }}" class="role-btn role-btn-light"><i class="bx bx-calendar-minus"></i> My Leave</a>
                     @endif
-                    @if(Route::has('attendance.report') && $canSeeModule('attendance'))
-                        <a href="{{ route('attendance.report') }}" class="role-btn role-btn-light"><i class="bx bx-bar-chart-alt-2"></i> Reports</a>
+                    @if($canSeeModule('attendance'))
+                        <a href="{{ route($attendanceRoute) }}" class="role-btn role-btn-light"><i class="bx bx-calendar-check"></i> My Attendance</a>
                     @endif
                 </div>
                 <form method="GET" class="role-date-filter">
@@ -933,7 +931,7 @@
                 </div>
 
                 <div class="employee-clock hr-clock">
-                    <a class="btn btn-outline-primary w-100 mb-2" href="{{ route('attendance.index', ['view' => 'personal']) }}"><i class="bx bx-calendar-check me-1"></i> My Attendance</a>
+                    <a class="btn btn-outline-primary w-100 mb-2" href="{{ route($attendanceRoute) }}"><i class="bx bx-calendar-check me-1"></i> My Attendance</a>
                     <p class="small text-muted mb-3">View your attendance history. Corrections are managed by your company admin.</p>
                     @if ($attendance && $attendance->clock_in && !$attendance->clock_out)
                         <form method="POST" action="{{ route('dashboard.clockout') }}" id="employeeClockOutForm">
@@ -1020,15 +1018,18 @@
                 </div>
             </div>
 
+            @if($canSeeModule('attendance'))
             <div class="role-panel role-focus-card">
-                <div class="role-gauge" style="--percent: {{ max(0, min(100, $attendancePercent)) }};">
-                    <strong>{{ $attendancePercent }}%</strong>
+                <div class="role-gauge" style="--percent: {{ $clockedInToday ? 100 : 0 }};">
+                    <strong><i class="bx bx-calendar-check" aria-hidden="true"></i></strong>
                 </div>
                 <div class="text-center">
-                    <h5 class="fw-bold mb-1">Today Presence</h5>
-                    <p class="text-muted mb-0">{{ $todayPresent ?? 0 }} present, {{ $notClockedIn }} without a clock-in</p>
+                    <h5 class="fw-bold mb-1">My Attendance Today</h5>
+                    <p class="text-muted mb-2">{{ $clockedInToday ? 'Clocked in at ' . $clockInLabel : 'No clock-in recorded today' }}</p>
+                    <a href="{{ route($attendanceRoute, ['period' => 'day']) }}">View daily report</a>
                 </div>
             </div>
+            @endif
         </div>
 
         <div class="role-stat-grid">
@@ -1068,7 +1069,7 @@
             $cards = [
                 ['title' => 'Employee Exits', 'value' => $exits],
                 ['title' => 'Approved Leaves', 'value' => $approvedLeaves],
-                ['title' => 'Average Attendance', 'value' => $averageAttendance . '%'],
+                ['title' => 'My Late Days', 'value' => $lateDates->count()],
                 ['title' => 'My Leave Today', 'value' => $onLeaveToday ?? 0],
             ];
         @endphp
@@ -1193,32 +1194,28 @@
         </div>
     </div>
 
-    <!-- Late Attendance -->
+    @if($canSeeModule('attendance'))
     <div class="col-md-6">
         <div class="card shadow-sm h-100">
             <div class="card-header bg-white border-bottom">
-                <h6 class="mb-0 fw-semibold">Late Attendance</h6>
+                <h6 class="mb-0 fw-semibold"><i class="bx bx-time-five me-2" aria-hidden="true"></i>My Late Clock-ins</h6>
             </div>
-            <br>
             <div class="card-body">
                 <ul class="list-group">
-                    @forelse ($lateAttendances as $userId => $attendances)
-                        @php $user = $attendances->first()->user ?? null; @endphp
-                        @if ($user)
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                {{ $user->name }}<br>
-                                <small>{{ $user->employeeDetail->salutation ?? '' }} {{ $user->employeeDetail->full_name ?? '' }}</small><br>
-                                <small>{{ $user->employeeDetail->designation->name ?? '-' }}</small>
-                                <span class="badge bg-danger rounded-pill">{{ $attendances->count() }}</span>
-                            </li>
-                        @endif
+                    @forelse ($lateDates as $lateDate)
+                        <li class="list-group-item">
+                            <a href="{{ route($attendanceRoute, ['period' => 'day', 'date' => $lateDate->toDateString()]) }}">
+                                {{ $lateDate->format('d M Y') }}
+                            </a>
+                        </li>
                     @empty
-                        <li class="list-group-item text-muted">- No late attendance found. -</li>
+                        <li class="list-group-item text-muted">No late clock-ins in the selected range.</li>
                     @endforelse
                 </ul>
             </div>
         </div>
     </div>
+    @endif
 </div>
 
 <!-- ============ WORK MANAGEMENT SECTION (PROJECTS, TASKS, RECENT ACTIVITIES, TIMESHEET) ============ -->

@@ -9,7 +9,7 @@ class WorkforceAccess
 {
     public static function isHr(?User $user): bool
     {
-        return $user && strtolower((string) $user->role) === 'hr';
+        return $user?->normalizedRole() === 'hr';
     }
 
     public static function canManageLeaves(?User $user): bool
@@ -33,7 +33,7 @@ class WorkforceAccess
     public static function isAuthority(User $user): bool
     {
         return (bool) $user->company_staff_role_id
-            || in_array(strtolower((string) $user->role), ['hr', 'manager', 'developer', 'dev'], true);
+            || in_array($user->normalizedRole(), ['hr', 'manager', 'developer', 'dev'], true);
     }
 
     public static function users(Builder $query, string $category): Builder

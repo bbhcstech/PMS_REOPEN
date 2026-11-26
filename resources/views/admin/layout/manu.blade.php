@@ -281,13 +281,13 @@
 
 
             @php
-                $isHrSidebarUser = strtolower((string)(auth()->user()?->role ?? '')) === 'hr';
+                $isHrSidebarUser = \App\Services\WorkforceAccess::isHr(auth()->user());
             @endphp
 
-            @if(in_array(strtolower((string) auth()->user()?->role), ['hr', 'manager'], true))
+            @if($isHrSidebarUser || auth()->user()?->normalizedRole() === 'manager')
                 @if($canSeeModule('attendance'))
-                <li class="menu-item {{ (request()->routeIs('attendance.index') && ($isHrSidebarUser || request('view') === 'personal')) || ($isHrSidebarUser && request()->routeIs('attendance.report', 'attendance.employee.index')) ? 'active' : '' }}">
-                    <a href="{{ route('attendance.index', ['view' => 'personal']) }}" class="menu-link" data-sidebar-key="attendance">
+                <li class="menu-item {{ (request()->routeIs('attendance.index') && ($isHrSidebarUser || request('view') === 'personal')) || ($isHrSidebarUser && request()->routeIs('attendance.hr', 'attendance.report', 'attendance.employee.index', 'admin.authority-attendance')) ? 'active' : '' }}">
+                    <a href="{{ $isHrSidebarUser ? route('attendance.hr') : route('attendance.index', ['view' => 'personal']) }}" class="menu-link" data-sidebar-key="attendance">
                         <i class="menu-icon tf-icons bx bx-calendar-check"></i><div>My Attendance</div>
                     </a>
                 </li>
@@ -481,7 +481,7 @@
                         @if(\App\Services\WorkforceAccess::isAdmin(auth()->user()))
                         @if($canSeeModule('attendance') && (!\App\Services\WorkforceAccess::isAuthority(auth()->user()) || \App\Services\WorkforceAccess::canManageLeaves(auth()->user())))
                         @if($canSeeModule('higher-level-attendance'))
-                        <li class="menu-item {{ request()->routeIs('admin.authority-attendance') ? 'active' : '' }}"><a href="{{ route('admin.authority-attendance', ['view' => 'team']) }}" class="menu-link"><div class="text-truncate">HR Attendance</div></a></li>
+                        <li class="menu-item {{ request()->routeIs('admin.authority-attendance') ? 'active' : '' }}"><a href="{{ route('admin.authority-attendance', ['view' => 'team']) }}" class="menu-link"><div class="text-truncate">Higher-Level Staff Attendance</div></a></li>
                         @endif
                         @endif
                         @if($canSeeModule('leaves'))

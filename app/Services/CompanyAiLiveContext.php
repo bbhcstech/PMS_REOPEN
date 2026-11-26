@@ -219,10 +219,10 @@ class CompanyAiLiveContext
             ] : 'Not clocked in yet today',
             'this_week' => $summarize($now->copy()->startOfWeek(), $now->copy()),
             'this_month' => $summarize($now->copy()->startOfMonth(), $now->copy()),
-            'my_attendance_page' => $this->url('attendance.index'),
+            'my_attendance_page' => $this->url(WorkforceAccess::isHr($user) ? 'attendance.hr' : 'attendance.index'),
         ];
         // Company-wide figures only for people who manage attendance.
-        if (WorkforceAccess::isAdmin($user) || WorkforceAccess::isHr($user)) {
+        if (WorkforceAccess::isAdmin($user)) {
             $staff = User::where('company_id', $company->id)->whereIn('role', ['employee', 'hr', 'manager'])->whereNull('archived_at');
             $staffIds = (clone $staff)->pluck('id');
             $present = \App\Models\Attendance::whereIn('user_id', $staffIds)->whereNull('archived_at')->whereDate('date', $now->toDateString());

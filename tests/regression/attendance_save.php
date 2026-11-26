@@ -70,14 +70,14 @@ DB::table('users')->insert([
 ]);
 saveAttendance(['user_id' => 3, 'mark_attendance_by' => 'date', 'date_range' => '10/15/2026-10/16/2026']);
 checkSave(Attendance::where('user_id', 3)->count() === 2, 'Company admin could not manage HR attendance.');
-$beforeRejected = Attendance::count();
+$beforeRejected = DB::table('attendances')->count();
 try {
     saveAttendance(['user_id' => [2, 4], 'date' => '2026-10-17']);
     throw new RuntimeException('Mixed-company bulk request accepted.');
 } catch (\Symfony\Component\HttpKernel\Exception\HttpException $e) {
     checkSave($e->getStatusCode() === 403, 'Wrong company boundary rejection.');
 }
-checkSave(Attendance::count() === $beforeRejected, 'Mixed-company request partially wrote attendance.');
+checkSave(DB::table('attendances')->count() === $beforeRejected, 'Mixed-company request partially wrote attendance.');
 Auth::guard('web')->setUser(User::findOrFail(3));
 foreach ([3, [3], [2, 3]] as $ids) {
     try {
@@ -87,5 +87,5 @@ foreach ([3, [3], [2, 3]] as $ids) {
         checkSave($e->getStatusCode() === 403, 'Wrong HR self-write rejection.');
     }
 }
-checkSave(Attendance::count() === $beforeRejected, 'Rejected HR request partially wrote attendance.');
+checkSave(DB::table('attendances')->count() === $beforeRejected, 'Rejected HR request partially wrote attendance.');
 echo "PASS: compact/spaced date ranges, impossible/reversed dates, admin HR access, HR single/bulk self-write denial and company isolation.\n";

@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Route;
 Route::middleware(['auth'])->group(function () {
 
 Route::get('/attendance', [AttendanceController::class, 'index'])->name('attendance.index');
+Route::get('/hr/attendance', [AttendanceController::class, 'hrAttendance'])->name('attendance.hr');
 Route::post('/attendance/mark', [AttendanceController::class, 'markAttendance'])->name('attendance.mark');
 
 Route::get('/admin/authority-attendance', [AttendanceController::class, 'authorityIndex'])->name('admin.authority-attendance');

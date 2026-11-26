@@ -82,9 +82,22 @@ class AttendanceController extends Controller
         return $this->calendar($request);
     }
 
+    public function hrAttendance(Request $request)
+    {
+        $user = Auth::user();
+        abort_unless(WorkforceAccess::isHr($user), 403);
+
+        return $this->personalReport($request, $user);
+    }
+
     public function authorityIndex(Request $request)
     {
-        abort_unless($this->isAdminUser(Auth::user()), 403);
+        $user = Auth::user();
+        if (WorkforceAccess::isHr($user)) {
+            return $this->personalReport($request, $user);
+        }
+
+        abort_unless($this->isAdminUser($user), 403);
         $request->merge(['staff_category' => 'authority']);
         return $this->calendar($request);
     }
@@ -209,6 +222,7 @@ class AttendanceController extends Controller
         if (!$user) {
             abort(401, 'Unauthenticated');
         }
+        abort_if(WorkforceAccess::isHr($user), 403, 'Use My Attendance to view your own report.');
         // Clock-in boundary: whoever missed the clock-in window on a working day shows as absent.
         try {
             \App\Services\AttendanceClockPolicy::markMissedClockIns((int) $user->company_id);

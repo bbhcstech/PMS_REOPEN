@@ -174,8 +174,8 @@
 
 @section('content')
 @php
-    $reportUrl = fn ($reportPeriod, $reportDate, $extra = []) => route('attendance.index', [
-        'view' => 'personal', 'period' => $reportPeriod, 'date' => $reportDate->toDateString(),
+    $reportUrl = fn ($reportPeriod, $reportDate, $extra = []) => route('attendance.hr', [
+        'period' => $reportPeriod, 'date' => $reportDate->toDateString(),
     ] + $extra);
     $range = match ($period) {
         'day' => $start->format('l, d M Y'),
@@ -222,8 +222,7 @@
                 </a>
             @endforeach
         </nav>
-        <form class="ha-navigation" method="GET" action="{{ route('attendance.index') }}" aria-label="Choose a report date">
-            <input type="hidden" name="view" value="personal">
+        <form class="ha-navigation" method="GET" action="{{ route('attendance.hr') }}" aria-label="Choose a report date">
             <input type="hidden" name="period" value="{{ $period }}">
             <a class="ha-button ha-arrow" href="{{ $reportUrl($period, $previous) }}" aria-label="Previous {{ $period }}">
                 <i class="bx bx-chevron-left" aria-hidden="true"></i>

@@ -21,8 +21,10 @@ class ProtectWorkforceRecords
             $isAdmin = WorkforceAccess::isAdmin($actor);
             $isHr = WorkforceAccess::isHr($actor);
             $action = $route->getActionMethod();
+            $hrReport = $isHr && $attendance
+                && in_array($action, ['hrAttendance', 'index', 'employeeIndex', 'attendanceReport', 'authorityIndex'], true);
             if (($attendance || $leave) && ! $isAdmin) {
-                abort_if($request->input('staff_category') === 'authority', 403, 'Higher-level staff records are managed only by the company admin.');
+                abort_if(! $hrReport && $request->input('staff_category') === 'authority', 403, 'Higher-level staff records are managed only by the company admin.');
                 if (WorkforceAccess::isAuthority($actor) && ! $isHr) {
                     $allowed = $leave ? ['create', 'store', 'index', 'myLeaves', 'show'] : ['index', 'employeeIndex', 'clockIn', 'showAttendanceDetails', 'photo'];
                     abort_unless(in_array($action, $allowed, true), 403, 'Your leave and attendance records are managed only by the company admin.');
@@ -40,13 +42,12 @@ class ProtectWorkforceRecords
                     }
                 }
             }
-            if ($request->routeIs('admin.authority-attendance', 'admin.authority-leaves')) {
-                abort_unless(WorkforceAccess::isAdmin($actor), 403);
+            if ($request->routeIs('admin.authority-leaves') || ($request->routeIs('admin.authority-attendance') && ! $hrReport)) {
+                abort_unless($isAdmin, 403);
             }
             if ($attendance && ! $isAdmin) {
                 $allowed = ['index', 'employeeIndex', 'clockIn', 'showAttendanceDetails', 'photo'];
-                if ($isHr) $allowed[] = 'attendanceReport';
-                abort_unless(in_array($action, $allowed, true), 403, 'Only your company admin may manage attendance.');
+                abort_unless($hrReport || in_array($action, $allowed, true), 403, 'Only your company admin may manage attendance.');
                 if ($action === 'showAttendanceDetails') {
                     $ownerId = $request->integer('user_id');
                     if ($isHr) {
