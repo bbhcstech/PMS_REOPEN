@@ -76,7 +76,13 @@
     $reportingLeadsCount = $treeNodes->filter(fn ($n) => ((int) ($n['directs'] ?? 0)) > 0)->count();
 @endphp
 
-<div id="pms-org-page" class="org-page">
+@push('styles')
+    @include('admin.organization-directory.styles')
+    @include('admin.organization-directory.tree-styles')
+@endpush
+
+@section('content')
+<div id="pms-org-page" class="org-page orgd-page">
     <!-- Page Header Card -->
     <div class="org-header-card">
         <div class="org-header-title">

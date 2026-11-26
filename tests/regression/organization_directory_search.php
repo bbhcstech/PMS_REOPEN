@@ -80,4 +80,12 @@ foreach ([[], ['search' => 'Ananya']] as $filters) {
     }
 }
 
+// Render the complete directory template and its stacks independently of the shared workspace shell.
+$source = file_get_contents(resource_path('views/admin/organization-directory/index.blade.php'));
+$source = str_replace("@extends('admin.layout.app')", '', $source)."\n@stack('styles') @yield('content') @stack('scripts')";
+$html = \Illuminate\Support\Facades\Blade::render($source, $data, true);
+if (!str_contains($html, 'Employee Hierarchy Structure') || !str_contains($html, '.orgd-viewport') || !str_contains($html, 'orgTreeInitialData')) {
+    throw new RuntimeException('Organization did not render its content, hierarchy styles and initial data.');
+}
+
 echo "PASS: Organization search, filters, company isolation, and support for tenants without archive columns.\n";
