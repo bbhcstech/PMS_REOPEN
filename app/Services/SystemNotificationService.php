@@ -101,6 +101,10 @@ class SystemNotificationService
         $companyId ??= $actor?->company_id;
 
         $companyId = self::companyId($companyId);
+        // System/settings updates are not broadcast as notifications.
+        if (NotificationAudience::isSystemUpdate($data)) {
+            return;
+        }
         self::send(self::roleUsers($companyId), $title, $message, $url, ['company_id' => $companyId] + $data + [
             'type' => 'erp_activity',
             'icon' => 'fa-bell',

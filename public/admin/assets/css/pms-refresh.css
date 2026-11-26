@@ -3112,6 +3112,28 @@ body:has(form[action*="employees"]) .input-group-text {
   font-weight: 900 !important;
 }
 
+.employee-dashboard .status-badge {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.4rem !important;
+  padding: 0.35rem 0.75rem !important;
+  font-size: 0.78rem !important;
+  line-height: 1.1 !important;
+  white-space: nowrap !important;
+}
+
+.employee-dashboard .status-badge .status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #10b981;
+  flex-shrink: 0;
+}
+
+.employee-dashboard .status-badge.status-inactive .status-dot {
+  background: #ef4444;
+}
+
 html[data-pms-theme="dark"] .employee-dashboard,
 html[data-pms-theme="dark"] .employee-show-container,
 html[data-pms-theme="dark"] body:has(form[action*="employees"]) .container,

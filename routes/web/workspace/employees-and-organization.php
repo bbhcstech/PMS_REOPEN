@@ -70,14 +70,17 @@ Route::get('employees/archive', [EmployeeController::class, 'archive'])
     ->name('employees.archive');
 Route::post('employees/archive/bulk-restore', [EmployeeController::class, 'bulkRestore'])
     ->name('employees.archive.bulkRestore');
+Route::post('employees/{id}/inactive', [EmployeeController::class, 'markInactive'])
+    ->name('employees.inactive.update');
+Route::delete('employees/{id}/permanent', [EmployeeController::class, 'deletePermanently'])
+    ->name('employees.delete-permanent');
 Route::post('employees/{id}/restore', [EmployeeController::class, 'restore'])
     ->name('employees.restore');
 
+Route::get('employees/org-tree', [EmployeeController::class, 'orgTree'])
+    ->name('employees.org-tree');
+
 Route::resource('employees', EmployeeController::class);
-Route::get('admin/upper-level-employees', [\App\Http\Controllers\Admin\UpperLevelEmployeeController::class, 'index'])->name('admin.upper-level-employees.index');
-Route::post('admin/upper-level-employees/roles', [\App\Http\Controllers\Admin\UpperLevelEmployeeController::class, 'storeRole'])->name('admin.upper-level-employees.roles.store');
-Route::post('admin/upper-level-employees', [\App\Http\Controllers\Admin\UpperLevelEmployeeController::class, 'store'])->name('admin.upper-level-employees.store');
-Route::put('admin/upper-level-employees/{id}', [\App\Http\Controllers\Admin\UpperLevelEmployeeController::class, 'update'])->name('admin.upper-level-employees.update');
 
 
     Route::post('designations/check-exists', [DesignationController::class, 'checkExists'])->name('designations.check-exists');

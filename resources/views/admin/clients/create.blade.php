@@ -488,7 +488,7 @@
 
                         <!-- Added By -->
                         <div class="col-md-6">
-                            <label class="form-label fw-semibold text-secondary">Added By</label>
+                            <label class="form-label fw-semibold text-secondary" for="added_by">Added By</label>
                             <select name="added_by" id="added_by" class="form-select form-control-custom">
                                 <option value="">Select User</option>
                                 @foreach($users as $user)
@@ -2475,6 +2475,20 @@ $(document).ready(function () {
         templateSelection: formatOption,
         placeholder: "Select Language",
         width: '100%'
+    });
+
+    // Step 2: Added By dropdown Select2 (search by name)
+    $('#added_by').select2({
+        theme: "classic",
+        placeholder: "Select User",
+        width: '100%',
+        minimumResultsForSearch: 0
+    }).on('select2:open', function() {
+        const searchField = document.querySelector('.select2-container--open .select2-search__field');
+        if (searchField) {
+            searchField.setAttribute('placeholder', 'Search by name...');
+            searchField.focus();
+        }
     });
 
     // Multi-select Select2

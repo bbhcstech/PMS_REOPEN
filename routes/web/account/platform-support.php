@@ -14,5 +14,7 @@ Route::get('/admin/company-complaints/{id}/attachment/{attachmentId}', [\App\Htt
 // Platform Notifications Routes (Tenant Admin)
 Route::get('/admin/company-notifications', [\App\Http\Controllers\Admin\CompanyNotificationController::class, 'index'])->name('admin.company-notifications.index');
 Route::post('/admin/company-notifications/read-all', [\App\Http\Controllers\Admin\CompanyNotificationController::class, 'markAllRead'])->name('admin.company-notifications.read-all');
+Route::post('/admin/company-notifications/delete-selected', [\App\Http\Controllers\Admin\CompanyNotificationController::class, 'deleteSelected'])->name('admin.company-notifications.delete-selected');
 Route::post('/admin/company-notifications/{id}/read', [\App\Http\Controllers\Admin\CompanyNotificationController::class, 'markAsRead'])->name('admin.company-notifications.read');
+Route::delete('/admin/company-notifications/{id}', [\App\Http\Controllers\Admin\CompanyNotificationController::class, 'destroy'])->name('admin.company-notifications.delete');
 Route::get('/admin/company-notifications/unread-count', [\App\Http\Controllers\Admin\CompanyNotificationController::class, 'unreadCount'])->name('admin.company-notifications.unread-count');

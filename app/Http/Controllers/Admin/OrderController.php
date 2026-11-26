@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Deal;
 use App\Models\Project;
+use App\Support\CurrencyDisplay;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -19,6 +20,9 @@ class OrderController extends Controller
     {
         $search = trim((string) $request->get('search', ''));
         $status = $request->get('status', 'all');
+
+        $currencyContext = CurrencyDisplay::context();
+        $defaultCurrencySymbol = $currencyContext[3];
 
         // Fetch all active deals for automatic cost matching
         $allDeals = Deal::all();
@@ -57,7 +61,7 @@ class OrderController extends Controller
         $clientProjects = $query->get();
 
         // Map client projects into Order History records
-        $orders = $clientProjects->map(function ($project) use ($allDeals) {
+        $orders = $clientProjects->map(function ($project) use ($allDeals, $currencyContext) {
             $matchedDeal = $this->findMatchingDeal($project, $allDeals);
             
             // Calculate total amount / deal value
@@ -74,6 +78,13 @@ class OrderController extends Controller
                 $totalAmount = 0.00;
                 $costSource = 'none';
             }
+
+            $currency = CurrencyDisplay::resolveProjectCurrency(
+                $project,
+                $matchedDeal,
+                $costSource === 'deal',
+                $currencyContext
+            );
 
             // Map status
             $rawStatus = strtolower(trim((string) $project->status));
@@ -128,6 +139,9 @@ class OrderController extends Controller
                 'items' => $items,
                 'has_real_tasks' => $project->tasks && $project->tasks->isNotEmpty(),
                 'total_amount' => $totalAmount,
+                'currency_code' => $currency['code'],
+                'currency_symbol' => $currency['symbol'],
+                'formatted_amount' => $currency['symbol'] . number_format($totalAmount, 2),
                 'status' => $orderStatus,
                 'raw_status' => $rawStatus,
                 'payment_status' => $paymentStatus,
@@ -148,6 +162,11 @@ class OrderController extends Controller
         }
 
         // Calculate KPI Statistics based on all Client Projects
+        $revenueCurrencySymbol = CurrencyDisplay::resolveSummarySymbol(
+            $orders->filter(fn ($item) => (float) ($item['total_amount'] ?? 0) > 0)->pluck('currency_symbol'),
+            $defaultCurrencySymbol
+        );
+
         $stats = [
             'total_orders' => $orders->count(),
             'completed' => $orders->where('status', 'Completed')->count(),
@@ -155,6 +174,7 @@ class OrderController extends Controller
             'pending' => $orders->where('status', 'Pending')->count(),
             'cancelled' => $orders->where('status', 'Cancelled')->count(),
             'total_revenue' => $orders->sum('total_amount'),
+            'revenue_currency_symbol' => $revenueCurrencySymbol,
         ];
 
         return view('admin.orders.index', compact('orders', 'stats', 'search', 'status'));
@@ -291,9 +311,11 @@ class OrderController extends Controller
 
         $allDeals = Deal::all();
         $matchedDeal = $this->findMatchingDeal($project, $allDeals);
+        $fromDeal = false;
 
         if ($matchedDeal && !empty($matchedDeal->value) && (float) $matchedDeal->value > 0) {
             $totalAmount = (float) $matchedDeal->value;
+            $fromDeal = true;
         } elseif (!empty($project->project_budget) && (float) $project->project_budget > 0) {
             $totalAmount = (float) $project->project_budget;
         } elseif ($project->expenses->isNotEmpty() && $project->expenses->sum('price') > 0) {
@@ -301,6 +323,13 @@ class OrderController extends Controller
         } else {
             $totalAmount = 0.00;
         }
+
+        $currency = CurrencyDisplay::resolveProjectCurrency(
+            $project,
+            $matchedDeal,
+            $fromDeal,
+            CurrencyDisplay::context()
+        );
 
         $rawStatus = strtolower(trim((string) $project->status));
         $orderStatus = match($rawStatus) {
@@ -343,7 +372,9 @@ class OrderController extends Controller
                 'customer_company' => $project->client?->company_name ?: '',
                 'customer_email' => $project->client?->email ?: '',
                 'total_amount' => $totalAmount,
-                'formatted_amount' => '$' . number_format($totalAmount, 2),
+                'currency_code' => $currency['code'],
+                'currency_symbol' => $currency['symbol'],
+                'formatted_amount' => $currency['symbol'] . number_format($totalAmount, 2),
                 'status' => $orderStatus,
                 'payment_status' => $paymentStatus,
                 'items_count' => count($items),

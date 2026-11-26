@@ -852,6 +852,8 @@
         <!-- Top Metadata & Action Control Bar -->
         <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
           <div class="d-flex align-items-center gap-2 flex-wrap">
+            <input type="checkbox" class="notif-select-checkbox notif-item-checkbox" value="{{ ($isCentral ? 'central:' : 'user:') . $notifId }}" aria-label="Select notification {{ $rawTitle }}">
+
             <!-- Icon Circle -->
             <div style="--notif-icon-color: {{ $iconColor }}; background: {{ $iconBg }}; color: {{ $iconColor }};" class="notif-severity-icon">
               <i class="bx {{ $iconClass }}"></i>
@@ -959,4 +961,58 @@
   @endif
 
 </div>
+
+@push('js')
+<script>
+  (function () {
+    var root = document.getElementById('company-notification-center');
+    if (!root) return;
+
+    var selectAll = document.getElementById('selectAllNotifications');
+    var bulkForm = document.getElementById('deleteSelectedNotificationsForm');
+    var idsContainer = document.getElementById('deleteSelectedIdsContainer');
+    var countText = document.getElementById('deleteSelectedCountText');
+
+    function getCheckboxes() {
+      return Array.prototype.slice.call(root.querySelectorAll('.notif-item-checkbox'));
+    }
+
+    function syncBulkSelection() {
+      var boxes = getCheckboxes();
+      var selected = boxes.filter(function (cb) { return cb.checked; });
+
+      if (selectAll) {
+        selectAll.checked = boxes.length > 0 && selected.length === boxes.length;
+        selectAll.indeterminate = selected.length > 0 && selected.length < boxes.length;
+      }
+
+      if (bulkForm && idsContainer && countText) {
+        idsContainer.innerHTML = '';
+        selected.forEach(function (cb) {
+          var input = document.createElement('input');
+          input.type = 'hidden';
+          input.name = 'ids[]';
+          input.value = cb.value;
+          idsContainer.appendChild(input);
+        });
+        countText.textContent = 'Delete Selected (' + selected.length + ')';
+        bulkForm.classList.toggle('d-none', selected.length === 0);
+      }
+    }
+
+    root.addEventListener('change', function (event) {
+      if (event.target === selectAll) {
+        getCheckboxes().forEach(function (cb) {
+          cb.checked = selectAll.checked;
+        });
+        syncBulkSelection();
+      } else if (event.target.classList && event.target.classList.contains('notif-item-checkbox')) {
+        syncBulkSelection();
+      }
+    });
+
+    syncBulkSelection();
+  })();
+</script>
+@endpush
 @endsection

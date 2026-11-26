@@ -29,9 +29,9 @@ trait EmployeeProfileUpdates
 
         $employee = User::with('employeeDetail')->findOrFail($id);
         if ($employee->company_staff_role_id) {
+            // Company-role accounts are edited by a company admin in this form; their access role stays fixed.
             abort_unless(in_array(auth()->user()?->normalizedRole(), ['admin', 'administrator'], true)
                 && (int) $employee->company_id === (int) auth()->user()?->company_id, 403);
-            return redirect()->route('admin.upper-level-employees.index', ['edit' => $employee->id]);
         }
 
         return view('admin.employees.edit', [
@@ -219,10 +219,14 @@ trait EmployeeProfileUpdates
             $user->mobile = $mobileWithCode; // Store with +91 prefix
             $user->login_allowed = $request->login_allowed ?? 1;
             $user->email_notifications = $request->email_notifications ?? 1;
-            if ($request->filled('user_role')) {
-                $user->role = $request->input('user_role');
-            } elseif ($request->filled('role')) {
-                $user->role = $request->input('role');
+            // A company-role account's access role comes from its company role (login and permissions
+            // depend on that pairing), so it is never changed from this form.
+            if (! $user->company_staff_role_id) {
+                if ($request->filled('user_role')) {
+                    $user->role = $request->input('user_role');
+                } elseif ($request->filled('role')) {
+                    $user->role = $request->input('role');
+                }
             }
             if ($request->filled('password')) {
                 \App\Services\PasswordManagementService::updatePassword(Auth::user(), $user, $request->password);

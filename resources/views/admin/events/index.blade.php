@@ -1176,6 +1176,7 @@
     }
 </style>
 @include('admin.events.dark-theme')
+@include('admin.events.presentation')
 @endpush
 
 @section('content')
@@ -1197,9 +1198,8 @@
             <button type="button" class="btn pms-events-btn-primary" onclick="openCreateModal()">
                 <i class="bx bx-plus"></i> Create Event
             </button>
-        </div>
         @endif
-    </div>
+    </header>
 
     {{-- FLASH MESSAGES --}}
     @if($errors->any())
@@ -1281,7 +1281,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </dl>
 
     {{-- FILTER BAR & VIEW TOGGLE --}}
     <div class="card events-filter-card border-0 mb-4">
@@ -1352,6 +1352,17 @@
                         </div>
                     </div>
                 </div>
+                <div class="btn-group filter-btn-group" role="group" aria-label="Event view">
+                    <button type="button" class="btn btn-outline-primary active" id="btnListView" aria-controls="eventsListView" onclick="switchView('list')">
+                        <i class="bx bx-list-ul" aria-hidden="true"></i> List
+                    </button>
+                    <button type="button" class="btn btn-outline-primary" id="btnCalendarView" aria-controls="eventsCalendarView" onclick="switchView('calendar')">
+                        <i class="bx bx-calendar" aria-hidden="true"></i> Calendar
+                    </button>
+                    <button type="button" class="btn btn-outline-primary" id="btnGalleryView" aria-controls="eventsGalleryView" onclick="switchView('gallery')">
+                        <i class="bx bx-images" aria-hidden="true"></i> Gallery
+                    </button>
+                </div>
             </form>
         </div>
     </div>
@@ -1359,27 +1370,22 @@
     {{-- LIST VIEW SECTION --}}
     <div id="eventsListView">
         @if($events->count() > 0)
-            <div class="row g-4">
+            <div class="events-card-grid">
                 @foreach($events as $event)
-                <div class="col-lg-4 col-md-6 col-12">
+                <div class="events-card-item">
                     <div class="card event-card h-100 d-flex flex-column">
                         {{-- Banner / Header Image --}}
                         @if($event->banner_url)
                             <img src="{{ $event->banner_url }}" alt="{{ $event->title }}" class="event-banner-img">
                         @else
-                            <div class="event-banner-placeholder">
-                                <i class="bx bx-calendar-event opacity-50 display-1"></i>
-                                <div class="position-absolute bottom-0 start-0 p-3">
-                                    <span class="badge badge-event-type">
-                                        {{ $event->event_type }}
-                                    </span>
-                                </div>
+                            <div class="event-banner-placeholder" aria-hidden="true">
+                                <span class="events-cover-icon"><i class="bx bx-calendar-event"></i></span>
                             </div>
                         @endif
 
-                        <div class="card-body p-4 d-flex flex-column flex-grow-1">
+                        <div class="card-body event-card-content d-flex flex-column flex-grow-1">
                             {{-- Badges Row --}}
-                            <div class="d-flex align-items-center justify-content-between mb-3">
+                            <div class="events-card-tags">
                                 <span class="badge badge-event-type">
                                     {{ $event->event_type }}
                                 </span>
@@ -1398,42 +1404,43 @@
                             </div>
 
                             {{-- Title --}}
-                            <h5 class="fw-extrabold text-dark mb-2 text-truncate" style="font-size: 1.15rem;" title="{{ $event->title }}">
+                            <h2 class="events-card-title" title="{{ $event->title }}">
                                 {{ $event->title }}
-                            </h5>
+                            </h2>
 
                             {{-- Date & Time --}}
-                            <div class="small text-muted mb-2 d-flex align-items-center gap-1.5 fw-semibold">
-                                <i class="bx bx-calendar text-success fs-6"></i>
-                                <span class="text-dark fw-bold">{{ $event->start_date->format('d M Y') }}</span>
-                                @if($event->start_time)
-                                    <span>• {{ date('h:i A', strtotime($event->start_time)) }}</span>
-                                @endif
+                            <div class="events-card-meta">
+                                <span class="events-meta-icon" aria-hidden="true"><i class="bx bx-calendar"></i></span>
+                                <span>{{ $event->start_date->format('d M Y') }}
+                                    @if($event->start_time)
+                                        <span class="events-card-time">{{ date('h:i A', strtotime($event->start_time)) }}</span>
+                                    @endif
+                                </span>
                             </div>
 
                             {{-- Location --}}
-                            <div class="small text-muted mb-3 d-flex align-items-center gap-1.5 text-truncate">
+                            <div class="events-card-meta events-card-location">
                                 @if($event->location_type === 'online')
-                                    <i class="bx bx-video text-info fs-6"></i>
-                                    <a href="{{ $event->meeting_url }}" target="_blank" class="text-info text-decoration-none text-truncate fw-semibold">
+                                    <span class="events-meta-icon" aria-hidden="true"><i class="bx bx-video"></i></span>
+                                    <a href="{{ $event->meeting_url }}" target="_blank" class="text-decoration-none text-truncate">
                                         Online Meeting
                                     </a>
                                 @else
-                                    <i class="bx bx-map-pin text-danger fs-6"></i>
-                                    <span class="text-truncate text-dark fw-semibold">{{ $event->location ?: 'Physical Venue' }}</span>
+                                    <span class="events-meta-icon" aria-hidden="true"><i class="bx bx-map-pin"></i></span>
+                                    <span class="text-truncate" title="{{ $event->location }}">{{ $event->location ?: 'Physical Venue' }}</span>
                                 @endif
                             </div>
 
                             {{-- Description snippet --}}
-                            <p class="text-secondary small mb-3 flex-grow-1" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.5;">
+                            <p class="events-card-description flex-grow-1">
                                 {{ Str::limit(strip_tags($event->description), 110) }}
                             </p>
 
                             {{-- EVENT MEMORIES PHOTO COUNT BADGE --}}
                             @if($event->photos_count > 0)
                                 <div class="mb-3">
-                                    <button type="button" class="btn btn-sm text-success fw-bold pill border-0 d-inline-flex align-items-center gap-1.5" onclick="showEventDetails({{ $event->id }})" style="background: #EEF2FF; color: #2F6BFF; padding: 6px 14px; border-radius: 20px;">
-                                        <i class="bx bx-images fs-5"></i> 📷 {{ $event->photos_count }} Event {{ Str::plural('Photo', $event->photos_count) }}
+                                    <button type="button" class="btn btn-sm event-photos-button" onclick="showEventDetails({{ $event->id }})">
+                                        <i class="bx bx-images" aria-hidden="true"></i> {{ $event->photos_count }} Event {{ Str::plural('Photo', $event->photos_count) }}
                                     </button>
                                 </div>
                             @endif
@@ -1442,11 +1449,11 @@
                             @if($event->rsvp_required && $event->status !== 'cancelled')
                                 <div class="rsvp-box">
                                     <div class="d-flex align-items-center justify-content-between">
-                                        <span class="fw-extrabold text-dark d-flex align-items-center gap-1.5" style="font-size: 0.92rem;">
-                                            <i class="bx bx-checkbox-checked text-success fs-5"></i> RSVP:
+                                        <span class="events-rsvp-label">
+                                            <span class="events-meta-icon" aria-hidden="true"><i class="bx bx-checkbox-checked"></i></span> RSVP
                                         </span>
-                                        <span class="badge rsvp-count-badge" style="background: #e8f5e9; color: #16a34a; font-weight: 700; font-size: 0.78rem; padding: 6px 12px; border-radius: 20px;">
-                                            <i class="bx bx-user-check me-1"></i> {{ $event->rsvp_counts['going'] }} Going
+                                        <span class="badge rsvp-count-badge">
+                                            <i class="bx bx-user-check" aria-hidden="true"></i> {{ $event->rsvp_counts['going'] }} Going
                                         </span>
                                     </div>
                                     @php $myRsvp = $event->user_rsvp?->response; @endphp
@@ -1465,19 +1472,15 @@
                             @endif
 
                             {{-- CARD FOOTER / ACTIONS --}}
-                            <div class="pt-2.5 border-top d-flex align-items-center justify-content-between mt-auto">
-                                <div class="d-flex align-items-center gap-2">
-                                    <div class="avatar avatar-xs" style="width: 32px; height: 32px;">
-                                        <span class="avatar-initial rounded-circle bg-primary text-white fw-bold shadow-sm" style="font-size: 11px; width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #4F83FF, #2F6BFF) !important;">
-                                            {{ strtoupper(substr($event->organizer?->name ?? 'C', 0, 2)) }}
-                                        </span>
-                                    </div>
-                                    <span class="small fw-bold text-dark text-truncate" style="max-width: 130px;" title="{{ $event->organizer?->name }}">
+                            <div class="events-card-footer">
+                                <div class="events-organizer">
+                                    <span class="events-organizer-avatar" aria-hidden="true">{{ strtoupper(substr($event->organizer?->name ?? 'C', 0, 2)) }}</span>
+                                    <span class="text-truncate" title="{{ $event->organizer?->name }}">
                                         {{ $event->organizer?->name ?? 'Company' }}
                                     </span>
                                 </div>
 
-                                <div class="d-flex align-items-center gap-1">
+                                <div class="events-card-actions">
                                     <button type="button" class="btn-action-icon text-muted" title="View Memories / Details" onclick="showEventDetails({{ $event->id }})">
                                         <i class="bx bx-show"></i>
                                     </button>
@@ -1535,33 +1538,34 @@
 
     {{-- GALLERY VIEW SECTION (NEW) --}}
     <div id="eventsGalleryView" class="d-none">
-        <div class="mb-4">
-            <h5 class="fw-bold text-dark mb-1 d-flex align-items-center gap-2">
-                <i class="bx bx-images text-success fs-3"></i> Company Event Gallery Archive
-            </h5>
-            <p class="text-muted small mb-0">Browse photo memories of company tours, celebrations, picnics, and annual events.</p>
+        <div class="events-gallery-heading">
+            <span class="events-empty-icon" aria-hidden="true"><i class="bx bx-images"></i></span>
+            <div>
+                <h2>Event Gallery</h2>
+                <p>Photos from company events.</p>
+            </div>
         </div>
 
         @if($events->count() > 0)
-            <div class="row g-4">
+            <div class="events-card-grid">
                 @foreach($events as $event)
-                <div class="col-lg-4 col-md-6 col-12">
+                <div class="events-card-item">
                     <div class="gallery-card h-100 d-flex flex-column cursor-pointer" onclick="showEventDetails({{ $event->id }})">
                         @php
                             $previewPhotos = $event->photos->take(4);
                         @endphp
                         
                         {{-- Photo Matrix Grid --}}
-                        <div class="gallery-preview-grid {{ $previewPhotos->count() <= 1 ? 'single-image' : '' }}">
+                        <div class="gallery-preview-grid {{ $previewPhotos->count() <= 1 ? 'single-image' : '' }} {{ $previewPhotos->count() === 3 ? 'gallery-has-three' : '' }}">
                             @if($previewPhotos->count() > 0)
                                 @foreach($previewPhotos as $p)
                                     <img src="{{ $p->image_url }}" alt="{{ $event->title }}" class="gallery-preview-img">
                                 @endforeach
                             @elseif($event->banner_url)
-                                <img src="{{ $event->banner_url }}" alt="{{ $event->title }}" class="gallery-preview-img" style="grid-column: span 2;">
+                                <img src="{{ $event->banner_url }}" alt="{{ $event->title }}" class="gallery-preview-img">
                             @else
-                                <div class="d-flex align-items-center justify-content-center h-100 bg-secondary text-white w-100" style="grid-column: span 2;">
-                                    <i class="bx bx-images fs-1 opacity-50"></i>
+                                <div class="event-banner-placeholder" aria-hidden="true">
+                                    <span class="events-cover-icon"><i class="bx bx-images"></i></span>
                                 </div>
                             @endif
 
@@ -1576,28 +1580,28 @@
                             @endif
                         </div>
 
-                        <div class="p-4 d-flex flex-column flex-grow-1">
-                            <div class="d-flex align-items-center justify-content-between mb-2">
+                        <div class="event-card-content d-flex flex-column flex-grow-1">
+                            <div class="events-card-tags">
                                 <span class="badge badge-event-type">{{ $event->event_type }}</span>
-                                <span class="text-muted small fw-semibold">
-                                    <i class="bx bx-calendar text-success me-1"></i> {{ $event->start_date->format('d M Y') }}
+                                <span class="events-gallery-date">
+                                    <span class="events-meta-icon" aria-hidden="true"><i class="bx bx-calendar"></i></span> {{ $event->start_date->format('d M Y') }}
                                 </span>
                             </div>
 
-                            <h5 class="fw-bold text-dark mb-2 text-truncate" title="{{ $event->title }}">
+                            <h3 class="events-card-title" title="{{ $event->title }}">
                                 {{ $event->title }}
-                            </h5>
+                            </h3>
 
-                            <p class="text-secondary small mb-3 flex-grow-1 text-truncate">
-                                <i class="bx bx-map-pin me-1 text-danger"></i> {{ $event->location ?: 'Company Event' }}
+                            <p class="events-card-meta events-card-location">
+                                <span class="events-meta-icon" aria-hidden="true"><i class="bx bx-map-pin"></i></span> <span class="text-truncate">{{ $event->location ?: 'Company Event' }}</span>
                             </p>
 
-                            <div class="pt-3 border-top d-flex align-items-center justify-content-between mt-auto">
-                                <span class="small fw-semibold text-muted">
+                            <div class="events-card-footer">
+                                <span class="events-organizer events-gallery-organizer">
                                     Organized by <strong class="text-dark">{{ $event->organizer?->name ?? 'Company' }}</strong>
                                 </span>
-                                <button type="button" class="btn btn-primary btn-sm fw-bold px-3 shadow-sm" style="background: linear-gradient(135deg, #4F83FF, #2F6BFF); border: none;">
-                                    View Memories
+                                <button type="button" class="btn btn-primary btn-sm events-primary-button">
+                                    View Memories <i class="bx bx-right-arrow-alt" aria-hidden="true"></i>
                                 </button>
                             </div>
                         </div>

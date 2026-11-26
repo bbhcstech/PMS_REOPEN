@@ -53,7 +53,12 @@ public function update(Request $request, SubTask $subtask)
         'assigned_to' => 'required|exists:users,id',
         'description' => 'nullable|string',
         'file' => 'nullable|mimes:jpg,jpeg,png,pdf,doc,docx,xlsx|max:2048',
+        'status' => 'nullable|in:incomplete,complete',
     ]);
+
+    if ($request->filled('status')) {
+        $subtask->status = $request->input('status');
+    }
 
     // Delete old file if new one uploaded
     if ($request->hasFile('file')) {

@@ -838,7 +838,7 @@
                                 </button>
                             </td>
                             <td>
-                                <span class="fw-bold text-dark">${{ number_format($order['total_amount'], 2) }}</span>
+                                <span class="fw-bold text-dark">{{ $order['currency_symbol'] ?? '$' }}{{ number_format($order['total_amount'], 2) }}</span>
                                 @if(!empty($order['deal_reference']))
                                     <small class="text-muted d-block" style="font-size: 0.70rem;" title="From Deal: {{ $order['deal_reference'] }}">
                                         Deal: {{ Str::limit($order['deal_reference'], 14) }}
