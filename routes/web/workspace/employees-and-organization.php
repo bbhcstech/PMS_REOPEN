@@ -9,13 +9,6 @@ use Illuminate\Support\Facades\Route;
 Route::put('designations/level-settings', [DesignationController::class, 'updateLevelSettings'])
     ->name('designations.level-settings');
 
-// Designation hierarchy
-Route::get('designations/designation-hierarchy', [DesignationController::class, 'hierarchy'])
-    ->name('designations.hierarchy');
-Route::get('designations/chart-data', [DesignationController::class, 'chartData'])
-    ->name('designations.chart-data');
-Route::post('designations/save-hierarchy', [DesignationController::class, 'saveHierarchy'])
-    ->name('designations.save-hierarchy');
 Route::get('designations/archive', [DesignationController::class, 'archive'])
     ->name('designations.archive');
 Route::post('designations/bulk-archive', [DesignationController::class, 'bulkArchive'])
@@ -81,6 +74,8 @@ Route::post('employees/{id}/restore', [EmployeeController::class, 'restore'])
 
 Route::get('employees/org-tree', [EmployeeController::class, 'orgTree'])
     ->name('employees.org-tree');
+Route::get('employees/org-tree/{employee}/profile', [EmployeeController::class, 'orgTreeProfile'])
+    ->whereNumber('employee')->name('employees.org-tree.profile');
 
 Route::resource('employees', EmployeeController::class);
 

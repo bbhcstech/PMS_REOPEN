@@ -141,7 +141,7 @@
     }
     async function refresh() {
         if (busy || stopped) return;
-        if (document.hidden || document.querySelector('.modal.show, .offcanvas.show, .drawer-overlay.active, .drawer-overlay.open, .modal-overlay.active, .modal-overlay.show, .plan-modal-backdrop.open, .dropdown-menu.show, .pms-table-export.is-open')) { timer = setTimeout(refresh, 5000); return; }
+        if (document.hidden || document.body.classList.contains('modal-open') || document.querySelector('.modal.show, .modal.showing, .offcanvas.show, .drawer-overlay.active, .drawer-overlay.open, .modal-overlay.active, .modal-overlay.show, .plan-modal-backdrop.open, .dropdown-menu.show, .pms-table-export.is-open')) { timer = setTimeout(refresh, 5000); return; }
         busy = true;
         const url = location.href;
         try {

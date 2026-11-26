@@ -2616,4 +2616,346 @@
     html[data-theme="dark"] .org-skill-badge:hover {
         background: rgba(16, 185, 129, 0.25) !important;
     }
+
+    /* Clean SaaS Workspace Redesign (Scoped to #pms-org-page & #pms-org-show-page) */
+    #pms-org-page.org-page,
+    #pms-org-show-page.org-page {
+        padding: 0 0 2rem !important;
+        margin: 0 !important;
+        min-height: 0 !important;
+        background: transparent !important;
+        font-family: 'Inter', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif !important;
+    }
+
+    #pms-org-page .org-header-card {
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 16px !important;
+        padding: 20px 24px !important;
+        margin-bottom: 16px !important;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04), 0 8px 20px rgba(15, 23, 42, 0.03) !important;
+    }
+
+    #pms-org-page .org-header-card::before {
+        display: none !important;
+    }
+
+    #pms-org-page .org-header-icon {
+        width: 48px !important;
+        height: 48px !important;
+        border-radius: 12px !important;
+        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
+        color: #ffffff !important;
+        box-shadow: 0 8px 18px rgba(37, 99, 235, 0.22) !important;
+        font-size: 1.25rem !important;
+    }
+
+    #pms-org-page .org-header-icon i {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
+    #pms-org-page .org-header-text h1 {
+        font-size: 1.35rem !important;
+        font-weight: 700 !important;
+        color: #0f172a !important;
+        -webkit-text-fill-color: #0f172a !important;
+    }
+
+    #pms-org-page .org-header-text p {
+        font-size: 0.85rem !important;
+        color: #64748b !important;
+        -webkit-text-fill-color: #64748b !important;
+    }
+
+    #pms-org-page .org-btn,
+    #pms-org-show-page .org-btn {
+        min-height: 38px !important;
+        height: 38px !important;
+        padding: 0 16px !important;
+        border-radius: 10px !important;
+        font-size: 0.84rem !important;
+        font-weight: 600 !important;
+        box-shadow: none !important;
+    }
+
+    #pms-org-page .org-btn-icon,
+    #pms-org-show-page .org-btn-icon {
+        width: 34px !important;
+        height: 34px !important;
+        padding: 0 !important;
+    }
+
+    #pms-org-page .org-btn-primary,
+    #pms-org-show-page .org-btn-primary {
+        background: #2563eb !important;
+        border: 1px solid #2563eb !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.22) !important;
+    }
+
+    #pms-org-page .org-btn-primary:hover,
+    #pms-org-show-page .org-btn-primary:hover {
+        background: #1d4ed8 !important;
+        border-color: #1d4ed8 !important;
+    }
+
+    #pms-org-page .org-btn-secondary,
+    #pms-org-show-page .org-btn-secondary {
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        color: #0f172a !important;
+        -webkit-text-fill-color: #0f172a !important;
+    }
+
+    #pms-org-page .org-btn-secondary:hover,
+    #pms-org-show-page .org-btn-secondary:hover {
+        background: #f8fafc !important;
+        border-color: #cbd5e1 !important;
+    }
+
+    #pms-org-page .org-stats-grid {
+        gap: 14px !important;
+        margin-bottom: 16px !important;
+    }
+
+    #pms-org-page .org-stat-card {
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 14px !important;
+        padding: 16px 18px !important;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04) !important;
+    }
+
+    #pms-org-page .org-stat-label {
+        font-size: 0.72rem !important;
+        font-weight: 700 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.04em !important;
+        color: #64748b !important;
+    }
+
+    #pms-org-page .org-toolbar-card {
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 16px !important;
+        padding: 16px 20px !important;
+        margin-bottom: 16px !important;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04) !important;
+    }
+
+    #pms-org-page .org-input,
+    #pms-org-page .org-select {
+        min-height: 40px !important;
+        border-radius: 10px !important;
+        border-color: #e2e8f0 !important;
+        font-size: 0.85rem !important;
+    }
+
+    #pms-org-page .org-view-toggle {
+        background: #f1f5f9 !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 12px !important;
+        padding: 4px !important;
+    }
+
+    #pms-org-page .org-view-btn {
+        border-radius: 8px !important;
+        height: 32px !important;
+        padding: 0 12px !important;
+        font-size: 0.8rem !important;
+        font-weight: 600 !important;
+    }
+
+    #pms-org-page .org-view-btn.active {
+        background: #2563eb !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25) !important;
+    }
+
+    #pms-org-page .org-view-btn.active i {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
+    #pms-org-page .org-table-container,
+    #pms-org-page .org-grid-card,
+    #pms-org-page .org-tree-dept-card,
+    #pms-org-page .org-empty-card {
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 16px !important;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04) !important;
+    }
+
+    #pms-org-page .org-empty-card {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        text-align: center !important;
+        padding: 52px 24px !important;
+        width: 100% !important;
+    }
+
+    #pms-org-page .org-empty-card h3 {
+        margin: 0 0 8px !important;
+        font-size: 1.05rem !important;
+        font-weight: 700 !important;
+        color: #0f172a !important;
+    }
+
+    #pms-org-page .org-empty-card p {
+        margin: 0 auto 18px !important;
+        max-width: 440px !important;
+        font-size: 0.84rem !important;
+        line-height: 1.5 !important;
+        color: #64748b !important;
+    }
+
+    #pms-org-page .org-empty-icon {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 58px !important;
+        height: 58px !important;
+        border-radius: 16px !important;
+        background: #eff6ff !important;
+        color: #2563eb !important;
+        border: 1px solid #dbeafe !important;
+        margin: 0 auto 16px !important;
+        padding: 0 !important;
+        flex-shrink: 0 !important;
+    }
+
+    #pms-org-page .org-empty-icon i {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 1.4rem !important;
+        line-height: 1 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        color: #2563eb !important;
+        -webkit-text-fill-color: #2563eb !important;
+        background: transparent !important;
+    }
+
+    /* Organization Employee Profile Show Card */
+    #pms-org-show-page .pms-org-profile-card.org-profile-banner {
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 16px !important;
+        padding: 22px 26px !important;
+        margin-bottom: 18px !important;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04), 0 8px 20px rgba(15, 23, 42, 0.03) !important;
+        color: #0f172a !important;
+    }
+
+    #pms-org-show-page .pms-org-profile-card .org-banner-avatar {
+        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        border: 2px solid #dbeafe !important;
+        box-shadow: 0 6px 14px rgba(37, 99, 235, 0.2) !important;
+    }
+
+    #pms-org-show-page .pms-org-profile-card .org-banner-info h1 {
+        color: #0f172a !important;
+        -webkit-text-fill-color: #0f172a !important;
+        font-size: 1.45rem !important;
+        font-weight: 700 !important;
+        text-shadow: none !important;
+    }
+
+    #pms-org-show-page .pms-org-profile-card .org-banner-chip {
+        background: #f8fafc !important;
+        border: 1px solid #e2e8f0 !important;
+        color: #334155 !important;
+        -webkit-text-fill-color: #334155 !important;
+        font-weight: 600 !important;
+        backdrop-filter: none !important;
+    }
+
+    #pms-org-show-page .pms-org-profile-card .org-banner-chip i {
+        color: #2563eb !important;
+        -webkit-text-fill-color: #2563eb !important;
+    }
+
+    #pms-org-show-page .pms-org-profile-card .org-banner-chip span {
+        color: inherit !important;
+        -webkit-text-fill-color: inherit !important;
+    }
+
+    #pms-org-show-page .pms-org-profile-card .org-status-chip {
+        background: #eff6ff !important;
+        border-color: #bfdbfe !important;
+        color: #1d4ed8 !important;
+        -webkit-text-fill-color: #1d4ed8 !important;
+    }
+
+    #pms-org-show-page .pms-org-profile-card .org-status-chip .org-status-dot {
+        background: #2563eb !important;
+        box-shadow: none !important;
+    }
+
+    #pms-org-show-page .org-side-card,
+    #pms-org-show-page .org-main-card {
+        border-radius: 16px !important;
+        border: 1px solid #e2e8f0 !important;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04) !important;
+    }
+
+    /* Dark Mode Overrides for Workspace Redesign */
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) #pms-org-page .org-header-card,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) #pms-org-page .org-stat-card,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) #pms-org-page .org-toolbar-card,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) #pms-org-page .org-table-container,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) #pms-org-page .org-grid-card,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) #pms-org-page .org-tree-dept-card,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) #pms-org-page .org-empty-card,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) #pms-org-show-page .pms-org-profile-card.org-profile-banner {
+        background: #0f172a !important;
+        border-color: rgba(148, 163, 184, 0.2) !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) #pms-org-page .org-header-text h1,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) #pms-org-show-page .pms-org-profile-card .org-banner-info h1 {
+        color: #f8fafc !important;
+        -webkit-text-fill-color: #f8fafc !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) #pms-org-page .org-btn-secondary,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) #pms-org-show-page .org-btn-secondary,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) #pms-org-page .org-view-toggle,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) #pms-org-show-page .pms-org-profile-card .org-banner-chip {
+        background: #1e293b !important;
+        border-color: rgba(148, 163, 184, 0.25) !important;
+        color: #e2e8f0 !important;
+        -webkit-text-fill-color: #e2e8f0 !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) #pms-org-page .org-empty-card h3 {
+        color: #f8fafc !important;
+        -webkit-text-fill-color: #f8fafc !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) #pms-org-page .org-empty-card p {
+        color: #94a3b8 !important;
+        -webkit-text-fill-color: #94a3b8 !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) #pms-org-page .org-empty-icon {
+        background: rgba(37, 99, 235, 0.16) !important;
+        border-color: rgba(59, 130, 246, 0.3) !important;
+        color: #60a5fa !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) #pms-org-page .org-empty-icon i {
+        color: #60a5fa !important;
+        -webkit-text-fill-color: #60a5fa !important;
+        background: transparent !important;
+    }
 </style>

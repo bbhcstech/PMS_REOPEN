@@ -12,6 +12,7 @@ use App\Models\Holiday;
 use App\Models\Leave;
 use App\Models\User;
 use App\Services\SystemNotificationService;
+use App\Services\WorkforceAccess;
 use App\Services\WorkScheduleService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -73,6 +74,11 @@ class AttendanceController extends Controller
      */
     public function index(Request $request)
     {
+        $user = Auth::user();
+        if (WorkforceAccess::isHr($user)) {
+            return $this->personalReport($request, $user);
+        }
+
         return $this->calendar($request);
     }
 
@@ -143,8 +149,7 @@ class AttendanceController extends Controller
         }
         $rangeStart = $isCsvExport ? $exportStart->copy()->startOfMonth() : $start;
         $rangeEnd = $isCsvExport ? $exportEnd->copy()->endOfMonth() : $end;
-        $personalView = in_array(strtolower((string) $actor->role), ['hr', 'manager'], true) && $request->query('view') === 'personal';
-        $canManage = !$personalView && ($this->isAdminUser($actor) || $this->canManageAttendance($actor) || \App\Services\WorkforceAccess::isHr($actor));
+        $canManage = $this->canManageAttendance($actor);
         $authorityView = $canManage && $request->input('staff_category') === 'authority';
         $query = User::with(['employeeDetail.designation', 'companyStaffRole'])->where('company_id', $actor->company_id)
             ->whereRaw('LOWER(COALESCE(role, ?)) <> ?', ['', 'client'])->whereNull('archived_at');
@@ -483,6 +488,10 @@ class AttendanceController extends Controller
     public function employeeIndex(Request $request)
     {
         $user = Auth::user();
+
+        if (WorkforceAccess::isHr($user)) {
+            return $this->personalReport($request, $user);
+        }
 
         // Only employees can access this view
         if ($user->role !== 'employee') {

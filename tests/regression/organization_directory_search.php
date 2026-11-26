@@ -62,4 +62,78 @@ try {
 } catch (Symfony\Component\HttpKernel\Exception\HttpException $e) {
     if ($e->getStatusCode() !== 403) throw $e;
 }
-echo "PASS: case-insensitive Organization search across table/grid and Structure; all search fields, existing filters, bound values and company isolation preserved.\n";
+// Older tenant tables do not have archive columns. The directory still loads their active records.
+Schema::table('designations', fn ($table) => $table->dropColumn('archived_at'));
+Schema::table('departments', fn ($table) => $table->dropColumn('archived_at'));
+$viewer = (new User)->forceFill(['id' => 9, 'company_id' => 1, 'role' => 'admin']);
+Auth::guard('web')->setUser($viewer);
+foreach ([[], ['search' => 'Ananya']] as $filters) {
+    $request = Request::create('/organization', 'GET', $filters);
+    $request->setUserResolver(fn () => $viewer);
+    $data = $controller->index($request)->getData();
+    if ($data['designations']->pluck('name')->all() !== ['Developer'] || array_column($data['treePayload']['nodes'], 'id') !== [1]) {
+        throw new RuntimeException('Organization lost a designation or tree member on a legacy tenant.');
+    }
+    if ($filters && ($data['departments']->pluck('dpt_name')->all() !== ['Engineering']
+        || $data['departmentGroups']->pluck('dpt_name')->all() !== ['Engineering'])) {
+        throw new RuntimeException('Organization lost its department data on a legacy tenant.');
+    }
+}
+
+// Render the complete directory template and its stacks independently of the shared workspace shell.
+$source = file_get_contents(resource_path('views/admin/organization-directory/index.blade.php'));
+$source = str_replace("@extends('admin.layout.app')", '', $source)."\n@stack('styles') @yield('content') @stack('scripts')";
+$html = \Illuminate\Support\Facades\Blade::render($source, $data, true);
+foreach ([
+    'Employee Hierarchy Structure',
+    '.orgd-viewport',
+    'orgTreeInitialData',
+    'data-org-mode="grid"',
+    'data-org-mode="cards"',
+    'id="orgLevelGrid"',
+    'id="orgCardsGrid"',
+    'pms:records-updated',
+    'loadProfileDetails',
+] as $needle) {
+    if (!str_contains($html, $needle)) {
+        throw new RuntimeException('Organization page is missing expected hierarchy/card/detail element: '.$needle);
+    }
+}
+
+// Organization tree/cards automatically expose profile endpoints and drop employees deleted or deactivated from Employees.
+$treeRequest = Request::create('/organization/tree', 'GET');
+$treeRequest->setUserResolver(fn () => $viewer);
+$treeResponse = $controller->tree($treeRequest)->getData(true);
+$node = $treeResponse['nodes'][0] ?? null;
+if (!$node || empty($node['profile_url']) || empty($node['org_show_url'])) {
+    throw new RuntimeException('Organization tree node is missing profile_url or org_show_url.');
+}
+$profileRequest = Request::create($node['profile_url'], 'GET');
+$profileRequest->setUserResolver(fn () => $viewer);
+$profileData = $controller->profile($profileRequest, (int) $node['id'])->getData(true);
+if (($profileData['id'] ?? null) !== 1 || !isset($profileData['sections']['Work profile'], $profileData['sections']['Personal information'])) {
+    throw new RuntimeException('Organization profile endpoint did not return full employee details.');
+}
+
+// Archiving/deleting an employee from the Employee section immediately removes them from Organization.
+DB::table('users')->where('id', 1)->update(['archived_at' => now()]);
+$afterDeleteTree = $controller->tree($treeRequest)->getData(true);
+if (!empty($afterDeleteTree['nodes'])) {
+    throw new RuntimeException('Deleted/archived employee remained visible in Organization.');
+}
+try {
+    $controller->profile($profileRequest, 1);
+    throw new RuntimeException('Deleted employee profile should not remain accessible.');
+} catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+    // expected
+}
+
+// Restored but marked Inactive in Employee section is also excluded from Organization.
+DB::table('users')->where('id', 1)->update(['archived_at' => null]);
+DB::table('employee_details')->where('user_id', 1)->update(['status' => 'Inactive']);
+$afterInactiveTree = $controller->tree($treeRequest)->getData(true);
+if (!empty($afterInactiveTree['nodes'])) {
+    throw new RuntimeException('Inactive employee remained visible in Organization.');
+}
+
+echo "PASS: Organization search, filters, company isolation, tree/cards sync, full details, delete removal, and legacy schema support.\n";

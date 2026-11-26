@@ -14,7 +14,7 @@ class WorkforceAccess
 
     public static function canManageLeaves(?User $user): bool
     {
-        return static::isAdmin($user) || static::isHr($user);
+        return static::isAdmin($user);
     }
 
     public static function canAccessRecord(?User $actor, User $owner, ?string $category = null): bool

@@ -3,7 +3,7 @@
 @section('title', $mode === 'edit' ? 'Edit Collaborating Company' : 'Add Collaborating Company')
 
 @section('content')
-<div class="partner-page">
+<div id="partner-workspace" class="partner-page">
     <section class="partner-hero">
         <div>
             <span class="partner-eyebrow"><i class="fas fa-handshake"></i> Company Network</span>

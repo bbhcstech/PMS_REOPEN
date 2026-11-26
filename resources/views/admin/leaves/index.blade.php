@@ -929,8 +929,10 @@
         transform: none !important;
     }
 
-    #leavePage .btn-light i {
-        color: var(--lp-text-muted);
+    #leavePage .btn-light i,
+    #leavePage .btn-light i::before {
+        color: inherit !important;
+        -webkit-text-fill-color: currentColor !important;
     }
 
     #leavePage .archive-count-badge {
@@ -1135,31 +1137,33 @@
         position: static !important;
         font-size: 0.95rem !important;
         filter: none !important;
+        color: inherit !important;
+        -webkit-text-fill-color: currentColor !important;
     }
 
     #leavePage .leave-stats .stat-total .stat-icon-box {
         background: #eff6ff;
-        color: #2563eb;
+        color: #2563eb !important;
     }
 
     #leavePage .leave-stats .pending .stat-icon-box {
         background: #fffbeb;
-        color: #d97706;
+        color: #d97706 !important;
     }
 
     #leavePage .leave-stats .approved .stat-icon-box {
         background: #ecfdf5;
-        color: #16a34a;
+        color: #16a34a !important;
     }
 
     #leavePage .leave-stats .rejected .stat-icon-box {
         background: #fef2f2;
-        color: #dc2626;
+        color: #dc2626 !important;
     }
 
     #leavePage .leave-stats .unpaid .stat-icon-box {
         background: #eef2ff;
-        color: #4f46e5;
+        color: #4f46e5 !important;
     }
 
     #leavePage .leave-stats .stat-icon-box i::before {
@@ -1358,6 +1362,11 @@
         box-shadow: none !important;
     }
 
+    #leavePage .table-card .pms-table-export__toggle svg {
+        color: inherit !important;
+        stroke: currentColor !important;
+    }
+
     #leavePage .table-tools {
         display: flex;
         align-items: center;
@@ -1461,6 +1470,18 @@
         font-weight: 500;
     }
 
+    /* Preserve left gutter for pms-table-tools injected selection checkbox when no legacy checkbox column exists. */
+    #leavePage .leave-table > :is(thead, tbody) > tr > .pms-table-selection-cell:not([data-pms-selection-column]) {
+        position: relative;
+        padding-left: 58px !important;
+    }
+
+    @media (max-width: 575.98px) {
+        #leavePage .leave-table > :is(thead, tbody) > tr > .pms-table-selection-cell:not([data-pms-selection-column]) {
+            padding-left: 52px !important;
+        }
+    }
+
     #leavePage .leave-table tbody tr:hover td,
     #leavePage .leave-table.pms-exportable-table > tbody > tr:hover > :is(th, td) {
         background: var(--lp-surface-hover) !important;
@@ -1487,9 +1508,19 @@
         justify-content: center;
         font-size: 0.72rem;
         font-weight: 700;
-        color: #ffffff;
+        /* The theme sets -webkit-text-fill-color on table cells; it wins over `color`, so the
+           initials must set both or they render dark on the coloured circle. */
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
         flex-shrink: 0;
         letter-spacing: 0.02em;
+        line-height: 1;
+        text-transform: uppercase;
+        box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.85), 0 2px 6px rgba(15, 23, 42, 0.12);
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body.dark-mode) #leavePage .leave-emp-avatar {
+        box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.6), 0 2px 6px rgba(0, 0, 0, 0.3);
     }
 
     #leavePage .leave-emp-avatar.av-blue { background: #2563eb; }
@@ -1602,8 +1633,11 @@
         line-height: 1.2;
     }
 
-    #leavePage .pay-badge i {
+    #leavePage .pay-badge i,
+    #leavePage .pay-badge i::before {
         font-size: 0.68rem;
+        color: inherit !important;
+        -webkit-text-fill-color: currentColor !important;
     }
 
     #leavePage .pay-badge.paid {
@@ -1759,10 +1793,24 @@
         font-size: 0.74rem;
     }
 
+    #leavePage .action-row .btn i,
+    #leavePage .action-row .btn i::before {
+        color: inherit !important;
+        -webkit-text-fill-color: currentColor !important;
+    }
+
     #leavePage .action-row .btn-light {
         background: var(--lp-surface-subtle) !important;
         border: 1px solid var(--lp-border) !important;
         color: var(--lp-text-body) !important;
+        -webkit-text-fill-color: var(--lp-text-body) !important;
+    }
+
+    #leavePage .action-row .btn-light:hover {
+        background: var(--lp-surface) !important;
+        border-color: #cbd5e1 !important;
+        color: var(--lp-text) !important;
+        -webkit-text-fill-color: var(--lp-text) !important;
     }
 
     #leavePage .action-row .btn-success {
@@ -1870,6 +1918,14 @@
         justify-content: center;
         font-size: 1.35rem;
         margin-bottom: 0.9rem;
+    }
+
+    #leavePage .empty-icon-box i,
+    #leavePage .empty-icon-box i::before,
+    #leavePage .balance-drawer-icon i,
+    #leavePage .balance-drawer-icon i::before {
+        color: var(--lp-primary) !important;
+        -webkit-text-fill-color: var(--lp-primary) !important;
     }
 
     #leavePage .empty-state h3 {
@@ -2191,19 +2247,19 @@
 
     /* Dark Mode Overrides for Tinted Pills & Icons */
     :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode) #leavePage .leave-stats .stat-total .stat-icon-box {
-        background: rgba(59, 130, 246, 0.16); color: #60a5fa;
+        background: rgba(59, 130, 246, 0.16); color: #60a5fa !important;
     }
     :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode) #leavePage .leave-stats .pending .stat-icon-box {
-        background: rgba(245, 158, 11, 0.16); color: #fbbf24;
+        background: rgba(245, 158, 11, 0.16); color: #fbbf24 !important;
     }
     :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode) #leavePage .leave-stats .approved .stat-icon-box {
-        background: rgba(16, 185, 129, 0.16); color: #34d399;
+        background: rgba(16, 185, 129, 0.16); color: #34d399 !important;
     }
     :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode) #leavePage .leave-stats .rejected .stat-icon-box {
-        background: rgba(239, 68, 68, 0.16); color: #f87171;
+        background: rgba(239, 68, 68, 0.16); color: #f87171 !important;
     }
     :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode) #leavePage .leave-stats .unpaid .stat-icon-box {
-        background: rgba(99, 102, 241, 0.18); color: #a5b4fc;
+        background: rgba(99, 102, 241, 0.18); color: #a5b4fc !important;
     }
     :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode) #leavePage .type-badge.type-casual {
         background: rgba(245, 158, 11, 0.16); color: #fbbf24; border-color: rgba(251, 191, 36, 0.3);

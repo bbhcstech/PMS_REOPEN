@@ -39,7 +39,7 @@ trait EmployeeLifecycle
 
         $user = User::findOrFail($id);
 
-        if (($user->role ?? '') !== 'employee') {
+        if (strtolower(trim((string) ($user->role ?? ''))) !== 'employee') {
             return redirect()->route('employees.index')
                 ->withErrors(['error' => 'Only employee records can be archived from this section.']);
         }
@@ -118,7 +118,7 @@ trait EmployeeLifecycle
                 return $respond('error', 'Only employee accounts can be permanently deleted here.', 422);
             }
         } else {
-            if (($user->role ?? '') !== 'employee') {
+            if (strtolower(trim((string) ($user->role ?? ''))) !== 'employee') {
                 return $respond('error', 'Only employee accounts can be deleted here. HR and manager accounts cannot be deleted from the Employees section.', 422);
             }
             if (strcasecmp((string) ($detail?->status ?? ''), 'Inactive') !== 0) {

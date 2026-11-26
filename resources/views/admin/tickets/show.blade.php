@@ -318,7 +318,7 @@
                     </form>
                 </div>
             </div>
-            @elseif((int) $ticket->agent_id === (int) auth()->id())
+            @elseif((int) $ticket->agent_id === (int) auth()->id() && (auth()->user()?->hasModulePermission('tickets', 'edit') ?? false))
             <div class="card border-0 shadow-sm rounded-4 mb-4">
                 <div class="card-header"><h5 class="mb-0">Work progress</h5></div>
                 <div class="card-body">

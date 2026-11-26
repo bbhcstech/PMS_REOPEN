@@ -19,13 +19,10 @@
             </div>
             <div>
                 <h1>Designation Management</h1>
-                <p>Manage employee roles, hierarchy levels and designation records.</p>
+                <p>Manage employee roles, levels and designation records.</p>
             </div>
         </div>
         <div class="btn-group">
-            <a href="{{ \App\Support\WorkforceSettings::route('designations.hierarchy') }}" class="btn btn-light">
-                <i class="fas fa-project-diagram"></i> Hierarchy
-            </a>
             <a href="{{ \App\Support\WorkforceSettings::route('designations.archive') }}" class="btn btn-light">
                 <i class="fas fa-box-archive"></i> Archived
                 @if(($archivedCount ?? 0) > 0)
@@ -222,13 +219,6 @@
                                 </div>
                                 <div>
                                     <strong class="designation-name">{{ $designation->name ?? '-' }}</strong>
-                                    @if($designation->parent)
-                                        <span class="muted"><i class="fas fa-sitemap"></i> Reports to: <strong>{{ $designation->parent->name }}</strong></span>
-                                    @elseif($designation->level !== null && $designation->level <= 1)
-                                        <span class="muted"><i class="fas fa-crown text-warning"></i> Top-level designation</span>
-                                    @else
-                                        <span class="muted"><i class="fas fa-layer-group"></i> Independent (Level {{ $designation->level ?? '-' }})</span>
-                                    @endif
                                 </div>
                             </div>
                         </td>

@@ -12,7 +12,10 @@ class WorkforceFileController extends Controller
     {
         $actor = WorkforceAccess::authorizeActor();
         \App\Services\TenantScope::authorizeCompany($attendance->user?->company_id);
-        abort_unless($attendance->user && WorkforceAccess::canAccessRecord($actor, $attendance->user, $attendance->staff_category), 403);
+        $canView = WorkforceAccess::isHr($actor)
+            ? (int) $attendance->user_id === (int) $actor->id
+            : $attendance->user && WorkforceAccess::canAccessRecord($actor, $attendance->user, $attendance->staff_category);
+        abort_unless($canView, 403);
         $phase = request()->query('phase', 'in');
         abort_unless(in_array($phase, ['in', 'out'], true), 404);
         return $this->file($attendance->getRawOriginal($phase === 'out' ? 'clock_out_photo' : 'clock_in_photo'), 'authority-attendance', (int) $actor->company_id);
@@ -22,7 +25,10 @@ class WorkforceFileController extends Controller
     {
         $actor = WorkforceAccess::authorizeActor();
         \App\Services\TenantScope::authorizeCompany($leave->user?->company_id);
-        abort_unless($leave->user && WorkforceAccess::canAccessRecord($actor, $leave->user, $leave->staff_category), 403);
+        $canView = WorkforceAccess::isHr($actor)
+            ? (int) $leave->user_id === (int) $actor->id
+            : $leave->user && WorkforceAccess::canAccessRecord($actor, $leave->user, $leave->staff_category);
+        abort_unless($canView, 403);
         return $this->file($leave->getRawOriginal('attachment'), 'authority-leave', (int) $actor->company_id);
     }
 

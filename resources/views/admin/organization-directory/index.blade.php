@@ -77,990 +77,16 @@
 @endphp
 
 @push('styles')
-<style>
-    .orgd-page {
-        --orgd-surface: #ffffff;
-        --orgd-canvas: #f8fafc;
-        --orgd-grid: rgba(99, 102, 241, 0.08);
-        --orgd-border: #e2e8f0;
-        --orgd-text: #0f172a;
-        --orgd-muted: #64748b;
-        --orgd-accent: #4f46e5;
-        --orgd-accent-strong: #4338ca;
-        --orgd-accent-soft: #eef2ff;
-        --orgd-line: #cbd5e1;
-        --orgd-path: #7c3aed;
-        --orgd-ok: #15803d;
-        --orgd-ok-soft: #dcfce7;
-        --orgd-warn: #b45309;
-        --orgd-warn-soft: #fef3c7;
-        --orgd-shadow: 0 6px 24px rgba(15, 23, 42, 0.06);
-        padding: 4px 2px 28px;
-        color: var(--orgd-text);
-    }
-
-    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body.dark) .orgd-page {
-        --orgd-surface: #161b2e;
-        --orgd-canvas: #0f1424;
-        --orgd-grid: rgba(167, 139, 250, 0.08);
-        --orgd-border: #2a3150;
-        --orgd-text: #f1f5f9;
-        --orgd-muted: #94a3b8;
-        --orgd-accent: #818cf8;
-        --orgd-accent-strong: #6366f1;
-        --orgd-accent-soft: rgba(129, 140, 248, 0.16);
-        --orgd-line: #3b4466;
-        --orgd-path: #a78bfa;
-        --orgd-ok: #4ade80;
-        --orgd-ok-soft: rgba(74, 222, 128, 0.14);
-        --orgd-warn: #fbbf24;
-        --orgd-warn-soft: rgba(251, 191, 36, 0.14);
-        --orgd-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
-    }
-
-    .orgd-topbar {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        margin-bottom: 16px;
-    }
-
-    .orgd-back-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 7px 14px;
-        border-radius: 10px;
-        border: 1px solid var(--orgd-border);
-        background: var(--orgd-surface);
-        color: var(--orgd-text) !important;
-        -webkit-text-fill-color: var(--orgd-text) !important;
-        font-size: 0.84rem;
-        font-weight: 600;
-        text-decoration: none !important;
-        transition: border-color 0.2s, background 0.2s, transform 0.15s;
-    }
-    .orgd-back-btn:hover {
-        border-color: var(--orgd-accent);
-        background: var(--orgd-accent-soft);
-        color: var(--orgd-accent) !important;
-        -webkit-text-fill-color: var(--orgd-accent) !important;
-    }
-
-    .orgd-breadcrumb {
-        display: flex;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 8px;
-        font-size: 0.83rem;
-        color: var(--orgd-muted);
-    }
-    .orgd-breadcrumb a {
-        color: var(--orgd-accent) !important;
-        -webkit-text-fill-color: var(--orgd-accent) !important;
-        text-decoration: none;
-        font-weight: 600;
-    }
-    .orgd-breadcrumb a:hover { text-decoration: underline; }
-    .orgd-breadcrumb [aria-current="page"] {
-        color: var(--orgd-text);
-        font-weight: 600;
-    }
-
-    /* Header Card */
-    .orgd-header-card {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        justify-content: space-between;
-        gap: 18px;
-        padding: 20px 24px;
-        margin-bottom: 18px;
-        border-radius: 18px;
-        background: var(--orgd-surface);
-        border: 1px solid var(--orgd-border);
-        box-shadow: var(--orgd-shadow);
-    }
-
-    .orgd-header-main {
-        display: flex;
-        align-items: flex-start;
-        gap: 16px;
-        min-width: 0;
-        flex: 1;
-    }
-
-    .orgd-header-icon {
-        width: 48px;
-        height: 48px;
-        border-radius: 14px;
-        background: var(--orgd-accent-soft);
-        display: grid;
-        place-items: center;
-        flex-shrink: 0;
-    }
-    .orgd-header-icon i {
-        font-size: 1.25rem;
-        color: var(--orgd-accent) !important;
-        -webkit-text-fill-color: var(--orgd-accent) !important;
-    }
-
-    .orgd-header-text h1 {
-        margin: 0;
-        font-size: 1.45rem;
-        font-weight: 800;
-        letter-spacing: -0.02em;
-        color: var(--orgd-text);
-        line-height: 1.25;
-    }
-    .orgd-header-text p {
-        margin: 4px 0 0;
-        font-size: 0.9rem;
-        color: var(--orgd-muted);
-        max-width: 68ch;
-    }
-
-    .orgd-company-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        margin-top: 8px;
-        padding: 4px 10px;
-        border-radius: 999px;
-        background: var(--orgd-canvas);
-        border: 1px solid var(--orgd-border);
-        font-size: 0.78rem;
-        font-weight: 600;
-        color: var(--orgd-muted);
-    }
-    .orgd-company-pill i {
-        color: var(--orgd-accent) !important;
-        -webkit-text-fill-color: var(--orgd-accent) !important;
-    }
-
-    .orgd-header-actions {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        gap: 10px;
-    }
-
-    .orgd-btn {
-        display: inline-flex !important;
-        align-items: center;
-        gap: 7px;
-        height: 38px;
-        padding: 0 14px !important;
-        border-radius: 10px !important;
-        border: 1px solid var(--orgd-border) !important;
-        background: var(--orgd-surface) !important;
-        color: var(--orgd-text) !important;
-        -webkit-text-fill-color: var(--orgd-text) !important;
-        font-size: 0.84rem;
-        font-weight: 600;
-        cursor: pointer;
-        text-decoration: none !important;
-        transition: border-color 0.2s, background 0.2s, transform 0.15s;
-    }
-    .orgd-btn i {
-        color: inherit !important;
-        -webkit-text-fill-color: currentColor !important;
-    }
-    .orgd-btn:hover {
-        border-color: var(--orgd-accent) !important;
-        background: var(--orgd-accent-soft) !important;
-        color: var(--orgd-accent) !important;
-        -webkit-text-fill-color: var(--orgd-accent) !important;
-    }
-    .orgd-btn-primary {
-        border-color: var(--orgd-accent) !important;
-        background: var(--orgd-accent) !important;
-        color: #ffffff !important;
-        -webkit-text-fill-color: #ffffff !important;
-    }
-    .orgd-btn-primary:hover {
-        background: var(--orgd-accent-strong) !important;
-        border-color: var(--orgd-accent-strong) !important;
-        color: #ffffff !important;
-        -webkit-text-fill-color: #ffffff !important;
-    }
-    .orgd-btn:focus-visible,
-    .orgd-control:focus-visible,
-    .orgd-chip:focus-visible,
-    .orgd-tile:focus-visible,
-    .orgd-tool:focus-visible {
-        outline: 2px solid var(--orgd-accent) !important;
-        outline-offset: 2px;
-    }
-
-    /* Summary KPI Grid */
-    .orgd-kpis {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-        gap: 14px;
-        margin-bottom: 18px;
-    }
-
-    .orgd-kpi-card {
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        gap: 12px;
-        padding: 16px 18px;
-        border-radius: 16px;
-        background: var(--orgd-surface);
-        border: 1px solid var(--orgd-border);
-        box-shadow: var(--orgd-shadow);
-    }
-    .orgd-kpi-label {
-        font-size: 0.72rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        color: var(--orgd-muted);
-    }
-    .orgd-kpi-value {
-        margin-top: 6px;
-        font-size: 1.75rem;
-        font-weight: 800;
-        line-height: 1.1;
-        color: var(--orgd-text);
-    }
-    .orgd-kpi-sub {
-        margin-top: 4px;
-        font-size: 0.78rem;
-        color: var(--orgd-muted);
-    }
-    .orgd-kpi-icon {
-        width: 40px;
-        height: 40px;
-        border-radius: 12px;
-        display: grid;
-        place-items: center;
-        flex-shrink: 0;
-        background: var(--orgd-accent-soft);
-    }
-    .orgd-kpi-icon i {
-        font-size: 1rem;
-        color: var(--orgd-accent) !important;
-        -webkit-text-fill-color: var(--orgd-accent) !important;
-    }
-    .orgd-kpi-icon.is-green { background: var(--orgd-ok-soft); }
-    .orgd-kpi-icon.is-green i { color: var(--orgd-ok) !important; -webkit-text-fill-color: var(--orgd-ok) !important; }
-    .orgd-kpi-icon.is-amber { background: var(--orgd-warn-soft); }
-    .orgd-kpi-icon.is-amber i { color: var(--orgd-warn) !important; -webkit-text-fill-color: var(--orgd-warn) !important; }
-
-    /* Filter & Search Card */
-    .orgd-filter-card {
-        padding: 18px 20px;
-        margin-bottom: 18px;
-        border-radius: 18px;
-        background: var(--orgd-surface);
-        border: 1px solid var(--orgd-border);
-        box-shadow: var(--orgd-shadow);
-    }
-
-    .orgd-filter-grid {
-        display: grid;
-        grid-template-columns: minmax(220px, 1.5fr) minmax(190px, 1fr) minmax(180px, 1fr) auto;
-        gap: 12px;
-        align-items: end;
-    }
-
-    .orgd-field {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-        min-width: 0;
-    }
-    .orgd-field label {
-        font-size: 0.78rem;
-        font-weight: 700;
-        color: var(--orgd-text);
-        margin: 0;
-    }
-
-    .orgd-input-wrap {
-        position: relative;
-        display: flex;
-        align-items: center;
-    }
-    .orgd-input-wrap i {
-        position: absolute;
-        left: 12px;
-        font-size: 0.85rem;
-        color: var(--orgd-muted) !important;
-        -webkit-text-fill-color: var(--orgd-muted) !important;
-        pointer-events: none;
-    }
-
-    .orgd-control {
-        width: 100%;
-        height: 40px;
-        border-radius: 10px !important;
-        border: 1px solid var(--orgd-border) !important;
-        background: var(--orgd-canvas) !important;
-        color: var(--orgd-text) !important;
-        -webkit-text-fill-color: var(--orgd-text) !important;
-        font-size: 0.87rem;
-        padding: 0 12px !important;
-        box-shadow: none !important;
-    }
-    .orgd-input-wrap .orgd-control {
-        padding-left: 36px !important;
-    }
-
-    .orgd-filter-actions {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .orgd-toggle-btn {
-        display: inline-flex !important;
-        align-items: center;
-        gap: 7px;
-        height: 40px;
-        padding: 0 13px !important;
-        border-radius: 10px !important;
-        border: 1px solid var(--orgd-border) !important;
-        background: var(--orgd-canvas) !important;
-        color: var(--orgd-muted) !important;
-        -webkit-text-fill-color: var(--orgd-muted) !important;
-        font-size: 0.82rem;
-        font-weight: 600;
-        cursor: pointer;
-    }
-    .orgd-toggle-btn i {
-        color: inherit !important;
-        -webkit-text-fill-color: currentColor !important;
-    }
-    .orgd-toggle-btn[aria-pressed="true"] {
-        border-color: var(--orgd-accent) !important;
-        background: var(--orgd-accent-soft) !important;
-        color: var(--orgd-accent) !important;
-        -webkit-text-fill-color: var(--orgd-accent) !important;
-    }
-
-    .orgd-chips-row {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        gap: 8px;
-        margin-top: 14px;
-        padding-top: 14px;
-        border-top: 1px dashed var(--orgd-border);
-    }
-    .orgd-chips-label {
-        font-size: 0.76rem;
-        font-weight: 700;
-        color: var(--orgd-muted);
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        margin-right: 4px;
-    }
-    .orgd-chip {
-        display: inline-flex !important;
-        align-items: center;
-        gap: 6px;
-        padding: 5px 11px !important;
-        border-radius: 999px !important;
-        border: 1px solid var(--orgd-border) !important;
-        background: var(--orgd-canvas) !important;
-        color: var(--orgd-text) !important;
-        -webkit-text-fill-color: var(--orgd-text) !important;
-        font-size: 0.78rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: border-color 0.15s, background 0.15s;
-    }
-    .orgd-chip .orgd-chip-count {
-        padding: 1px 6px;
-        border-radius: 999px;
-        background: var(--orgd-surface);
-        color: var(--orgd-muted);
-        font-size: 0.72rem;
-        font-weight: 700;
-    }
-    .orgd-chip.is-active {
-        border-color: var(--orgd-accent) !important;
-        background: var(--orgd-accent) !important;
-        color: #ffffff !important;
-        -webkit-text-fill-color: #ffffff !important;
-    }
-    .orgd-chip.is-active .orgd-chip-count {
-        background: rgba(255, 255, 255, 0.22);
-        color: #ffffff;
-    }
-
-    /* Tree Panel */
-    .orgd-tree-panel {
-        border-radius: 20px;
-        background: var(--orgd-surface);
-        border: 1px solid var(--orgd-border);
-        box-shadow: var(--orgd-shadow);
-        overflow: hidden;
-    }
-    .orgd-tree-panel i { font-style: normal; }
-
-    .orgd-toolbar {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        padding: 14px 20px;
-        border-bottom: 1px solid var(--orgd-border);
-    }
-
-    .orgd-toolbar-info h2 {
-        margin: 0;
-        font-size: 1.02rem;
-        font-weight: 700;
-        color: var(--orgd-text);
-    }
-    .orgd-toolbar-status {
-        margin: 2px 0 0;
-        font-size: 0.82rem;
-        color: var(--orgd-muted);
-    }
-
-    .orgd-toolbar-controls {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .orgd-group {
-        display: inline-flex;
-        align-items: center;
-        gap: 2px;
-        padding: 3px;
-        border-radius: 12px;
-        border: 1px solid var(--orgd-border);
-        background: var(--orgd-canvas);
-    }
-
-    .orgd-tool {
-        width: 32px !important;
-        height: 32px !important;
-        min-width: 32px !important;
-        min-height: 0 !important;
-        padding: 0 !important;
-        display: inline-grid !important;
-        place-items: center;
-        border: 0 !important;
-        border-radius: 8px !important;
-        background: transparent !important;
-        color: var(--orgd-text) !important;
-        -webkit-text-fill-color: var(--orgd-text) !important;
-        cursor: pointer;
-    }
-    .orgd-tool i {
-        color: inherit !important;
-        -webkit-text-fill-color: currentColor !important;
-        font-size: 0.82rem;
-    }
-    .orgd-tool:hover {
-        background: var(--orgd-accent-soft) !important;
-        color: var(--orgd-accent) !important;
-        -webkit-text-fill-color: var(--orgd-accent) !important;
-    }
-    .orgd-zoom-label {
-        min-width: 46px;
-        text-align: center;
-        font-size: 0.78rem;
-        font-weight: 700;
-        color: var(--orgd-muted);
-    }
-
-    .orgd-body {
-        position: relative;
-        width: 100%;
-    }
-
-    .orgd-viewport {
-        position: relative;
-        width: 100%;
-        height: min(72vh, 740px);
-        min-height: 480px;
-        overflow: hidden;
-        cursor: grab;
-        touch-action: none;
-        user-select: none;
-        outline: none;
-        background-color: var(--orgd-canvas);
-        background-image: radial-gradient(var(--orgd-grid) 1.25px, transparent 1.25px);
-        background-size: 22px 22px;
-    }
-    .orgd-viewport.is-dragging { cursor: grabbing; }
-
-    .orgd-stage {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: max-content;
-        transform-origin: 0 0;
-        padding: 40px 44px 68px;
-        will-change: transform;
-    }
-
-    .orgd-empty {
-        position: absolute;
-        inset: 0;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        padding: 28px;
-        text-align: center;
-        color: var(--orgd-muted);
-    }
-    .orgd-empty[hidden] { display: none; }
-    .orgd-empty i {
-        font-size: 2.2rem;
-        color: var(--orgd-accent) !important;
-        -webkit-text-fill-color: var(--orgd-accent) !important;
-    }
-    .orgd-empty strong { color: var(--orgd-text); font-size: 1rem; }
-    .orgd-empty span { max-width: 400px; font-size: 0.85rem; }
-
-    .orgd-pan {
-        position: absolute;
-        left: 16px;
-        bottom: 16px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 2px;
-        padding: 4px;
-        border-radius: 12px;
-        background: var(--orgd-surface);
-        border: 1px solid var(--orgd-border);
-        box-shadow: var(--orgd-shadow);
-    }
-    .orgd-pan > div { display: flex; gap: 30px; }
-
-    .orgd-legend {
-        position: absolute;
-        right: 16px;
-        bottom: 16px;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 12px;
-        padding: 8px 12px;
-        border-radius: 10px;
-        background: var(--orgd-surface);
-        border: 1px solid var(--orgd-border);
-        font-size: 0.76rem;
-        color: var(--orgd-muted);
-    }
-    .orgd-legend span { display: inline-flex; align-items: center; gap: 6px; }
-    .orgd-dot { width: 18px; height: 0; border-top: 2px solid var(--orgd-line); display: inline-block; }
-    .orgd-dot.is-level { border-top-style: dashed; }
-
-    /* CSS Hierarchy Tree Connectors */
-    .orgd-tree, .orgd-tree ul { margin: 0; padding: 0; }
-    .orgd-tree ul {
-        display: flex;
-        justify-content: center;
-        position: relative;
-        padding-top: 26px;
-    }
-    .orgd-tree li {
-        list-style: none;
-        flex-shrink: 0;
-        position: relative;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: 26px 10px 0;
-    }
-    .orgd-tree li::before, .orgd-tree li::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        right: 50%;
-        width: 50%;
-        height: 26px;
-        border-top: 2px solid var(--orgd-line);
-    }
-    .orgd-tree li::after {
-        right: auto;
-        left: 50%;
-        border-left: 2px solid var(--orgd-line);
-    }
-    .orgd-tree li:only-child::before, .orgd-tree li:only-child::after { display: none; }
-    .orgd-tree li:only-child { padding-top: 0; }
-    .orgd-tree li:first-child::before, .orgd-tree li:last-child::after { border: 0 none; }
-    .orgd-tree li:last-child::before {
-        border-right: 2px solid var(--orgd-line);
-        border-radius: 0 10px 0 0;
-    }
-    .orgd-tree li:first-child::after { border-radius: 10px 0 0 0; }
-    .orgd-tree ul ul::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 50%;
-        height: 26px;
-        border-left: 2px solid var(--orgd-line);
-    }
-    .orgd-tree > ul { padding-top: 0; }
-    .orgd-tree li.is-level-placed::after,
-    .orgd-tree li.is-level-placed:last-child::before { border-style: dashed; }
-    .orgd-tree li.is-path::after { border-left-color: var(--orgd-path); }
-    .orgd-tree li.is-path:last-child::before { border-right-color: var(--orgd-path); }
-    .orgd-tree li.is-path > ul::before { border-left-color: var(--orgd-path); }
-    .orgd-tree li.is-collapsed > ul { display: none; }
-    .orgd-tree li > .orgd-tile { margin-bottom: 14px; }
-    .orgd-tree li.is-leaf > .orgd-tile { margin-bottom: 0; }
-
-    /* Employee Tiles */
-    .orgd-tile {
-        position: relative;
-        width: 244px;
-        padding: 14px 14px 12px;
-        border-radius: 16px;
-        background: var(--orgd-surface);
-        border: 1px solid var(--orgd-border);
-        box-shadow: var(--orgd-shadow);
-        cursor: pointer;
-        text-align: left;
-        transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s, opacity 0.2s;
-    }
-    .orgd-tile:hover { border-color: var(--orgd-accent); transform: translateY(-2px); }
-    .orgd-tile.is-selected {
-        border-color: var(--orgd-accent);
-        box-shadow: 0 0 0 3px var(--orgd-accent-soft), var(--orgd-shadow);
-    }
-    .orgd-tile.is-path { border-color: var(--orgd-path); }
-    .orgd-tile.is-dim { opacity: 0.34; }
-    .orgd-tile.is-match {
-        border-color: var(--orgd-warn);
-        box-shadow: 0 0 0 3px var(--orgd-warn-soft), var(--orgd-shadow);
-    }
-    .orgd-tile.is-company {
-        width: 266px;
-        background: linear-gradient(135deg, var(--orgd-accent-soft), var(--orgd-surface));
-    }
-
-    .orgd-tile-flag {
-        position: absolute;
-        top: -10px;
-        left: 14px;
-        padding: 2px 8px;
-        border-radius: 999px;
-        background: var(--orgd-path);
-        color: #ffffff !important;
-        -webkit-text-fill-color: #ffffff !important;
-        font-size: 10px;
-        font-weight: 700;
-        letter-spacing: 0.06em;
-        text-transform: uppercase;
-        display: none;
-    }
-    .orgd-tile.is-path .orgd-tile-flag,
-    .orgd-tile.is-selected .orgd-tile-flag { display: inline-block; }
-
-    .orgd-tile-top { display: flex; align-items: center; gap: 10px; }
-    .orgd-photo {
-        width: 42px;
-        height: 42px;
-        border-radius: 50%;
-        flex-shrink: 0;
-        overflow: hidden;
-        display: grid;
-        place-items: center;
-        background: linear-gradient(135deg, #6366f1, #4f46e5);
-        color: #ffffff !important;
-        -webkit-text-fill-color: #ffffff !important;
-        font-weight: 700;
-        font-size: 0.9rem;
-    }
-    .orgd-photo img { width: 100% !important; height: 100% !important; object-fit: cover; display: block; }
-    .orgd-photo.is-large { width: 72px; height: 72px; font-size: 1.5rem; }
-    .orgd-photo.is-company { border-radius: 12px; }
-
-    .orgd-who { min-width: 0; flex: 1; }
-    .orgd-name {
-        display: flex;
-        align-items: center;
-        gap: 5px;
-        margin: 0;
-        font-size: 0.88rem;
-        font-weight: 700;
-        color: var(--orgd-text);
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-    .orgd-name > span { overflow: hidden; text-overflow: ellipsis; }
-    .orgd-name i {
-        color: #3b82f6 !important;
-        -webkit-text-fill-color: #3b82f6 !important;
-        font-size: 0.75rem;
-        flex-shrink: 0;
-    }
-    .orgd-designation {
-        margin: 2px 0 0;
-        font-size: 0.77rem;
-        font-weight: 600;
-        color: var(--orgd-accent);
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-    .orgd-tile.is-match .orgd-designation {
-        color: var(--orgd-warn);
-    }
-
-    .orgd-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 10px; }
-    .orgd-tag {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        max-width: 100%;
-        padding: 2px 8px;
-        border-radius: 999px;
-        font-size: 0.69rem;
-        font-weight: 600;
-        background: var(--orgd-accent-soft);
-        color: var(--orgd-accent);
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-    .orgd-tag.is-dept {
-        background: var(--orgd-canvas);
-        color: var(--orgd-muted);
-        border: 1px solid var(--orgd-border);
-    }
-    .orgd-tag.is-ok { background: var(--orgd-ok-soft); color: var(--orgd-ok); }
-    .orgd-tag.is-warn { background: var(--orgd-warn-soft); color: var(--orgd-warn); }
-
-    .orgd-tile-foot {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 8px;
-        margin-top: 10px;
-        padding-top: 8px;
-        border-top: 1px dashed var(--orgd-border);
-        font-size: 0.74rem;
-        color: var(--orgd-muted);
-    }
-    .orgd-tile-foot strong { color: var(--orgd-text); }
-
-    .orgd-toggle {
-        position: absolute;
-        left: 50%;
-        bottom: -13px;
-        transform: translateX(-50%);
-        width: 26px !important;
-        height: 26px !important;
-        min-height: 0 !important;
-        padding: 0 !important;
-        border-radius: 50% !important;
-        border: 1px solid var(--orgd-border) !important;
-        background: var(--orgd-surface) !important;
-        color: var(--orgd-accent) !important;
-        -webkit-text-fill-color: var(--orgd-accent) !important;
-        display: grid !important;
-        place-items: center;
-        cursor: pointer;
-        z-index: 2;
-        box-shadow: var(--orgd-shadow) !important;
-        font-size: 0.7rem;
-    }
-    .orgd-toggle i {
-        color: inherit !important;
-        -webkit-text-fill-color: currentColor !important;
-        transition: transform 0.2s;
-    }
-    .orgd-tree li.is-collapsed > .orgd-tile .orgd-toggle i { transform: rotate(-90deg); }
-
-    /* Inspector Drawer */
-    .orgd-inspector {
-        position: absolute;
-        top: 0;
-        right: 0;
-        bottom: 0;
-        width: 380px;
-        max-width: 100%;
-        display: flex;
-        flex-direction: column;
-        background: var(--orgd-surface);
-        border-left: 1px solid var(--orgd-border);
-        box-shadow: -12px 0 30px rgba(0, 0, 0, 0.12);
-        transform: translateX(105%);
-        visibility: hidden;
-        transition: transform 0.26s ease, visibility 0s linear 0.26s;
-        z-index: 6;
-    }
-    .orgd-inspector.is-open {
-        transform: translateX(0);
-        visibility: visible;
-        transition: transform 0.26s ease;
-    }
-    .orgd-inspector-head {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 12px 16px;
-        border-bottom: 1px solid var(--orgd-border);
-        font-size: 0.74rem;
-        font-weight: 700;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: var(--orgd-muted);
-    }
-    .orgd-inspector-body {
-        flex: 1;
-        overflow-y: auto;
-        padding: 18px 16px 22px;
-        overscroll-behavior: contain;
-    }
-    .orgd-hero {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-        gap: 6px;
-    }
-    .orgd-hero h3 {
-        margin: 6px 0 0;
-        font-size: 1.1rem;
-        font-weight: 700;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        color: var(--orgd-text);
-    }
-    .orgd-hero h3 i {
-        color: #3b82f6 !important;
-        -webkit-text-fill-color: #3b82f6 !important;
-        font-size: 0.9rem;
-    }
-    .orgd-hero p { margin: 0; font-size: 0.84rem; color: var(--orgd-muted); }
-    .orgd-hero .orgd-tags { justify-content: center; margin-top: 4px; }
-
-    .orgd-actions { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin: 16px 0; }
-    .orgd-action {
-        display: flex !important;
-        flex-direction: column;
-        align-items: center;
-        gap: 4px;
-        padding: 10px 6px !important;
-        border-radius: 12px !important;
-        border: 1px solid var(--orgd-border) !important;
-        background: var(--orgd-canvas) !important;
-        color: var(--orgd-text) !important;
-        -webkit-text-fill-color: var(--orgd-text) !important;
-        font-size: 0.78rem;
-        font-weight: 600;
-        text-decoration: none !important;
-        cursor: pointer;
-    }
-    .orgd-action i {
-        color: var(--orgd-accent) !important;
-        -webkit-text-fill-color: var(--orgd-accent) !important;
-        font-size: 0.95rem;
-    }
-    .orgd-action:hover { border-color: var(--orgd-accent) !important; }
-    .orgd-action.is-disabled { opacity: 0.45; pointer-events: none; }
-
-    .orgd-section { margin-top: 16px; }
-    .orgd-section h4 {
-        margin: 0 0 8px;
-        font-size: 0.72rem;
-        font-weight: 700;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: var(--orgd-muted);
-    }
-    .orgd-person {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        width: 100%;
-        padding: 8px 10px !important;
-        border-radius: 12px !important;
-        border: 1px solid var(--orgd-border) !important;
-        background: var(--orgd-canvas) !important;
-        text-align: left;
-        cursor: pointer;
-        color: var(--orgd-text) !important;
-        -webkit-text-fill-color: var(--orgd-text) !important;
-    }
-    .orgd-person + .orgd-person { margin-top: 6px; }
-    .orgd-person:hover { border-color: var(--orgd-accent) !important; }
-    .orgd-person .orgd-photo { width: 34px; height: 34px; font-size: 0.76rem; }
-    .orgd-person strong { display: block; font-size: 0.82rem; color: var(--orgd-text); }
-    .orgd-person small { display: block; font-size: 0.75rem; color: var(--orgd-muted); }
-    .orgd-person > i {
-        margin-left: auto;
-        color: var(--orgd-muted) !important;
-        -webkit-text-fill-color: var(--orgd-muted) !important;
-        font-size: 0.72rem;
-    }
-
-    .orgd-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .orgd-stats div { padding: 12px; border-radius: 12px; background: var(--orgd-accent-soft); text-align: center; }
-    .orgd-stats strong { display: block; font-size: 1.35rem; font-weight: 800; color: var(--orgd-accent); }
-    .orgd-stats span { font-size: 0.76rem; color: var(--orgd-muted); }
-
-    .orgd-facts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 0; }
-    .orgd-facts div { min-width: 0; padding: 10px; border-radius: 12px; border: 1px solid var(--orgd-border); }
-    .orgd-facts div.is-wide { grid-column: 1 / -1; }
-    .orgd-facts dt { font-size: 0.7rem; font-weight: 600; color: var(--orgd-muted); }
-    .orgd-facts dd { margin: 2px 0 0; font-size: 0.82rem; font-weight: 600; color: var(--orgd-text); overflow-wrap: anywhere; }
-    .orgd-note { font-size: 0.78rem; color: var(--orgd-muted); margin: 0; }
-
-    @media (max-width: 1100px) {
-        .orgd-filter-grid {
-            grid-template-columns: 1fr 1fr;
-        }
-    }
-    @media (max-width: 991.98px) {
-        .orgd-inspector { position: fixed; top: 0; bottom: 0; right: 0; width: min(100vw, 400px); z-index: 1065; }
-        .orgd-legend { display: none; }
-    }
-    @media (max-width: 640px) {
-        .orgd-filter-grid { grid-template-columns: 1fr; }
-        .orgd-viewport { height: 64vh; min-height: 380px; }
-        .orgd-pan { left: 10px; bottom: 10px; }
-    }
-    @media print {
-        .orgd-topbar, .orgd-filter-card, .orgd-header-actions, .orgd-pan, .orgd-inspector { display: none !important; }
-        .orgd-viewport { height: auto !important; overflow: visible !important; background: #fff !important; }
-        .orgd-stage { position: static !important; transform: none !important; padding: 12px !important; }
-    }
-</style>
+    @include('admin.organization-directory.styles')
+    @include('admin.organization-directory.tree-styles')
 @endpush
 
 @section('content')
-<div class="orgd-page">
-    <div class="orgd-topbar">
-        <a href="{{ route('dashboard') }}" class="orgd-back-btn">
-            <i class="fas fa-arrow-left" aria-hidden="true"></i>
-            <span>Back</span>
-        </a>
-        <nav class="orgd-breadcrumb" aria-label="Breadcrumb">
-            <a href="{{ route('dashboard') }}"><i class="fas fa-home" aria-hidden="true"></i> Dashboard</a>
-            <i class="fas fa-chevron-right" aria-hidden="true" style="font-size: 0.68rem;"></i>
-            <span aria-current="page">Organization Details</span>
-        </nav>
-    </div>
-
-    <header class="orgd-header-card">
-        <div class="orgd-header-main">
-            <div class="orgd-header-icon" aria-hidden="true">
+<div id="pms-org-page" class="org-page orgd-page">
+    <!-- Page Header Card -->
+    <div class="org-header-card">
+        <div class="org-header-title">
+            <div class="org-header-icon">
                 <i class="fas fa-sitemap"></i>
             </div>
             <div class="orgd-header-text">
@@ -1086,7 +112,7 @@
                 <span>Print Chart</span>
             </button>
         </div>
-    </header>
+    </div>
 
     <section class="orgd-kpis" aria-label="Organization summary" data-live-preserve>
         <div class="orgd-kpi-card">
@@ -1199,7 +225,7 @@
         </div>
 
         @if($designationFilterOptions->where('count', '>', 0)->isNotEmpty())
-            <div class="orgd-chips-row" aria-label="Quick designation filters">
+            <div class="orgd-chips-row" id="orgDesignationChipsRow" aria-label="Quick designation filters">
                 <span class="orgd-chips-label">By Designation:</span>
                 <button type="button" class="orgd-chip is-active" data-designation-chip="">
                     <span>All</span>
@@ -1212,13 +238,15 @@
                     </button>
                 @endforeach
             </div>
+        @else
+            <div class="orgd-chips-row" id="orgDesignationChipsRow" aria-label="Quick designation filters" hidden></div>
         @endif
     </section>
 
     <section
-        class="orgd-tree-panel"
+        class="orgd-tree-panel is-chart-mode"
         id="orgTreeRoot"
-        data-endpoint="{{ route('organization.tree') }}"
+        data-endpoint="{{ route('organization.tree', array_filter(['company_id' => request()->integer('company_id') ?: null])) }}"
         data-live-preserve
         aria-labelledby="organization-details-heading"
     >
@@ -1233,7 +261,22 @@
             </div>
 
             <div class="orgd-toolbar-controls">
-                <div class="orgd-group" aria-label="Expand or collapse branches">
+                <div class="orgd-group orgd-modes" role="group" aria-label="Organization view mode">
+                    <button type="button" class="orgd-mode is-on" data-org-mode="chart" aria-pressed="true" title="Hierarchical tree chart">
+                        <i class="fas fa-sitemap" aria-hidden="true"></i>
+                        <span>Tree Chart</span>
+                    </button>
+                    <button type="button" class="orgd-mode" data-org-mode="grid" aria-pressed="false" title="Employee cards organized by designation level tiers">
+                        <i class="fas fa-layer-group" aria-hidden="true"></i>
+                        <span>Tree Grid</span>
+                    </button>
+                    <button type="button" class="orgd-mode" data-org-mode="cards" aria-pressed="false" title="All employee and user cards">
+                        <i class="fas fa-grip" aria-hidden="true"></i>
+                        <span>All Cards</span>
+                    </button>
+                </div>
+
+                <div class="orgd-group orgd-chart-only" aria-label="Expand or collapse branches">
                     <button type="button" class="orgd-tool" id="orgExpandAllBtn" title="Expand all branches" aria-label="Expand all branches">
                         <i class="fas fa-angles-down" aria-hidden="true"></i>
                     </button>
@@ -1264,12 +307,6 @@
             <div class="orgd-viewport" id="orgViewport" tabindex="0" aria-label="Interactive employee hierarchy canvas">
                 <div class="orgd-stage" id="orgStage"></div>
 
-                <div class="orgd-empty" id="orgEmptyState" hidden>
-                    <i class="fas fa-users-slash" aria-hidden="true"></i>
-                    <strong id="orgEmptyTitle">No matching employees found</strong>
-                    <span id="orgEmptyHint">Try selecting another designation or clearing your search filters.</span>
-                </div>
-
                 <div class="orgd-pan orgd-chart-only" aria-label="Canvas pan controls">
                     <button type="button" class="orgd-tool" data-pan-x="0" data-pan-y="90" title="Pan up" aria-label="Pan up">
                         <i class="fas fa-chevron-up" aria-hidden="true"></i>
@@ -1291,6 +328,16 @@
                     <span><i class="orgd-dot" aria-hidden="true"></i> Direct reporting manager</span>
                     <span><i class="orgd-dot is-level" aria-hidden="true"></i> Designation level hierarchy</span>
                 </div>
+            </div>
+
+            <div class="orgd-level-grid" id="orgLevelGrid" aria-label="Employees organized by designation level" hidden></div>
+
+            <div class="orgd-cards-grid" id="orgCardsGrid" aria-label="All employees and users cards" hidden></div>
+
+            <div class="orgd-empty" id="orgEmptyState" hidden>
+                <i class="fas fa-users-slash" aria-hidden="true"></i>
+                <strong id="orgEmptyTitle">No matching employees found</strong>
+                <span id="orgEmptyHint">Try selecting another designation or clearing your search filters.</span>
             </div>
 
             <aside class="orgd-inspector" id="orgInspector" aria-label="Selected employee details" aria-hidden="true">
@@ -1318,14 +365,18 @@
     const initialDataEl = document.getElementById('orgTreeInitialData');
     const viewport = document.getElementById('orgViewport');
     const stage = document.getElementById('orgStage');
+    const levelGrid = document.getElementById('orgLevelGrid');
+    const cardsGrid = document.getElementById('orgCardsGrid');
     const emptyState = document.getElementById('orgEmptyState');
     const emptyTitle = document.getElementById('orgEmptyTitle');
     const emptyHint = document.getElementById('orgEmptyHint');
     const statusText = document.getElementById('orgStatusText');
     const zoomLabel = document.getElementById('orgZoomLabel');
     const searchInput = document.getElementById('orgSearchInput');
+    const searchSuggestions = document.getElementById('orgSearchSuggestions');
     const designationSelect = document.getElementById('orgDesignationSelect');
     const departmentSelect = document.getElementById('orgDepartmentSelect');
+    const chipsRow = document.getElementById('orgDesignationChipsRow');
     const isolateBtn = document.getElementById('orgIsolateBtn');
     const resetFiltersBtn = document.getElementById('orgResetFiltersBtn');
     const refreshBtn = document.getElementById('orgRefreshBtn');
@@ -1334,8 +385,9 @@
     const inspector = document.getElementById('orgInspector');
     const inspectorBody = document.getElementById('orgInspectorBody');
     const closeInspectorBtn = document.getElementById('orgCloseInspectorBtn');
-    const designationChips = Array.from(document.querySelectorAll('[data-designation-chip]'));
+    const modeButtons = Array.from(root.querySelectorAll('[data-org-mode]'));
 
+    const MODE_KEY = 'pms.orgd.mode';
     const MIN_SCALE = 0.2;
     const MAX_SCALE = 2.4;
 
@@ -1347,11 +399,19 @@
         collapsed: new Set(),
         selected: null,
         isolateBranch: false,
+        mode: 'chart',
         x: 0,
         y: 0,
         scale: 1,
         userMoved: false,
         lastFocusBeforeInspector: null,
+        profileRequest: null,
+        loading: false,
+    };
+
+    const storage = {
+        get: function (k) { try { return window.localStorage.getItem(k); } catch (e) { return null; } },
+        set: function (k, v) { try { window.localStorage.setItem(k, v); } catch (e) {} },
     };
 
     function el(tag, className, text) {
@@ -1445,7 +505,102 @@
         }
 
         updateKpisFromNodes(rawNodes);
+        syncFilterControls(rawNodes);
         renderAll(Boolean(shouldFit));
+
+        if (state.selected && state.nodes.has(state.selected) && inspector.classList.contains('is-open')) {
+            openInspector(state.nodes.get(state.selected), false);
+        }
+    }
+
+    function syncFilterControls(nodes) {
+        const deptCounts = new Map();
+        const desigStats = new Map();
+
+        nodes.forEach(function (n) {
+            if (n.department) {
+                const dk = String(n.department);
+                deptCounts.set(dk, (deptCounts.get(dk) || 0) + 1);
+            }
+            if (n.designation && n.designation !== 'No designation') {
+                const name = String(n.designation);
+                const key = name.toLowerCase();
+                const prev = desigStats.get(key) || { name: name, level: n.level, count: 0 };
+                prev.count++;
+                if (prev.level === null || prev.level === undefined) prev.level = n.level;
+                desigStats.set(key, prev);
+            }
+        });
+
+        const sortedDesigs = Array.from(desigStats.values()).sort(function (a, b) {
+            const la = a.level === null || a.level === undefined ? -1 : Number(a.level);
+            const lb = b.level === null || b.level === undefined ? -1 : Number(b.level);
+            if (lb !== la) return lb - la;
+            return a.name.localeCompare(b.name);
+        });
+
+        if (designationSelect) {
+            const prevDesig = designationSelect.value;
+            designationSelect.replaceChildren(new Option('All Designations (' + nodes.length + ')', ''));
+            sortedDesigs.forEach(function (d) {
+                const lvl = d.level !== null && d.level !== undefined ? ' (L' + d.level + ')' : '';
+                designationSelect.add(new Option(d.name + lvl + ' — ' + d.count, d.name));
+            });
+            const hasPrev = sortedDesigs.some(function (d) { return d.name === prevDesig; });
+            designationSelect.value = hasPrev ? prevDesig : '';
+        }
+
+        if (departmentSelect) {
+            const prevDept = departmentSelect.value;
+            departmentSelect.replaceChildren(new Option('All Departments', ''));
+            Array.from(deptCounts.entries())
+                .sort(function (a, b) { return a[0].localeCompare(b[0]); })
+                .forEach(function (entry) {
+                    departmentSelect.add(new Option(entry[0] + ' (' + entry[1] + ')', entry[0]));
+                });
+            departmentSelect.value = deptCounts.has(prevDept) ? prevDept : '';
+        }
+
+        if (chipsRow) {
+            if (sortedDesigs.length === 0) {
+                chipsRow.hidden = true;
+                chipsRow.replaceChildren();
+            } else {
+                chipsRow.hidden = false;
+                const frag = document.createDocumentFragment();
+                frag.appendChild(el('span', 'orgd-chips-label', 'By Designation:'));
+                const makeChip = function (value, label, count) {
+                    const btn = el('button', 'orgd-chip');
+                    btn.type = 'button';
+                    btn.setAttribute('data-designation-chip', value);
+                    btn.append(el('span', '', label), el('span', 'orgd-chip-count', String(count)));
+                    return btn;
+                };
+                frag.appendChild(makeChip('', 'All', nodes.length));
+                sortedDesigs.forEach(function (d) {
+                    frag.appendChild(makeChip(d.name, d.name, d.count));
+                });
+                chipsRow.replaceChildren(frag);
+            }
+        }
+
+        if (searchSuggestions) {
+            const frag = document.createDocumentFragment();
+            const seen = new Set();
+            sortedDesigs.forEach(function (d) {
+                if (!seen.has(d.name)) {
+                    seen.add(d.name);
+                    frag.appendChild(new Option(d.name, d.name));
+                }
+            });
+            nodes.forEach(function (n) {
+                if (n.name && !seen.has(n.name)) {
+                    seen.add(n.name);
+                    frag.appendChild(new Option(n.name, n.name));
+                }
+            });
+            searchSuggestions.replaceChildren(frag);
+        }
     }
 
     function updateKpisFromNodes(nodes) {
@@ -1560,20 +715,46 @@
 
     function syncChipSelection() {
         const currentDesig = (designationSelect ? designationSelect.value : '').trim().toLowerCase();
-        designationChips.forEach(function (chip) {
+        if (!chipsRow) return;
+        chipsRow.querySelectorAll('[data-designation-chip]').forEach(function (chip) {
             const chipVal = (chip.getAttribute('data-designation-chip') || '').trim().toLowerCase();
             chip.classList.toggle('is-active', chipVal === currentDesig);
         });
+    }
+
+    function setMode(mode, persist) {
+        state.mode = (mode === 'grid' || mode === 'cards') ? mode : 'chart';
+        root.classList.toggle('is-chart-mode', state.mode === 'chart');
+        root.classList.toggle('is-grid-mode', state.mode === 'grid');
+        root.classList.toggle('is-cards-mode', state.mode === 'cards');
+        if (viewport) viewport.hidden = state.mode !== 'chart';
+        if (levelGrid) levelGrid.hidden = state.mode !== 'grid';
+        if (cardsGrid) cardsGrid.hidden = state.mode !== 'cards';
+
+        modeButtons.forEach(function (btn) {
+            const active = btn.getAttribute('data-org-mode') === state.mode;
+            btn.classList.toggle('is-on', active);
+            btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+        });
+
+        if (persist) storage.set(MODE_KEY, state.mode);
+        renderAll(state.mode === 'chart');
     }
 
     function renderAll(shouldFit) {
         const filterState = computeFilterState();
         syncChipSelection();
 
-        renderTree(filterState);
+        if (state.mode === 'grid') {
+            renderLevelGrid(filterState);
+        } else if (state.mode === 'cards') {
+            renderCardsGrid(filterState);
+        } else {
+            renderTree(filterState);
+        }
         updateStatusSummary(filterState);
 
-        if (shouldFit) {
+        if (shouldFit && state.mode === 'chart') {
             requestAnimationFrame(fitToScreen);
         }
     }
@@ -1663,6 +844,164 @@
 
         treeRoot.appendChild(rootUl);
         stage.replaceChildren(treeRoot);
+    }
+
+    function visibleNodesList(filterState) {
+        const list = [];
+        state.nodes.forEach(function (node) {
+            if (filterState.hasFilter && !filterState.matches.has(node.id)) return;
+            list.push(node);
+        });
+        return list.sort(function (a, b) {
+            const la = a.level === null || a.level === undefined ? -1 : Number(a.level);
+            const lb = b.level === null || b.level === undefined ? -1 : Number(b.level);
+            if (lb !== la) return lb - la;
+            return String(a.name || '').localeCompare(String(b.name || ''));
+        });
+    }
+
+    function buildEmployeeCard(node, filterState, showPlacement) {
+        const tile = el('div', 'orgd-tile is-card-mode');
+        tile.tabIndex = 0;
+        tile.setAttribute('role', 'button');
+        tile.setAttribute('aria-label', node.name + ', ' + display(node.designation));
+        if (state.selected === node.id) tile.classList.add('is-selected');
+        if (filterState.pathIds.has(node.id) && state.selected !== node.id) tile.classList.add('is-path');
+        if (filterState.hasFilter && filterState.matches.has(node.id)) tile.classList.add('is-match');
+
+        tile.appendChild(el('span', 'orgd-tile-flag', state.selected === node.id ? 'Selected' : 'In Path'));
+
+        const top = el('div', 'orgd-tile-top');
+        top.appendChild(createPhoto(node));
+        const who = el('div', 'orgd-who');
+        const nameEl = el('div', 'orgd-name');
+        nameEl.appendChild(el('span', '', node.name));
+        if (isActiveStatus(node)) {
+            nameEl.appendChild(icon('fa-circle-check'));
+        }
+        who.append(nameEl, el('p', 'orgd-designation', display(node.designation)));
+        top.appendChild(who);
+        tile.appendChild(top);
+
+        const tags = el('div', 'orgd-tags');
+        tags.appendChild(el('span', 'orgd-tag', levelBadge(node)));
+        if (node.role) {
+            tags.appendChild(el('span', 'orgd-tag is-dept', node.role));
+        }
+        if (node.department) {
+            tags.appendChild(el('span', 'orgd-tag is-dept', node.department));
+        }
+        tile.appendChild(tags);
+
+        const meta = el('div', 'orgd-card-meta');
+        if (node.email) {
+            const row = el('div', 'orgd-card-meta-row');
+            row.append(icon('fa-envelope'), el('span', '', node.email));
+            meta.appendChild(row);
+        }
+        if (node.mobile) {
+            const row = el('div', 'orgd-card-meta-row');
+            row.append(icon('fa-phone'), el('span', '', node.mobile));
+            meta.appendChild(row);
+        }
+        if (showPlacement) {
+            const mgr = node.parent && state.nodes.has(node.parent) ? state.nodes.get(node.parent) : null;
+            if (mgr) {
+                tile.appendChild(el('p', 'orgd-placement-note', (node.placement === 'level' ? 'Placed under ' : 'Reports to ') + mgr.name));
+            }
+        }
+        if (meta.childNodes.length) {
+            tile.appendChild(meta);
+        }
+
+        const foot = el('div', 'orgd-tile-foot');
+        const counts = document.createElement('span');
+        counts.append(
+            el('strong', '', String(node.directs || 0)),
+            document.createTextNode(' direct • '),
+            el('strong', '', String(node.total || 0)),
+            document.createTextNode(' team')
+        );
+        foot.append(el('span', '', node.employee_code || 'EMP'), counts);
+        tile.appendChild(foot);
+
+        tile.addEventListener('click', function () {
+            selectNode(node.id, tile);
+        });
+        tile.addEventListener('keydown', function (ev) {
+            if (ev.key === 'Enter' || ev.key === ' ') {
+                ev.preventDefault();
+                selectNode(node.id, tile);
+            }
+        });
+
+        return tile;
+    }
+
+    function renderLevelGrid(filterState) {
+        if (!levelGrid) return;
+        const list = visibleNodesList(filterState);
+        if (state.nodes.size === 0 || (filterState.hasFilter && list.length === 0)) {
+            levelGrid.replaceChildren();
+            emptyTitle.textContent = state.nodes.size === 0 ? 'No employees in tree' : 'No matching designation or employee';
+            emptyHint.textContent = state.nodes.size === 0
+                ? 'Active employees added in the Employee section will appear here automatically.'
+                : 'Adjust your designation filter or search query, or click Reset to view all employees.';
+            emptyState.hidden = false;
+            return;
+        }
+        emptyState.hidden = true;
+
+        const tiers = new Map();
+        list.forEach(function (node) {
+            const lvl = node.level === null || node.level === undefined ? -1 : Number(node.level);
+            if (!tiers.has(lvl)) tiers.set(lvl, []);
+            tiers.get(lvl).push(node);
+        });
+
+        const sortedKeys = Array.from(tiers.keys()).sort(function (a, b) { return b - a; });
+        const fragment = document.createDocumentFragment();
+        sortedKeys.forEach(function (lvl) {
+            const members = tiers.get(lvl);
+            const group = el('section', 'orgd-level-group');
+            const head = el('div', 'orgd-level-head');
+            const title = el('h3', 'orgd-level-title');
+            title.append(
+                el('span', 'orgd-tag', lvl === -1 ? 'No level' : 'Level ' + lvl),
+                el('span', '', lvl === -1 ? 'Unassigned Designation Level' : 'Designation Tier L' + lvl)
+            );
+            head.append(title, el('span', 'orgd-level-count', members.length + (members.length === 1 ? ' member' : ' members')));
+            group.appendChild(head);
+
+            const cards = el('div', 'orgd-level-cards');
+            members.forEach(function (node) {
+                cards.appendChild(buildEmployeeCard(node, filterState, true));
+            });
+            group.appendChild(cards);
+            fragment.appendChild(group);
+        });
+        levelGrid.replaceChildren(fragment);
+    }
+
+    function renderCardsGrid(filterState) {
+        if (!cardsGrid) return;
+        const list = visibleNodesList(filterState);
+        if (state.nodes.size === 0 || (filterState.hasFilter && list.length === 0)) {
+            cardsGrid.replaceChildren();
+            emptyTitle.textContent = state.nodes.size === 0 ? 'No employees in directory' : 'No matching employees or users found';
+            emptyHint.textContent = state.nodes.size === 0
+                ? 'Active employees added in the Employee section will appear here automatically.'
+                : 'Try another search query or designation filter, or click Reset.';
+            emptyState.hidden = false;
+            return;
+        }
+        emptyState.hidden = true;
+
+        const wrap = el('div', 'orgd-cards-wrap');
+        list.forEach(function (node) {
+            wrap.appendChild(buildEmployeeCard(node, filterState, true));
+        });
+        cardsGrid.replaceChildren(wrap);
     }
 
     function buildNodeLi(id, filterState) {
@@ -1772,10 +1111,66 @@
         state.selected = id;
         state.lastFocusBeforeInspector = triggerEl || document.activeElement;
         renderAll(false);
-        openInspector(node);
+        openInspector(node, true);
     }
 
-    function openInspector(node) {
+    function reportingChain(id) {
+        const chain = [];
+        const seen = new Set();
+        let cursor = state.nodes.get(id);
+        while (cursor && !seen.has(cursor.id) && chain.length < 40) {
+            seen.add(cursor.id);
+            chain.unshift(cursor);
+            cursor = cursor.parent ? state.nodes.get(cursor.parent) : null;
+        }
+        return chain;
+    }
+
+    async function loadProfileDetails(node, target) {
+        if (!node.profile_url) return;
+        if (state.profileRequest) state.profileRequest.abort();
+        const controller = new AbortController();
+        state.profileRequest = controller;
+
+        const status = el('p', 'orgd-note', 'Loading complete employee details…');
+        target.replaceChildren(status);
+
+        try {
+            const resp = await fetch(node.profile_url, {
+                headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                credentials: 'same-origin',
+                cache: 'no-store',
+                signal: controller.signal,
+            });
+            if (!resp.ok) throw new Error('HTTP ' + resp.status);
+            const profile = await resp.json();
+            if (controller.signal.aborted || state.selected !== node.id) return;
+
+            const frag = document.createDocumentFragment();
+            Object.entries(profile.sections || {}).forEach(function (entry) {
+                const secTitle = entry[0];
+                const fields = entry[1] || {};
+                const sec = el('div', 'orgd-section');
+                sec.appendChild(el('h4', '', secTitle));
+                const dl = el('dl', 'orgd-facts');
+                Object.entries(fields).forEach(function (pair) {
+                    const wide = pair[0] === 'About' || pair[0] === 'Business address';
+                    const item = el('div', wide ? 'is-wide' : '');
+                    item.append(el('dt', '', pair[0]), el('dd', '', display(pair[1])));
+                    dl.appendChild(item);
+                });
+                sec.appendChild(dl);
+                frag.appendChild(sec);
+            });
+            target.replaceChildren(frag);
+        } catch (err) {
+            if (controller.signal.aborted || state.selected !== node.id) return;
+            status.textContent = 'Extended employee details could not be loaded.';
+        }
+    }
+
+    function openInspector(node, focusClose) {
+        if (state.profileRequest) state.profileRequest.abort();
         inspectorBody.innerHTML = '';
 
         const hero = el('div', 'orgd-hero');
@@ -1788,6 +1183,9 @@
 
         const tags = el('div', 'orgd-tags');
         tags.appendChild(el('span', 'orgd-tag', levelBadge(node)));
+        if (node.role) {
+            tags.appendChild(el('span', 'orgd-tag is-dept', node.role));
+        }
         tags.appendChild(el('span', 'orgd-tag ' + (isActiveStatus(node) ? 'is-ok' : 'is-warn'), display(node.status || 'Active')));
         if (node.employee_code) {
             tags.appendChild(el('span', 'orgd-tag is-dept', node.employee_code));
@@ -1796,9 +1194,18 @@
         inspectorBody.appendChild(hero);
 
         const actions = el('div', 'orgd-actions');
-        const profileLink = el('a', 'orgd-action' + (node.show_url ? '' : ' is-disabled'));
-        profileLink.href = node.show_url || '#';
-        profileLink.append(icon('fa-id-card'), el('span', '', 'View Profile'));
+        const dirProfileUrl = node.org_show_url || node.show_url || '#';
+        const dirLink = el('a', 'orgd-action' + (dirProfileUrl !== '#' ? '' : ' is-disabled'));
+        dirLink.href = dirProfileUrl;
+        dirLink.append(icon('fa-id-card'), el('span', '', 'Directory Profile'));
+
+        const hrProfileLink = el('a', 'orgd-action' + (node.show_url ? '' : ' is-disabled'));
+        hrProfileLink.href = node.show_url || '#';
+        hrProfileLink.append(icon('fa-user-tie'), el('span', '', 'HR Profile'));
+
+        const emailLink = el('a', 'orgd-action' + (node.email ? '' : ' is-disabled'));
+        emailLink.href = node.email ? 'mailto:' + node.email : '#';
+        emailLink.append(icon('fa-envelope'), el('span', '', 'Email'));
 
         const filterDesigBtn = el('button', 'orgd-action');
         filterDesigBtn.type = 'button';
@@ -1811,7 +1218,7 @@
                 renderAll(true);
             }
         });
-        actions.append(profileLink, filterDesigBtn);
+        actions.append(dirLink, hrProfileLink, emailLink, filterDesigBtn);
         inspectorBody.appendChild(actions);
 
         const statsSec = el('div', 'orgd-section');
@@ -1825,10 +1232,33 @@
         statsSec.appendChild(statsGrid);
         inspectorBody.appendChild(statsSec);
 
+        const chain = reportingChain(node.id);
+        if (chain.length > 0) {
+            const chainSec = el('div', 'orgd-section');
+            chainSec.appendChild(el('h4', '', 'Reporting Flow'));
+            const chainWrap = el('div', 'orgd-chain');
+            chain.forEach(function (step, idx) {
+                const isSelf = step.id === node.id;
+                const stepEl = el(isSelf ? 'span' : 'button', 'orgd-chain-step' + (isSelf ? ' is-self' : ''), step.name);
+                if (!isSelf) {
+                    stepEl.type = 'button';
+                    stepEl.addEventListener('click', function () {
+                        selectNode(step.id, stepEl);
+                    });
+                }
+                chainWrap.appendChild(stepEl);
+                if (idx < chain.length - 1) {
+                    chainWrap.appendChild(icon('fa-chevron-right orgd-chain-sep'));
+                }
+            });
+            chainSec.appendChild(chainWrap);
+            inspectorBody.appendChild(chainSec);
+        }
+
         if (node.parent && state.nodes.has(node.parent)) {
             const parentNode = state.nodes.get(node.parent);
             const mgrSec = el('div', 'orgd-section');
-            mgrSec.appendChild(el('h4', '', 'Reports To'));
+            mgrSec.appendChild(el('h4', '', node.placement === 'level' ? 'Placed Under (Level Hierarchy)' : 'Reports To'));
             mgrSec.appendChild(makePersonButton(parentNode));
             inspectorBody.appendChild(mgrSec);
         }
@@ -1846,17 +1276,28 @@
         }
         inspectorBody.appendChild(dirSec);
 
+        const location = [node.address, node.country].filter(Boolean).join(', ');
         const factsSec = el('div', 'orgd-section');
-        factsSec.appendChild(el('h4', '', 'Employee Record Details'));
+        factsSec.appendChild(el('h4', '', 'Complete Employee Record'));
         const dl = el('dl', 'orgd-facts');
         [
-            ['Email', node.email, true],
-            ['Phone', node.mobile, false],
+            ['Employee ID', node.employee_code, false],
+            ['Designation', node.designation, false],
+            ['Level', levelBadge(node), false],
+            ['Role', node.role, false],
             ['Department', node.department, false],
             ['Parent Dept', node.parent_department, false],
+            ['Reporting Manager', node.reporting_to_name || 'Top level', false],
+            ['Hierarchy Link', node.placement === 'level' ? 'By designation level' : (node.placement === 'reporting' ? 'Direct reporting manager' : 'Root level'), false],
             ['Joining Date', node.joining_date, false],
             ['Tenure', node.tenure, false],
-            ['Employment', node.employment_type, false],
+            ['Employment Type', node.employment_type, false],
+            ['Status', node.status, false],
+            ['Gender', node.gender, false],
+            ['Phone', node.mobile, false],
+            ['Email', node.email, true],
+            ['Company', node.company, true],
+            ['Location', location, true],
             ['Skills', node.skills, true],
         ].forEach(function (row) {
             const item = el('div', row[2] ? 'is-wide' : '');
@@ -1866,9 +1307,15 @@
         factsSec.appendChild(dl);
         inspectorBody.appendChild(factsSec);
 
+        const extendedHost = el('div', 'orgd-extended-profile');
+        inspectorBody.appendChild(extendedHost);
+        loadProfileDetails(node, extendedHost);
+
         inspector.classList.add('is-open');
         inspector.setAttribute('aria-hidden', 'false');
-        closeInspectorBtn.focus();
+        if (focusClose !== false) {
+            closeInspectorBtn.focus();
+        }
     }
 
     function makePersonButton(person) {
@@ -2028,13 +1475,21 @@
         });
     }
 
-    designationChips.forEach(function (chip) {
-        chip.addEventListener('click', function () {
+    modeButtons.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            setMode(btn.getAttribute('data-org-mode'), true);
+        });
+    });
+
+    if (chipsRow) {
+        chipsRow.addEventListener('click', function (ev) {
+            const chip = ev.target.closest('[data-designation-chip]');
+            if (!chip) return;
             const val = chip.getAttribute('data-designation-chip') || '';
             if (designationSelect) designationSelect.value = val;
             renderAll(state.isolateBranch);
         });
-    });
+    }
 
     if (resetFiltersBtn) {
         resetFiltersBtn.addEventListener('click', function () {
@@ -2061,26 +1516,43 @@
         }
     });
 
-    if (refreshBtn) {
-        refreshBtn.addEventListener('click', async function () {
-            refreshBtn.disabled = true;
-            statusText.textContent = 'Refreshing employee hierarchy…';
-            try {
-                const resp = await fetch(root.dataset.endpoint, {
-                    headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-                    credentials: 'same-origin',
-                    cache: 'no-store',
-                });
-                if (!resp.ok) throw new Error('HTTP ' + resp.status);
-                const payload = await resp.json();
-                hydratePayload(payload, !state.userMoved);
-            } catch (err) {
+    async function refreshTreeData(manual) {
+        if (state.loading) return;
+        state.loading = true;
+        if (refreshBtn && manual) refreshBtn.disabled = true;
+        if (manual && statusText) statusText.textContent = 'Refreshing employee hierarchy…';
+        try {
+            const resp = await fetch(root.dataset.endpoint, {
+                headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                credentials: 'same-origin',
+                cache: 'no-store',
+            });
+            if (!resp.ok) throw new Error('HTTP ' + resp.status);
+            const payload = await resp.json();
+            hydratePayload(payload, !state.userMoved && state.mode === 'chart');
+        } catch (err) {
+            if (manual && statusText) {
                 statusText.textContent = 'Could not refresh organization tree. Please try again.';
-            } finally {
-                refreshBtn.disabled = false;
             }
+        } finally {
+            state.loading = false;
+            if (refreshBtn && manual) refreshBtn.disabled = false;
+        }
+    }
+
+    if (refreshBtn) {
+        refreshBtn.addEventListener('click', function () {
+            refreshTreeData(true);
         });
     }
+
+    // Keep Organization automatically synchronized when employees are added, updated, or deleted.
+    document.addEventListener('pms:records-updated', function () {
+        refreshTreeData(false);
+    });
+    document.addEventListener('visibilitychange', function () {
+        if (!document.hidden) refreshTreeData(false);
+    });
 
     if (exportCsvBtn) {
         exportCsvBtn.addEventListener('click', function () {
@@ -2140,7 +1612,23 @@
 
     try {
         const parsed = initialDataEl ? JSON.parse(initialDataEl.textContent || '{}') : {};
-        hydratePayload(parsed, true);
+        const requestedMode = new URLSearchParams(window.location.search).get('view');
+        const initialMode = (requestedMode === 'grid' || requestedMode === 'cards' || requestedMode === 'chart')
+            ? requestedMode
+            : (storage.get(MODE_KEY) || 'chart');
+        state.mode = (initialMode === 'grid' || initialMode === 'cards') ? initialMode : 'chart';
+        root.classList.toggle('is-chart-mode', state.mode === 'chart');
+        root.classList.toggle('is-grid-mode', state.mode === 'grid');
+        root.classList.toggle('is-cards-mode', state.mode === 'cards');
+        if (viewport) viewport.hidden = state.mode !== 'chart';
+        if (levelGrid) levelGrid.hidden = state.mode !== 'grid';
+        if (cardsGrid) cardsGrid.hidden = state.mode !== 'cards';
+        modeButtons.forEach(function (btn) {
+            const active = btn.getAttribute('data-org-mode') === state.mode;
+            btn.classList.toggle('is-on', active);
+            btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+        });
+        hydratePayload(parsed, state.mode === 'chart');
     } catch (e) {
         statusText.textContent = 'Unable to parse initial organization data.';
     }

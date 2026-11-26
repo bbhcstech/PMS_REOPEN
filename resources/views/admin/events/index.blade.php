@@ -310,26 +310,60 @@
         overflow: hidden;
     }
     #eventCalendar .event-calendar-banner-content {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
         width: 100%;
         min-width: 0;
-        padding: 3px;
+        padding: 5px;
+        box-sizing: border-box;
+    }
+    #eventCalendar .event-calendar-banner-frame {
+        width: 100%;
+        height: 60px;
+        border-radius: 7px;
+        overflow: hidden;
+        background: rgba(255, 255, 255, 0.94);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2px;
         box-sizing: border-box;
     }
     #eventCalendar .event-calendar-banner {
         display: block;
         width: 100%;
-        height: 56px;
+        height: 100%;
         object-fit: contain;
-        border-radius: 4px;
-        margin-bottom: 4px;
+        border-radius: 5px;
+        margin-bottom: 0;
     }
     #eventCalendar .event-calendar-banner-label {
-        display: block;
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+        padding: 1px 3px 2px;
         font-size: 0.75rem;
         line-height: 1.3;
-        font-weight: 600;
+        font-weight: 700;
         overflow-wrap: anywhere;
-        color: inherit;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+    #eventCalendar .event-calendar-banner-time {
+        font-size: 0.68rem;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        opacity: 0.88;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+    #eventCalendar .event-calendar-banner-title {
+        font-size: 0.76rem;
+        font-weight: 700;
+        line-height: 1.25;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
     }
 
     .event-description-panel, .event-memories-empty {
@@ -933,29 +967,255 @@
         color: #ffffff !important;
         -webkit-text-fill-color: #ffffff !important;
     }
+
+    /* Clean SaaS Workspace Redesign (Scoped to #pms-events-page) */
+    #pms-events-page.pms-events-page {
+        padding: 0 0 2rem !important;
+        margin: 0 !important;
+        background: transparent !important;
+        font-family: 'Inter', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif !important;
+    }
+
+    #pms-events-page .pms-events-topbar {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 16px !important;
+        margin-bottom: 18px !important;
+    }
+
+    #pms-events-page .pms-events-title-wrap {
+        display: flex !important;
+        align-items: center !important;
+        gap: 14px !important;
+    }
+
+    #pms-events-page .pms-events-title-icon {
+        width: 44px !important;
+        height: 44px !important;
+        border-radius: 12px !important;
+        background: #eff6ff !important;
+        border: 1px solid #dbeafe !important;
+        color: #2563eb !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 1.3rem !important;
+        flex-shrink: 0 !important;
+    }
+
+    #pms-events-page .pms-events-title {
+        margin: 0 !important;
+        font-size: 1.35rem !important;
+        font-weight: 700 !important;
+        color: #0f172a !important;
+        letter-spacing: -0.02em !important;
+        line-height: 1.25 !important;
+    }
+
+    #pms-events-page .pms-events-sub {
+        margin: 2px 0 0 !important;
+        font-size: 0.84rem !important;
+        color: #64748b !important;
+    }
+
+    #pms-events-page .pms-events-btn-primary,
+    .events-section .pms-events-btn-primary {
+        background: #2563eb !important;
+        border: 1px solid #2563eb !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        border-radius: 10px !important;
+        height: 38px !important;
+        padding: 0 18px !important;
+        font-size: 0.84rem !important;
+        font-weight: 600 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 7px !important;
+        box-shadow: 0 6px 14px rgba(37, 99, 235, 0.22) !important;
+    }
+
+    #pms-events-page .pms-events-btn-primary:hover {
+        background: #1d4ed8 !important;
+        border-color: #1d4ed8 !important;
+    }
+
+    #pms-events-page .pms-events-btn-primary i {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
+    #pms-events-page .kpi-card {
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 14px !important;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04) !important;
+    }
+
+    #pms-events-page .pms-kpi-label {
+        font-size: 0.68rem !important;
+        font-weight: 700 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.05em !important;
+        color: #64748b !important;
+    }
+
+    #pms-events-page .kpi-card h3 {
+        font-size: 1.55rem !important;
+        font-weight: 800 !important;
+        color: #0f172a !important;
+    }
+
+    #pms-events-page .kpi-icon-box {
+        width: 44px !important;
+        height: 44px !important;
+        border-radius: 12px !important;
+        font-size: 1.25rem !important;
+    }
+
+    #pms-events-page .events-filter-card {
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 14px !important;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04) !important;
+    }
+
+    #pms-events-page .events-filter-card .input-group-text {
+        background: #ffffff !important;
+        border-color: #e2e8f0 !important;
+        color: #64748b !important;
+        border-top-left-radius: 10px !important;
+        border-bottom-left-radius: 10px !important;
+    }
+
+    #pms-events-page .events-filter-card .form-control,
+    #pms-events-page .events-filter-card .form-select {
+        height: 40px !important;
+        border-color: #e2e8f0 !important;
+        background-color: #ffffff !important;
+        font-size: 0.84rem !important;
+        box-shadow: none !important;
+    }
+
+    #pms-events-page .events-filter-card .form-control {
+        border-top-right-radius: 10px !important;
+        border-bottom-right-radius: 10px !important;
+    }
+
+    #pms-events-page .events-filter-card .form-select {
+        border-radius: 10px !important;
+    }
+
+    #pms-events-page .events-filter-card .form-control:focus,
+    #pms-events-page .events-filter-card .form-select:focus {
+        border-color: #2563eb !important;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12) !important;
+    }
+
+    #pms-events-page .pms-events-btn-reset {
+        height: 38px !important;
+        border-radius: 10px !important;
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        color: #0f172a !important;
+        padding: 0 14px !important;
+        font-size: 0.84rem !important;
+        font-weight: 600 !important;
+    }
+
+    #pms-events-page .pms-events-switcher {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 4px !important;
+        padding: 4px !important;
+        background: #f1f5f9 !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 12px !important;
+    }
+
+    #pms-events-page .pms-events-switcher .btn {
+        height: 32px !important;
+        padding: 0 12px !important;
+        border-radius: 8px !important;
+        border: none !important;
+        background: transparent !important;
+        color: #475569 !important;
+        font-size: 0.8rem !important;
+        font-weight: 600 !important;
+        box-shadow: none !important;
+    }
+
+    #pms-events-page .pms-events-switcher .btn.active {
+        background: #2563eb !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25) !important;
+    }
+
+    #pms-events-page .pms-events-switcher .btn.active i {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
+    #pms-events-page .event-card,
+    #pms-events-page .gallery-card,
+    #pms-events-page #eventCalendar,
+    #pms-events-page .pms-events-empty-card {
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 16px !important;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04) !important;
+    }
+
+    #pms-events-page .pms-events-empty-card {
+        background: #ffffff !important;
+        padding: 52px 24px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        text-align: center !important;
+    }
+
+    .events-section .form-section-title {
+        color: #2563eb !important;
+        background: #eff6ff !important;
+        border-left-color: #2563eb !important;
+    }
+
+    .events-section .premium-input,
+    .events-section .premium-select {
+        border-radius: 10px !important;
+        border: 1px solid #e2e8f0 !important;
+    }
 </style>
 @include('admin.events.dark-theme')
 @include('admin.events.presentation')
+@include('admin.events.partials.catalog-style')
 @endpush
 
 @section('content')
-<div id="events-page" class="container-xxl flex-grow-1 container-p-y events-section">
+<div id="pms-events-page" class="events-section pms-events-page">
 
     {{-- HEADER BLOCK --}}
-    <header class="events-hero">
-        <div class="events-heading">
-            <span class="events-heading-icon" aria-hidden="true"><i class="bx bx-calendar-event"></i></span>
+    <div class="pms-events-topbar">
+        <div class="pms-events-title-wrap">
+            <div class="pms-events-title-icon" aria-hidden="true">
+                <i class="bx bx-calendar-event"></i>
+            </div>
             <div>
-                <h1>Events &amp; Memories</h1>
-                <p>Company activities, schedules, and photo memories.</p>
+                <h4 class="pms-events-title">Events &amp; Memories</h4>
+                <p class="pms-events-sub">Company events, activities, and photo archive</p>
             </div>
         </div>
         @if($canManage)
-            <button type="button" class="btn btn-primary events-create-button" onclick="openCreateModal()">
-                <i class="bx bx-plus" aria-hidden="true"></i> Create Event
+            <button type="button" class="btn pms-events-btn-primary" onclick="openCreateModal()">
+                <i class="bx bx-plus"></i> Create Event
             </button>
         @endif
-    </header>
+    </div>
 
     {{-- FLASH MESSAGES --}}
     @if($errors->any())
@@ -981,24 +1241,63 @@
     @endif
 
     {{-- KPI SUMMARY CARDS --}}
-    <dl class="events-kpis" aria-label="Event totals">
-        <div class="kpi-card">
-            <dt>Total Events</dt>
-            <dd>{{ number_format($totalEvents) }} <span class="kpi-icon-box" aria-hidden="true"><i class="bx bx-calendar-event"></i></span></dd>
+    <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-lg-3">
+            <div class="card kpi-card p-3">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="pms-kpi-label d-block">Total Events</span>
+                        <h3 class="fw-bold mb-0 mt-1">{{ number_format($totalEvents) }}</h3>
+                    </div>
+                    <div class="kpi-icon-box bg-label-primary text-primary">
+                        <i class="bx bx-calendar-event"></i>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="kpi-card event-kpi-upcoming">
-            <dt>Upcoming Events</dt>
-            <dd>{{ number_format($upcomingEvents) }} <span class="kpi-icon-box" aria-hidden="true"><i class="bx bx-time-five"></i></span></dd>
+
+        <div class="col-sm-6 col-lg-3">
+            <div class="card kpi-card p-3">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="pms-kpi-label d-block">Upcoming Events</span>
+                        <h3 class="fw-bold mb-0 mt-1">{{ number_format($upcomingEvents) }}</h3>
+                    </div>
+                    <div class="kpi-icon-box bg-label-success text-success">
+                        <i class="bx bx-time-five"></i>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="kpi-card event-kpi-today">
-            <dt>Today's Events</dt>
-            <dd>{{ number_format($todayEvents) }} <span class="kpi-icon-box" aria-hidden="true"><i class="bx bx-calendar-check"></i></span></dd>
+
+        <div class="col-sm-6 col-lg-3">
+            <div class="card kpi-card p-3">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="pms-kpi-label d-block">Today's Events</span>
+                        <h3 class="fw-bold mb-0 mt-1">{{ number_format($todayEvents) }}</h3>
+                    </div>
+                    <div class="kpi-icon-box bg-label-warning text-warning">
+                        <i class="bx bx-calendar-check"></i>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="kpi-card event-kpi-past">
-            <dt>Past Events</dt>
-            <dd>{{ number_format($pastEvents) }} <span class="kpi-icon-box" aria-hidden="true"><i class="bx bx-history"></i></span></dd>
+
+        <div class="col-sm-6 col-lg-3">
+            <div class="card kpi-card p-3">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="pms-kpi-label d-block">Past Events</span>
+                        <h3 class="fw-bold mb-0 mt-1">{{ number_format($pastEvents) }}</h3>
+                    </div>
+                    <div class="kpi-icon-box bg-label-secondary text-secondary">
+                        <i class="bx bx-history"></i>
+                    </div>
+                </div>
+            </div>
         </div>
-    </dl>
+    </div>
 
     {{-- FILTER BAR & VIEW TOGGLE --}}
     <div class="card events-filter-card border-0 mb-4">
@@ -1008,14 +1307,14 @@
                     {{-- Search Input --}}
                     <div class="filter-search-box">
                         <div class="input-group">
-                            <span class="input-group-text bg-light border-end-0" aria-hidden="true"><i class="bx bx-search"></i></span>
-                            <input type="text" name="search" class="form-control border-start-0 bg-light" aria-label="Search events" placeholder="Search events" value="{{ request('search') }}">
+                            <span class="input-group-text border-end-0"><i class="bx bx-search"></i></span>
+                            <input type="text" name="search" class="form-control border-start-0" placeholder="Search title, desc, location..." value="{{ request('search') }}">
                         </div>
                     </div>
 
                     {{-- Event Type Filter --}}
                     <div class="filter-select-box">
-                        <select name="event_type" class="form-select bg-light" aria-label="Event type">
+                        <select name="event_type" class="form-select">
                             <option value="all">All Types</option>
                             @foreach($eventTypes as $type)
                                 <option value="{{ $type }}" {{ request('event_type') == $type ? 'selected' : '' }}>{{ $type }}</option>
@@ -1025,7 +1324,7 @@
 
                     {{-- Status Filter --}}
                     <div class="filter-select-box">
-                        <select name="status" class="form-select bg-light" aria-label="Event status">
+                        <select name="status" class="form-select">
                             <option value="all">All Statuses</option>
                             <option value="published" {{ request('status') == 'published' ? 'selected' : '' }}>Published</option>
                             @if($canManage)
@@ -1038,7 +1337,7 @@
 
                     {{-- Time Filter --}}
                     <div class="filter-select-box">
-                        <select name="time_filter" class="form-select bg-light" aria-label="Event date range">
+                        <select name="time_filter" class="form-select">
                             <option value="">All Time</option>
                             <option value="upcoming" {{ request('time_filter') == 'upcoming' ? 'selected' : '' }}>Upcoming</option>
                             <option value="today" {{ request('time_filter') == 'today' ? 'selected' : '' }}>Today</option>
@@ -1047,24 +1346,24 @@
                     </div>
 
                     {{-- Filter Action Buttons --}}
-                    <div class="events-filter-actions">
-                        <button type="submit" class="btn btn-primary filter-btn-nowrap">
+                    <div class="d-flex align-items-center gap-2 flex-wrap ms-auto">
+                        <button type="submit" class="btn pms-events-btn-primary filter-btn-nowrap">
                             <i class="bx bx-filter-alt"></i> Apply
                         </button>
-                        <a href="{{ route('events.index') }}" class="btn btn-outline-secondary filter-btn-nowrap">
+                        <a href="{{ route('events.index') }}" class="btn pms-events-btn-reset filter-btn-nowrap">
                             <i class="bx bx-reset"></i> Reset
                         </a>
 
                     </div>
                 </div>
-                <div class="btn-group filter-btn-group" role="group" aria-label="Event view">
-                    <button type="button" class="btn btn-outline-primary active" id="btnListView" aria-controls="eventsListView" onclick="switchView('list')">
+                <div class="pms-events-switcher filter-btn-group events-view-switcher" role="group" aria-label="Event view">
+                    <button type="button" class="btn active" id="btnListView" aria-controls="eventsListView" onclick="switchView('list')">
                         <i class="bx bx-list-ul" aria-hidden="true"></i> List
                     </button>
-                    <button type="button" class="btn btn-outline-primary" id="btnCalendarView" aria-controls="eventsCalendarView" onclick="switchView('calendar')">
+                    <button type="button" class="btn" id="btnCalendarView" aria-controls="eventsCalendarView" onclick="switchView('calendar')">
                         <i class="bx bx-calendar" aria-hidden="true"></i> Calendar
                     </button>
-                    <button type="button" class="btn btn-outline-primary" id="btnGalleryView" aria-controls="eventsGalleryView" onclick="switchView('gallery')">
+                    <button type="button" class="btn" id="btnGalleryView" aria-controls="eventsGalleryView" onclick="switchView('gallery')">
                         <i class="bx bx-images" aria-hidden="true"></i> Gallery
                     </button>
                 </div>
@@ -1073,20 +1372,22 @@
     </div>
 
     {{-- LIST VIEW SECTION --}}
-    <div id="eventsListView">
+    <div id="eventsListView" class="events-catalog-pane">
         @if($events->count() > 0)
-            <div class="events-card-grid">
+            <div class="events-card-grid events-list-grid">
                 @foreach($events as $event)
                 <div class="events-card-item">
                     <div class="card event-card h-100 d-flex flex-column">
                         {{-- Banner / Header Image --}}
-                        @if($event->banner_url)
-                            <img src="{{ $event->banner_url }}" alt="{{ $event->title }}" class="event-banner-img">
-                        @else
-                            <div class="event-banner-placeholder" aria-hidden="true">
-                                <span class="events-cover-icon"><i class="bx bx-calendar-event"></i></span>
-                            </div>
-                        @endif
+                        <div class="events-list-cover">
+                            @if($event->banner_url)
+                                <img src="{{ $event->banner_url }}" alt="{{ $event->title }}" class="event-banner-img">
+                            @else
+                                <div class="event-banner-placeholder" aria-hidden="true">
+                                    <span class="events-cover-icon"><i class="bx bx-calendar-event"></i></span>
+                                </div>
+                            @endif
+                        </div>
 
                         <div class="card-body event-card-content d-flex flex-column flex-grow-1">
                             {{-- Badges Row --}}
@@ -1113,27 +1414,26 @@
                                 {{ $event->title }}
                             </h2>
 
-                            {{-- Date & Time --}}
-                            <div class="events-card-meta">
-                                <span class="events-meta-icon" aria-hidden="true"><i class="bx bx-calendar"></i></span>
-                                <span>{{ $event->start_date->format('d M Y') }}
-                                    @if($event->start_time)
-                                        <span class="events-card-time">{{ date('h:i A', strtotime($event->start_time)) }}</span>
+                            <div class="events-card-facts">
+                                <div class="events-card-meta">
+                                    <span class="events-meta-icon" aria-hidden="true"><i class="bx bx-calendar"></i></span>
+                                    <span>{{ $event->start_date->format('d M Y') }}
+                                        @if($event->start_time)
+                                            <span class="events-card-time">{{ date('h:i A', strtotime($event->start_time)) }}</span>
+                                        @endif
+                                    </span>
+                                </div>
+                                <div class="events-card-meta events-card-location">
+                                    @if($event->location_type === 'online')
+                                        <span class="events-meta-icon" aria-hidden="true"><i class="bx bx-video"></i></span>
+                                        <a href="{{ $event->meeting_url }}" target="_blank" class="text-decoration-none text-truncate">
+                                            Online Meeting
+                                        </a>
+                                    @else
+                                        <span class="events-meta-icon" aria-hidden="true"><i class="bx bx-map-pin"></i></span>
+                                        <span class="text-truncate" title="{{ $event->location }}">{{ $event->location ?: 'Physical Venue' }}</span>
                                     @endif
-                                </span>
-                            </div>
-
-                            {{-- Location --}}
-                            <div class="events-card-meta events-card-location">
-                                @if($event->location_type === 'online')
-                                    <span class="events-meta-icon" aria-hidden="true"><i class="bx bx-video"></i></span>
-                                    <a href="{{ $event->meeting_url }}" target="_blank" class="text-decoration-none text-truncate">
-                                        Online Meeting
-                                    </a>
-                                @else
-                                    <span class="events-meta-icon" aria-hidden="true"><i class="bx bx-map-pin"></i></span>
-                                    <span class="text-truncate" title="{{ $event->location }}">{{ $event->location ?: 'Physical Venue' }}</span>
-                                @endif
+                                </div>
                             </div>
 
                             {{-- Description snippet --}}
@@ -1219,14 +1519,16 @@
             </div>
         @else
             {{-- EMPTY STATE --}}
-            <div class="events-empty">
-                <span class="events-empty-icon" aria-hidden="true"><i class="bx bx-calendar-event"></i></span>
-                <h2>No events found</h2>
-                <p>Try a different filter to see more events.</p>
+            <div class="card pms-events-empty-card events-empty">
+                <div class="events-empty-icon" aria-hidden="true">
+                    <i class="bx bx-calendar-event"></i>
+                </div>
+                <h2>No upcoming events</h2>
+                <p>Company events and activities will appear here.</p>
                 @if($canManage)
                     <div>
-                        <button type="button" class="btn btn-primary events-primary-button" onclick="openCreateModal()">
-                            <i class="bx bx-plus" aria-hidden="true"></i> Create Event
+                        <button type="button" class="btn pms-events-btn-primary" onclick="openCreateModal()">
+                            <i class="bx bx-plus"></i> Create Event
                         </button>
                     </div>
                 @endif
@@ -1240,7 +1542,7 @@
     </div>
 
     {{-- GALLERY VIEW SECTION (NEW) --}}
-    <div id="eventsGalleryView" class="d-none">
+    <div id="eventsGalleryView" class="events-catalog-pane d-none">
         <div class="events-gallery-heading">
             <span class="events-empty-icon" aria-hidden="true"><i class="bx bx-images"></i></span>
             <div>
@@ -1274,7 +1576,7 @@
 
                             @if($event->photos_count > 0)
                                 <span class="gallery-overlay-count">
-                                    <i class="bx bx-camera me-1"></i> {{ $event->photos_count }} {{ Str::plural('Photo', $event->photos_count) }}
+                                    <i class="bx bx-camera" aria-hidden="true"></i> {{ $event->photos_count }} {{ Str::plural('Photo', $event->photos_count) }}
                                 </span>
                             @else
                                 <span class="gallery-overlay-count bg-dark">
@@ -1313,10 +1615,19 @@
                 @endforeach
             </div>
         @else
-            <div class="events-empty">
-                <span class="events-empty-icon" aria-hidden="true"><i class="bx bx-images"></i></span>
-                <h3>No event memories</h3>
-                <p>Event photos will appear here when they’re available.</p>
+            <div class="card pms-events-empty-card events-empty">
+                <div class="events-empty-icon" aria-hidden="true">
+                    <i class="bx bx-images"></i>
+                </div>
+                <h3>No Event Memories</h3>
+                <p>No event photo memories have been created yet.</p>
+                @if($canManage)
+                    <div>
+                        <button type="button" class="btn pms-events-btn-primary" onclick="openCreateModal()">
+                            <i class="bx bx-plus"></i> Create Event
+                        </button>
+                    </div>
+                @endif
             </div>
         @endif
     </div>
@@ -1730,18 +2041,34 @@
         const content = document.createElement('div');
         content.className = 'event-calendar-banner-content';
 
+        const frame = document.createElement('div');
+        frame.className = 'event-calendar-banner-frame';
+
         const banner = document.createElement('img');
         banner.className = 'event-calendar-banner';
         banner.src = bannerUrl;
         banner.alt = info.event.title;
         banner.loading = 'lazy';
-        banner.addEventListener('error', function() { banner.remove(); }, { once: true });
-        content.appendChild(banner);
+        banner.addEventListener('error', function() { frame.remove(); }, { once: true });
+        frame.appendChild(banner);
+        content.appendChild(frame);
 
         const label = document.createElement('span');
         label.className = 'event-calendar-banner-label';
+
         const timeText = info.timeText || info.event.extendedProps.display_time || '';
-        label.textContent = (timeText ? timeText + ' ' : '') + info.event.title;
+        if (timeText) {
+            const timeEl = document.createElement('span');
+            timeEl.className = 'event-calendar-banner-time';
+            timeEl.textContent = timeText;
+            label.appendChild(timeEl);
+        }
+
+        const titleEl = document.createElement('span');
+        titleEl.className = 'event-calendar-banner-title';
+        titleEl.textContent = info.event.title;
+        label.appendChild(titleEl);
+
         content.appendChild(label);
 
         return { domNodes: [content] };

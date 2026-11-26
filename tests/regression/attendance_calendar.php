@@ -165,11 +165,8 @@ try {
     checkCalendar($e->getStatusCode() === 403, 'Unexpected HR denial status.');
 }
 \Illuminate\Support\Facades\Auth::guard('web')->setUser(\App\Models\User::findOrFail(33));
-$hrList = $controller->index($teamRequest(['search' => '']))->getData();
-$hrTeamIds = $controller->index(\Illuminate\Http\Request::create('/attendance', 'GET', ['month' => 10, 'year' => 2026]))->getData()['employees']->pluck('id')->all();
-checkCalendar(in_array(30, $hrTeamIds, true) && ! in_array(33, $hrTeamIds, true), 'HR attendance section should fetch all employees except HR.');
-$hrPersonal = $controller->index(\Illuminate\Http\Request::create('/attendance', 'GET', ['view' => 'personal', 'month' => 10, 'year' => 2026]))->getData();
-checkCalendar($hrPersonal['employees']->pluck('id')->all() === [33] && $hrPersonal['calendar']['totals']['seconds'] === 28800, 'HR personal attendance view broke.');
+$hrView = $controller->index(\Illuminate\Http\Request::create('/attendance', 'GET', ['month' => 10, 'year' => 2026]));
+checkCalendar($hrView->name() === 'admin.attendance.personal' && $hrView->getData()['employee']->id === 33, 'HR attendance entry point must remain HR personal attendance.');
 \Illuminate\Support\Facades\Auth::guard('web')->setUser(\App\Models\User::findOrFail(1));
 Carbon::setTestNow(Carbon::parse('2026-10-01 15:00:00'));
 $todayCsvResponse = $controller->index($teamRequest(['format' => 'csv', 'export_scope' => 'today']));

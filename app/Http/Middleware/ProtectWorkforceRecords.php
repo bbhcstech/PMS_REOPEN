@@ -28,35 +28,33 @@ class ProtectWorkforceRecords
                     abort_unless(in_array($action, $allowed, true), 403, 'Your leave and attendance records are managed only by the company admin.');
                 }
                 if ($leave && $isHr) {
-                    abort_if(in_array($action, ['updatePolicy', 'storeLeaveType', 'resetEmployeeLeaves'], true), 403, 'Only the company admin may change leave policy or balances.');
-                    $ids = [];
-                    foreach (['leave', 'id'] as $parameter) {
-                        $value = $route->parameter($parameter);
-                        if ($value instanceof \App\Models\Leave) $ids[] = $value->id;
-                        elseif (is_numeric($value)) $ids[] = (int) $value;
-                    }
-                    if ($action === 'updatePaidStatus') $ids[] = $request->integer('leave_id');
-                    if (in_array($action, ['bulkArchive', 'bulkAction', 'bulkDelete'], true)) {
-                        $ids = array_merge($ids, (array) $request->input('ids', []));
-                    }
-                    if (! str_contains(strtolower($action), 'apology')) {
-                        foreach (\App\Models\Leave::with('user')->whereIn('id', $ids)->get() as $record) {
-                            // HR may open (read only) the leave they requested themselves; the admin reviews it.
-                            $ownRequestView = $action === 'show' && (int) $record->user_id === (int) $actor->id;
-                            abort_unless($record->user && ($ownRequestView || WorkforceAccess::canAccessRecord($actor, $record->user, $record->staff_category)), 403, 'Only the company admin may access higher-level staff leave.');
-                        }
+                    abort_unless(in_array($action, [
+                        'index', 'myLeaves', 'leaveReport', 'export', 'calendar', 'calendarData',
+                        'create', 'store', 'show', 'apologyLetters', 'showApologyLetter',
+                        'createApologyLetter', 'storeApologyLetter', 'downloadApologySample',
+                    ], true), 403, 'Only the company admin may manage leave records.');
+                    if ($action === 'show') {
+                        $record = $route->parameter('leave');
+                        $owner = $record instanceof \App\Models\Leave ? $record->user_id : \App\Models\Leave::findOrFail($record)->user_id;
+                        abort_unless((int) $owner === (int) $actor->id, 403);
                     }
                 }
             }
             if ($request->routeIs('admin.authority-attendance', 'admin.authority-leaves')) {
                 abort_unless(WorkforceAccess::isAdmin($actor), 403);
             }
-            if ($attendance && ! WorkforceAccess::isAdmin($actor)) {
-                $action = $route->getActionMethod();
-                abort_unless(in_array($action, ['index', 'employeeIndex', 'clockIn', 'showAttendanceDetails', 'photo'], true), 403, 'Only your company admin may manage attendance.');
+            if ($attendance && ! $isAdmin) {
+                $allowed = ['index', 'employeeIndex', 'clockIn', 'showAttendanceDetails', 'photo'];
+                if ($isHr) $allowed[] = 'attendanceReport';
+                abort_unless(in_array($action, $allowed, true), 403, 'Only your company admin may manage attendance.');
                 if ($action === 'showAttendanceDetails') {
-                    $owner = \App\Models\User::findOrFail($request->integer('user_id'));
-                    abort_unless((int) $owner->id === (int) $actor->id || WorkforceAccess::canAccessRecord($actor, $owner), 403);
+                    $ownerId = $request->integer('user_id');
+                    if ($isHr) {
+                        abort_unless($ownerId === (int) $actor->id, 403);
+                    } else {
+                        $owner = \App\Models\User::findOrFail($ownerId);
+                        abort_unless((int) $owner->id === (int) $actor->id || WorkforceAccess::canAccessRecord($actor, $owner), 403);
+                    }
                 }
             }
             if ($clock || ($attendance && $route->getActionMethod() === 'clockIn')) {

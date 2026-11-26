@@ -5,6 +5,10 @@
 @endsection
 
 @section('content')
+@php
+    $profileEditor = auth()->user();
+    $canShowProfileEditLinks = \App\Support\EmployeeProfileAccess::canShowEditLinks($profileEditor);
+@endphp
 <div id="archivedEmployeesPage" class="employee-dashboard archived-employee-page !min-h-screen !overflow-x-hidden !px-3 !py-4 sm:!px-5 sm:!py-5 lg:!px-8 lg:!py-7">
 
     {{-- Ambient Animated Background --}}
@@ -204,9 +208,11 @@
                                     <a href="{{ route('employees.show', $employee->id) }}" class="archive-icon-btn" title="View Details">
                                         <i class="fas fa-eye"></i>
                                     </a>
-                                    <a href="{{ route('employees.edit', $employee->id) }}" class="archive-icon-btn" title="Edit Profile">
-                                        <i class="fas fa-pen"></i>
-                                    </a>
+                                    @if($canShowProfileEditLinks && \App\Support\EmployeeProfileAccess::canEditTarget($profileEditor, $employee))
+                                        <a href="{{ route('employees.edit', $employee->id) }}" class="archive-icon-btn" title="Edit Profile">
+                                            <i class="fas fa-pen"></i>
+                                        </a>
+                                    @endif
                                     <form action="{{ route('employees.restore', $employee->id) }}" method="POST" onsubmit="return confirm('Restore this employee to the active employee list?');">
                                         @csrf
                                         <button type="submit" class="archive-icon-btn archive-icon-primary" title="Restore">
@@ -1057,6 +1063,7 @@
     :is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) #archivedEmployeesPage .archive-icon-danger { background: rgba(239, 68, 68, 0.18) !important; border-color: rgba(248, 113, 113, 0.45) !important; color: #FECACA !important; -webkit-text-fill-color: #FECACA !important; }
     :is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) #archivedEmployeesPage .archive-icon-danger:hover { background: #dc2626 !important; border-color: #ef4444 !important; color: #FFFFFF !important; -webkit-text-fill-color: #FFFFFF !important; }
 </style>
+@include('admin.employees.partials.workspace-overrides')
 
 @push('js')
 <script>

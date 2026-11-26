@@ -71,7 +71,8 @@ class OrganizationDirectoryController extends Controller
 
         $companies = \App\Services\TenantScope::visibleCompanies();
         $designationColumns = array_flip(Schema::connection($tenantConnection)->getColumnListing('designations'));
-        $designations = Designation::whereNull('archived_at')
+        $designations = Designation::query()
+            ->when(isset($designationColumns['archived_at']), fn ($q) => $q->whereNull('archived_at'))
             ->when(isset($designationColumns['level']), fn ($q) => $q->orderByDesc('level'))
             ->orderBy('name')
             ->get();
@@ -139,7 +140,8 @@ class OrganizationDirectoryController extends Controller
                 ->paginate((int) $request->input('per_page', 15))
                 ->withQueryString();
 
-            $departments = Department::whereNull('archived_at')
+            $departments = Department::query()
+                ->when(isset($departmentColumns['archived_at']), fn ($q) => $q->whereNull('archived_at'))
                 ->when(isset($departmentColumns['dpt_name']), fn ($q) => $q->orderBy('dpt_name'), fn ($q) => $q->orderBy('id'))
                 ->get();
 
@@ -181,7 +183,7 @@ class OrganizationDirectoryController extends Controller
             };
 
             $departmentGroups = Department::query()
-                ->whereNull('archived_at')
+                ->when(isset($departmentColumns['archived_at']), fn ($q) => $q->whereNull('archived_at'))
                 ->when($request->filled('department_id'), fn ($q) => $q->where('id', $request->department_id))
                 ->whereHas('employeeDetails', $employeeDetailFilter)
                 ->with([
@@ -197,7 +199,9 @@ class OrganizationDirectoryController extends Controller
         $treePayload = ['company' => ['name' => 'Organization', 'logo' => null], 'nodes' => [], 'generated_at' => now()->toIso8601String()];
         if (Schema::connection($tenantConnection)->hasColumn('users', 'company_id')) {
             try {
-                $treePayload = app(\App\Services\OrganizationTreeService::class)->buildPayload($request->user(), $scopeCompanyId);
+                $treePayload = $this->decorateTreePayload(
+                    app(\App\Services\OrganizationTreeService::class)->buildPayload($request->user(), $scopeCompanyId)
+                );
             } catch (\Throwable $e) {
                 Log::warning('Organization tree payload generation skipped fallback', ['error' => $e->getMessage()]);
             }
@@ -223,8 +227,32 @@ class OrganizationDirectoryController extends Controller
         $scopeCompanyId = \App\Services\TenantScope::companyFilter($request->integer('company_id') ?: null);
 
         return response()->json(
-            app(\App\Services\OrganizationTreeService::class)->buildPayload($request->user(), $scopeCompanyId)
-        );
+            $this->decorateTreePayload(
+                app(\App\Services\OrganizationTreeService::class)->buildPayload($request->user(), $scopeCompanyId)
+            )
+        )->header('Cache-Control', 'private, no-store');
+    }
+
+    /**
+     * JSON endpoint returning extended employee profile details for the Organization inspector.
+     */
+    public function profile(Request $request, int $employee): \Illuminate\Http\JsonResponse
+    {
+        $scopeCompanyId = \App\Services\TenantScope::companyFilter($request->integer('company_id') ?: null);
+
+        return response()->json(
+            app(\App\Services\OrganizationTreeService::class)->buildProfile($request->user(), $scopeCompanyId, $employee)
+        )->header('Cache-Control', 'private, no-store');
+    }
+
+    private function decorateTreePayload(array $payload): array
+    {
+        $payload['nodes'] = array_map(static fn (array $node) => $node + [
+            'profile_url' => route('organization.profile', ['employee' => $node['id']]),
+            'org_show_url' => route('organization.show', ['employee' => $node['id']]),
+        ], $payload['nodes'] ?? []);
+
+        return $payload;
     }
 
     private function applyDirectorySearch(\Illuminate\Database\Eloquent\Builder $query, string $search): void
@@ -253,9 +281,7 @@ class OrganizationDirectoryController extends Controller
             'employeeDetail.reportingTo.employeeDetail.designation',
         ]);
 
-        abort_unless($employee->role === 'employee' && is_null($employee->archived_at), 404);
-        abort_if(optional($employee->employeeDetail)->status === 'Inactive', 404);
-        \App\Services\TenantScope::authorizeCompany($employee->company_id);
+        $this->authorizeVisibleOrganizationMember($employee);
 
         return view('admin.organization-directory.show', compact('employee'));
     }
@@ -266,9 +292,7 @@ class OrganizationDirectoryController extends Controller
 
         $employee->load('employeeDetail');
 
-        abort_unless($employee->role === 'employee' && is_null($employee->archived_at), 404);
-        abort_if(optional($employee->employeeDetail)->status === 'Inactive', 404);
-        \App\Services\TenantScope::authorizeCompany($employee->company_id);
+        $this->authorizeVisibleOrganizationMember($employee);
         abort_unless($employee->employeeDetail, 404);
 
         $data = $request->validate([
@@ -329,6 +353,25 @@ class OrganizationDirectoryController extends Controller
             ->where('role', 'employee')
             ->whereNull('archived_at')
             ->whereHas('employeeDetail', fn ($query) => $query->where('status', 'Active'));
+    }
+
+    private function authorizeVisibleOrganizationMember(User $employee): void
+    {
+        $role = $employee->normalizedRole();
+        $allowedMember = in_array($role, ['employee', 'hr', 'manager'], true)
+            || ($role === 'admin' && $employee->employeeDetail !== null);
+
+        abort_unless($allowedMember && is_null($employee->archived_at), 404);
+        abort_if(in_array(strtolower((string) optional($employee->employeeDetail)->status), ['inactive', 'notice', 'probation'], true), 404);
+        \App\Services\TenantScope::authorizeCompany($employee->company_id);
+
+        $viewer = auth()->user();
+        $isAdminOrHr = \App\Services\TenantScope::isPlatformAdmin()
+            || in_array($viewer?->normalizedRole(), ['admin', 'superadmin', 'hr'], true);
+
+        if ($viewer && ! $isAdminOrHr) {
+            abort_unless($viewer->visibleEmployeeIds()->contains((int) $employee->id), 404);
+        }
     }
 
     private function ensureDirectoryManager(): void

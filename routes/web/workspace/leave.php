@@ -20,7 +20,6 @@ Route::get('/leaves/archive/list', [LeaveController::class, 'archive'])->name('l
 Route::post('/leaves/archive/{id}/restore', [LeaveController::class, 'restore'])->name('leaves.restore');
 
 Route::get('/leaves', [LeaveController::class, 'index'])->name('leaves.index');
-// The signed-in user's own leave requests (HR's requests to the admin; "My Leaves" is HR's employee queue).
 Route::get('/leaves/my-requests', [LeaveController::class, 'myLeaves'])->name('leaves.mine');
 Route::get('/leaves/apology-letters', [LeaveController::class, 'apologyLetters'])->name('leaves.apology-letters.index');
 Route::get('/leaves/apology-letters/create', [LeaveController::class, 'createApologyLetter'])->name('leaves.apology-letters.create');
@@ -41,6 +40,7 @@ Route::get('leaves/{leave}/edit', [LeaveController::class, 'edit'])->name('leave
 Route::put('leaves/{leave}', [LeaveController::class, 'update'])->name('leaves.update');
 Route::get('/leaves/report', [LeaveController::class, 'leaveReport'])->name('leaves.report');
 Route::get('/admin/leaves/report', [LeaveController::class, 'leaveReport'])->name('admin.leave.report');
+Route::get('/leaves/export', [LeaveController::class, 'export'])->name('leaves.export');
 Route::get('/leaves/{leave}', [LeaveController::class, 'show'])->name('leaves.show');
 Route::get('/leaves/{leave}/status', fn (\App\Models\Leave $leave) => redirect()->route('leaves.show', $leave->id));
 Route::match(['patch', 'post'], '/leaves/{leave}/status', [LeaveController::class, 'updateStatus'])->name('leaves.updateStatus');
@@ -50,4 +50,3 @@ Route::match(['patch', 'post'], '/leaves/{leave}/status', [LeaveController::clas
 Route::post('/leaves/policy', [LeaveController::class, 'updatePolicy'])->name('leaves.update-policy');
 Route::post('/leaves/types', [LeaveController::class, 'storeLeaveType'])->name('leaves.store-type');
 Route::post('/leaves/reset/{id}', [LeaveController::class, 'resetEmployeeLeaves'])->name('leaves.reset-employee-leaves');
-Route::get('/leaves/export', [LeaveController::class, 'export'])->name('leaves.export');

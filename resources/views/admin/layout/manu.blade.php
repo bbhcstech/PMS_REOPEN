@@ -67,45 +67,51 @@
     $timerTasks = $tasks;
 
     if ($isEmployeeUser) {
-        $assignedWorkProjects = Project::withCount(['tasks' => function ($query) use ($userId) {
-                $query->where(function ($taskQuery) use ($userId) {
+        if ($canSeeModule('projects')) {
+            $assignedWorkProjects = Project::withCount(['tasks' => function ($query) use ($userId) {
+                    $query->where(function ($taskQuery) use ($userId) {
+                        $taskQuery->whereHas('assignees', function ($assignees) use ($userId) {
+                            $assignees->where('users.id', $userId);
+                        })->orWhereRaw('FIND_IN_SET(?, assigned_to)', [$userId]);
+                    });
+                }])
+                ->where(function ($query) use ($userId) {
+                    $query->whereHas('users', function ($members) use ($userId) {
+                        $members->where('users.id', $userId);
+                    })->orWhereHas('tasks', function ($taskQuery) use ($userId) {
+                        $taskQuery->whereHas('assignees', function ($assignees) use ($userId) {
+                            $assignees->where('users.id', $userId);
+                        })->orWhereRaw('FIND_IN_SET(?, assigned_to)', [$userId]);
+                    });
+                })
+                ->latest()
+                ->take(5)
+                ->get();
+        }
+
+        if ($canSeeModule('tasks')) {
+            $assignedWorkTasks = Task::with('project')
+                ->where(function ($taskQuery) use ($userId) {
                     $taskQuery->whereHas('assignees', function ($assignees) use ($userId) {
                         $assignees->where('users.id', $userId);
                     })->orWhereRaw('FIND_IN_SET(?, assigned_to)', [$userId]);
-                });
-            }])
-            ->where(function ($query) use ($userId) {
-                $query->whereHas('users', function ($members) use ($userId) {
-                    $members->where('users.id', $userId);
-                })->orWhereHas('tasks', function ($taskQuery) use ($userId) {
-                    $taskQuery->whereHas('assignees', function ($assignees) use ($userId) {
-                        $assignees->where('users.id', $userId);
-                    })->orWhereRaw('FIND_IN_SET(?, assigned_to)', [$userId]);
-                });
-            })
-            ->latest()
-            ->take(5)
-            ->get();
+                })
+                ->latest()
+                ->take(5)
+                ->get();
+        }
 
-        $assignedWorkTasks = Task::with('project')
-            ->where(function ($taskQuery) use ($userId) {
-                $taskQuery->whereHas('assignees', function ($assignees) use ($userId) {
-                    $assignees->where('users.id', $userId);
-                })->orWhereRaw('FIND_IN_SET(?, assigned_to)', [$userId]);
-            })
-            ->latest()
-            ->take(5)
-            ->get();
-
-        $assignedWorkTickets = Ticket::with('project')
-            ->where(function ($ticketQuery) use ($userId) {
-                $ticketQuery->where('agent_id', $userId)
-                    ->orWhere('requester_id', $userId);
-            })
-            ->whereNotIn('status', ['resolved', 'closed'])
-            ->latest()
-            ->take(5)
-            ->get();
+        if ($canSeeModule('tickets') && ! \App\Support\TicketAccess::hiddenForCurrentUser()) {
+            $assignedWorkTickets = Ticket::with('project')
+                ->where(function ($ticketQuery) use ($userId) {
+                    $ticketQuery->where('agent_id', $userId)
+                        ->orWhere('requester_id', $userId);
+                })
+                ->whereNotIn('status', ['resolved', 'closed'])
+                ->latest()
+                ->take(5)
+                ->get();
+        }
 
         $timerProjects = Project::where(function ($query) use ($userId) {
                 $query->whereHas('users', function ($members) use ($userId) {
@@ -280,15 +286,15 @@
 
             @if(in_array(strtolower((string) auth()->user()?->role), ['hr', 'manager'], true))
                 @if($canSeeModule('attendance'))
-                <li class="menu-item {{ request()->routeIs('attendance.index') && request('view') === 'personal' ? 'active' : '' }}">
-                    <a href="{{ route('attendance.index', ['view' => 'personal']) }}" class="menu-link">
+                <li class="menu-item {{ (request()->routeIs('attendance.index') && ($isHrSidebarUser || request('view') === 'personal')) || ($isHrSidebarUser && request()->routeIs('attendance.report', 'attendance.employee.index')) ? 'active' : '' }}">
+                    <a href="{{ route('attendance.index', ['view' => 'personal']) }}" class="menu-link" data-sidebar-key="attendance">
                         <i class="menu-icon tf-icons bx bx-calendar-check"></i><div>My Attendance</div>
                     </a>
                 </li>
                 @endif
                 @if($canSeeModule('leaves'))
-                <li class="menu-item {{ request()->routeIs('leaves.mine') ? 'active' : '' }}">
-                    <a href="{{ route('leaves.mine') }}" class="menu-link">
+                <li class="menu-item {{ request()->routeIs('leaves.mine') || ($isHrSidebarUser && request()->routeIs('leaves.index', 'leaves.show', 'leaves.report', 'admin.leave.report')) ? 'active' : '' }}">
+                    <a href="{{ route('leaves.mine') }}" class="menu-link" @if($isHrSidebarUser) data-sidebar-key="leaves" @endif>
                         <i class="menu-icon tf-icons bx bx-user-check"></i><div>My Leave Requests</div>
                     </a>
                 </li>
@@ -358,24 +364,7 @@
                     </li>
                 @endif
 
-                @if($canSeeModule('attendance') && (!\App\Services\WorkforceAccess::isAuthority(auth()->user()) || \App\Services\WorkforceAccess::canManageLeaves(auth()->user())))
-                    <li class="menu-item {{ (request()->routeIs('attendance.*') && !request()->routeIs('attendance.report')) ? 'active' : '' }}">
-                        <a href="{{ route('attendance.index') }}" class="menu-link" data-sidebar-key="attendance">
-                            <i class="menu-icon tf-icons bx bx-calendar-check"></i>
-                            <div class="text-truncate" data-i18n="Without menu">Attendance</div>
-                        </a>
-                    </li>
-                @endif
-
                 @if($canSeeModule('leaves'))
-                    @if(!\App\Services\WorkforceAccess::isAuthority(auth()->user()) || \App\Services\WorkforceAccess::canManageLeaves(auth()->user()))
-<li class="menu-item {{ (request()->routeIs('leaves.index') || request()->routeIs('leaves.show') || request()->routeIs('leaves.calendar') || request()->routeIs('leaves.archive') || request()->routeIs('leaves.apology-letters.*')) ? 'active' : '' }}">
-                        <a href="{{ route('leaves.index') }}" class="menu-link" data-sidebar-key="leaves">
-                            <i class="menu-icon tf-icons bx bx-calendar-x"></i>
-                            <div class="text-truncate" data-i18n="Without navbar">Employee Leaves</div>
-                        </a>
-                    </li>
-@endif
                     @if($canSeeModule('leaves-apply'))
                     <li class="menu-item {{ request()->routeIs('leaves.create') ? 'active' : '' }}">
                         <a href="{{ route('leaves.create') }}" class="menu-link" data-sidebar-key="leaves-apply">
@@ -492,12 +481,12 @@
                         @if(\App\Services\WorkforceAccess::isAdmin(auth()->user()))
                         @if($canSeeModule('attendance') && (!\App\Services\WorkforceAccess::isAuthority(auth()->user()) || \App\Services\WorkforceAccess::canManageLeaves(auth()->user())))
                         @if($canSeeModule('higher-level-attendance'))
-                        <li class="menu-item {{ request()->routeIs('admin.authority-attendance') ? 'active' : '' }}"><a href="{{ route('admin.authority-attendance', ['view' => 'team']) }}" class="menu-link"><div class="text-truncate">Higher-level attendance</div></a></li>
+                        <li class="menu-item {{ request()->routeIs('admin.authority-attendance') ? 'active' : '' }}"><a href="{{ route('admin.authority-attendance', ['view' => 'team']) }}" class="menu-link"><div class="text-truncate">HR Attendance</div></a></li>
                         @endif
                         @endif
                         @if($canSeeModule('leaves'))
                         @if($canSeeModule('higher-level-leaves'))
-                        <li class="menu-item {{ request()->routeIs('admin.authority-leaves') ? 'active' : '' }}"><a href="{{ route('admin.authority-leaves') }}" class="menu-link"><div class="text-truncate">Higher-level leaves</div></a></li>
+                        <li class="menu-item {{ request()->routeIs('admin.authority-leaves') ? 'active' : '' }}"><a href="{{ route('admin.authority-leaves') }}" class="menu-link"><div class="text-truncate">HR Leave</div></a></li>
                         @endif
                         @endif
                         @endif
@@ -1185,7 +1174,7 @@
               <!-- LEFT: Breadcrumbs (desktop only to prevent mobile topbar crowding) -->
               <div class="navbar-nav align-items-center d-none d-lg-flex pms-navbar-breadcrumb">
                 <div class="nav-item">
-                  <span class="fw-bold">Dashboard</span> <span class="pms-breadcrumb-dot" aria-hidden="true">&bull;</span> <span class="pms-breadcrumb-sub">Home</span>@if(request()->routeIs('notifications.*', 'admin.company-notifications.*')) <span class="pms-breadcrumb-dot" aria-hidden="true">&bull;</span> <span class="pms-breadcrumb-active">Notification Center</span>@elseif(request()->routeIs('my-documents.*')) <span class="pms-breadcrumb-dot" aria-hidden="true">&bull;</span> <span class="pms-breadcrumb-active">My Documents</span>@endif
+                  <span class="fw-bold">Dashboard</span> <span class="pms-breadcrumb-dot" aria-hidden="true">&bull;</span> <span class="pms-breadcrumb-sub">Home</span>@if(request()->routeIs('notifications.*', 'admin.company-notifications.*')) <span class="pms-breadcrumb-dot" aria-hidden="true">&bull;</span> <span class="pms-breadcrumb-active">Notification Center</span>@elseif(request()->routeIs('my-documents.*')) <span class="pms-breadcrumb-dot" aria-hidden="true">&bull;</span> <span class="pms-breadcrumb-active">My Documents</span>@elseif(request()->routeIs('collaborating-companies.*')) <span class="pms-breadcrumb-dot" aria-hidden="true">&bull;</span> <span class="pms-breadcrumb-active">Collab Companies</span>@elseif(request()->routeIs('organization.*')) <span class="pms-breadcrumb-dot" aria-hidden="true">&bull;</span> <span class="pms-breadcrumb-active">Organization</span>@elseif(request()->routeIs('employees.*')) <span class="pms-breadcrumb-dot" aria-hidden="true">&bull;</span> <span class="pms-breadcrumb-active">Employees</span>@elseif(request()->routeIs('clients.*')) <span class="pms-breadcrumb-dot" aria-hidden="true">&bull;</span> <span class="pms-breadcrumb-active">Clients</span>@elseif(request()->routeIs('leads.contacts.*')) <span class="pms-breadcrumb-dot" aria-hidden="true">&bull;</span> <span class="pms-breadcrumb-active">Lead Contacts</span>@elseif(request()->routeIs('admin.deals.*')) <span class="pms-breadcrumb-dot" aria-hidden="true">&bull;</span> <span class="pms-breadcrumb-active">Deals</span>@elseif(request()->routeIs('events.*')) <span class="pms-breadcrumb-dot" aria-hidden="true">&bull;</span> <span class="pms-breadcrumb-active">Events</span>@elseif(request()->routeIs('projects.tasks.*') || request()->routeIs('tasks.*', 'users.tasks.*')) <span class="pms-breadcrumb-dot" aria-hidden="true">&bull;</span> <span class="pms-breadcrumb-active">Tasks</span>@elseif(request()->routeIs('timelogs.*', 'projects.timelogs.*')) <span class="pms-breadcrumb-dot" aria-hidden="true">&bull;</span> <span class="pms-breadcrumb-active">Timesheet</span>@elseif(request()->routeIs('projects.*')) <span class="pms-breadcrumb-dot" aria-hidden="true">&bull;</span> <span class="pms-breadcrumb-active">Projects</span>@elseif(request()->routeIs('products.*')) <span class="pms-breadcrumb-dot" aria-hidden="true">&bull;</span> <span class="pms-breadcrumb-active">Products</span>@elseif(request()->routeIs('orders.*')) <span class="pms-breadcrumb-dot" aria-hidden="true">&bull;</span> <span class="pms-breadcrumb-active">Orders</span>@endif
                 </div>
               </div>
 
@@ -1304,35 +1293,43 @@
                                 <li><span class="dropdown-item-text text-muted small">No assigned tasks.</span></li>
                             @endforelse
 
+                            @if($canSeeModule('tickets') && ! \App\Support\TicketAccess::hiddenForCurrentUser())
                             <li><hr class="dropdown-divider my-1"></li>
                             <li class="dropdown-header text-uppercase fw-bold">Tickets</li>
                             @forelse($assignedWorkTickets as $ticketItem)
+                                @php
+                                    $canUpdateAssignedTicket = (\App\Support\TicketAccess::canManage() || (int) $ticketItem->agent_id === (int) $userId)
+                                        && (auth()->user()?->hasModulePermission('tickets', 'edit') ?? false);
+                                @endphp
                                 <li class="px-3 py-2">
                                     <div class="d-flex justify-content-between gap-2">
                                         <a class="text-decoration-none flex-grow-1" href="{{ route('tickets.show', $ticketItem->id) }}">
                                             <div class="fw-semibold text-truncate">#{{ $ticketItem->id }} {{ $ticketItem->subject }}</div>
-                                            <small class="text-muted">{{ $ticketItem->project?->name ?? 'No project' }} · {{ ucfirst($ticketItem->status) }}</small>
+                                            <small class="text-muted">{{ $ticketItem->project?->name ?? 'No project' }} · {{ \App\Models\Ticket::statusLabel($ticketItem->status) }}</small>
                                         </a>
                                     </div>
                                     <div class="d-flex gap-1 mt-2">
-                                        <form method="POST" action="{{ route('tickets.change-status') }}" class="d-inline">
-                                            @csrf
-                                            <input type="hidden" name="ticketId" value="{{ $ticketItem->id }}">
-                                            <input type="hidden" name="status" value="pending">
-                                            <button type="submit" class="btn btn-sm btn-outline-primary py-1 px-2">Start Progress</button>
-                                        </form>
-                                        <form method="POST" action="{{ route('tickets.change-status') }}" class="d-inline">
-                                            @csrf
-                                            <input type="hidden" name="ticketId" value="{{ $ticketItem->id }}">
-                                            <input type="hidden" name="status" value="resolved">
-                                            <button type="submit" class="btn btn-sm btn-outline-success py-1 px-2">End</button>
-                                        </form>
+                                        @if($canUpdateAssignedTicket)
+                                            <form method="POST" action="{{ route('tickets.change-status') }}" class="d-inline">
+                                                @csrf
+                                                <input type="hidden" name="ticketId" value="{{ $ticketItem->id }}">
+                                                <input type="hidden" name="status" value="in_progress">
+                                                <button type="submit" class="btn btn-sm btn-outline-primary py-1 px-2">Start Progress</button>
+                                            </form>
+                                            <form method="POST" action="{{ route('tickets.change-status') }}" class="d-inline">
+                                                @csrf
+                                                <input type="hidden" name="ticketId" value="{{ $ticketItem->id }}">
+                                                <input type="hidden" name="status" value="resolved">
+                                                <button type="submit" class="btn btn-sm btn-outline-success py-1 px-2">End</button>
+                                            </form>
+                                        @endif
                                         <a href="{{ route('tickets.show', $ticketItem->id) }}" class="btn btn-sm btn-outline-secondary py-1 px-2">Details</a>
                                     </div>
                                 </li>
                             @empty
                                 <li><span class="dropdown-item-text text-muted small">No active tickets.</span></li>
                             @endforelse
+                            @endif
                         </ul>
                     </li>
                   </div>

@@ -8,12 +8,15 @@ $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
 use App\Http\Controllers\EmployeeController;
 use App\Models\EmployeeDetail;
 use App\Models\User;
+use App\Support\EmployeeProfileAccess;
 use Carbon\Carbon;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 // Setup in-memory sqlite database for testing
 foreach (['tenant', 'central'] as $connection) {
@@ -44,6 +47,8 @@ Schema::create('users', function (Blueprint $table) {
     $table->string('email')->unique();
     $table->string('mobile')->nullable();
     $table->string('role')->default('employee');
+    $table->unsignedBigInteger('company_staff_role_id')->nullable();
+    $table->timestamp('archived_at')->nullable();
     $table->string('password')->default('secret');
     $table->boolean('login_allowed')->default(true);
     $table->boolean('email_notifications')->default(true);
@@ -60,6 +65,7 @@ Schema::create('employee_details', function (Blueprint $table) {
     $table->unsignedBigInteger('department_id')->nullable();
     $table->unsignedBigInteger('parent_dpt_id')->nullable();
     $table->unsignedBigInteger('designation_id')->nullable();
+    $table->unsignedBigInteger('reporting_to')->nullable();
     $table->date('joining_date')->nullable();
     $table->date('dob')->nullable();
     $table->date('exit_date')->nullable();
@@ -273,4 +279,93 @@ if (!$redirectResponseInvalid->isRedirection() || !session()->has('errors')) {
     throw new RuntimeException("Test 7 Failed: Exit date before joining date must redirect back with errors.");
 }
 
-echo "All employee exit date and user_role tests passed successfully!\n";
+// The Employee List and both edit endpoints must agree for each account type.
+foreach (['departments', 'parent_departments'] as $tableName) {
+    Schema::create($tableName, function (Blueprint $table) {
+        $table->id(); $table->string('dpt_name'); $table->timestamps();
+    });
+}
+Schema::create('modules', function (Blueprint $table) {
+    $table->id(); $table->string('slug'); $table->boolean('is_active')->default(true);
+});
+Schema::create('role_permissions', function (Blueprint $table) {
+    $table->id(); $table->string('role'); $table->unsignedBigInteger('module_id'); $table->boolean('can_edit');
+});
+DB::table('modules')->insert(['id' => 1, 'slug' => 'employees']);
+$registry = Schema::connection('central');
+$registry->create('modules', function (Blueprint $table) {
+    $table->id(); $table->string('slug');
+});
+$registry->create('company_modules', function (Blueprint $table) {
+    $table->unsignedBigInteger('company_id'); $table->unsignedBigInteger('module_id'); $table->boolean('is_enabled');
+});
+DB::connection('central')->table('modules')->insert(['id' => 1, 'slug' => 'employees']);
+DB::connection('central')->table('company_modules')->insert(['company_id' => 1, 'module_id' => 1, 'is_enabled' => true]);
+$staff = User::create(['role' => 'manager', 'company_id' => 1, 'name' => 'Company Lead', 'email' => 'lead@example.com', 'company_staff_role_id' => 1]);
+$foreign = User::create(['role' => 'employee', 'company_id' => 2, 'name' => 'Other Employee', 'email' => 'other@example.com']);
+$hr = new User(['role' => 'hr', 'company_id' => 1, 'name' => 'HR']);
+$manager = new User(['role' => 'manager', 'company_id' => 1]);
+
+$renderEmployeeView = function (string $name, array $data): string {
+    $source = file_get_contents(resource_path("views/admin/employees/{$name}.blade.php"));
+    $source = str_replace("@extends('admin.layout.app')", '', $source)."\n@yield('content')";
+
+    return Blade::render($source, $data + ['errors' => new \Illuminate\Support\ViewErrorBag], true);
+};
+$employeeList = function () use ($controller, $renderEmployeeView): string {
+    $request = Request::create('/employees', 'GET');
+    $request->setLaravelSession(app('session')->driver());
+    app()->instance('request', $request);
+
+    return $renderEmployeeView('index', $controller->index($request)->getData());
+};
+$deniedEdit = function (callable $operation): void {
+    try {
+        $operation();
+        throw new RuntimeException('An unauthorized profile edit was permitted.');
+    } catch (HttpException $error) {
+        if ($error->getStatusCode() !== 403) throw $error;
+    }
+};
+
+$adminList = $employeeList();
+if (!str_contains($adminList, route('employees.edit', $staff->id)) || $controller->edit($staff->id)->name() !== 'admin.employees.edit') {
+    throw new RuntimeException('Company admin lost the company-role profile editor.');
+}
+$staffUpdates = array_replace($requestActive->except('_method'), [
+    'name' => 'Updated Company Lead', 'email' => $staff->email, 'employee_id' => 'EMP-LEAD', 'mobile' => '9123456788',
+]);
+$controller->update(Request::create('/', 'PUT', $staffUpdates), $staff->id);
+if ($staff->fresh()->name !== 'Updated Company Lead' || $staff->fresh()->role !== 'manager') {
+    throw new RuntimeException('Admin profile updates changed or failed to save the company-role account.');
+}
+$deniedEdit(fn () => $controller->edit($foreign->id));
+$deniedEdit(fn () => $controller->update(Request::create('/', 'PUT'), $foreign->id));
+
+Auth::guard('web')->setUser($hr);
+$hrList = $employeeList();
+if (!str_contains($hrList, route('employees.edit', $targetUser->id)) || str_contains($hrList, route('employees.edit', $staff->id))) {
+    throw new RuntimeException('Employee List did not apply the profile edit checks.');
+}
+if (!str_contains($renderEmployeeView('edit', $controller->edit($targetUser->id)->getData()), 'A company admin can change the user role.')) {
+    throw new RuntimeException('The delegated editor did not render the read-only role field.');
+}
+$deniedEdit(fn () => $controller->edit($staff->id));
+$deniedEdit(fn () => $controller->update(Request::create('/', 'PUT'), $staff->id));
+
+$updates = $requestActive->except(['user_role', '_method']);
+$updates['name'] = 'Updated by HR';
+$controller->update(Request::create('/', 'PUT', $updates), $targetUser->id);
+if ($targetUser->fresh()->name !== 'Updated by HR' || $targetUser->fresh()->role !== 'employee') {
+    throw new RuntimeException('An ordinary employee profile could not be saved by HR.');
+}
+$deniedEdit(fn () => $controller->update(Request::create('/', 'PUT', $updates + ['user_role' => 'admin']), $targetUser->id));
+
+Auth::guard('web')->setUser($manager);
+if (EmployeeProfileAccess::canShowEditLinks($manager)) throw new RuntimeException('A view-only manager was offered an edit link.');
+DB::table('role_permissions')->insert(['role' => 'manager', 'module_id' => 1, 'can_edit' => true]);
+if (!EmployeeProfileAccess::canShowEditLinks($manager) || !EmployeeProfileAccess::canEditTarget($manager, $targetUser->fresh())) {
+    throw new RuntimeException('An explicitly authorized manager lost access to ordinary employee profiles.');
+}
+
+echo "PASS: employee profile edit links, authorized saves, role restrictions, company isolation, and exit dates.\n";

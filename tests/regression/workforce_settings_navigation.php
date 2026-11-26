@@ -95,8 +95,8 @@ foreach ($app['router']->getRoutes() as $route) {
     checkSettings((new EnsureModuleAccess)->moduleForRoute($name)?->slug === $expectedModule, 'Settings lost the feature permission identity: '.$name);
     $routesChecked++;
 }
-// 41 = 40 + Sub Department permanent delete (departments.delete-permanent).
-checkSettings($routesChecked === 41, 'Expected all 41 Settings feature endpoints, got '.$routesChecked);
+// 38 = 40 - 3 removed designation hierarchy endpoints + Sub Department permanent delete (departments.delete-permanent).
+checkSettings($routesChecked === 38, 'Expected all 38 Settings feature endpoints, got '.$routesChecked);
 
 foreach (['parent-departments', 'departments', 'designations'] as $feature) {
     settingsRequest($feature.'.index');

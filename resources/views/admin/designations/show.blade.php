@@ -19,7 +19,7 @@
             </div>
             <div>
                 <h1>View Designation</h1>
-                <p>Review designation details and hierarchy information</p>
+                <p>Review designation details and level information</p>
             </div>
         </div>
         <div class="btn-group">
@@ -69,35 +69,6 @@
                     <label>Designation Name</label>
                     <div class="field-value">{{ $designation->name }}</div>
                     <span class="field-hint">Official designation title</span>
-                </div>
-            </div>
-
-            <!-- Parent Designation -->
-            <div class="view-field field-parent">
-                <div class="field-icon">
-                    <i class="fas fa-sitemap"></i>
-                </div>
-                <div class="field-content">
-                    <label>Parent Designation</label>
-                    <div class="field-value">
-                        @if($designation->parent)
-                            <a href="{{ \App\Support\WorkforceSettings::route('designations.show', $designation->parent->id) }}" class="parent-link">
-                                <i class="fas fa-link"></i>
-                                {{ $designation->parent->name }}
-                            </a>
-                        @elseif($designation->level !== null && $designation->level <= 1)
-                            <span class="no-parent">
-                                <i class="fas fa-crown text-warning"></i>
-                                Top-level designation
-                            </span>
-                        @else
-                            <span class="no-parent text-muted">
-                                <i class="fas fa-layer-group"></i>
-                                Direct / Independent (Level {{ $designation->level ?? '-' }})
-                            </span>
-                        @endif
-                    </div>
-                    <span class="field-hint">Reporting hierarchy level</span>
                 </div>
             </div>
 
@@ -186,48 +157,6 @@
                 <a href="{{ \App\Support\WorkforceSettings::route('designations.edit', $designation->id) }}" class="btn btn-primary">
                     <i class="fas fa-edit"></i> Edit Designation
                 </a>
-            </div>
-        </div>
-    </div>
-
-    <!-- Related Information Card -->
-    <div class="related-card">
-        <div class="related-header">
-            <i class="fas fa-project-diagram"></i>
-            <h5>Hierarchy Information</h5>
-        </div>
-        <div class="related-content">
-            <div class="related-item">
-                <span class="related-label">Level:</span>
-                <span class="related-value">
-                    @if($designation->level !== null)
-                        <span class="level-badge level-{{ $designation->level }}">
-                            L{{ $designation->level }}
-                        </span>
-                    @else
-                        <span class="level-badge level-default">Not Set</span>
-                    @endif
-                </span>
-            </div>
-            <div class="related-item">
-                <span class="related-label">Parent:</span>
-                <span class="related-value">
-                    @if($designation->parent)
-                        <a href="{{ \App\Support\WorkforceSettings::route('designations.show', $designation->parent->id) }}" class="parent-link">
-                            <i class="fas fa-link"></i> {{ $designation->parent->name }}
-                        </a>
-                    @elseif($designation->level !== null && $designation->level <= 1)
-                        <span class="no-parent"><i class="fas fa-crown text-warning"></i> Top-level</span>
-                    @else
-                        <span class="no-parent text-muted"><i class="fas fa-layer-group"></i> Direct / Independent</span>
-                    @endif
-                </span>
-            </div>
-            <div class="related-item">
-                <span class="related-label">Children:</span>
-                <span class="related-value">
-                    {{ $designation->children->count() ?? 0 }} sub-designation(s)
-                </span>
             </div>
         </div>
     </div>
@@ -471,18 +400,11 @@
         transform: translateY(-2px);
     }
 
-    .view-field.field-code .field-icon,
-    .view-field:nth-child(1) .field-icon { background: linear-gradient(145deg, #EEF2FF, #E0E7FF); color: #2F6BFF; }
-    .view-field.field-name .field-icon,
-    .view-field:nth-child(2) .field-icon { background: linear-gradient(145deg, #dbeafe, #bfdbfe); color: #2563eb; }
-    .view-field.field-parent .field-icon,
-    .view-field:nth-child(3) .field-icon { background: linear-gradient(145deg, #fef3c7, #fde68a); color: #d97706; }
-    .view-field.field-level .field-icon,
-    .view-field:nth-child(4) .field-icon { background: linear-gradient(145deg, #e0e7ff, #c7d2fe); color: #4f46e5; }
-    .view-field.field-added .field-icon,
-    .view-field:nth-child(5) .field-icon { background: linear-gradient(145deg, #fce7f3, #fbcfe8); color: #db2777; }
-    .view-field.field-updated .field-icon,
-    .view-field:nth-child(6) .field-icon { background: linear-gradient(145deg, #cffafe, #a5f3fc); color: #0891b2; }
+    .view-field.field-code .field-icon { background: linear-gradient(145deg, #EEF2FF, #E0E7FF); color: #2F6BFF; }
+    .view-field.field-name .field-icon { background: linear-gradient(145deg, #dbeafe, #bfdbfe); color: #2563eb; }
+    .view-field.field-level .field-icon { background: linear-gradient(145deg, #e0e7ff, #c7d2fe); color: #4f46e5; }
+    .view-field.field-added .field-icon { background: linear-gradient(145deg, #fce7f3, #fbcfe8); color: #db2777; }
+    .view-field.field-updated .field-icon { background: linear-gradient(145deg, #cffafe, #a5f3fc); color: #0891b2; }
 
     .field-icon i {
         display: inline-block;
@@ -1190,134 +1112,112 @@
     }
 
     /* Field Icons in Dark Mode */
-    html[data-pms-theme="dark"] .designation-view-page .view-field:nth-child(1) .field-icon,
-    html[data-bs-theme="dark"] .designation-view-page .view-field:nth-child(1) .field-icon,
-    html[data-theme="dark"] .designation-view-page .view-field:nth-child(1) .field-icon,
-    html.dark .designation-view-page .view-field:nth-child(1) .field-icon,
-    body[data-pms-theme="dark"] .designation-view-page .view-field:nth-child(1) .field-icon,
-    [data-pms-theme="dark"] .designation-view-page .view-field:nth-child(1) .field-icon,
-    .dark .designation-view-page .view-field:nth-child(1) .field-icon {
+    html[data-pms-theme="dark"] .designation-view-page .view-field.field-code .field-icon,
+    html[data-bs-theme="dark"] .designation-view-page .view-field.field-code .field-icon,
+    html[data-theme="dark"] .designation-view-page .view-field.field-code .field-icon,
+    html.dark .designation-view-page .view-field.field-code .field-icon,
+    body[data-pms-theme="dark"] .designation-view-page .view-field.field-code .field-icon,
+    [data-pms-theme="dark"] .designation-view-page .view-field.field-code .field-icon,
+    .dark .designation-view-page .view-field.field-code .field-icon {
         background: rgba(47, 107, 255, 0.2) !important;
         color: #60A5FA !important;
         border: 1px solid rgba(79, 131, 255, 0.4) !important;
     }
-    html[data-pms-theme="dark"] .designation-view-page .view-field:nth-child(1) .field-icon *,
-    html[data-bs-theme="dark"] .designation-view-page .view-field:nth-child(1) .field-icon *,
-    html[data-theme="dark"] .designation-view-page .view-field:nth-child(1) .field-icon *,
-    html.dark .designation-view-page .view-field:nth-child(1) .field-icon *,
-    body[data-pms-theme="dark"] .designation-view-page .view-field:nth-child(1) .field-icon *,
-    [data-pms-theme="dark"] .designation-view-page .view-field:nth-child(1) .field-icon *,
-    .dark .designation-view-page .view-field:nth-child(1) .field-icon * {
+    html[data-pms-theme="dark"] .designation-view-page .view-field.field-code .field-icon *,
+    html[data-bs-theme="dark"] .designation-view-page .view-field.field-code .field-icon *,
+    html[data-theme="dark"] .designation-view-page .view-field.field-code .field-icon *,
+    html.dark .designation-view-page .view-field.field-code .field-icon *,
+    body[data-pms-theme="dark"] .designation-view-page .view-field.field-code .field-icon *,
+    [data-pms-theme="dark"] .designation-view-page .view-field.field-code .field-icon *,
+    .dark .designation-view-page .view-field.field-code .field-icon * {
         color: #60A5FA !important;
         -webkit-text-fill-color: #60A5FA !important;
     }
 
-    html[data-pms-theme="dark"] .designation-view-page .view-field:nth-child(2) .field-icon,
-    html[data-bs-theme="dark"] .designation-view-page .view-field:nth-child(2) .field-icon,
-    html[data-theme="dark"] .designation-view-page .view-field:nth-child(2) .field-icon,
-    html.dark .designation-view-page .view-field:nth-child(2) .field-icon,
-    body[data-pms-theme="dark"] .designation-view-page .view-field:nth-child(2) .field-icon,
-    [data-pms-theme="dark"] .designation-view-page .view-field:nth-child(2) .field-icon,
-    .dark .designation-view-page .view-field:nth-child(2) .field-icon {
+    html[data-pms-theme="dark"] .designation-view-page .view-field.field-name .field-icon,
+    html[data-bs-theme="dark"] .designation-view-page .view-field.field-name .field-icon,
+    html[data-theme="dark"] .designation-view-page .view-field.field-name .field-icon,
+    html.dark .designation-view-page .view-field.field-name .field-icon,
+    body[data-pms-theme="dark"] .designation-view-page .view-field.field-name .field-icon,
+    [data-pms-theme="dark"] .designation-view-page .view-field.field-name .field-icon,
+    .dark .designation-view-page .view-field.field-name .field-icon {
         background: rgba(56, 189, 248, 0.2) !important;
         color: #38bdf8 !important;
         border: 1px solid rgba(56, 189, 248, 0.4) !important;
     }
-    html[data-pms-theme="dark"] .designation-view-page .view-field:nth-child(2) .field-icon *,
-    html[data-bs-theme="dark"] .designation-view-page .view-field:nth-child(2) .field-icon *,
-    html[data-theme="dark"] .designation-view-page .view-field:nth-child(2) .field-icon *,
-    html.dark .designation-view-page .view-field:nth-child(2) .field-icon *,
-    body[data-pms-theme="dark"] .designation-view-page .view-field:nth-child(2) .field-icon *,
-    [data-pms-theme="dark"] .designation-view-page .view-field:nth-child(2) .field-icon *,
-    .dark .designation-view-page .view-field:nth-child(2) .field-icon * {
+    html[data-pms-theme="dark"] .designation-view-page .view-field.field-name .field-icon *,
+    html[data-bs-theme="dark"] .designation-view-page .view-field.field-name .field-icon *,
+    html[data-theme="dark"] .designation-view-page .view-field.field-name .field-icon *,
+    html.dark .designation-view-page .view-field.field-name .field-icon *,
+    body[data-pms-theme="dark"] .designation-view-page .view-field.field-name .field-icon *,
+    [data-pms-theme="dark"] .designation-view-page .view-field.field-name .field-icon *,
+    .dark .designation-view-page .view-field.field-name .field-icon * {
         color: #38bdf8 !important;
         -webkit-text-fill-color: #38bdf8 !important;
     }
 
-    html[data-pms-theme="dark"] .designation-view-page .view-field:nth-child(3) .field-icon,
-    html[data-bs-theme="dark"] .designation-view-page .view-field:nth-child(3) .field-icon,
-    html[data-theme="dark"] .designation-view-page .view-field:nth-child(3) .field-icon,
-    html.dark .designation-view-page .view-field:nth-child(3) .field-icon,
-    body[data-pms-theme="dark"] .designation-view-page .view-field:nth-child(3) .field-icon,
-    [data-pms-theme="dark"] .designation-view-page .view-field:nth-child(3) .field-icon,
-    .dark .designation-view-page .view-field:nth-child(3) .field-icon {
-        background: rgba(245, 158, 11, 0.2) !important;
-        color: #fbbf24 !important;
-        border: 1px solid rgba(245, 158, 11, 0.4) !important;
-    }
-    html[data-pms-theme="dark"] .designation-view-page .view-field:nth-child(3) .field-icon *,
-    html[data-bs-theme="dark"] .designation-view-page .view-field:nth-child(3) .field-icon *,
-    html[data-theme="dark"] .designation-view-page .view-field:nth-child(3) .field-icon *,
-    html.dark .designation-view-page .view-field:nth-child(3) .field-icon *,
-    body[data-pms-theme="dark"] .designation-view-page .view-field:nth-child(3) .field-icon *,
-    [data-pms-theme="dark"] .designation-view-page .view-field:nth-child(3) .field-icon *,
-    .dark .designation-view-page .view-field:nth-child(3) .field-icon * {
-        color: #fbbf24 !important;
-        -webkit-text-fill-color: #fbbf24 !important;
-    }
-
-    html[data-pms-theme="dark"] .designation-view-page .view-field:nth-child(4) .field-icon,
-    html[data-bs-theme="dark"] .designation-view-page .view-field:nth-child(4) .field-icon,
-    html[data-theme="dark"] .designation-view-page .view-field:nth-child(4) .field-icon,
-    html.dark .designation-view-page .view-field:nth-child(4) .field-icon,
-    body[data-pms-theme="dark"] .designation-view-page .view-field:nth-child(4) .field-icon,
-    [data-pms-theme="dark"] .designation-view-page .view-field:nth-child(4) .field-icon,
-    .dark .designation-view-page .view-field:nth-child(4) .field-icon {
+    html[data-pms-theme="dark"] .designation-view-page .view-field.field-level .field-icon,
+    html[data-bs-theme="dark"] .designation-view-page .view-field.field-level .field-icon,
+    html[data-theme="dark"] .designation-view-page .view-field.field-level .field-icon,
+    html.dark .designation-view-page .view-field.field-level .field-icon,
+    body[data-pms-theme="dark"] .designation-view-page .view-field.field-level .field-icon,
+    [data-pms-theme="dark"] .designation-view-page .view-field.field-level .field-icon,
+    .dark .designation-view-page .view-field.field-level .field-icon {
         background: rgba(129, 140, 248, 0.2) !important;
         color: #818cf8 !important;
         border: 1px solid rgba(129, 140, 248, 0.4) !important;
     }
-    html[data-pms-theme="dark"] .designation-view-page .view-field:nth-child(4) .field-icon *,
-    html[data-bs-theme="dark"] .designation-view-page .view-field:nth-child(4) .field-icon *,
-    html[data-theme="dark"] .designation-view-page .view-field:nth-child(4) .field-icon *,
-    html.dark .designation-view-page .view-field:nth-child(4) .field-icon *,
-    body[data-pms-theme="dark"] .designation-view-page .view-field:nth-child(4) .field-icon *,
-    [data-pms-theme="dark"] .designation-view-page .view-field:nth-child(4) .field-icon *,
-    .dark .designation-view-page .view-field:nth-child(4) .field-icon * {
+    html[data-pms-theme="dark"] .designation-view-page .view-field.field-level .field-icon *,
+    html[data-bs-theme="dark"] .designation-view-page .view-field.field-level .field-icon *,
+    html[data-theme="dark"] .designation-view-page .view-field.field-level .field-icon *,
+    html.dark .designation-view-page .view-field.field-level .field-icon *,
+    body[data-pms-theme="dark"] .designation-view-page .view-field.field-level .field-icon *,
+    [data-pms-theme="dark"] .designation-view-page .view-field.field-level .field-icon *,
+    .dark .designation-view-page .view-field.field-level .field-icon * {
         color: #818cf8 !important;
         -webkit-text-fill-color: #818cf8 !important;
     }
 
-    html[data-pms-theme="dark"] .designation-view-page .view-field:nth-child(5) .field-icon,
-    html[data-bs-theme="dark"] .designation-view-page .view-field:nth-child(5) .field-icon,
-    html[data-theme="dark"] .designation-view-page .view-field:nth-child(5) .field-icon,
-    html.dark .designation-view-page .view-field:nth-child(5) .field-icon,
-    body[data-pms-theme="dark"] .designation-view-page .view-field:nth-child(5) .field-icon,
-    [data-pms-theme="dark"] .designation-view-page .view-field:nth-child(5) .field-icon,
-    .dark .designation-view-page .view-field:nth-child(5) .field-icon {
+    html[data-pms-theme="dark"] .designation-view-page .view-field.field-added .field-icon,
+    html[data-bs-theme="dark"] .designation-view-page .view-field.field-added .field-icon,
+    html[data-theme="dark"] .designation-view-page .view-field.field-added .field-icon,
+    html.dark .designation-view-page .view-field.field-added .field-icon,
+    body[data-pms-theme="dark"] .designation-view-page .view-field.field-added .field-icon,
+    [data-pms-theme="dark"] .designation-view-page .view-field.field-added .field-icon,
+    .dark .designation-view-page .view-field.field-added .field-icon {
         background: rgba(244, 114, 182, 0.2) !important;
         color: #f472b6 !important;
         border: 1px solid rgba(244, 114, 182, 0.4) !important;
     }
-    html[data-pms-theme="dark"] .designation-view-page .view-field:nth-child(5) .field-icon *,
-    html[data-bs-theme="dark"] .designation-view-page .view-field:nth-child(5) .field-icon *,
-    html[data-theme="dark"] .designation-view-page .view-field:nth-child(5) .field-icon *,
-    html.dark .designation-view-page .view-field:nth-child(5) .field-icon *,
-    body[data-pms-theme="dark"] .designation-view-page .view-field:nth-child(5) .field-icon *,
-    [data-pms-theme="dark"] .designation-view-page .view-field:nth-child(5) .field-icon *,
-    .dark .designation-view-page .view-field:nth-child(5) .field-icon * {
+    html[data-pms-theme="dark"] .designation-view-page .view-field.field-added .field-icon *,
+    html[data-bs-theme="dark"] .designation-view-page .view-field.field-added .field-icon *,
+    html[data-theme="dark"] .designation-view-page .view-field.field-added .field-icon *,
+    html.dark .designation-view-page .view-field.field-added .field-icon *,
+    body[data-pms-theme="dark"] .designation-view-page .view-field.field-added .field-icon *,
+    [data-pms-theme="dark"] .designation-view-page .view-field.field-added .field-icon *,
+    .dark .designation-view-page .view-field.field-added .field-icon * {
         color: #f472b6 !important;
         -webkit-text-fill-color: #f472b6 !important;
     }
 
-    html[data-pms-theme="dark"] .designation-view-page .view-field:nth-child(6) .field-icon,
-    html[data-bs-theme="dark"] .designation-view-page .view-field:nth-child(6) .field-icon,
-    html[data-theme="dark"] .designation-view-page .view-field:nth-child(6) .field-icon,
-    html.dark .designation-view-page .view-field:nth-child(6) .field-icon,
-    body[data-pms-theme="dark"] .designation-view-page .view-field:nth-child(6) .field-icon,
-    [data-pms-theme="dark"] .designation-view-page .view-field:nth-child(6) .field-icon,
-    .dark .designation-view-page .view-field:nth-child(6) .field-icon {
+    html[data-pms-theme="dark"] .designation-view-page .view-field.field-updated .field-icon,
+    html[data-bs-theme="dark"] .designation-view-page .view-field.field-updated .field-icon,
+    html[data-theme="dark"] .designation-view-page .view-field.field-updated .field-icon,
+    html.dark .designation-view-page .view-field.field-updated .field-icon,
+    body[data-pms-theme="dark"] .designation-view-page .view-field.field-updated .field-icon,
+    [data-pms-theme="dark"] .designation-view-page .view-field.field-updated .field-icon,
+    .dark .designation-view-page .view-field.field-updated .field-icon {
         background: rgba(34, 211, 238, 0.2) !important;
         color: #22d3ee !important;
         border: 1px solid rgba(34, 211, 238, 0.4) !important;
     }
-    html[data-pms-theme="dark"] .designation-view-page .view-field:nth-child(6) .field-icon *,
-    html[data-bs-theme="dark"] .designation-view-page .view-field:nth-child(6) .field-icon *,
-    html[data-theme="dark"] .designation-view-page .view-field:nth-child(6) .field-icon *,
-    html.dark .designation-view-page .view-field:nth-child(6) .field-icon *,
-    body[data-pms-theme="dark"] .designation-view-page .view-field:nth-child(6) .field-icon *,
-    [data-pms-theme="dark"] .designation-view-page .view-field:nth-child(6) .field-icon *,
-    .dark .designation-view-page .view-field:nth-child(6) .field-icon * {
+    html[data-pms-theme="dark"] .designation-view-page .view-field.field-updated .field-icon *,
+    html[data-bs-theme="dark"] .designation-view-page .view-field.field-updated .field-icon *,
+    html[data-theme="dark"] .designation-view-page .view-field.field-updated .field-icon *,
+    html.dark .designation-view-page .view-field.field-updated .field-icon *,
+    body[data-pms-theme="dark"] .designation-view-page .view-field.field-updated .field-icon *,
+    [data-pms-theme="dark"] .designation-view-page .view-field.field-updated .field-icon *,
+    .dark .designation-view-page .view-field.field-updated .field-icon * {
         color: #22d3ee !important;
         -webkit-text-fill-color: #22d3ee !important;
     }

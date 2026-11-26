@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Company;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Schema;
 
@@ -15,6 +16,16 @@ use Illuminate\Support\Facades\Schema;
 class OrganizationTreeService
 {
     public function fetchEmployees(?User $viewer, ?int $selectedCompanyId = null): Collection
+    {
+        return $this->employeeQuery($viewer, $selectedCompanyId)->with([
+            'company',
+            'employeeDetail.designation' => fn ($designation) => $designation->withoutGlobalScope('designation_company')->with('addedBy:id,company_id'),
+            'employeeDetail.department.parent',
+            'employeeDetail.reportingTo:id,name,company_id',
+        ])->orderBy('users.id')->get();
+    }
+
+    private function employeeQuery(?User $viewer, ?int $selectedCompanyId): Builder
     {
         $platformAdmin = TenantScope::isPlatformAdmin();
         abort_unless($viewer || $platformAdmin, 403);
@@ -29,13 +40,7 @@ class OrganizationTreeService
 
         $isAdminOrHr = $platformAdmin || in_array($viewer?->normalizedRole(), ['admin', 'superadmin', 'administrator', 'hr'], true);
 
-        $query = User::with([
-            'company',
-            'employeeDetail.designation' => fn ($designation) => $designation->withoutGlobalScope('designation_company')->with('addedBy:id,company_id'),
-            'employeeDetail.department.parent',
-            'employeeDetail.reportingTo:id,name,company_id',
-        ])
-            ->where(function ($staff) {
+        $query = User::where(function ($staff) {
                 $staff->whereIn('role', ['employee', 'hr', 'manager'])
                     ->orWhere(fn ($leaders) => $leaders->whereIn('role', ['admin', 'administrator'])->whereHas('employeeDetail'));
             })
@@ -51,7 +56,7 @@ class OrganizationTreeService
             $query->whereIn('users.id', $viewer->visibleEmployeeIds());
         }
 
-        // Keep parity with Employee section: exclude notice/probation records using a single schema lookup.
+        // Keep parity with Employee section: exclude inactive, notice, and probation records using a single schema lookup.
         $connection = $query->getModel()->getConnectionName() ?: config('database.default');
         $detailColumns = array_flip(Schema::connection($connection)->getColumnListing('employee_details'));
 
@@ -59,7 +64,7 @@ class OrganizationTreeService
             $query->whereDoesntHave('employeeDetail', function ($q) use ($detailColumns) {
                 $q->where(function ($sub) use ($detailColumns) {
                     if (isset($detailColumns['status'])) {
-                        $sub->whereIn('status', ['notice', 'probation']);
+                        $sub->whereIn('status', ['notice', 'probation', 'inactive', 'Inactive']);
                     }
                     if (isset($detailColumns['notice_end_date'])) {
                         $sub->orWhereNotNull('notice_end_date');
@@ -71,7 +76,36 @@ class OrganizationTreeService
             });
         }
 
-        return $query->orderBy('users.id')->get();
+        return $query;
+    }
+
+    public function buildProfile(?User $viewer, ?int $selectedCompanyId, int $employeeId): array
+    {
+        $employee = $this->employeeQuery($viewer, $selectedCompanyId)->with('employeeDetail')->findOrFail($employeeId);
+        $detail = $employee->employeeDetail;
+        $sections = [
+            'Work profile' => [
+                'Business address' => $detail?->business_address,
+                'Language' => $detail?->language,
+                'About' => $detail?->directory_about ?: $detail?->about,
+            ],
+        ];
+
+        if (TenantScope::isPlatformAdmin() || ($viewer && ((int) $viewer->id === (int) $employee->id || in_array($viewer->normalizedRole(), ['admin', 'hr'], true)))) {
+            $sections['Personal information'] = [
+                'Date of birth' => $detail?->dob?->format('d M Y'),
+                'Marital status' => $detail?->marital_status,
+            ];
+            $sections['Account and employment record'] = [
+                'Hourly rate' => $detail?->hourly_rate,
+                'Login allowed' => $detail?->login_allowed === null ? null : ($detail->login_allowed ? 'Yes' : 'No'),
+                'Email notifications' => $detail?->email_notifications === null ? null : ($detail->email_notifications ? 'Enabled' : 'Disabled'),
+                'Profile created' => $employee->created_at?->format('d M Y, h:i A'),
+                'Profile updated' => $employee->updated_at?->format('d M Y, h:i A'),
+            ];
+        }
+
+        return ['id' => (int) $employee->id, 'sections' => $sections];
     }
 
     public function buildPayload(?User $viewer, ?int $selectedCompanyId = null): array
