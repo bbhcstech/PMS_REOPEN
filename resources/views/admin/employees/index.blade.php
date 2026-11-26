@@ -5,19 +5,21 @@
 @endsection
 
 @section('content')
-<div class="employee-dashboard" id="employee-directory">
+<div id="employeeDirectoryPage" class="employee-dashboard employee-directory-modern">
 
-    <div class="breadcrumb-wrapper">
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item">
-                    <a href="{{ route('dashboard') }}">
-                        <i class="fas fa-house" aria-hidden="true"></i> Dashboard
-                    </a>
-                </li>
-                <li class="breadcrumb-item active" aria-current="page">Employees</li>
-            </ol>
-        </nav>
+    <div class="emp-breadcrumb-row">
+        <div class="breadcrumb-wrapper">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="{{ route('dashboard') }}">
+                            <i class="fas fa-house" aria-hidden="true"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">Employees</li>
+                </ol>
+            </nav>
+        </div>
     </div>
 
     @php
@@ -60,6 +62,9 @@
             }
             return $chain;
         };
+
+        $emptyCompanyName = ($selectedCompanyId ? $companies->firstWhere('id', $selectedCompanyId)?->name : null)
+            ?: (session('current_company_name') ?: (auth()->user()?->company?->name ?? config('app.name')));
     @endphp
 
     <header class="directory-hero">
@@ -407,7 +412,7 @@
     </div>
 
     <div class="table-card">
-        <div class="directory-panel-header" data-pms-table-header>
+        <div class="directory-panel-header">
             <div class="directory-panel-title">
                 <span class="directory-panel-icon" aria-hidden="true"><i class="fas fa-list-ul"></i></span>
                 <h2>Employee List</h2>
@@ -418,8 +423,23 @@
             </button>
         </div>
 
+        @if($visibleEmployees->isEmpty())
+            <div class="empty-state">
+                <span class="directory-panel-icon" aria-hidden="true"><i class="fas fa-users"></i></span>
+                <h3>No employees found</h3>
+                <p>Adjust your filters, add an employee to {{ $emptyCompanyName }}, or send invitations.</p>
+                <div class="empty-state-actions">
+                    <a href="{{ route('employees.create') }}" class="btn directory-button directory-button-primary">
+                        <i class="fas fa-user-plus" aria-hidden="true"></i>Add First Employee
+                    </a>
+                    <button type="button" class="btn directory-button" data-bs-toggle="modal" data-bs-target="#inviteModal">
+                        <i class="fas fa-envelope" aria-hidden="true"></i>Send Invitations
+                    </button>
+                </div>
+            </div>
+        @else
         <div class="table-responsive !w-full !overflow-x-auto">
-            <table id="employeeTable" class="table table-hover align-middle mb-0 employee-list-table !min-w-[1200px] md:!min-w-full">
+            <table id="employeeTable" data-pms-export="off" class="table table-hover align-middle mb-0 employee-list-table">
                 <thead>
                     <tr>
                         <th width="58" class="no-export" data-pms-selection-column aria-label="Select rows">
@@ -437,20 +457,6 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @if($visibleEmployees->isEmpty())
-                        <tr>
-                            <td colspan="8" class="text-center py-5">
-                                <div class="empty-state">
-                                    <span class="directory-panel-icon" aria-hidden="true"><i class="fas fa-users"></i></span>
-                                    <h3>No employees found</h3>
-                                    <p>Try adjusting your filters or add a new employee.</p>
-                                    <a href="{{ route('employees.create') }}" class="btn directory-button directory-button-primary">
-                                        <i class="fas fa-user-plus" aria-hidden="true"></i>Add First Employee
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
-                    @else
                         @foreach($visibleEmployees as $employee)
                         <tr id="employee-row-{{ $employee->id }}"
                             class="@if(isset($employee->subordinate_count) && $employee->subordinate_count > 0) table-warning @endif">
@@ -616,13 +622,11 @@
                             </td>
                         </tr>
                         @endforeach
-                    @endif
                 </tbody>
             </table>
         </div>
 
-        {{-- Pagination & Show Entries - PERFECT ALIGNMENT --}}
-        @if(!$visibleEmployees->isEmpty())
+        {{-- Pagination & Show Entries --}}
         <div class="table-footer !flex !flex-col !gap-4 !p-4 sm:!p-5 lg:!flex-row lg:!items-center lg:!justify-between">
             <div class="footer-left !flex !w-full !justify-center lg:!w-auto lg:!justify-start">
                 <div class="show-entries !flex !flex-wrap !items-center !justify-center !gap-2">
@@ -652,7 +656,7 @@
             <div class="footer-right !flex !w-full !justify-center lg:!w-auto lg:!justify-end">
                 <div class="pagination !flex !flex-wrap !justify-center !gap-2">
                     @if($employees->onFirstPage())
-                        <button class="page-btn disabled">
+                        <button class="page-btn disabled" type="button" disabled>
                             <i class="fas fa-chevron-left"></i>
                         </button>
                     @else
@@ -690,7 +694,7 @@
                             <i class="fas fa-chevron-right"></i>
                         </a>
                     @else
-                        <button class="page-btn disabled">
+                        <button class="page-btn disabled" type="button" disabled>
                             <i class="fas fa-chevron-right"></i>
                         </button>
                     @endif

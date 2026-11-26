@@ -3,877 +3,99 @@
 @section('title', 'Attendance Report')
 
 @section('content')
-<style>
-    /* ===== PREMIUM ATTENDANCE REPORT STYLES ===== */
-    :root {
-        --primary-blue: #2F6BFF;
-        --primary-hover: #1E4FCC;
-        --primary-teal: #2F6BFF;
-        --primary-accent: #22D3EE;
-        --primary-green: #8B5CF6;
-        --bg-light: #f8fafc;
-        --glass-border: rgba(255, 255, 255, 0.7);
-        --card-shadow: 0px 4px 20px rgba(0, 0, 0, 0.02),
-            0px 8px 40px rgba(0, 0, 0, 0.04),
-            0px 20px 60px rgba(47, 107, 255, 0.06);
-        --card-shadow-hover: 0px 20px 50px rgba(0, 0, 0, 0.08),
-            0px 30px 80px rgba(47, 107, 255, 0.12);
-        --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        --spring-transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
-
-    .report-container {
-        background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 50%, #f1f5f9 100%);
-        min-height: calc(100vh - 100px);
-        padding: 2rem 1.75rem;
-        position: relative;
-        overflow: hidden;
-    }
-
-    /* Ambient Orbs */
-    .ambient-orb {
-        position: absolute;
-        border-radius: 50%;
-        filter: blur(130px);
-        opacity: 0.35;
-        pointer-events: none;
-        z-index: 1;
-    }
-
-    .orb-1 {
-        top: -100px;
-        right: -100px;
-        width: 500px;
-        height: 500px;
-        background: radial-gradient(circle, rgba(47, 107, 255, 0.12) 0%, transparent 70%);
-        animation: orbFloat 20s ease-in-out infinite;
-    }
-
-    .orb-2 {
-        bottom: -100px;
-        left: -100px;
-        width: 450px;
-        height: 450px;
-        background: radial-gradient(circle, rgba(34, 211, 238, 0.1) 0%, transparent 70%);
-        animation: orbFloat 25s ease-in-out infinite reverse;
-    }
-
-    .orb-3 {
-        top: 50%;
-        left: 50%;
-        width: 400px;
-        height: 400px;
-        background: radial-gradient(circle, rgba(139, 92, 246, 0.08) 0%, transparent 70%);
-        animation: orbFloat 18s ease-in-out infinite;
-        transform: translate(-50%, -50%);
-    }
-
-    @keyframes orbFloat {
-        0%, 100% { transform: translate(0, 0) scale(1); }
-        33% { transform: translate(40px, -30px) scale(1.05); }
-        66% { transform: translate(-30px, 40px) scale(0.95); }
-    }
-
-    .content-wrapper {
-        position: relative;
-        z-index: 10;
-    }
-
-    /* ===== HEADER ===== */
-    .report-header {
-        background: rgba(255, 255, 255, 0.92);
-        backdrop-filter: blur(20px);
-        border-radius: 28px;
-        padding: 1.75rem 2.25rem;
-        margin-bottom: 2rem;
-        border: 1px solid var(--glass-border);
-        box-shadow: var(--card-shadow);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 1rem;
-        animation: slideDown 0.6s ease;
-        transition: var(--spring-transition);
-    }
-
-    .report-header:hover {
-        box-shadow: var(--card-shadow-hover);
-        border-color: rgba(47, 107, 255, 0.2);
-    }
-
-    @keyframes slideDown {
-        from { opacity: 0; transform: translateY(-30px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-
-    .header-title h1 {
-        font-size: 2rem;
-        font-weight: 800;
-        background: linear-gradient(135deg, var(--primary-blue), var(--primary-accent), var(--primary-green));
-        -webkit-background-clip: text;
-        background-clip: text;
-        color: transparent;
-        margin-bottom: 0.25rem;
-        letter-spacing: -0.03em;
-    }
-
-    .header-title p {
-        color: #64748b;
-        font-size: 0.95rem;
-        font-weight: 500;
-        margin: 0;
-    }
-
-    .header-title p i {
-        color: var(--primary-blue);
-    }
-
-    /* ===== FILTER CARD ===== */
-    .filter-card {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(20px);
-        border-radius: 24px;
-        padding: 1.5rem 2rem;
-        margin-bottom: 1.5rem;
-        border: 1px solid var(--glass-border);
-        box-shadow: var(--card-shadow);
-        transition: var(--spring-transition);
-    }
-
-    .filter-card:hover {
-        box-shadow: var(--card-shadow-hover);
-    }
-
-    .filter-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 1rem;
-        align-items: end;
-    }
-
-    .filter-group {
-        display: flex;
-        flex-direction: column;
-        gap: 0.3rem;
-    }
-
-    .filter-group label {
-        font-size: 0.7rem;
-        font-weight: 700;
-        color: #64748b;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        display: flex;
-        align-items: center;
-        gap: 0.4rem;
-    }
-
-    .filter-group label i {
-        color: var(--primary-teal);
-        font-size: 0.75rem;
-    }
-
-    .filter-group select {
-        padding: 0.65rem 1rem;
-        border: 2px solid #e2e8f0;
-        border-radius: 14px;
-        font-size: 0.9rem;
-        font-weight: 500;
-        color: #0f172a;
-        background: white;
-        transition: var(--transition-smooth);
-        outline: none;
-        min-height: 46px;
-        width: 100%;
-        appearance: none;
-        -webkit-appearance: none;
-        cursor: pointer;
-        padding-right: 2.5rem;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394a3b8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
-        background-repeat: no-repeat;
-        background-position: right 1rem center;
-    }
-
-    .filter-group select:focus {
-        border-color: var(--primary-teal);
-        box-shadow: 0 0 0 4px rgba(14, 165, 164, 0.12);
-    }
-
-    .filter-group select option {
-        padding: 0.5rem;
-    }
-
-    .filter-actions {
-        display: flex;
-        gap: 0.75rem;
-        align-items: center;
-        flex-wrap: wrap;
-    }
-
-    .btn-filter {
-        background: linear-gradient(135deg, #2F6BFF, #1E4FCC);
-        color: white;
-        padding: 0.65rem 1.75rem;
-        border-radius: 40px;
-        border: none;
-        font-weight: 700;
-        font-size: 0.9rem;
-        cursor: pointer;
-        transition: var(--spring-transition);
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        min-height: 46px;
-        box-shadow: 0 4px 15px rgba(47, 107, 255, 0.2);
-    }
-
-    .btn-filter:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(47, 107, 255, 0.3);
-    }
-
-    /* ===== SUMMARY CARD ===== */
-    .summary-card {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(20px);
-        border-radius: 24px;
-        padding: 1.5rem 2rem;
-        margin-bottom: 1.5rem;
-        border: 1px solid var(--glass-border);
-        box-shadow: var(--card-shadow);
-        transition: var(--spring-transition);
-    }
-
-    .summary-card:hover {
-        box-shadow: var(--card-shadow-hover);
-    }
-
-    .summary-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 0.75rem;
-        margin-bottom: 1rem;
-    }
-
-    .summary-header h6 {
-        font-weight: 700;
-        color: #0f172a;
-        margin: 0;
-        font-size: 1rem;
-    }
-
-    .summary-header h6 i {
-        color: var(--primary-teal);
-        margin-right: 0.5rem;
-    }
-
-    .summary-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-        gap: 0.75rem;
-    }
-
-    .summary-item {
-        display: flex;
-        align-items: center;
-        gap: 0.6rem;
-        padding: 0.6rem 1rem;
-        background: #f8fafc;
-        border-radius: 14px;
-        border: 1px solid #e2e8f0;
-        transition: var(--transition-smooth);
-    }
-
-    .summary-item:hover {
-        transform: translateY(-2px);
-        border-color: var(--primary-teal);
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-    }
-
-    .summary-icon {
-        width: 32px;
-        height: 32px;
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 14px;
-        flex-shrink: 0;
-    }
-
-    .summary-icon.present { background: #E0E7FF; }
-    .summary-icon.late { background: #fef3c7; }
-    .summary-icon.absent { background: #fee2e2; }
-    .summary-icon.leave { background: #cffafe; }
-    .summary-icon.halfday { background: #ede9fe; }
-    .summary-icon.holiday { background: #ffedd5; }
-    .summary-icon.dayoff { background: #dbeafe; }
-
-    .summary-info {
-        flex: 1;
-    }
-
-    .summary-info .label {
-        font-size: 0.65rem;
-        color: #94a3b8;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.03em;
-    }
-
-    .summary-info .value {
-        font-size: 1.1rem;
-        font-weight: 800;
-        color: #0f172a;
-        line-height: 1.2;
-    }
-
-    /* ===== EXPORT BUTTONS ===== */
-    .export-section {
-        display: flex;
-        gap: 0.75rem;
-        flex-wrap: wrap;
-        margin-bottom: 1.5rem;
-    }
-
-    .btn-export-excel {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.6rem 1.5rem;
-        background: linear-gradient(135deg, #16a34a, #22c55e);
-        color: white;
-        border: none;
-        border-radius: 40px;
-        font-weight: 700;
-        font-size: 0.85rem;
-        cursor: pointer;
-        transition: var(--spring-transition);
-        text-decoration: none;
-        box-shadow: 0 4px 15px rgba(34, 197, 94, 0.25);
-    }
-
-    .btn-export-excel:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(34, 197, 94, 0.35);
-        color: white;
-    }
-
-    .btn-export-pdf {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.6rem 1.5rem;
-        background: linear-gradient(135deg, #dc2626, #ef4444);
-        color: white;
-        border: none;
-        border-radius: 40px;
-        font-weight: 700;
-        font-size: 0.85rem;
-        cursor: pointer;
-        transition: var(--spring-transition);
-        text-decoration: none;
-        box-shadow: 0 4px 15px rgba(239, 68, 68, 0.25);
-    }
-
-    .btn-export-pdf:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(239, 68, 68, 0.35);
-        color: white;
-    }
-
-    /* ===== TABLE CARD ===== */
-    .table-card {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(20px);
-        border-radius: 28px;
-        overflow: hidden;
-        border: 1px solid var(--glass-border);
-        box-shadow: var(--card-shadow);
-        transition: var(--spring-transition);
-    }
-
-    .table-card:hover {
-        box-shadow: var(--card-shadow-hover);
-    }
-
-    .table-header {
-        padding: 1.25rem 1.75rem;
-        border-bottom: 1px solid #e2e8f0;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 0.75rem;
-    }
-
-    .table-header h6 {
-        font-weight: 700;
-        color: #0f172a;
-        margin: 0;
-        font-size: 1rem;
-    }
-
-    .table-header h6 i {
-        color: var(--primary-teal);
-        margin-right: 0.5rem;
-    }
-
-    .table-header .employee-name {
-        font-weight: 700;
-        color: var(--primary-teal);
-    }
-
-    .table-responsive {
-        overflow-x: auto;
-        padding: 1rem 1.5rem 1.5rem;
-    }
-
-    .attendance-grid {
-        width: 100%;
-        border-collapse: separate;
-        border-spacing: 2px;
-        min-width: 700px;
-    }
-
-    .attendance-grid th {
-        padding: 0.6rem 0.4rem;
-        background: #f1f5f9;
-        border-radius: 8px;
-        font-size: 0.7rem;
-        font-weight: 700;
-        color: #475569;
-        text-align: center;
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-        border: 1px solid #e2e8f0;
-    }
-
-    .attendance-grid th .day-number {
-        font-size: 0.9rem;
-        font-weight: 800;
-        color: #0f172a;
-        display: block;
-    }
-
-    .attendance-grid th .day-name {
-        font-size: 0.6rem;
-        color: #94a3b8;
-        font-weight: 600;
-    }
-
-    .attendance-grid td {
-        padding: 0.6rem 0.4rem;
-        text-align: center;
-        font-size: 1.2rem;
-        border: 1px solid #e2e8f0;
-        border-radius: 8px;
-        background: white;
-        transition: var(--transition-smooth);
-        min-width: 40px;
-    }
-
-    .attendance-grid td:hover {
-        transform: scale(1.05);
-        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
-        z-index: 2;
-        position: relative;
-    }
-
-    .attendance-grid td .status-tooltip {
-        display: none;
-        position: absolute;
-        bottom: 100%;
-        left: 50%;
-        transform: translateX(-50%);
-        background: #0f172a;
-        color: white;
-        padding: 0.25rem 0.6rem;
-        border-radius: 6px;
-        font-size: 0.6rem;
-        font-weight: 600;
-        white-space: nowrap;
-        margin-bottom: 4px;
-    }
-
-    .attendance-grid td:hover .status-tooltip {
-        display: block;
-    }
-
-    .attendance-grid td.present { background: #E0E7FF; border-color: #86efac; }
-    .attendance-grid td.absent { background: #fee2e2; border-color: #fca5a5; }
-    .attendance-grid td.late { background: #fef3c7; border-color: #fcd34d; }
-    .attendance-grid td.half_day { background: #ede9fe; border-color: #c4b5fd; }
-    .attendance-grid td.leave { background: #cffafe; border-color: #67e8f9; }
-    .attendance-grid td.holiday { background: #ffedd5; border-color: #fdba74; }
-    .attendance-grid td.dayoff { background: #dbeafe; border-color: #93c5fd; }
-    .attendance-grid td.default { background: #f8fafc; border-color: #e2e8f0; }
-
-    /* ===== EMPTY STATE ===== */
-    .empty-state {
-        text-align: center;
-        padding: 3rem 2rem;
-    }
-
-    .empty-state .empty-icon {
-        font-size: 3rem;
-        margin-bottom: 1rem;
-        opacity: 0.5;
-    }
-
-    .empty-state h5 {
-        font-weight: 700;
-        color: #0f172a;
-        margin-bottom: 0.5rem;
-    }
-
-    .empty-state p {
-        color: #94a3b8;
-    }
-
-    /* ===== RESPONSIVE ===== */
-    @media (max-width: 992px) {
-        .report-container {
-            padding: 1.5rem 1.25rem;
-        }
-        .report-header {
-            padding: 1.5rem;
-        }
-        .header-title h1 {
-            font-size: 1.6rem;
-        }
-        .filter-grid {
-            grid-template-columns: repeat(2, 1fr);
-        }
-        .summary-grid {
-            grid-template-columns: repeat(3, 1fr);
-        }
-    }
-
-    @media (max-width: 768px) {
-        .report-container {
-            padding: 1rem;
-        }
-        .report-header {
-            flex-direction: column;
-            align-items: flex-start;
-        }
-        .filter-grid {
-            grid-template-columns: 1fr;
-        }
-        .filter-actions {
-            width: 100%;
-        }
-        .btn-filter {
-            width: 100%;
-            justify-content: center;
-        }
-        .summary-grid {
-            grid-template-columns: repeat(2, 1fr);
-        }
-        .summary-header {
-            flex-direction: column;
-            align-items: flex-start;
-        }
-        .export-section {
-            flex-direction: column;
-            width: 100%;
-        }
-        .btn-export-excel,
-        .btn-export-pdf {
-            justify-content: center;
-            width: 100%;
-        }
-        .table-responsive {
-            padding: 0.5rem 0.75rem 0.75rem;
-        }
-        .attendance-grid th .day-number {
-            font-size: 0.75rem;
-        }
-        .attendance-grid th .day-name {
-            font-size: 0.5rem;
-        }
-        .attendance-grid td {
-            font-size: 1rem;
-            padding: 0.4rem 0.2rem;
-            min-width: 30px;
-        }
-    }
-
-    @media (max-width: 480px) {
-        .header-title h1 {
-            font-size: 1.3rem;
-        }
-        .header-title p {
-            font-size: 0.8rem;
-        }
-        .summary-grid {
-            grid-template-columns: 1fr 1fr;
-            gap: 0.5rem;
-        }
-        .summary-item {
-            padding: 0.4rem 0.6rem;
-        }
-        .summary-info .value {
-            font-size: 0.95rem;
-        }
-        .attendance-grid td {
-            font-size: 0.85rem;
-            padding: 0.3rem 0.15rem;
-            min-width: 24px;
-        }
-        .attendance-grid th {
-            font-size: 0.55rem;
-            padding: 0.3rem 0.15rem;
-        }
-        .attendance-grid th .day-number {
-            font-size: 0.65rem;
-        }
-        .filter-group select {
-            font-size: 0.8rem;
-            min-height: 40px;
-            padding: 0.5rem 0.8rem;
-        }
-        .btn-filter {
-            font-size: 0.8rem;
-            min-height: 40px;
-            padding: 0.5rem 1.25rem;
-        }
-    }
-
-    /* ===== DARK MODE ===== */
-    html[data-pms-theme="dark"] .report-container {
-        background: linear-gradient(145deg, #070B1A, #0F1530);
-    }
-
-    html[data-pms-theme="dark"] .report-header,
-    html[data-pms-theme="dark"] .filter-card,
-    html[data-pms-theme="dark"] .summary-card,
-    html[data-pms-theme="dark"] .table-card {
-        background: rgba(15, 21, 48, 0.95);
-        border-color: rgba(79, 131, 255, 0.15);
-    }
-
-    html[data-pms-theme="dark"] .header-title h1 {
-        background: linear-gradient(135deg, #60a5fa, #2F6BFF, #8B5CF6);
-        -webkit-background-clip: text;
-        background-clip: text;
-    }
-
-    html[data-pms-theme="dark"] .header-title p {
-        color: #C7D2FE;
-    }
-
-    html[data-pms-theme="dark"] .filter-group label {
-        color: #94a3b8;
-    }
-
-    html[data-pms-theme="dark"] .filter-group select {
-        background: #141B3D;
-        border-color: rgba(79, 131, 255, 0.2);
-        color: #ffffff;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
-    }
-
-    html[data-pms-theme="dark"] .filter-group select:focus {
-        border-color: #60A5FA;
-        box-shadow: 0 0 0 4px rgba(79, 131, 255, 0.12);
-    }
-
-    html[data-pms-theme="dark"] .filter-group select option {
-        background: #141B3D;
-        color: #ffffff;
-    }
-
-    html[data-pms-theme="dark"] .summary-item {
-        background: #141B3D;
-        border-color: rgba(79, 131, 255, 0.15);
-    }
-
-    html[data-pms-theme="dark"] .summary-info .value {
-        color: #ffffff;
-    }
-
-    html[data-pms-theme="dark"] .summary-info .label {
-        color: #94a3b8;
-    }
-
-    html[data-pms-theme="dark"] .summary-header h6 {
-        color: #ffffff;
-    }
-
-    html[data-pms-theme="dark"] .table-header h6 {
-        color: #ffffff;
-    }
-
-    html[data-pms-theme="dark"] .table-header .employee-name {
-        color: #60A5FA;
-    }
-
-    html[data-pms-theme="dark"] .attendance-grid th {
-        background: #141B3D;
-        color: #94a3b8;
-        border-color: rgba(79, 131, 255, 0.15);
-    }
-
-    html[data-pms-theme="dark"] .attendance-grid th .day-number {
-        color: #ffffff;
-    }
-
-    html[data-pms-theme="dark"] .attendance-grid th .day-name {
-        color: #64748b;
-    }
-
-    html[data-pms-theme="dark"] .attendance-grid td {
-        background: #0F1530;
-        border-color: rgba(79, 131, 255, 0.12);
-    }
-
-    html[data-pms-theme="dark"] .attendance-grid td.present { background: rgba(47, 107, 255, 0.2); border-color: rgba(79, 131, 255, 0.3); }
-    html[data-pms-theme="dark"] .attendance-grid td.absent { background: #450a0a; border-color: #7f1d1d; }
-    html[data-pms-theme="dark"] .attendance-grid td.late { background: #451a03; border-color: #78350f; }
-    html[data-pms-theme="dark"] .attendance-grid td.half_day { background: #2e1065; border-color: #4c1d95; }
-    html[data-pms-theme="dark"] .attendance-grid td.leave { background: #164e63; border-color: #155e75; }
-    html[data-pms-theme="dark"] .attendance-grid td.holiday { background: #431407; border-color: #7c2d12; }
-    html[data-pms-theme="dark"] .attendance-grid td.dayoff { background: #172554; border-color: #1e3a8a; }
-    html[data-pms-theme="dark"] .attendance-grid td.default { background: #0F1530; border-color: rgba(79, 131, 255, 0.08); }
-
-    html[data-pms-theme="dark"] .empty-state h5 {
-        color: #ffffff;
-    }
-
-    html[data-pms-theme="dark"] .empty-state p {
-        color: #94a3b8;
-    }
-</style>
-
-<div class="report-container">
-    <div class="ambient-orb orb-1"></div>
-    <div class="ambient-orb orb-2"></div>
-    <div class="ambient-orb orb-3"></div>
-
-    <div class="content-wrapper">
-        <!-- ===== HEADER ===== -->
-        <div class="report-header">
-            <div class="header-title">
-                <h1>
-                    <i class="fas fa-file-alt me-2"></i>Attendance Report
-                </h1>
-                <p><i class="fas fa-info-circle me-1"></i>View and analyze employee attendance records</p>
+<div class="container-fluid px-4 pt-1 pb-4 attendance-report-page">
+    <!-- Header -->
+    <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-4 attendance-report-header">
+        <div class="attendance-report-header__left">
+            <div class="d-flex align-items-center gap-2 mb-2">
+                <div class="header-icon-badge attendance-report-header__icon" aria-hidden="true">
+                    <i class="bx bx-calendar-check"></i>
+                </div>
+                <h3 id="attendance-report-heading" class="attendance-report-header__title mb-0">Attendance Report</h3>
+            </div>
+            <div class="d-flex flex-wrap align-items-center gap-2 attendance-report-header__meta">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb attendance-report-breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="{{ route('dashboard') }}" class="text-decoration-none">Dashboard</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Attendance Report</li>
+                    </ol>
+                </nav>
+                <span class="attendance-report-header__dot" aria-hidden="true">·</span>
+                <p class="attendance-report-header__subtitle mb-0">View, track, and analyze monthly employee attendance records across the organisation.</p>
             </div>
         </div>
 
-        <!-- ===== FILTER CARD ===== -->
-        <div class="filter-card">
-            <form method="GET" class="filter-grid">
-                <div class="filter-group">
-                    <label for="user_id"><i class="fas fa-user"></i> Employee</label>
-                    <select name="user_id" id="user_id" class="form-select">
-                        <option value="">-- Select Employee --</option>
-                        @foreach($users as $user)
-                            <option value="{{ $user->id }}" {{ request('user_id') == $user->id ? 'selected' : '' }}>
-                                {{ $user->name }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
+        <div class="attendance-sync-pill" aria-label="Attendance status: Attendance Records Synchronized">
+            <span class="attendance-sync-pill__dot" aria-hidden="true"></span>
+            <span class="attendance-sync-pill__text">Attendance Records Synchronized</span>
+        </div>
+    </div>
 
-                <div class="filter-group">
-                    <label for="month"><i class="fas fa-calendar-alt"></i> Month</label>
-                    <select name="month" id="month" class="form-select">
-                        @foreach(range(1, 12) as $m)
-                            <option value="{{ $m }}" {{ $m == $month ? 'selected' : '' }}>
-                                {{ \Carbon\Carbon::createFromDate(null, $m)->format('F') }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
+    <!-- Filter Card -->
+    <div class="card attendance-report-card attendance-report-filter-card mb-4">
+        <div class="card-body">
+            <form method="GET">
+                <div class="row g-3 align-items-end">
+                    <div class="col-lg-4 col-md-6">
+                        <label for="user_id" class="form-label attendance-report-filter-label">Employee</label>
+                        <select name="user_id" id="user_id" class="form-select attendance-report-select">
+                            <option value="">-- Select Employee --</option>
+                            @foreach($users as $user)
+                                <option value="{{ $user->id }}" {{ request('user_id') == $user->id ? 'selected' : '' }}>
+                                    {{ $user->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
 
-                <div class="filter-group">
-                    <label for="year"><i class="fas fa-calendar"></i> Year</label>
-                    <select name="year" id="year" class="form-select">
-                        @foreach(range(date('Y') - 2, date('Y') + 1) as $y)
-                            <option value="{{ $y }}" {{ $y == $year ? 'selected' : '' }}>{{ $y }}</option>
-                        @endforeach
-                    </select>
-                </div>
+                    <div class="col-lg-3 col-md-6">
+                        <label for="month" class="form-label attendance-report-filter-label">Month</label>
+                        <select name="month" id="month" class="form-select attendance-report-select">
+                            @foreach(range(1, 12) as $m)
+                                <option value="{{ $m }}" {{ $m == $month ? 'selected' : '' }}>
+                                    {{ \Carbon\Carbon::createFromDate(null, $m)->format('F') }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
 
-                <div class="filter-group">
-                    <label>&nbsp;</label>
-                    <button type="submit" class="btn-filter">
-                        <i class="fas fa-search"></i> Filter
-                    </button>
+                    <div class="col-lg-2 col-md-6">
+                        <label for="year" class="form-label attendance-report-filter-label">Year</label>
+                        <select name="year" id="year" class="form-select attendance-report-select">
+                            @foreach(range(date('Y') - 2, date('Y') + 1) as $y)
+                                <option value="{{ $y }}" {{ $y == $year ? 'selected' : '' }}>{{ $y }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="col-lg-3 col-md-6 d-flex flex-wrap align-items-center gap-2">
+                        <button type="submit" class="btn btn-primary attendance-report-btn-filter text-nowrap">
+                            <i class="bx bx-filter-alt me-1" aria-hidden="true"></i> Filter
+                        </button>
+                        <a href="{{ route('attendance.report') }}" class="btn attendance-report-btn-reset text-nowrap">
+                            <i class="bx bx-refresh me-1" aria-hidden="true"></i> Reset
+                        </a>
+                    </div>
                 </div>
             </form>
         </div>
+    </div>
 
-        @if($selectedUser)
-            <!-- ===== SUMMARY CARD ===== -->
-            <div class="summary-card">
-                <div class="summary-header">
-                    <h6><i class="fas fa-chart-pie"></i> Summary for <span style="color: var(--primary-teal);">{{ $selectedUser->name }}</span></h6>
-                    <span style="font-size: 0.75rem; color: #94a3b8;">
-                        <i class="fas fa-calendar-alt me-1"></i>
-                        {{ \Carbon\Carbon::createFromDate(null, $month)->format('F Y') }}
-                    </span>
-                </div>
-                <div class="summary-grid">
-                    <div class="summary-item">
-                        <div class="summary-icon present">✔️</div>
-                        <div class="summary-info">
-                            <div class="label">Present</div>
-                            <div class="value">{{ $summary['present'] }}</div>
-                        </div>
-                    </div>
-                    <div class="summary-item">
-                        <div class="summary-icon late">⚠️</div>
-                        <div class="summary-info">
-                            <div class="label">Late</div>
-                            <div class="value">{{ $summary['late'] }}</div>
-                        </div>
-                    </div>
-                    <div class="summary-item">
-                        <div class="summary-icon absent">❌</div>
-                        <div class="summary-info">
-                            <div class="label">Absent</div>
-                            <div class="value">{{ $summary['absent'] }}</div>
-                        </div>
-                    </div>
-                    <div class="summary-item">
-                        <div class="summary-icon leave">🛫</div>
-                        <div class="summary-info">
-                            <div class="label">Leave</div>
-                            <div class="value">{{ $summary['leave'] }}</div>
-                        </div>
-                    </div>
-                    <div class="summary-item">
-                        <div class="summary-icon halfday">⏳</div>
-                        <div class="summary-info">
-                            <div class="label">Half Day</div>
-                            <div class="value">{{ $summary['half_day'] ?? 0 }}</div>
-                        </div>
-                    </div>
-                    <div class="summary-item">
-                        <div class="summary-icon holiday">⭐</div>
-                        <div class="summary-info">
-                            <div class="label">Holiday</div>
-                            <div class="value">{{ $summary['holiday'] ?? 0 }}</div>
-                        </div>
-                    </div>
-                </div>
+    @if($selectedUser)
+        <!-- Summary Header + Stat Cards -->
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+            <div class="d-flex align-items-center gap-2">
+                <span class="attendance-summary-title">Summary for <strong>{{ $selectedUser->name }}</strong></span>
+                <span class="attendance-period-badge">{{ \Carbon\Carbon::createFromDate(null, $month)->format('F Y') }}</span>
             </div>
 
-            <!-- ===== EXPORT BUTTONS ===== -->
-            <div class="export-section">
+            <div class="d-flex flex-wrap align-items-center gap-2">
                 <form method="GET" action="{{ route('attendance.export.excel') }}" class="d-inline">
                     <input type="hidden" name="user_id" value="{{ $selectedUser->id }}">
                     <input type="hidden" name="month" value="{{ $month }}">
                     <input type="hidden" name="year" value="{{ $year }}">
-                    <button type="submit" class="btn-export-excel">
-                        <i class="fas fa-file-excel"></i> Export Excel
+                    <button type="submit" class="btn attendance-export-btn attendance-export-btn--excel">
+                        <i class="bx bx-spreadsheet me-1" aria-hidden="true"></i> Export Excel
                     </button>
                 </form>
 
@@ -881,26 +103,115 @@
                     <input type="hidden" name="user_id" value="{{ $selectedUser->id }}">
                     <input type="hidden" name="month" value="{{ $month }}">
                     <input type="hidden" name="year" value="{{ $year }}">
-                    <button type="submit" class="btn-export-pdf">
-                        <i class="fas fa-file-pdf"></i> Export PDF
+                    <button type="submit" class="btn attendance-export-btn attendance-export-btn--pdf">
+                        <i class="bx bxs-file-pdf me-1" aria-hidden="true"></i> Export PDF
                     </button>
                 </form>
             </div>
+        </div>
 
-            <!-- ===== TABLE CARD ===== -->
-            <div class="table-card">
-                <div class="table-header">
-                    <h6>
-                        <i class="fas fa-calendar-check"></i>
-                        Attendance Grid
-                        <span class="employee-name"> — {{ $selectedUser->name }}</span>
-                    </h6>
-                    <span style="font-size: 0.75rem; color: #94a3b8;">
-                        <i class="fas fa-legend me-1"></i>
-                        ✔️ Present · ⚠️ Late · ❌ Absent · 🛫 Leave · ⏳ Half Day · ⭐ Holiday
-                    </span>
+        <div class="row g-3 mb-4">
+            <div class="col-xl-2 col-md-4 col-sm-6">
+                <div class="card attendance-report-stat-card h-100">
+                    <div class="card-body d-flex align-items-center justify-content-between gap-2">
+                        <div>
+                            <div class="attendance-report-stat-card__label">Present</div>
+                            <div class="attendance-report-stat-card__value">{{ $summary['present'] }}</div>
+                        </div>
+                        <div class="stat-icon attendance-report-stat-icon attendance-report-stat-icon--green" aria-hidden="true">
+                            <i class="bx bx-check-circle"></i>
+                        </div>
+                    </div>
                 </div>
-                <div class="table-responsive">
+            </div>
+
+            <div class="col-xl-2 col-md-4 col-sm-6">
+                <div class="card attendance-report-stat-card h-100">
+                    <div class="card-body d-flex align-items-center justify-content-between gap-2">
+                        <div>
+                            <div class="attendance-report-stat-card__label">Late</div>
+                            <div class="attendance-report-stat-card__value">{{ $summary['late'] }}</div>
+                        </div>
+                        <div class="stat-icon attendance-report-stat-icon attendance-report-stat-icon--amber" aria-hidden="true">
+                            <i class="bx bx-time-five"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-2 col-md-4 col-sm-6">
+                <div class="card attendance-report-stat-card h-100">
+                    <div class="card-body d-flex align-items-center justify-content-between gap-2">
+                        <div>
+                            <div class="attendance-report-stat-card__label">Absent</div>
+                            <div class="attendance-report-stat-card__value">{{ $summary['absent'] }}</div>
+                        </div>
+                        <div class="stat-icon attendance-report-stat-icon attendance-report-stat-icon--red" aria-hidden="true">
+                            <i class="bx bx-x-circle"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-2 col-md-4 col-sm-6">
+                <div class="card attendance-report-stat-card h-100">
+                    <div class="card-body d-flex align-items-center justify-content-between gap-2">
+                        <div>
+                            <div class="attendance-report-stat-card__label">Leave</div>
+                            <div class="attendance-report-stat-card__value">{{ $summary['leave'] }}</div>
+                        </div>
+                        <div class="stat-icon attendance-report-stat-icon attendance-report-stat-icon--cyan" aria-hidden="true">
+                            <i class="bx bx-calendar-minus"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-2 col-md-4 col-sm-6">
+                <div class="card attendance-report-stat-card h-100">
+                    <div class="card-body d-flex align-items-center justify-content-between gap-2">
+                        <div>
+                            <div class="attendance-report-stat-card__label">Half Day</div>
+                            <div class="attendance-report-stat-card__value">{{ $summary['half_day'] ?? 0 }}</div>
+                        </div>
+                        <div class="stat-icon attendance-report-stat-icon attendance-report-stat-icon--purple" aria-hidden="true">
+                            <i class="bx bx-hourglass"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-2 col-md-4 col-sm-6">
+                <div class="card attendance-report-stat-card h-100">
+                    <div class="card-body d-flex align-items-center justify-content-between gap-2">
+                        <div>
+                            <div class="attendance-report-stat-card__label">Holiday</div>
+                            <div class="attendance-report-stat-card__value">{{ $summary['holiday'] ?? 0 }}</div>
+                        </div>
+                        <div class="stat-icon attendance-report-stat-icon attendance-report-stat-icon--blue" aria-hidden="true">
+                            <i class="bx bx-star"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Attendance Grid Table Card -->
+        <div class="card attendance-report-card attendance-report-table-card">
+            <div class="table-header attendance-grid-header">
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 w-100">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="attendance-grid-header__title">Attendance Grid</span>
+                        <span class="attendance-grid-header__employee">— {{ $selectedUser->name }}</span>
+                    </div>
+                    <div class="attendance-grid-legend">
+                        ✔️ Present · ⚠️ Late · ❌ Absent · 🛫 Leave · ⏳ Half Day · ⭐ Holiday
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body p-0">
+                <div class="table-responsive" tabindex="0" role="region" aria-labelledby="attendance-report-heading">
                     <table class="attendance-grid">
                         <thead>
                             <tr>
@@ -908,7 +219,7 @@
                                     @php
                                         $date = \Carbon\Carbon::create($year, $month, $i);
                                     @endphp
-                                    <th>
+                                    <th scope="col">
                                         <span class="day-number">{{ $i }}</span>
                                         <span class="day-name">{{ $date->format('D') }}</span>
                                     </th>
@@ -946,15 +257,543 @@
                     </table>
                 </div>
             </div>
-        @else
-            <!-- ===== EMPTY STATE ===== -->
-            <div class="table-card">
-                <div class="empty-state">
-                    <div class="empty-icon">📋</div>
-                    <h5>Please Select an Employee</h5>
-                    <p>Choose an employee from the dropdown above to view their attendance report.</p>
+        </div>
+    @else
+        <!-- Empty State -->
+        <div class="card attendance-report-card attendance-report-table-card">
+            <div class="card-body">
+                <div class="attendance-report-empty">
+                    <div class="stat-icon attendance-report-empty__icon" aria-hidden="true">
+                        <i class="bx bx-calendar-check"></i>
+                        <span class="attendance-report-empty__badge"><i class="bx bx-search"></i></span>
+                    </div>
+                    <div class="attendance-report-empty__title">Please Select an Employee</div>
+                    <p class="attendance-report-empty__text mb-0">Choose an employee from the dropdown above to view their monthly attendance report.</p>
                 </div>
             </div>
-        @endif    </div>
+        </div>
+    @endif
 </div>
 @endsection
+
+@push('styles')
+<style>
+    .attendance-report-page {
+        accent-color: var(--pms-primary, #2F6BFF);
+    }
+
+    .attendance-report-header__left {
+        min-width: 0;
+        flex: 1 1 320px;
+    }
+
+    .attendance-report-header__icon {
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+        background: #EFF6FF;
+        border: 1px solid #DBEAFE;
+        color: #2F6BFF;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.05rem;
+        flex-shrink: 0;
+    }
+
+    .attendance-report-header__title {
+        font-size: 1.5rem;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        color: var(--pms-text, #0F172A);
+    }
+
+    .attendance-report-breadcrumb {
+        font-size: 0.78rem;
+        font-weight: 500;
+    }
+
+    .attendance-report-breadcrumb .breadcrumb-item a {
+        color: var(--pms-muted, #64748B);
+    }
+
+    .attendance-report-breadcrumb .breadcrumb-item.active {
+        color: var(--pms-text, #0F172A);
+        font-weight: 600;
+    }
+
+    .attendance-report-header__dot {
+        color: var(--pms-muted, #94A3B8);
+        font-weight: 700;
+    }
+
+    .attendance-report-header__subtitle {
+        font-size: 0.82rem;
+        color: var(--pms-muted, #64748B);
+    }
+
+    .attendance-sync-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 0.9rem;
+        border-radius: 10px;
+        background: var(--pms-surface, #FFFFFF);
+        border: 1px solid var(--pms-border, #E2E8F0);
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+        flex-shrink: 0;
+    }
+
+    .attendance-sync-pill__dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #10B981;
+        flex-shrink: 0;
+    }
+
+    .attendance-sync-pill__text {
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: var(--pms-text, #334155);
+        white-space: nowrap;
+    }
+
+    .attendance-report-stat-card,
+    .attendance-report-card {
+        background: var(--pms-surface, #FFFFFF);
+        border: 1px solid var(--pms-border, #E2E8F0) !important;
+        border-radius: 16px !important;
+        box-shadow: 0 2px 10px rgba(15, 23, 42, 0.03) !important;
+    }
+
+    .attendance-report-filter-card .card-body {
+        padding: 1.2rem 1.4rem;
+    }
+
+    .attendance-report-filter-label {
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: var(--pms-text, #0F172A);
+        margin-bottom: 0.45rem;
+    }
+
+    .attendance-report-select {
+        height: 42px;
+        border-radius: 10px !important;
+        border: 1px solid var(--pms-border, #E2E8F0) !important;
+        font-size: 0.86rem;
+        font-weight: 500;
+        padding-left: 0.9rem;
+    }
+
+    .attendance-report-btn-filter {
+        height: 42px;
+        border-radius: 10px !important;
+        padding: 0 1.25rem !important;
+        font-size: 0.86rem !important;
+        font-weight: 600 !important;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 1 1 auto;
+    }
+
+    .attendance-report-btn-reset {
+        height: 42px;
+        border-radius: 10px !important;
+        padding: 0 1.1rem !important;
+        font-size: 0.86rem !important;
+        font-weight: 600 !important;
+        background: var(--pms-surface, #FFFFFF) !important;
+        border: 1px solid var(--pms-border, #E2E8F0) !important;
+        color: var(--pms-text, #334155) !important;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 1 auto;
+        min-width: 100px;
+    }
+
+    .attendance-report-btn-reset:hover,
+    .attendance-report-btn-reset:focus-visible {
+        background: var(--pms-surface-soft, #F8FAFC) !important;
+        border-color: #CBD5E1 !important;
+        color: var(--pms-text, #0F172A) !important;
+    }
+
+    .attendance-summary-title {
+        font-size: 0.92rem;
+        color: var(--pms-muted, #64748B);
+    }
+
+    .attendance-summary-title strong {
+        color: var(--pms-text, #0F172A);
+    }
+
+    .attendance-period-badge {
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 0.28rem 0.65rem;
+        border-radius: 999px;
+        background: var(--pms-surface-soft, #F1F5F9);
+        border: 1px solid var(--pms-border, #E2E8F0);
+        color: var(--pms-muted, #64748B);
+    }
+
+    .attendance-export-btn {
+        height: 36px;
+        border-radius: 10px !important;
+        padding: 0 0.9rem !important;
+        font-size: 0.8rem !important;
+        font-weight: 600 !important;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--pms-border, #E2E8F0) !important;
+        background: var(--pms-surface, #FFFFFF) !important;
+        color: var(--pms-text, #334155) !important;
+    }
+
+    .attendance-export-btn--excel:hover {
+        background: #ECFDF5 !important;
+        border-color: #A7F3D0 !important;
+        color: #047857 !important;
+    }
+
+    .attendance-export-btn--pdf:hover {
+        background: #FEF2F2 !important;
+        border-color: #FECACA !important;
+        color: #B91C1C !important;
+    }
+
+    .attendance-report-stat-card .card-body {
+        padding: 1.05rem 1.15rem;
+    }
+
+    .attendance-report-stat-card__label {
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: var(--pms-muted, #64748B);
+        margin-bottom: 0.35rem;
+    }
+
+    .attendance-report-stat-card__value {
+        font-size: 1.55rem;
+        font-weight: 800;
+        line-height: 1.1;
+        color: var(--pms-text, #0F172A);
+    }
+
+    .attendance-report-stat-icon {
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+        flex-shrink: 0;
+    }
+
+    .attendance-report-stat-icon--blue {
+        background: #EFF6FF;
+        border: 1px solid #DBEAFE;
+        color: #2F6BFF;
+    }
+
+    .attendance-report-stat-icon--green {
+        background: #ECFDF5;
+        border: 1px solid #D1FAE5;
+        color: #10B981;
+    }
+
+    .attendance-report-stat-icon--amber {
+        background: #FFFBEB;
+        border: 1px solid #FEF3C7;
+        color: #D97706;
+    }
+
+    .attendance-report-stat-icon--red {
+        background: #FEF2F2;
+        border: 1px solid #FECACA;
+        color: #EF4444;
+    }
+
+    .attendance-report-stat-icon--cyan {
+        background: #ECFEFF;
+        border: 1px solid #CFFAFE;
+        color: #0891B2;
+    }
+
+    .attendance-report-stat-icon--purple {
+        background: #F5F3FF;
+        border: 1px solid #EDE9FE;
+        color: #7C3AED;
+    }
+
+    .attendance-grid-header {
+        padding: 1rem 1.35rem;
+        border-bottom: 1px solid var(--pms-border, #E2E8F0);
+        background: var(--pms-surface, #FFFFFF);
+        border-radius: 16px 16px 0 0;
+    }
+
+    .attendance-grid-header__title {
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: var(--pms-text, #0F172A);
+    }
+
+    .attendance-grid-header__employee {
+        font-size: 0.86rem;
+        font-weight: 600;
+        color: var(--pms-primary, #2F6BFF);
+    }
+
+    .attendance-grid-legend {
+        font-size: 0.74rem;
+        color: var(--pms-muted, #64748B);
+    }
+
+    .attendance-report-table-card .table-responsive {
+        padding: 1.15rem 1.35rem 1.35rem;
+        overflow-x: auto;
+    }
+
+    .attendance-report-table-card .pms-table-scroll-host {
+        border: 0 !important;
+        border-radius: 0 0 16px 16px !important;
+        box-shadow: none !important;
+    }
+
+    .attendance-grid {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 3px;
+        min-width: 720px;
+    }
+
+    .attendance-grid th {
+        padding: 0.55rem 0.35rem;
+        background: #F8FAFC;
+        border-radius: 8px;
+        font-size: 0.68rem;
+        font-weight: 700;
+        color: #64748B;
+        text-align: center;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        border: 1px solid #E2E8F0;
+    }
+
+    .attendance-grid th .day-number {
+        font-size: 0.88rem;
+        font-weight: 800;
+        color: var(--pms-text, #0F172A);
+        display: block;
+    }
+
+    .attendance-grid th .day-name {
+        font-size: 0.6rem;
+        color: #94A3B8;
+        font-weight: 600;
+    }
+
+    .attendance-grid td {
+        padding: 0.6rem 0.35rem;
+        text-align: center;
+        font-size: 1.15rem;
+        border: 1px solid #E2E8F0;
+        border-radius: 8px;
+        background: #FFFFFF;
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+        min-width: 38px;
+        position: relative;
+    }
+
+    .attendance-grid td:hover {
+        transform: scale(1.05);
+        box-shadow: 0 2px 10px rgba(15, 23, 42, 0.08);
+        z-index: 2;
+    }
+
+    .attendance-grid td .status-tooltip {
+        display: none;
+        position: absolute;
+        bottom: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #0F172A;
+        color: #FFFFFF;
+        padding: 0.25rem 0.6rem;
+        border-radius: 6px;
+        font-size: 0.64rem;
+        font-weight: 600;
+        white-space: nowrap;
+        margin-bottom: 4px;
+        z-index: 10;
+    }
+
+    .attendance-grid td:hover .status-tooltip {
+        display: block;
+    }
+
+    .attendance-grid td.present { background: #E0E7FF; border-color: #A5B4FC; }
+    .attendance-grid td.wfh { background: #ECFDF5; border-color: #A7F3D0; }
+    .attendance-grid td.absent { background: #FEE2E2; border-color: #FCA5A5; }
+    .attendance-grid td.late { background: #FEF3C7; border-color: #FCD34D; }
+    .attendance-grid td.half-day,
+    .attendance-grid td.half_day { background: #EDE9FE; border-color: #C4B5FD; }
+    .attendance-grid td.leave { background: #CFFAFE; border-color: #67E8F9; }
+    .attendance-grid td.holiday { background: #FFEDD5; border-color: #FDBA74; }
+    .attendance-grid td.day-off,
+    .attendance-grid td.dayoff { background: #DBEAFE; border-color: #93C5FD; }
+    .attendance-grid td.default { background: #F8FAFC; border-color: #E2E8F0; }
+
+    .attendance-report-empty {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 4.5rem 1.5rem;
+    }
+
+    .attendance-report-empty__icon {
+        position: relative;
+        width: 52px;
+        height: 52px;
+        border-radius: 14px;
+        background: #F1F5F9;
+        color: #64748B;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .content-wrapper .attendance-report-empty__icon i.bx-calendar-check,
+    .attendance-report-empty__icon i.bx-calendar-check {
+        color: #64748B !important;
+        -webkit-text-fill-color: #64748B !important;
+    }
+
+    .attendance-report-empty__badge {
+        position: absolute;
+        right: -4px;
+        bottom: -4px;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #EFF6FF;
+        border: 2px solid #FFFFFF;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.68rem;
+        color: #2F6BFF !important;
+    }
+
+    .attendance-report-empty__title {
+        font-size: 0.98rem;
+        font-weight: 700;
+        color: var(--pms-text, #0F172A);
+        margin-bottom: 0.4rem;
+    }
+
+    .attendance-report-empty__text {
+        max-width: 360px;
+        font-size: 0.8rem;
+        line-height: 1.55;
+        color: var(--pms-muted, #64748B);
+    }
+
+    html[data-pms-theme="dark"] .attendance-report-header__icon,
+    html[data-pms-theme="dark"] .attendance-report-stat-icon--blue {
+        background: rgba(47, 107, 255, 0.16);
+        border-color: rgba(47, 107, 255, 0.3);
+        color: #60A5FA;
+    }
+
+    html[data-pms-theme="dark"] .attendance-report-stat-icon--green {
+        background: rgba(16, 185, 129, 0.16);
+        border-color: rgba(16, 185, 129, 0.3);
+        color: #34D399;
+    }
+
+    html[data-pms-theme="dark"] .attendance-report-stat-icon--amber {
+        background: rgba(245, 158, 11, 0.16);
+        border-color: rgba(245, 158, 11, 0.3);
+        color: #FBBF24;
+    }
+
+    html[data-pms-theme="dark"] .attendance-report-stat-icon--red {
+        background: rgba(239, 68, 68, 0.16);
+        border-color: rgba(239, 68, 68, 0.3);
+        color: #F87171;
+    }
+
+    html[data-pms-theme="dark"] .attendance-report-stat-icon--cyan {
+        background: rgba(6, 182, 212, 0.16);
+        border-color: rgba(6, 182, 212, 0.3);
+        color: #22D3EE;
+    }
+
+    html[data-pms-theme="dark"] .attendance-report-stat-icon--purple {
+        background: rgba(139, 92, 246, 0.16);
+        border-color: rgba(139, 92, 246, 0.3);
+        color: #A78BFA;
+    }
+
+    html[data-pms-theme="dark"] .attendance-grid-header {
+        background: #0F1530;
+        border-bottom-color: rgba(238, 241, 251, 0.1);
+    }
+
+    html[data-pms-theme="dark"] .attendance-grid th {
+        background: #141B3D;
+        color: #94A3B8;
+        border-color: rgba(79, 131, 255, 0.15);
+    }
+
+    html[data-pms-theme="dark"] .attendance-grid th .day-number {
+        color: #FFFFFF;
+    }
+
+    html[data-pms-theme="dark"] .attendance-grid td {
+        background: #0F1530;
+        border-color: rgba(79, 131, 255, 0.12);
+    }
+
+    html[data-pms-theme="dark"] .attendance-grid td.present { background: rgba(47, 107, 255, 0.2); border-color: rgba(79, 131, 255, 0.3); }
+    html[data-pms-theme="dark"] .attendance-grid td.wfh { background: rgba(16, 185, 129, 0.2); border-color: rgba(16, 185, 129, 0.35); }
+    html[data-pms-theme="dark"] .attendance-grid td.absent { background: #450A0A; border-color: #7F1D1D; }
+    html[data-pms-theme="dark"] .attendance-grid td.late { background: #451A03; border-color: #78350F; }
+    html[data-pms-theme="dark"] .attendance-grid td.half-day,
+    html[data-pms-theme="dark"] .attendance-grid td.half_day { background: #2E1065; border-color: #4C1D95; }
+    html[data-pms-theme="dark"] .attendance-grid td.leave { background: #164E63; border-color: #155E75; }
+    html[data-pms-theme="dark"] .attendance-grid td.holiday { background: #431407; border-color: #7C2D12; }
+    html[data-pms-theme="dark"] .attendance-grid td.day-off,
+    html[data-pms-theme="dark"] .attendance-grid td.dayoff { background: #172554; border-color: #1E3A8A; }
+    html[data-pms-theme="dark"] .attendance-grid td.default { background: #0F1530; border-color: rgba(79, 131, 255, 0.08); }
+
+    html[data-pms-theme="dark"] .attendance-report-empty__icon {
+        background: rgba(148, 163, 184, 0.14);
+    }
+
+    html[data-pms-theme="dark"] .content-wrapper .attendance-report-empty__icon i.bx-calendar-check,
+    html[data-pms-theme="dark"] .attendance-report-empty__icon i.bx-calendar-check {
+        color: #94A3B8 !important;
+        -webkit-text-fill-color: #94A3B8 !important;
+    }
+
+    html[data-pms-theme="dark"] .attendance-report-empty__badge {
+        background: #1E293B;
+        border-color: #0F1530;
+    }
+</style>
+@endpush

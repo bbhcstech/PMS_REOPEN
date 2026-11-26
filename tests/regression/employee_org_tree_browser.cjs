@@ -22,12 +22,14 @@ const nodes = [[1, null, 90], [2, 1, 6], [3, 1, 0], [4, 2, 0], [5, 2, 0], [6, 2,
 }));
 const css = ['pms-refresh.css', 'pms-bitroxia-theme.css'].map(file =>
     `<style>${fs.readFileSync(path.join(root, 'public/admin/assets/css', file), 'utf8')}</style>`).join('');
+const directoryCss = ['directory-styles', 'directory-presentation'].map(name =>
+    fs.readFileSync(path.join(root, 'resources/views/admin/employees/partials', name + '.blade.php'), 'utf8')).join('');
 
 const html = `<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<div id="employee-directory" class="employee-dashboard">
+<div id="employeeDirectoryPage" class="employee-dashboard">
 <div class="filter-export-card">List filters</div><div class="table-card">Employee list</div>
 <script>window.fetch = async () => ({ ok: true, json: async () => ({ nodes: ${JSON.stringify(nodes)} }) });</script>
-${view}</div>${css}
+${view}</div>${directoryCss}${css}
 <script>
 const get = selector => document.querySelector(selector);
 const card = id => get('.eot-tile[data-id="' + id + '"]');

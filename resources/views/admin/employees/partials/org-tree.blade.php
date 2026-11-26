@@ -159,7 +159,7 @@
         box-shadow: var(--eot-shadow);
     }
 
-    #employee-directory .eot-switch-tab {
+    #employeeDirectoryPage .eot-switch-tab {
         display: inline-flex !important;
         align-items: center;
         justify-content: center;
@@ -180,26 +180,26 @@
         transition: background-color .18s, color .18s, border-color .18s;
     }
 
-    #employee-directory .eot-switch-tab:hover {
+    #employeeDirectoryPage .eot-switch-tab:hover {
         background: var(--eot-canvas) !important;
         color: var(--eot-text) !important;
     }
 
-    #employee-directory .eot-switch-tab.is-active {
+    #employeeDirectoryPage .eot-switch-tab.is-active {
         border-color: var(--eot-border) !important;
         background: var(--eot-accent-soft) !important;
         color: var(--eot-accent) !important;
     }
 
-    #employee-directory .eot-switch-tab > :is(span, i),
+    #employeeDirectoryPage .eot-switch-tab > :is(span, i),
     #employeeOrgTree .eot-mode > :is(span, i) {
         color: inherit !important;
         -webkit-text-fill-color: currentColor !important;
     }
 
-    #employee-directory .eot-switch-tab > span { font-weight: inherit !important; }
-    #employee-directory .eot-switch-tab > i { font-size: .8125rem; filter: none !important; }
-    #employee-directory .eot-switch-tab:focus-visible,
+    #employeeDirectoryPage .eot-switch-tab > span { font-weight: inherit !important; }
+    #employeeDirectoryPage .eot-switch-tab > i { font-size: .8125rem; filter: none !important; }
+    #employeeDirectoryPage .eot-switch-tab:focus-visible,
     #employeeOrgTree .eot-mode:focus-visible {
         outline: 2px solid var(--eot-accent) !important;
         outline-offset: 2px;
@@ -402,14 +402,14 @@
     }
     @media (max-width: 575.98px) {
         .eot-switch { display: flex; }
-        #employee-directory .eot-switch-tab { flex: 1; padding-inline: 10px !important; }
+        #employeeDirectoryPage .eot-switch-tab { flex: 1; padding-inline: 10px !important; }
         .eot-toolbar { padding: 14px 16px; }
         .eot-controls, .eot-search, .emp-orgtree .eot-search input, .emp-orgtree .eot-select { width: 100%; max-width: none; }
         .eot-viewport { height: 64vh; min-height: 380px; }
         .eot-pan { left: 10px; bottom: 10px; }
     }
     @media (prefers-reduced-motion: reduce) {
-        #employee-directory .eot-switch-tab { transition: none; }
+        #employeeDirectoryPage .eot-switch-tab { transition: none; }
     }
     @media print {
         .eot-switch, .emp-orgtree { display: none !important; }
