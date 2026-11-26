@@ -372,7 +372,7 @@
 <li class="menu-item {{ (request()->routeIs('leaves.index') || request()->routeIs('leaves.show') || request()->routeIs('leaves.calendar') || request()->routeIs('leaves.archive') || request()->routeIs('leaves.apology-letters.*')) ? 'active' : '' }}">
                         <a href="{{ route('leaves.index') }}" class="menu-link" data-sidebar-key="leaves">
                             <i class="menu-icon tf-icons bx bx-calendar-x"></i>
-                            <div class="text-truncate" data-i18n="Without navbar">My Leaves</div>
+                            <div class="text-truncate" data-i18n="Without navbar">Employee Leaves</div>
                         </a>
                     </li>
 @endif
@@ -516,7 +516,7 @@
                     @if(!\App\Services\WorkforceAccess::isAuthority(auth()->user()) || \App\Services\WorkforceAccess::canManageLeaves(auth()->user()))
 <li class="menu-item {{ (request()->routeIs('leaves.index') || request()->routeIs('leaves.show') || request()->routeIs('leaves.calendar') || request()->routeIs('leaves.archive') || request()->routeIs('leaves.apology-letters.*')) ? 'active' : '' }}">
                     <a href="{{ route('leaves.index') }}" class="menu-link" data-sidebar-key="leaves">
-                        <div class="text-truncate" data-i18n="Without navbar">My Leaves</div>
+                        <div class="text-truncate" data-i18n="Without navbar">{{ \App\Services\WorkforceAccess::canManageLeaves(auth()->user()) ? 'Employee Leaves' : 'My Leaves' }}</div>
                     </a>
                     </li>
 @endif

@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Department;
 use App\Models\ParentDepartment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\Rule;
 
@@ -241,36 +243,52 @@ class ParentDepartmentController extends Controller
 
 
     public function destroy(Request $request, ParentDepartment $parentDepartment)
-{
-    try {
-        $parentDepartment->forceFill([
-            'archived_at' => now(),
-            'last_updated_by' => Auth::id(),
-        ])->save();
+    {
+        $respondError = function (string $message, int $status = 422) use ($request) {
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => $message,
+                ], $status);
+            }
 
-        if ($request->wantsJson() || $request->ajax()) {
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Department archived successfully.',
-                'deleted_id' => $parentDepartment->id
-            ]);
+            return back()->with('error', $message);
+        };
+
+        try {
+            return DB::transaction(function () use ($request, $parentDepartment, $respondError) {
+                $lockedDepartment = ParentDepartment::lockForUpdate()->findOrFail($parentDepartment->id);
+
+                if ($lockedDepartment->hasActiveSubDepartments()) {
+                    return $respondError('This department cannot be archived because it has sub-departments linked to it.');
+                }
+
+                if ($lockedDepartment->hasActiveEmployees()) {
+                    return $respondError('This department cannot be archived because it is tagged with employees.');
+                }
+
+                $lockedDepartment->forceFill([
+                    'archived_at' => now(),
+                    'last_updated_by' => Auth::id(),
+                ])->save();
+
+                if ($request->wantsJson() || $request->ajax()) {
+                    return response()->json([
+                        'status' => 'success',
+                        'message' => 'Department archived successfully.',
+                        'deleted_id' => $lockedDepartment->id,
+                    ]);
+                }
+
+                return redirect()->route(\App\Support\WorkforceSettings::name('parent-departments.index'))
+                    ->with('success', 'Department archived successfully.');
+            });
+        } catch (\Throwable $e) {
+            logger()->error('ParentDepartment archive error: ' . $e->getMessage());
+
+            return $respondError('Archive failed: ' . $e->getMessage(), 500);
         }
-
-        return redirect()->route(\App\Support\WorkforceSettings::name('parent-departments.index'))
-            ->with('success', 'Department archived successfully.');
-    } catch (\Throwable $e) {
-        logger()->error('ParentDepartment archive error: ' . $e->getMessage());
-
-        if ($request->wantsJson() || $request->ajax()) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Archive failed: ' . $e->getMessage()
-            ], 500);
-        }
-
-        return back()->with('error', 'Archive failed: ' . $e->getMessage());
     }
-}
 
     /**
      * Permanently delete a parent department ("Archive" above keeps it restorable). Refused while
@@ -370,9 +388,31 @@ class ParentDepartmentController extends Controller
 
         DB::beginTransaction();
         try {
-            $parents = ParentDepartment::withCount(['departments', 'employees'])
+            $hasSubArchivedAt = Schema::hasTable('departments') && Schema::hasColumn('departments', 'archived_at');
+            $withCounts = [
+                'departments as active_departments_count' => function ($q) use ($hasSubArchivedAt) {
+                    if ($hasSubArchivedAt) {
+                        $q->whereNull('archived_at');
+                    }
+                },
+            ];
+            if (Schema::hasColumn('employee_details', 'parent_dpt_id')) {
+                $withCounts['employees as active_employees_count'] = function ($q) {
+                    Department::applyActiveEmployeeConstraint($q);
+                };
+            }
+            if (Schema::hasColumn('employee_details', 'department_id')) {
+                $withCounts['departments as departments_with_employees_count'] = function ($q) {
+                    $q->whereHas('employeeDetails', function ($emp) {
+                        Department::applyActiveEmployeeConstraint($emp);
+                    });
+                };
+            }
+
+            $parents = ParentDepartment::withCount($withCounts)
                 ->whereNull('archived_at')
                 ->whereIn('id', $ids)
+                ->lockForUpdate()
                 ->get();
 
             $foundIds = $parents->pluck('id')->map(fn($v) => (int) $v)->toArray();
@@ -386,7 +426,14 @@ class ParentDepartmentController extends Controller
                     : back()->with('error', $msg);
             }
 
-            $deletableIds = $parents->pluck('id')->all();
+            $blockedBySubDepartments = $parents->filter(fn ($d) => (int) ($d->active_departments_count ?? 0) > 0)->values();
+            $blockedByEmployees = $parents->filter(fn ($d) => ((int) ($d->active_employees_count ?? 0) > 0) || ((int) ($d->departments_with_employees_count ?? 0) > 0))->values();
+            $deletableIds = $parents->filter(function ($d) {
+                return (int) ($d->active_departments_count ?? 0) === 0
+                    && (int) ($d->active_employees_count ?? 0) === 0
+                    && (int) ($d->departments_with_employees_count ?? 0) === 0;
+            })->pluck('id')->all();
+
             $deletedCount = 0;
             if (!empty($deletableIds)) {
                 $deletedCount = ParentDepartment::whereIn('id', $deletableIds)->update([
@@ -397,10 +444,8 @@ class ParentDepartmentController extends Controller
 
             DB::commit();
 
-            $blockedBySubDepartments = collect();
-            $blockedByEmployees = collect();
-            $blockedSubCount = 0;
-            $blockedEmpCount = 0;
+            $blockedSubCount = $blockedBySubDepartments->count();
+            $blockedEmpCount = $blockedByEmployees->count();
             $totalBlocked = $blockedSubCount + $blockedEmpCount;
 
             $messageParts = [];
@@ -411,12 +456,12 @@ class ParentDepartmentController extends Controller
 
             if ($blockedSubCount > 0) {
                 $blockedSubList = $blockedBySubDepartments->pluck('dpt_name')->implode(', ');
-                $messageParts[] = "{$blockedSubCount} department(s) cannot be deleted because they have sub-departments: {$blockedSubList}";
+                $messageParts[] = "{$blockedSubCount} department(s) cannot be archived because they have sub-departments: {$blockedSubList}";
             }
 
             if ($blockedEmpCount > 0) {
                 $blockedEmpList = $blockedByEmployees->pluck('dpt_name')->implode(', ');
-                $messageParts[] = "{$blockedEmpCount} department(s) cannot be deleted because they are tagged with employees: {$blockedEmpList}";
+                $messageParts[] = "{$blockedEmpCount} department(s) cannot be archived because they are tagged with employees: {$blockedEmpList}";
             }
 
             $finalMessage = implode(' ', $messageParts);

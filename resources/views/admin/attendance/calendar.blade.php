@@ -10,17 +10,14 @@
     $personalView = in_array(strtolower((string) auth()->user()->role), ['hr', 'manager'], true) && request('view') === 'personal';
     $navigation = fn ($date) => route($attendanceRoute, array_merge($canManage ? ['user_id' => $selectedEmployee?->id] : [], $personalView ? ['view' => 'personal'] : [], ['month' => $date->month, 'year' => $date->year]));
     $hours = fn ($seconds) => sprintf('%dh %02dm', intdiv((int) $seconds, 3600), intdiv((int) $seconds % 3600, 60));
-    $exportRows = collect($calendar['days'])->map(fn ($day) => [$day['key'], $day['status'], $day['seconds'], $day['wfh'] ? 'Yes' : 'No'])->values();
 @endphp
-<div class="attendance-calendar-page">
+<div class="attendance-calendar-page" data-live-preserve data-live-records-off>
     <header class="ac-panel ac-heading">
         <div class="ac-title"><span class="ac-title-icon" aria-hidden="true">📅</span><div><span class="ac-eyebrow">PEOPLE · ATTENDANCE</span><h1>{{ request('staff_category') === 'authority' ? 'Higher-level attendance' : 'Attendance calendar' }}</h1><p>A clear picture of every working day.</p></div></div>
         <div class="ac-actions">
-            <a class="ac-button ac-primary" href="{{ route($attendanceRoute, ['view' => 'team', 'month' => $month, 'year' => $year]) }}">Employee attendance table</a>
+            <a class="ac-button" href="{{ route($attendanceRoute, ['view' => 'team', 'month' => $month, 'year' => $year]) }}">Table view</a>
+            <a class="ac-button ac-primary" href="{{ $navigation($start) }}" aria-current="page">Calendar view</a>
             @if(\App\Services\WorkforceAccess::isAdmin(auth()->user()))
-                @if(auth()->user()->canViewModule('higher-level-attendance'))
-                    <a class="ac-button" href="{{ route(request('staff_category') === 'authority' ? 'attendance.index' : 'admin.authority-attendance', ['view' => 'team', 'month' => $month, 'year' => $year]) }}">{{ request('staff_category') === 'authority' ? 'Employee attendance' : 'Higher-level attendance' }}</a>
-                @endif
                 <a class="ac-button" href="{{ route('attendance.archive', ['staff_category' => request('staff_category')]) }}">Archived</a>
                 <a class="ac-button" href="{{ route('attendance.settings') }}">Settings</a>
                 <a class="ac-button ac-primary" href="{{ route('attendance.create', ['staff_category' => request('staff_category'), 'user_id' => $selectedEmployee?->id]) }}">＋ Mark attendance</a>
@@ -46,6 +43,11 @@
         <button class="ac-button ac-primary" type="submit">View month</button>
         <a class="ac-button" href="{{ $navigation(now()) }}">Today</a>
         <a class="ac-button" href="{{ $navigation($start) }}">Refresh</a>
+        @if(isset($errors))
+            @foreach(['start_date', 'end_date'] as $field)
+                @if($errors->has($field))<span role="alert">{{ $errors->first($field) }}</span>@endif
+            @endforeach
+        @endif
     </form>
     @if($selectedEmployee)
     <section class="ac-panel ac-profile">
@@ -60,7 +62,43 @@
     </section>
     <section class="ac-panel ac-month-panel" aria-label="{{ $start->format('F Y') }} attendance">
         <p class="ac-note">WFH includes scheduled remote days. Scheduled WFH alone does not mark attendance or add hours; the daily attendance status remains visible.</p>
-        <div class="ac-month-heading"><div><span class="ac-eyebrow">MONTH AT A GLANCE</span><h2>{{ $start->format('F Y') }}</h2></div><div class="ac-actions"><button type="button" class="ac-button" id="ac-export">Export month CSV</button>@if(\App\Services\WorkforceAccess::isAdmin(auth()->user()))<a class="ac-button" href="{{ route('attendance.byHour', ['staff_category' => request('staff_category'), 'user_id' => $selectedEmployee->id, 'month' => $month, 'year' => $year]) }}">Hours report</a>@endif</div></div>
+        <div class="ac-month-heading"><div><span class="ac-eyebrow">MONTH AT A GLANCE</span><h2>{{ $start->format('F Y') }}</h2></div><div class="ac-actions">
+            <details class="ac-export-menu">
+                <summary class="ac-button" id="ac-export">Export CSV ▾</summary>
+                <div class="ac-export-dropdown" role="menu" aria-label="Export CSV options">
+                    @if($canManage)
+                    <div class="ac-export-employees">
+                        <div class="ac-export-selection">
+                            <span id="ac-export-scope-note">Exporting all employees</span>
+                            <button type="button" class="ac-clear-selection" id="ac-clear-selection" hidden>Clear</button>
+                        </div>
+                        <label class="ac-export-check ac-export-check-all"><input type="checkbox" id="ac-export-select-all"><span>Select all employees</span></label>
+                        <div class="ac-export-employee-list">
+                            @foreach($employees as $employee)
+                                <label class="ac-export-check"><input type="checkbox" class="ac-emp-check" value="{{ $employee->id }}"><span>{{ $employee->name }}{{ $employee->employeeDetail?->employee_id ? ' · ' . $employee->employeeDetail->employee_id : '' }}</span></label>
+                            @endforeach
+                        </div>
+                    </div>
+                    @endif
+                    <a class="ac-export-option" data-base-href="{{ route($attendanceRoute, array_merge($personalView ? ['view' => 'personal'] : [], ['staff_category' => request('staff_category', 'employee'), 'month' => $month, 'year' => $year, 'format' => 'csv', 'export_scope' => 'month'])) }}" href="{{ route($attendanceRoute, array_merge($personalView ? ['view' => 'personal'] : [], ['staff_category' => request('staff_category', 'employee'), 'month' => $month, 'year' => $year, 'format' => 'csv', 'export_scope' => 'month'])) }}">Selected month ({{ $start->format('F Y') }})</a>
+                    <a class="ac-export-option" data-base-href="{{ route($attendanceRoute, array_merge($personalView ? ['view' => 'personal'] : [], ['staff_category' => request('staff_category', 'employee'), 'month' => $month, 'year' => $year, 'format' => 'csv', 'export_scope' => 'today'])) }}" href="{{ route($attendanceRoute, array_merge($personalView ? ['view' => 'personal'] : [], ['staff_category' => request('staff_category', 'employee'), 'month' => $month, 'year' => $year, 'format' => 'csv', 'export_scope' => 'today'])) }}">Today ({{ now()->format('d M Y') }})</a>
+                    <form class="ac-export-range" method="GET" action="{{ route($attendanceRoute) }}">
+                        <input type="hidden" name="staff_category" value="{{ request('staff_category', 'employee') }}">
+                        @if($personalView ?? false)<input type="hidden" name="view" value="personal">@endif
+                        <input type="hidden" name="month" value="{{ $month }}">
+                        <input type="hidden" name="year" value="{{ $year }}">
+                        <input type="hidden" name="format" value="csv">
+                        <input type="hidden" name="export_scope" value="range">
+                        <div class="ac-range-users"></div>
+                        <span class="ac-export-title">Selected range of days</span>
+                        <label>From<input type="date" name="start_date" value="{{ request('start_date', $start->toDateString()) }}" required></label>
+                        <label>To<input type="date" name="end_date" value="{{ request('end_date', $start->copy()->endOfMonth()->toDateString()) }}" required></label>
+                        <button type="submit" class="ac-button ac-primary">Download range CSV</button>
+                    </form>
+                </div>
+            </details>
+            @if(\App\Services\WorkforceAccess::isAdmin(auth()->user()))<a class="ac-button" href="{{ route('attendance.byHour', ['staff_category' => request('staff_category'), 'user_id' => $selectedEmployee->id, 'month' => $month, 'year' => $year]) }}">Hours report</a>@endif
+        </div></div>
         <p class="ac-help">Select any date for clock times, locations, leave and holiday details. Hours include all recorded sessions.</p>
         <div class="ac-calendar-scroll"><div class="ac-calendar">
             @foreach(['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as $weekday)<div class="ac-weekday">{{ $weekday }}</div>@endforeach
@@ -116,7 +154,8 @@
 .attendance-calendar-page .ac-profile{display:flex;gap:24px;align-items:center;flex-wrap:wrap}.attendance-calendar-page .ac-person{min-width:220px}.attendance-calendar-page .ac-person p{font-size:12px;overflow-wrap:anywhere}.attendance-calendar-page .ac-avatar{display:grid;place-items:center;flex-shrink:0;background:var(--ac-avatar-bg,#e7efff)!important;border:1px solid var(--ac-avatar-border,rgba(36,91,224,.18));color:var(--ac-blue)!important;-webkit-text-fill-color:var(--ac-blue)!important;font-size:26px;font-weight:800;line-height:1;text-transform:uppercase;border-radius:50%;width:58px;height:58px}:is([data-pms-theme="dark"],[data-bs-theme="dark"],[data-theme="dark"],.dark,.dark-mode) .attendance-calendar-page{--ac-avatar-bg:rgba(130,172,255,.16);--ac-avatar-border:rgba(130,172,255,.35)}.attendance-calendar-page .ac-metrics{display:grid;grid-template-columns:repeat(5,minmax(80px,1fr));gap:8px;flex:1}.attendance-calendar-page .ac-metric{text-align:center;padding:13px 8px;border:1px solid var(--ac-border);border-radius:12px}.attendance-calendar-page .ac-metric strong{display:block;color:var(--ac-blue)!important;-webkit-text-fill-color:var(--ac-blue)!important;font-size:21px;font-weight:800}.attendance-calendar-page .ac-metric span{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:var(--ac-muted)}
 .attendance-calendar-page .ac-help{font-size:12px;margin:10px 0 18px}.attendance-calendar-page .ac-calendar-scroll{overflow-x:auto}.attendance-calendar-page .ac-calendar{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;min-width:650px}.attendance-calendar-page .ac-weekday{text-align:center;font-size:12px;font-weight:800;padding:14px;background:var(--ac-bg);border-radius:10px;color:var(--ac-muted)}.attendance-calendar-page .ac-day{min-height:130px;text-align:left;padding:12px;border-radius:12px;border:1px solid var(--ac-border);background:var(--ac-surface);color:var(--ac-text)!important;-webkit-text-fill-color:var(--ac-text)!important;display:flex;flex-direction:column;align-items:flex-start;gap:9px;cursor:pointer;transition:box-shadow .15s}.attendance-calendar-page .ac-day:hover{box-shadow:0 0 0 2px #6391ff80}.attendance-calendar-page .ac-blank{background:var(--ac-bg);border-color:transparent;cursor:default;box-shadow:none}.attendance-calendar-page .ac-date{font-weight:800;font-size:16px;width:100%;display:flex;justify-content:space-between}.attendance-calendar-page .ac-date small{font-size:9px;background:#245be0;color:#fff!important;-webkit-text-fill-color:#fff!important;padding:3px 5px;border-radius:5px}.attendance-calendar-page .ac-day-status{font-size:12px;font-weight:750}.attendance-calendar-page .ac-day-note{font-size:10px;color:var(--ac-muted);overflow-wrap:anywhere}.attendance-calendar-page .ac-day-hours{font-size:11px;color:var(--ac-blue);font-weight:700;margin-top:auto}.attendance-calendar-page .ac-present{border-top:3px solid #10b981}.attendance-calendar-page .ac-late{border-top:3px solid #f59e0b}.attendance-calendar-page .ac-half_day{border-top:3px solid #8b5cf6}.attendance-calendar-page .ac-absent{border-top:3px solid #ef4444}.attendance-calendar-page .ac-holiday{border-top:3px solid #3b82f6}.attendance-calendar-page :is(.ac-leave,.ac-unpaid_leave){border-top:3px solid #ec4899}.attendance-calendar-page .ac-today{outline:2px solid #245be0;outline-offset:-2px}.attendance-calendar-page .ac-legend{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;padding-top:20px;font-size:11px}
 .attendance-calendar-page .ac-dialog{background:var(--ac-surface);color:var(--ac-text);border:1px solid var(--ac-border);border-radius:20px;padding:24px;max-width:600px;width:calc(100% - 28px);max-height:85vh;overflow:auto}.attendance-calendar-page .ac-dialog::backdrop{background:#020818aa;backdrop-filter:blur(3px)}.attendance-calendar-page .ac-session{border-block:1px solid var(--ac-border);padding:16px 0;margin-bottom:16px}.attendance-calendar-page dl{display:grid;grid-template-columns:140px 1fr;gap:8px;font-size:13px}.attendance-calendar-page dd{margin:0;overflow-wrap:anywhere}.attendance-calendar-page dt{color:var(--ac-muted)}.attendance-calendar-page .ac-edit{display:grid;gap:10px;margin-top:14px}.attendance-calendar-page .ac-edit input,.attendance-calendar-page .ac-edit select{width:100%}.attendance-calendar-page summary{cursor:pointer;font-weight:700;color:var(--ac-blue)}
-@media(max-width:700px){.attendance-calendar-page{padding:12px}.attendance-calendar-page .ac-panel{padding:16px;border-radius:16px}.attendance-calendar-page .ac-metrics{grid-template-columns:repeat(2,minmax(90px,1fr));width:100%}.attendance-calendar-page .ac-person{width:100%}.attendance-calendar-page .ac-title-icon{width:48px;height:48px;font-size:25px}.attendance-calendar-page .ac-actions{gap:8px}.attendance-calendar-page .ac-button{font-size:12px}.attendance-calendar-page dl{grid-template-columns:100px 1fr}}
+.attendance-calendar-page .ac-export-menu{position:relative}.attendance-calendar-page .ac-export-menu summary{list-style:none;color:var(--ac-text)}.attendance-calendar-page .ac-export-menu summary::-webkit-details-marker{display:none}.attendance-calendar-page .ac-export-dropdown{position:absolute;right:0;top:calc(100% + 8px);z-index:30;width:290px;padding:12px;border-radius:14px;border:1px solid var(--ac-border);background:var(--ac-surface);box-shadow:0 12px 28px rgba(15,23,42,.14);display:grid;gap:8px}.attendance-calendar-page .ac-export-employees{border-bottom:1px solid var(--ac-border);padding-bottom:8px;display:grid;gap:6px}.attendance-calendar-page .ac-export-selection{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:11px;font-weight:700;color:var(--ac-muted)}.attendance-calendar-page .ac-clear-selection{border:0;background:transparent;color:var(--ac-blue);font-size:11px;font-weight:750;padding:0;cursor:pointer}.attendance-calendar-page .ac-export-employee-list{max-height:150px;overflow-y:auto;display:grid;gap:4px;padding-right:2px}.attendance-calendar-page .ac-export-check{display:flex;align-items:center;gap:8px;margin:0;padding:4px 6px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer}.attendance-calendar-page .ac-export-check:hover{background:var(--ac-bg)}.attendance-calendar-page .ac-export-check-all{font-weight:750;background:var(--ac-bg)}.attendance-calendar-page .ac-export-check input[type="checkbox"]{display:inline-block;min-height:16px;width:16px;height:16px;padding:0;margin:0;border-radius:4px;accent-color:#245be0;flex-shrink:0}.attendance-calendar-page .ac-export-option{display:block;padding:9px 11px;border-radius:10px;border:1px solid var(--ac-border);color:var(--ac-text)!important;-webkit-text-fill-color:var(--ac-text)!important;text-decoration:none;font-size:12px;font-weight:650}.attendance-calendar-page .ac-export-option:hover{background:var(--ac-bg)}.attendance-calendar-page .ac-export-range{border-top:1px solid var(--ac-border);padding-top:10px;margin-top:2px;display:grid;gap:8px}.attendance-calendar-page .ac-export-title{font-size:11px;font-weight:750;color:var(--ac-muted)}.attendance-calendar-page .ac-export-range input{width:100%;min-height:38px;padding:6px 10px}
+@media(max-width:700px){.attendance-calendar-page{padding:12px}.attendance-calendar-page .ac-panel{padding:16px;border-radius:16px}.attendance-calendar-page .ac-metrics{grid-template-columns:repeat(2,minmax(90px,1fr));width:100%}.attendance-calendar-page .ac-person{width:100%}.attendance-calendar-page .ac-title-icon{width:48px;height:48px;font-size:25px}.attendance-calendar-page .ac-actions{gap:8px}.attendance-calendar-page .ac-button{font-size:12px}.attendance-calendar-page dl{grid-template-columns:100px 1fr}.attendance-calendar-page .ac-export-dropdown{left:0;right:auto;max-width:calc(100vw - 48px)}}
 </style>
 @endsection
 @push('js')
@@ -137,12 +176,72 @@ document.querySelectorAll('.attendance-calendar-page .ac-edit').forEach(form => 
         window.location.reload();
     } catch (error) { message.textContent = error.message; button.disabled = false; }
 }));
-const calendarExportRows = @json($exportRows);
-document.getElementById('ac-export')?.addEventListener('click', () => {
-    const rows = [['Date', 'Status', 'Working seconds', 'Work from home'], ...calendarExportRows];
-    const csv = rows.map(row => row.map(value => '"' + String(value).replaceAll('"', '""') + '"').join(',')).join('\r\n');
-    const url = URL.createObjectURL(new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' }));
-    const link = document.createElement('a'); link.href = url; link.download = 'attendance-{{ $year }}-{{ $month }}.csv'; link.click(); URL.revokeObjectURL(url);
+document.addEventListener('click', event => {
+    document.querySelectorAll('.attendance-calendar-page .ac-export-menu[open]').forEach(menu => {
+        if (!menu.contains(event.target)) menu.removeAttribute('open');
+    });
+});
+(() => {
+    const menu = document.querySelector('.attendance-calendar-page .ac-export-menu');
+    if (!menu) return;
+    const selectAll = document.getElementById('ac-export-select-all');
+    const checks = Array.from(menu.querySelectorAll('.ac-emp-check'));
+    const summaryLabel = document.getElementById('ac-export');
+    const scopeNote = document.getElementById('ac-export-scope-note');
+    const clearButton = document.getElementById('ac-clear-selection');
+    const exportLinks = Array.from(menu.querySelectorAll('.ac-export-option[data-base-href]'));
+    const rangeUsers = menu.querySelector('.ac-range-users');
+    const rangeForm = menu.querySelector('.ac-export-range');
+
+    const syncSelection = () => {
+        const selectedIds = checks.filter(input => input.checked).map(input => input.value);
+        const count = selectedIds.length;
+        if (selectAll) {
+            selectAll.checked = checks.length > 0 && count === checks.length;
+            selectAll.indeterminate = count > 0 && count < checks.length;
+        }
+        if (summaryLabel) summaryLabel.textContent = count > 0 ? `Export CSV (${count} selected) ▾` : 'Export CSV ▾';
+        if (scopeNote) scopeNote.textContent = count > 0 ? `Exporting ${count} selected employee${count === 1 ? '' : 's'}` : 'Exporting all employees';
+        if (clearButton) clearButton.hidden = count === 0;
+        exportLinks.forEach(link => {
+            const url = new URL(link.dataset.baseHref, window.location.origin);
+            url.searchParams.delete('user_ids[]');
+            selectedIds.forEach(id => url.searchParams.append('user_ids[]', id));
+            link.href = url.toString();
+        });
+        if (rangeUsers) {
+            rangeUsers.replaceChildren(...selectedIds.map(id => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'user_ids[]';
+                input.value = id;
+                return input;
+            }));
+        }
+    };
+
+    selectAll?.addEventListener('change', () => {
+        checks.forEach(input => { input.checked = selectAll.checked; });
+        syncSelection();
+    });
+    checks.forEach(input => input.addEventListener('change', syncSelection));
+    clearButton?.addEventListener('click', () => {
+        checks.forEach(input => { input.checked = false; });
+        syncSelection();
+    });
+    rangeForm?.addEventListener('submit', syncSelection);
+    window.addEventListener('pageshow', syncSelection);
+    syncSelection();
+})();
+document.querySelectorAll('.attendance-calendar-page .ac-export-range').forEach(form => {
+    const startInput = form.querySelector('input[name="start_date"]');
+    const endInput = form.querySelector('input[name="end_date"]');
+    if (!startInput || !endInput) return;
+    endInput.min = startInput.value || '';
+    startInput.addEventListener('change', () => {
+        endInput.min = startInput.value || '';
+        if (endInput.value && endInput.value < startInput.value) endInput.value = startInput.value;
+    });
 });
 </script>
 @endpush

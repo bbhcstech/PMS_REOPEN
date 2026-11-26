@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\TenantModel;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Schema;
 
 class Department extends TenantModel
 {
@@ -46,6 +47,24 @@ class Department extends TenantModel
     public function employeeDetails()
     {
         return $this->hasMany(EmployeeDetail::class, 'department_id');
+    }
+
+    /**
+     * Restrict an EmployeeDetail query to employees whose user record is not archived.
+     */
+    public static function applyActiveEmployeeConstraint($query): void
+    {
+        $userConnection = (new \App\Models\User())->getConnectionName() ?: config('database.default');
+        $schema = Schema::connection($userConnection);
+
+        if ($schema->hasTable('users') && $schema->hasColumn('users', 'archived_at')) {
+            $query->whereDoesntHave('user', fn ($u) => $u->whereNotNull('archived_at'));
+        }
+    }
+
+    public function activeEmployeeDetails()
+    {
+        return $this->employeeDetails()->tap(fn ($q) => self::applyActiveEmployeeConstraint($q));
     }
 
     public function projects()

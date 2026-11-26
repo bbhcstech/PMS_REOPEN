@@ -50,6 +50,25 @@ class WorkforceAccess
         });
     }
 
+    /**
+     * Scope a user query to all active company workforce members eligible for
+     * the Attendance section (excludes clients, company admins, and HR).
+     */
+    public static function attendanceEmployees(Builder $query): Builder
+    {
+        $hasRoles = $query->getModel()->getConnection()->getSchemaBuilder()->hasColumn('users', 'company_staff_role_id');
+        $query->whereRaw("LOWER(COALESCE(role, '')) NOT IN (?, ?)", ['client', 'hr']);
+
+        if ($hasRoles) {
+            return $query->where(function ($q) {
+                $q->whereNotNull('company_staff_role_id')
+                    ->orWhereRaw("LOWER(COALESCE(role, '')) NOT IN (?, ?, ?)", ['admin', 'administrator', 'superadmin']);
+            });
+        }
+
+        return $query->whereRaw("LOWER(COALESCE(role, '')) NOT IN (?, ?, ?)", ['admin', 'administrator', 'superadmin']);
+    }
+
     public static function authorizeActor(): User
     {
         $user = auth()->user();

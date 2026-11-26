@@ -17,7 +17,7 @@ class DepartmentController extends Controller
     public function index()
     {
        $departments = Department::with('parent')
-           ->withCount('employeeDetails')
+           ->withCount(['employeeDetails' => fn ($q) => Department::applyActiveEmployeeConstraint($q)])
            ->whereNull('archived_at')
            ->latest()
            ->get();
@@ -44,7 +44,7 @@ class DepartmentController extends Controller
     public function show(Department $department)
     {
         $department->load(['parent', 'addedBy', 'updatedBy'])
-            ->loadCount('employeeDetails');
+            ->loadCount(['employeeDetails' => fn ($q) => Department::applyActiveEmployeeConstraint($q)]);
 
         return view('admin.departments.show', compact('department'));
     }
@@ -225,38 +225,40 @@ class DepartmentController extends Controller
     public function destroy(Request $request, Department $department)
     {
         try {
-            // RULE: cannot delete if any employees exist under this department
-            if ($department->employeeDetails()->exists()) {
-                $message = 'Sub Department cannot be archived because Employees are tagged under it.';
+            return DB::transaction(function () use ($request, $department) {
+                $lockedDepartment = Department::lockForUpdate()->findOrFail($department->id);
+
+                // RULE: cannot archive if any active employees exist under this department
+                if ($lockedDepartment->activeEmployeeDetails()->exists()) {
+                    $message = 'Sub Department cannot be archived because Employees are tagged under it.';
+
+                    if ($request->ajax() || $request->wantsJson()) {
+                        return response()->json([
+                            'status'  => 'error',
+                            'message' => $message,
+                        ], 422);
+                    }
+
+                    return back()->withErrors($message);
+                }
+
+                $lockedDepartment->forceFill([
+                    'archived_at' => now(),
+                    'last_updated_by' => Auth::id(),
+                ])->save();
 
                 if ($request->ajax() || $request->wantsJson()) {
                     return response()->json([
-                        'status'  => 'error',
-                        'message' => $message,
-                    ], 422);
+                        'status'  => 'success',
+                        'message' => 'Sub Department archived successfully',
+                    ]);
                 }
 
-                return back()->withErrors($message);
-            }
-
-            $department->forceFill([
-                'archived_at' => now(),
-                'last_updated_by' => Auth::id(),
-            ])->save();
-
-            if ($request->ajax() || $request->wantsJson()) {
-                return response()->json([
-                    'status'  => 'success',
-                    'message' => 'Sub Department archived successfully',
-                ]);
-            }
-
-            return redirect()
-                ->route(\App\Support\WorkforceSettings::name('departments.index'))
-                ->with('success', 'Sub Department archived successfully');
-
+                return redirect()
+                    ->route(\App\Support\WorkforceSettings::name('departments.index'))
+                    ->with('success', 'Sub Department archived successfully');
+            });
         } catch (\Throwable $e) {
-
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
                     'status'  => 'error',
@@ -314,6 +316,43 @@ class DepartmentController extends Controller
             ->with('success', 'Sub Department restored successfully.');
     }
 
+    /**
+     * Permanently delete an archived sub department. Refused while employees are linked.
+     */
+    public function deletePermanently(Request $request, $id)
+    {
+        abort_unless(auth()->user()?->hasModulePermission('department-sub', 'delete'), 403);
+
+        $respond = function (string $type, string $message, int $status = 200) use ($request) {
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json(['status' => $type, 'message' => $message], $status);
+            }
+
+            return back()->with($type === 'success' ? 'success' : 'error', $message);
+        };
+
+        try {
+            return DB::transaction(function () use ($id, $respond) {
+                $department = Department::lockForUpdate()->findOrFail($id);
+
+                if ($department->activeEmployeeDetails()->exists()) {
+                    return $respond('error', '"' . $department->dpt_name . '" cannot be deleted because it is tagged with employees. Reassign them first.', 422);
+                }
+
+                $name = $department->dpt_name;
+                $department->delete();
+
+                return $respond('success', 'Sub Department "' . $name . '" deleted permanently.');
+            });
+        } catch (\Illuminate\Database\QueryException $e) {
+            if (($e->errorInfo[0] ?? null) !== '23000') {
+                throw $e;
+            }
+
+            return $respond('error', 'This sub department cannot be deleted because other records still reference it.', 422);
+        }
+    }
+
 
     /**
      * Bulk archive departments.
@@ -334,10 +373,12 @@ class DepartmentController extends Controller
         // Normalize integers
         $ids = array_values(array_filter(array_map(fn($v) => is_numeric($v) ? (int)$v : null, $ids)));
 
+        $isJsonRequest = $request->wantsJson() || $request->ajax();
+
         if (empty($ids)) {
             $msg = 'No IDs provided.';
 
-            return $request->wantsJson()
+            return $isJsonRequest
                 ? response()->json(['status' => 'error', 'message' => $msg], 422)
                 : back()->withErrors('No departments selected for archive.');
         }
@@ -352,7 +393,7 @@ class DepartmentController extends Controller
         if (!empty($missing)) {
             $msg = 'Some selected items do not exist: ' . implode(', ', $missing);
 
-            return $request->wantsJson()
+            return $isJsonRequest
                 ? response()->json(['status' => 'error', 'message' => $msg], 422)
                 : back()->withErrors($msg);
         }
@@ -360,10 +401,11 @@ class DepartmentController extends Controller
         DB::beginTransaction();
 
         try {
-            // Load with count of employees
-            $departments = Department::withCount('employeeDetails')
+            // Load with count of active (non-archived) employees
+            $departments = Department::withCount(['employeeDetails' => fn ($q) => Department::applyActiveEmployeeConstraint($q)])
                 ->whereNull('archived_at')
                 ->whereIn('id', $foundIds)
+                ->lockForUpdate()
                 ->get();
 
             // Blocked: have employees
@@ -386,30 +428,33 @@ class DepartmentController extends Controller
             $blockedCount = $blocked->count();
 
             $messageParts   = [];
-            $messageParts[] = "$deleted item(s) archived.";
+            if ($deleted > 0) {
+                $messageParts[] = "$deleted item(s) archived.";
+            }
             if ($blockedCount > 0) {
                 $blockedList   = $blocked->pluck('dpt_name')->implode(', ');
                 $messageParts[] = "$blockedCount item(s) were not archived because Employees are tagged under them: $blockedList";
             }
             $finalMessage = implode(' ', $messageParts);
+            $status = ($deleted === 0 && $blockedCount > 0) ? 'warning' : 'success';
 
-            return $request->wantsJson()
+            return $isJsonRequest
                 ? response()->json([
-                    'status'        => 'success',
+                    'status'        => $status,
                     'deleted'       => $deleted,
                     'blocked'       => $blockedCount,
                     'blocked_names' => $blocked->pluck('dpt_name')->values(),
                     'deleted_ids'   => $deletableIds,
                     'message'       => $finalMessage,
                 ])
-                : redirect()->route(\App\Support\WorkforceSettings::name('departments.index'))->with('success', $finalMessage);
+                : redirect()->route(\App\Support\WorkforceSettings::name('departments.index'))->with($status === 'warning' ? 'error' : 'success', $finalMessage);
 
         } catch (\Throwable $e) {
 
             DB::rollBack();
             \Log::error('bulkDestroy error', ['error' => $e->getMessage()]);
 
-            return $request->wantsJson()
+            return $isJsonRequest
                 ? response()->json([
                     'status'  => 'error',
                     'message' => 'Bulk archive failed.',

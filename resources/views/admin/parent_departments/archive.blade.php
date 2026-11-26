@@ -776,6 +776,18 @@
         background: linear-gradient(145deg, #4F83FF, #2F6BFF);
     }
 
+    .archive-container .action-group .btn-delete-archived {
+        background: #b91c1c !important;
+        color: #ffffff !important;
+    }
+
+    .archive-container .action-group .btn-delete-archived > i,
+    .archive-container .action-group .btn-delete-archived > i::before {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        background: transparent !important;
+    }
+
     /* ===== EMPTY STATE ===== */
     .empty-state {
         text-align: center;
@@ -1438,6 +1450,15 @@
                                                     <i class="fas fa-trash-restore"></i>
                                                 </button>
                                             </form>
+                                            @if(auth()->user()?->hasModulePermission('department-parent', 'delete'))
+                                                <form action="{{ \App\Support\WorkforceSettings::route('parent-departments.delete-permanent', $department->id) }}" method="POST" onsubmit="return confirm('Permanently delete &quot;{{ addslashes($department->dpt_name) }}&quot;? This cannot be undone.');">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="action-btn btn-delete-archived" title="Delete permanently" aria-label="Delete archived parent department permanently">
+                                                        <i class="fas fa-trash-alt" aria-hidden="true"></i>
+                                                    </button>
+                                                </form>
+                                            @endif
                                         </div>
                                     </td>
                                 </tr>

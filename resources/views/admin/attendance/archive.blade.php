@@ -286,7 +286,7 @@
     }
 </style>
 
-<div class="attendance-archive-page">
+<div class="attendance-archive-page" data-live-preserve data-live-records-off>
     <div class="archive-header">
         <div>
             <h1><i class="fas fa-archive me-2"></i>Archived Attendance</h1>

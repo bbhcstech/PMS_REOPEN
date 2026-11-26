@@ -54,6 +54,8 @@ Route::get('departments/archive', [DepartmentController::class, 'archive'])
     ->name('departments.archive');
 Route::post('departments/{id}/restore', [DepartmentController::class, 'restore'])
     ->name('departments.restore');
+Route::delete('departments/{id}/permanent', [DepartmentController::class, 'deletePermanently'])
+    ->name('departments.delete-permanent');
 Route::post('departments/bulk-delete', [DepartmentController::class, 'bulkDestroy'])
     ->name('departments.bulk-delete');
 Route::resource('departments', DepartmentController::class);

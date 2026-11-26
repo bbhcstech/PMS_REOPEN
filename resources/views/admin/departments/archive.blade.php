@@ -473,6 +473,12 @@
 
     .btn-view { background: linear-gradient(145deg, #38bdf8, #0284c7); }
     .btn-restore { background: linear-gradient(145deg, #4F83FF, #2F6BFF); }
+    .btn-delete-archived { background: #b91c1c !important; color: #ffffff !important; }
+    .alert-error {
+        background: #fef2f2;
+        color: #991b1b;
+        border: 1px solid #fecaca;
+    }
 
     .empty-state {
         padding: 4rem 2rem;
@@ -748,9 +754,9 @@
         border: 1px solid rgba(79, 131, 255, 0.2) !important;
     }
     /* Light-theme contrast for the filled archive controls only. */
-    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .sub-archive-page :is(.back-button, .search-button, .badge-premium, .action-btn.btn-view, .action-btn.btn-restore),
-    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .sub-archive-page :is(.back-button, .search-button, .badge-premium, .action-btn.btn-view, .action-btn.btn-restore) *,
-    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .sub-archive-page :is(.back-button, .search-button, .badge-premium, .action-btn.btn-view, .action-btn.btn-restore) i::before {
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .sub-archive-page :is(.back-button, .search-button, .badge-premium, .action-btn.btn-view, .action-btn.btn-restore, .action-btn.btn-delete-archived),
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .sub-archive-page :is(.back-button, .search-button, .badge-premium, .action-btn.btn-view, .action-btn.btn-restore, .action-btn.btn-delete-archived) *,
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .sub-archive-page :is(.back-button, .search-button, .badge-premium, .action-btn.btn-view, .action-btn.btn-restore, .action-btn.btn-delete-archived) i::before {
         color: #ffffff !important;
         -webkit-text-fill-color: #ffffff !important;
     }
@@ -795,6 +801,12 @@
         @if (session('success'))
             <div class="alert-premium alert-success">
                 <i class="fas fa-check-circle"></i> {{ session('success') }}
+            </div>
+        @endif
+
+        @if (session('error'))
+            <div class="alert-premium alert-error">
+                <i class="fas fa-exclamation-circle"></i> {{ session('error') }}
             </div>
         @endif
 
@@ -917,6 +929,15 @@
                                                     <i class="fas fa-trash-restore"></i>
                                                 </button>
                                             </form>
+                                            @if(auth()->user()?->hasModulePermission('department-sub', 'delete'))
+                                                <form action="{{ \App\Support\WorkforceSettings::route('departments.delete-permanent', $department->id) }}" method="POST" onsubmit="return confirm('Permanently delete &quot;{{ addslashes($department->dpt_name) }}&quot;? This cannot be undone.');">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="action-btn btn-delete-archived" title="Delete permanently" aria-label="Delete archived sub department permanently">
+                                                        <i class="fas fa-trash-alt" aria-hidden="true"></i>
+                                                    </button>
+                                                </form>
+                                            @endif
                                         </div>
                                     </td>
                                 </tr>

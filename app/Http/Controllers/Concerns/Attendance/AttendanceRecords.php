@@ -90,10 +90,15 @@ trait AttendanceRecords
         }
 
         $departments = Department::get();
-        $users = \App\Models\User::where('company_id', $user->company_id)
-            ->whereRaw('LOWER(COALESCE(role, ?)) <> ?', ['', 'client'])->whereNull('archived_at')->orderBy('name')->get();
-        $category = $request->input('staff_category') === 'authority' ? 'authority' : 'employee';
-        $users = $users->filter(fn ($employee) => \App\Services\WorkforceAccess::isAuthority($employee) === ($category === 'authority'));
+        $usersQuery = \App\Models\User::where('company_id', $user->company_id)
+            ->whereNull('archived_at')
+            ->orderBy('name');
+        if ($request->input('staff_category') === 'authority') {
+            \App\Services\WorkforceAccess::users($usersQuery, 'authority');
+        } else {
+            \App\Services\WorkforceAccess::attendanceEmployees($usersQuery);
+        }
+        $users = $usersQuery->get();
         $request->validate(['date' => 'nullable|date_format:Y-m-d', 'user_id' => 'nullable|integer']);
         abort_if($request->filled('user_id') && ! $users->contains('id', $request->integer('user_id')), 403);
         $year = now()->format('Y');
@@ -619,7 +624,11 @@ trait AttendanceRecords
 
         $query = Attendance::with('user.employeeDetail.designation')
             ->whereNotNull('archived_at');
-        \App\Services\WorkforceAccess::records($query, $request->input('staff_category') === 'authority' ? 'authority' : 'employee');
+        if ($request->input('staff_category') === 'authority') {
+            \App\Services\WorkforceAccess::records($query, 'authority');
+        } else {
+            $query->whereHas('user', fn ($userQuery) => \App\Services\WorkforceAccess::attendanceEmployees($userQuery));
+        }
 
         if ($request->filled('search')) {
             $search = $request->search;

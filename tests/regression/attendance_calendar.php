@@ -36,7 +36,9 @@ checkCalendar($result['totals']['seconds'] === 70200 && $result['totals']['late'
 $leap = (new AttendanceCalendar)->build(Carbon::parse('2024-02-01'), collect(), collect(), collect(), (object) ['joining_date' => '2024-02-05'], $workingDays);
 checkCalendar(count($leap['days']) === 29 && $leap['days'][0]['status'] === 'not_joined', 'Leap year or joining date handling failed.');
 foreach (['calendar', 'create', 'team'] as $view) {
-    $compiled = app('blade.compiler')->compileString(file_get_contents(resource_path('views/admin/attendance/' . $view . '.blade.php')));
+    $source = file_get_contents(resource_path('views/admin/attendance/' . $view . '.blade.php'));
+    checkCalendar(str_contains($source, 'data-live-records-off'), "Attendance {$view} view must disable 5-second live-records DOM polling.");
+    $compiled = app('blade.compiler')->compileString($source);
     token_get_all($compiled, TOKEN_PARSE);
 }
 Carbon::setTestNow();
@@ -127,4 +129,98 @@ for ($id = 4; $id <= 29; $id++) {
 }
 $secondPage = $controller->index($teamRequest(['page' => 2]))->getData();
 checkCalendar($secondPage['teamRows']->total() === 27 && $secondPage['teamRows']->count() === 2 && $secondPage['summary']['employees'] === 27, 'Team pagination or full filtered totals failed.');
+
+if (! \Illuminate\Support\Facades\Schema::hasColumn('users', 'company_staff_role_id')) {
+    \Illuminate\Support\Facades\Schema::table('users', function ($table) {
+        $table->unsignedBigInteger('company_staff_role_id')->nullable();
+    });
+}
+if (! \Illuminate\Support\Facades\Schema::hasColumn('attendances', 'staff_category')) {
+    \Illuminate\Support\Facades\Schema::table('attendances', function ($table) {
+        $table->string('staff_category')->nullable();
+    });
+}
+\Illuminate\Support\Facades\DB::table('users')->insert([
+    ['id' => 30, 'company_id' => 1, 'name' => 'Manager One', 'email' => 'manager@local.test', 'role' => 'manager', 'company_staff_role_id' => null],
+    ['id' => 31, 'company_id' => 1, 'name' => 'Dev One', 'email' => 'dev@local.test', 'role' => 'developer', 'company_staff_role_id' => null],
+    ['id' => 32, 'company_id' => 1, 'name' => 'Custom Lead', 'email' => 'custom@local.test', 'role' => 'employee', 'company_staff_role_id' => 5],
+    ['id' => 33, 'company_id' => 1, 'name' => 'HR User', 'email' => 'hr@local.test', 'role' => 'HR', 'company_staff_role_id' => null],
+    ['id' => 34, 'company_id' => 1, 'name' => 'Client User', 'email' => 'client@local.test', 'role' => 'client', 'company_staff_role_id' => null],
+]);
+\Illuminate\Support\Facades\DB::table('attendances')->insert([
+    ['user_id' => 30, 'date' => '2026-10-01', 'status' => 'present', 'clock_in' => '09:00:00', 'clock_out' => '12:00:00', 'staff_category' => 'authority', 'archived_at' => null],
+    ['user_id' => 31, 'date' => '2026-10-01', 'status' => 'present', 'clock_in' => '09:00:00', 'clock_out' => '11:00:00', 'staff_category' => 'authority', 'archived_at' => null],
+    ['user_id' => 32, 'date' => '2026-10-01', 'status' => 'present', 'clock_in' => '09:00:00', 'clock_out' => '10:00:00', 'staff_category' => 'authority', 'archived_at' => null],
+    ['user_id' => 33, 'date' => '2026-10-01', 'status' => 'present', 'clock_in' => '09:00:00', 'clock_out' => '17:00:00', 'staff_category' => 'authority', 'archived_at' => null],
+]);
+$allNonHr = $controller->index(\Illuminate\Http\Request::create('/attendance', 'GET', ['month' => 10, 'year' => 2026, 'user_id' => 30]))->getData();
+$nonHrIds = $allNonHr['employees']->pluck('id')->all();
+checkCalendar(in_array(30, $nonHrIds, true) && in_array(31, $nonHrIds, true) && in_array(32, $nonHrIds, true), 'Non-HR manager/developer/custom-role employees missing from attendance.');
+checkCalendar(! in_array(33, $nonHrIds, true) && ! in_array(34, $nonHrIds, true) && ! in_array(1, $nonHrIds, true), 'HR, client or admin appeared in attendance.');
+checkCalendar($allNonHr['calendar']['totals']['seconds'] === 10800, 'Attendance hours for authority-marked non-HR employee were not fetched.');
+try {
+    $controller->index(\Illuminate\Http\Request::create('/attendance', 'GET', ['user_id' => 33]));
+    throw new RuntimeException('HR attendance selection should be rejected.');
+} catch (\Symfony\Component\HttpKernel\Exception\HttpException $e) {
+    checkCalendar($e->getStatusCode() === 403, 'Unexpected HR denial status.');
+}
+\Illuminate\Support\Facades\Auth::guard('web')->setUser(\App\Models\User::findOrFail(33));
+$hrList = $controller->index($teamRequest(['search' => '']))->getData();
+$hrTeamIds = $controller->index(\Illuminate\Http\Request::create('/attendance', 'GET', ['month' => 10, 'year' => 2026]))->getData()['employees']->pluck('id')->all();
+checkCalendar(in_array(30, $hrTeamIds, true) && ! in_array(33, $hrTeamIds, true), 'HR attendance section should fetch all employees except HR.');
+$hrPersonal = $controller->index(\Illuminate\Http\Request::create('/attendance', 'GET', ['view' => 'personal', 'month' => 10, 'year' => 2026]))->getData();
+checkCalendar($hrPersonal['employees']->pluck('id')->all() === [33] && $hrPersonal['calendar']['totals']['seconds'] === 28800, 'HR personal attendance view broke.');
+\Illuminate\Support\Facades\Auth::guard('web')->setUser(\App\Models\User::findOrFail(1));
+Carbon::setTestNow(Carbon::parse('2026-10-01 15:00:00'));
+$todayCsvResponse = $controller->index($teamRequest(['format' => 'csv', 'export_scope' => 'today']));
+ob_start();
+$todayCsvResponse->sendContent();
+$todayCsv = ob_get_clean();
+checkCalendar(str_contains($todayCsvResponse->headers->get('Content-Disposition'), 'attendance-2026-10-01.csv'), 'Today CSV filename mismatch.');
+checkCalendar(substr_count($todayCsv, ',2026-10-01,') >= 2 && ! str_contains($todayCsv, ',2026-10-02,'), 'Today CSV included other days.');
+
+$rangeCsvResponse = $controller->index($teamRequest(['format' => 'csv', 'export_scope' => 'range', 'start_date' => '2026-09-29', 'end_date' => '2026-10-02']));
+ob_start();
+$rangeCsvResponse->sendContent();
+$rangeCsv = ob_get_clean();
+checkCalendar(str_contains($rangeCsvResponse->headers->get('Content-Disposition'), 'attendance-2026-09-29-to-2026-10-02.csv'), 'Range CSV filename mismatch.');
+checkCalendar(str_contains($rangeCsv, ',2026-09-30,') && str_contains($rangeCsv, ',2026-10-02,') && ! str_contains($rangeCsv, ',2026-10-03,'), 'Range CSV boundaries failed.');
+
+$calendarTodayCsv = $controller->index(\Illuminate\Http\Request::create('/attendance', 'GET', ['user_id' => 3, 'month' => 10, 'year' => 2026, 'format' => 'csv', 'export_scope' => 'today']));
+ob_start();
+$calendarTodayCsv->sendContent();
+$calendarTodayContent = ob_get_clean();
+checkCalendar(str_contains($calendarTodayContent, 'employee@local.test,2026-10-01,') && ! str_contains($calendarTodayContent, 'manager@local.test'), 'Calendar view CSV did not scope to selected employee.');
+try {
+    $controller->index($teamRequest(['format' => 'csv', 'export_scope' => 'range', 'start_date' => '2026-10-05', 'end_date' => '2026-10-01']));
+    throw new RuntimeException('Reversed export date range was accepted.');
+} catch (\Illuminate\Validation\ValidationException $e) {
+    checkCalendar(isset($e->errors()['end_date']), 'Missing end_date validation error.');
+}
+$calendarAllCsv = $controller->index(\Illuminate\Http\Request::create('/attendance', 'GET', ['month' => 10, 'year' => 2026, 'format' => 'csv', 'export_scope' => 'today']));
+ob_start();
+$calendarAllCsv->sendContent();
+$calendarAllContent = ob_get_clean();
+checkCalendar(str_contains($calendarAllContent, 'employee@local.test,2026-10-01,') && str_contains($calendarAllContent, 'manager@local.test,2026-10-01,') && ! str_contains($calendarAllContent, 'hr@local.test'), 'Calendar CSV without selected employees should export all non-HR employees.');
+
+$calendarSelectedCsv = $controller->index(\Illuminate\Http\Request::create('/attendance', 'GET', ['month' => 10, 'year' => 2026, 'format' => 'csv', 'export_scope' => 'range', 'start_date' => '2026-10-01', 'end_date' => '2026-10-02', 'user_ids' => [30, 31]]));
+ob_start();
+$calendarSelectedCsv->sendContent();
+$calendarSelectedContent = ob_get_clean();
+checkCalendar(str_contains($calendarSelectedContent, 'manager@local.test,2026-10-01,') && str_contains($calendarSelectedContent, 'dev@local.test,2026-10-02,') && ! str_contains($calendarSelectedContent, 'employee@local.test') && ! str_contains($calendarSelectedContent, 'hr@local.test'), 'Calendar CSV with selected employees leaked unselected or HR users.');
+
+$selectedCsvResponse = $controller->index($teamRequest(['format' => 'csv', 'export_scope' => 'today', 'user_ids' => [30, 33, 2]]));
+ob_start();
+$selectedCsvResponse->sendContent();
+$selectedCsv = ob_get_clean();
+checkCalendar(str_contains($selectedCsv, 'manager@local.test,2026-10-01,') && ! str_contains($selectedCsv, 'employee@local.test') && ! str_contains($selectedCsv, 'hr@local.test') && ! str_contains($selectedCsv, 'foreign@local.test'), 'Selected employee CSV export leaked unselected, HR or foreign users.');
+
+$allDefaultCsvResponse = $controller->index($teamRequest(['format' => 'csv', 'export_scope' => 'today']));
+ob_start();
+$allDefaultCsvResponse->sendContent();
+$allDefaultCsv = ob_get_clean();
+checkCalendar(str_contains($allDefaultCsv, 'employee@local.test,2026-10-01,') && str_contains($allDefaultCsv, 'manager@local.test,2026-10-01,') && ! str_contains($allDefaultCsv, 'hr@local.test'), 'Team CSV without selected employees should export all non-HR employees.');
+
+Carbon::setTestNow();
+
 echo "Attendance calendar and template checks passed.\n";

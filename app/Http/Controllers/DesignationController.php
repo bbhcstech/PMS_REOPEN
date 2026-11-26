@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Department;
 use App\Models\Designation;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -558,29 +559,62 @@ class DesignationController extends Controller
         self::ensureDesignationColumnsExist();
         $hasArchivedAt = Schema::hasColumn('designations', 'archived_at');
         $hasParentId = Schema::hasColumn('designations', 'parent_id');
+        $request = request();
 
-        if ($hasArchivedAt && $designation->archived_at) {
+        $respondBlocked = function (string $message, int $status = 422) use ($request) {
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json(['status' => 'error', 'message' => $message], $status);
+            }
+
             return redirect()->route(\App\Support\WorkforceSettings::name('designations.index'))
-                ->with('error', 'Designation is already archived.');
+                ->with('error', $message);
+        };
+
+        try {
+            $connection = (new Designation())->getConnection();
+            $blockedMessage = $connection->transaction(function () use ($designation, $hasParentId, $hasArchivedAt) {
+                $lockedDesignation = Designation::lockForUpdate()->findOrFail($designation->id);
+
+                if ($hasArchivedAt && $lockedDesignation->archived_at) {
+                    return 'Designation "' . $lockedDesignation->name . '" is already archived.';
+                }
+
+                $employeeCount = $lockedDesignation->activeEmployeeDetails()->count();
+                if ($employeeCount > 0) {
+                    return 'Designation "' . $lockedDesignation->name . '" cannot be archived because ' . $employeeCount . ' employee(s) are tagged under it.';
+                }
+
+                if ($hasParentId) {
+                    Designation::where('parent_id', $lockedDesignation->id)->update([
+                        'parent_id' => $lockedDesignation->parent_id,
+                        'last_updated_by' => Auth::id(),
+                    ]);
+                }
+
+                $updateData = ['last_updated_by' => Auth::id()];
+                if ($hasArchivedAt) {
+                    $updateData['archived_at'] = now();
+                }
+                $lockedDesignation->forceFill($updateData)->save();
+
+                return null;
+            });
+
+            if ($blockedMessage !== null) {
+                return $respondBlocked($blockedMessage);
+            }
+
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json(['status' => 'success', 'message' => 'Designation archived successfully.']);
+            }
+
+            return redirect()->route(\App\Support\WorkforceSettings::name('designations.index'))
+                ->with('success', 'Designation archived successfully.');
+        } catch (\Throwable $e) {
+            logger()->error('Designation archive error: ' . $e->getMessage(), ['exception' => $e]);
+
+            return $respondBlocked('Failed to archive designation: ' . $e->getMessage(), 500);
         }
-
-        DB::transaction(function () use ($designation, $hasParentId, $hasArchivedAt) {
-            if ($hasParentId) {
-                Designation::where('parent_id', $designation->id)->update([
-                    'parent_id' => $designation->parent_id,
-                    'last_updated_by' => Auth::id(),
-                ]);
-            }
-
-            $updateData = ['last_updated_by' => Auth::id()];
-            if ($hasArchivedAt) {
-                $updateData['archived_at'] = now();
-            }
-            $designation->forceFill($updateData)->save();
-        });
-
-        return redirect()->route(\App\Support\WorkforceSettings::name('designations.index'))
-            ->with('success', 'Designation archived successfully.');
     }
 
     public function archive(Request $request)
@@ -738,24 +772,32 @@ class DesignationController extends Controller
         $ids = $request->input('ids', []);
 
         if (empty($ids) || !is_array($ids)) {
-            return back()->with('error', 'No designations selected.');
+            return ($request->wantsJson() || $request->ajax())
+                ? response()->json(['status' => 'error', 'message' => 'No designations selected.'], 422)
+                : back()->with('error', 'No designations selected.');
         }
 
         $hasArchivedAt = Schema::hasColumn('designations', 'archived_at');
         $hasParentId = Schema::hasColumn('designations', 'parent_id');
 
-        $query = Designation::whereIn('id', $ids);
-        if ($hasArchivedAt) {
-            $query->whereNull('archived_at');
-        }
-        $designations = $query->get();
+        $result = DB::transaction(function () use ($ids, $hasParentId, $hasArchivedAt) {
+            $query = Designation::withCount([
+                'employeeDetails as active_employees_count' => fn ($q) => Department::applyActiveEmployeeConstraint($q),
+            ])->whereIn('id', $ids);
 
-        if ($designations->isEmpty()) {
-            return back()->with('error', 'No active designations found for archive.');
-        }
+            if ($hasArchivedAt) {
+                $query->whereNull('archived_at');
+            }
 
-        DB::transaction(function () use ($designations, $hasParentId, $hasArchivedAt) {
-            foreach ($designations as $designation) {
+            $designations = $query->lockForUpdate()->get();
+            if ($designations->isEmpty()) {
+                return null;
+            }
+
+            $blocked = $designations->filter(fn ($d) => (int) ($d->active_employees_count ?? 0) > 0)->values();
+            $archivable = $designations->filter(fn ($d) => (int) ($d->active_employees_count ?? 0) === 0)->values();
+
+            foreach ($archivable as $designation) {
                 if ($hasParentId) {
                     Designation::where('parent_id', $designation->id)->update([
                         'parent_id' => $designation->parent_id,
@@ -769,10 +811,42 @@ class DesignationController extends Controller
                 }
                 $designation->forceFill($updateData)->save();
             }
+
+            return ['archivable' => $archivable, 'blocked' => $blocked];
         });
 
-        return redirect()->route(\App\Support\WorkforceSettings::name('designations.index'))
-            ->with('success', $designations->count() . ' designation(s) archived successfully.');
+        if ($result === null) {
+            return ($request->wantsJson() || $request->ajax())
+                ? response()->json(['status' => 'error', 'message' => 'No active designations found for archive.'], 422)
+                : back()->with('error', 'No active designations found for archive.');
+        }
+
+        $archivable = $result['archivable'];
+        $blocked = $result['blocked'];
+        $archivedCount = $archivable->count();
+        $blockedCount = $blocked->count();
+
+        $redirect = redirect()->route(\App\Support\WorkforceSettings::name('designations.index'));
+        if ($archivedCount > 0) {
+            $redirect->with('success', $archivedCount . ' designation(s) archived successfully.');
+        }
+        $blockedMessage = null;
+        if ($blockedCount > 0) {
+            $blockedMessage = $blockedCount . ' designation(s) cannot be archived because employees are tagged under them: ' . $blocked->pluck('name')->implode(', ');
+            $redirect->with('error', $blockedMessage);
+        }
+
+        if ($request->wantsJson() || $request->ajax()) {
+            $status = $archivedCount === 0 && $blockedCount > 0 ? 'warning' : 'success';
+            return response()->json([
+                'status' => $status,
+                'archived' => $archivedCount,
+                'blocked' => $blockedCount,
+                'message' => trim(($archivedCount > 0 ? $archivedCount . ' designation(s) archived successfully. ' : '') . ($blockedMessage ?? '')),
+            ]);
+        }
+
+        return $redirect;
     }
 
     public function hierarchy()

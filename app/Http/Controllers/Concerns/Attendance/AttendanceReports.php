@@ -261,9 +261,14 @@ trait AttendanceReports
 
         $year = is_numeric($yearRaw) ? (int)$yearRaw : (int) now()->year;
 
-        // pick users list (employees, hr, managers)
-        $category = $request->input('staff_category') === 'authority' ? 'authority' : 'employee';
-        $userQuery = \App\Services\WorkforceAccess::usersWithHistory(User::where('company_id', $user->company_id)->whereNull('archived_at'), $category, 'attendances');
+        // Pick users list for Attendance section (all non-HR employees by default, or authority when explicitly requested)
+        $isAuthority = $request->input('staff_category') === 'authority';
+        $userQuery = User::where('company_id', $user->company_id)->whereNull('archived_at');
+        if ($isAuthority) {
+            \App\Services\WorkforceAccess::usersWithHistory($userQuery, 'authority', 'attendances');
+        } else {
+            \App\Services\WorkforceAccess::attendanceEmployees($userQuery);
+        }
         $employeeOptions = (clone $userQuery)->orderBy('name')->get();
         abort_if($userId && ! $employeeOptions->contains('id', (int) $userId), 403);
         $users = $userQuery
@@ -277,7 +282,11 @@ trait AttendanceReports
         // - month/year of clock_in (preferred) OR
         // - month/year of date (fallback)
         $attendanceQuery = Attendance::query();
-        \App\Services\WorkforceAccess::records($attendanceQuery, $category);
+        if ($isAuthority) {
+            \App\Services\WorkforceAccess::records($attendanceQuery, 'authority');
+        } else {
+            $attendanceQuery->whereHas('user', fn ($userFilter) => \App\Services\WorkforceAccess::attendanceEmployees($userFilter));
+        }
 
         // if user filter provided
         if ($userId) {
@@ -525,7 +534,9 @@ trait AttendanceReports
         $year = (int) $request->input('year', now()->year);
         $userId = $request->input('user_id');
 
-        $users = User::whereIn('role', ['employee', 'hr', 'manager'])
+        $users = \App\Services\WorkforceAccess::attendanceEmployees(
+            User::where('company_id', $user->company_id)->whereNull('archived_at')
+        )
             ->with('employeeDetail.designation')
             ->when($userId, function ($q) use ($userId) {
                 return $q->where('id', (int) $userId);
@@ -534,6 +545,7 @@ trait AttendanceReports
             ->get();
 
         $attendances = Attendance::query()
+            ->whereIn('user_id', $users->pluck('id'))
             ->whereNull('archived_at')
             ->when($userId, function ($query) use ($userId) {
                 return $query->where('user_id', (int) $userId);
