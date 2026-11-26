@@ -133,21 +133,87 @@ trait EmployeeLifecycle
     }
 
     /**
-     * Bulk status update.
+     * Permanently delete an archived employee.
+     */
+    public function deletePermanently(Request $request, $id)
+    {
+        $this->ensureAdmin();
+        $actor = auth()->user();
+        abort_unless($actor?->hasModulePermission('employees', 'delete'), 403, 'You do not have permission to delete employees.');
+
+        $user = User::with('employeeDetail')->findOrFail($id);
+        abort_if($actor?->normalizedRole() !== 'superadmin' && (int) $user->company_id !== (int) $actor?->company_id, 403);
+        $this->guardEmployeeRole($request, $user);
+
+        $respond = function (string $type, string $message, int $status = 200) use ($request) {
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json(['status' => $type, 'message' => $message], $status);
+            }
+
+            return $type === 'success'
+                ? redirect()->route('employees.archive')->with('success', $message)
+                : redirect()->route('employees.archive')->withErrors(['error' => $message]);
+        };
+
+        if ((int) $user->id === (int) $actor->id) {
+            return $respond('error', 'You cannot delete your own account.', 422);
+        }
+
+        if (! in_array(strtolower((string) ($user->role ?? '')), ['employee', 'hr', 'manager'], true)) {
+            return $respond('error', 'Only employee accounts can be permanently deleted here.', 422);
+        }
+
+        if (is_null($user->archived_at)) {
+            return $respond('error', 'Archive ' . $user->name . ' first before permanently deleting.', 422);
+        }
+
+        if ($this->hasSubordinates((int) $user->id)) {
+            return $respond('error', 'You cannot delete ' . $user->name . ' because other employees report to them. Reassign their team first.', 422);
+        }
+
+        try {
+            DB::connection($user->getConnectionName())->transaction(function () use ($user) {
+                EmployeeDetail::where('user_id', $user->id)->delete();
+                $user->delete();
+            });
+        } catch (\Illuminate\Database\QueryException $e) {
+            if (($e->errorInfo[0] ?? null) !== '23000') {
+                throw $e;
+            }
+
+            return $respond('error', $user->name . ' cannot be permanently deleted because related records (for example payroll, projects, or attendance history) still reference this employee.', 409);
+        }
+
+        Log::info('Archived employee permanently deleted', [
+            'user_id' => $user->id,
+            'employee_id' => $user->employeeDetail?->employee_id,
+            'company_id' => $user->company_id,
+            'by' => $actor->id,
+        ]);
+
+        return $respond('success', $user->name . ' has been permanently deleted.');
+    }
+
+    /**
+     * Bulk or inline status update.
      */
     public function bulkUpdateStatus(Request $request): JsonResponse
     {
         $this->ensureAdmin();
 
         $request->validate([
-            'employee_ids' => 'required|array',
+            'employee_ids' => 'required|array|min:1',
+            'employee_ids.*' => 'integer|exists:users,id',
             'status' => 'required|in:Active,Inactive',
+            'auto_exit_date' => 'nullable|boolean',
         ]);
         $this->guardManagedEmployees($request->employee_ids);
 
-        // If setting to Inactive, check for exit dates
-        if ($request->status === 'Inactive') {
-            $employeesWithoutExitDate = EmployeeDetail::whereIn('user_id', $request->employee_ids)
+        $ids = array_values(array_unique(array_map('intval', $request->employee_ids)));
+
+        // If setting to Inactive, check for exit dates unless caller requests auto_exit_date for inline toggle.
+        if ($request->status === 'Inactive' && ! $request->boolean('auto_exit_date')) {
+            $employeesWithoutExitDate = EmployeeDetail::whereIn('user_id', $ids)
                 ->whereNull('exit_date')
                 ->get();
 
@@ -160,14 +226,33 @@ trait EmployeeLifecycle
         }
 
         if ($request->status === 'Active') {
-            EmployeeDetail::whereIn('user_id', $request->employee_ids)
+            EmployeeDetail::whereIn('user_id', $ids)
                 ->update(['status' => 'Active', 'exit_date' => null]);
         } else {
-            EmployeeDetail::whereIn('user_id', $request->employee_ids)
-                ->update(['status' => $request->status]);
+            $today = Carbon::today()->toDateString();
+            EmployeeDetail::whereIn('user_id', $ids)
+                ->whereNull('exit_date')
+                ->update(['status' => 'Inactive', 'exit_date' => $today]);
+            EmployeeDetail::whereIn('user_id', $ids)
+                ->whereNotNull('exit_date')
+                ->update(['status' => 'Inactive']);
         }
 
-        return response()->json(['message' => 'Updated successfully']);
+        if (count($ids) === 1 && ! EmployeeDetail::where('user_id', $ids[0])->exists()) {
+            $target = User::find($ids[0]);
+            EmployeeDetail::create([
+                'user_id' => $ids[0],
+                'company_id' => $target?->company_id,
+                'status' => $request->status,
+                'exit_date' => $request->status === 'Inactive' ? Carbon::today()->toDateString() : null,
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'status' => $request->status,
+            'message' => 'Status updated to ' . $request->status . '.',
+        ]);
     }
 
     /**

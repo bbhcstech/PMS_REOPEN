@@ -182,7 +182,7 @@
                 <div class="card-body p-3 d-flex align-items-center justify-content-between">
                     <div>
                         <span class="text-muted fw-semibold small d-block mb-1">Total Revenue</span>
-                        <h4 class="fw-bold text-dark mb-0">${{ number_format($stats['total_revenue'] ?? 0, 2) }}</h4>
+                        <h4 class="fw-bold text-dark mb-0">{{ $stats['revenue_currency_symbol'] ?? '$' }}{{ number_format($stats['total_revenue'] ?? 0, 2) }}</h4>
                     </div>
                     <div class="p-3 rounded-4 bg-warning-subtle text-warning">
                         <i class="bx bx-dollar-circle fs-3"></i>
@@ -312,7 +312,7 @@
                                 </button>
                             </td>
                             <td>
-                                <span class="fw-bold text-dark">${{ number_format($order['total_amount'], 2) }}</span>
+                                <span class="fw-bold text-dark">{{ $order['currency_symbol'] ?? '$' }}{{ number_format($order['total_amount'], 2) }}</span>
                                 @if(!empty($order['deal_reference']))
                                     <small class="text-muted d-block" style="font-size: 0.70rem;" title="From Deal: {{ $order['deal_reference'] }}">
                                         Deal: {{ Str::limit($order['deal_reference'], 14) }}

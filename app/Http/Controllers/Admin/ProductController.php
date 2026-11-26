@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Client;
 use App\Models\Deal;
 use App\Models\Project;
+use App\Support\CurrencyDisplay;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -21,6 +21,10 @@ class ProductController extends Controller
         $status = $request->get('status', 'all');
         $priority = $request->get('priority', 'all');
         $activeTab = $request->get('tab', 'all'); // 'all', 'home', 'client'
+
+        // Load currency mappings and localization defaults once for the full listing.
+        $currencyContext = CurrencyDisplay::context();
+        $defaultCurrencySymbol = $currencyContext[3];
 
         // Fetch all active deals for automatic cost matching
         $allDeals = Deal::with(['stage', 'category'])->get();
@@ -61,11 +65,11 @@ class ProductController extends Controller
 
         $allProjects = $query->get();
 
-        // Enrich each project with matched Deal Cost
-        $allProjects->each(function ($project) use ($allDeals) {
+        // Enrich each project with matched Deal Cost and accurate currency
+        $allProjects->each(function ($project) use ($allDeals, $currencyContext) {
             $matchedDeal = $this->findMatchingDeal($project, $allDeals);
             $project->matched_deal = $matchedDeal;
-            
+
             if ($matchedDeal && !empty($matchedDeal->value) && (float) $matchedDeal->value > 0) {
                 $project->calculated_cost = (float) $matchedDeal->value;
                 $project->cost_source = 'deal';
@@ -83,6 +87,15 @@ class ProductController extends Controller
                 $project->cost_source = 'none';
                 $project->deal_reference = null;
             }
+
+            $currency = CurrencyDisplay::resolveProjectCurrency(
+                $project,
+                $matchedDeal,
+                $project->cost_source === 'deal',
+                $currencyContext
+            );
+            $project->currency_code = $currency['code'];
+            $project->currency_symbol = $currency['symbol'];
         });
 
         // Divide projects into Home Projects and Client Projects
@@ -96,6 +109,11 @@ class ProductController extends Controller
             return !empty($project->client_id) && $type !== 'home' && $type !== 'internal' && $type !== 'in_house';
         })->values();
 
+        $summarySymbolFor = static fn ($items) => CurrencyDisplay::resolveSummarySymbol(
+            $items->filter(fn ($p) => (float) ($p->calculated_cost ?? 0) > 0)->pluck('currency_symbol'),
+            $defaultCurrencySymbol
+        );
+
         // Calculate statistics
         $stats = [
             'total_projects' => $allProjects->count(),
@@ -104,6 +122,9 @@ class ProductController extends Controller
             'total_deal_cost' => $allProjects->sum('calculated_cost'),
             'home_cost' => $homeProjects->sum('calculated_cost'),
             'client_cost' => $clientProjects->sum('calculated_cost'),
+            'home_currency_symbol' => $summarySymbolFor($homeProjects),
+            'client_currency_symbol' => $summarySymbolFor($clientProjects),
+            'pipeline_currency_symbol' => $summarySymbolFor($allProjects),
             'completed_count' => $allProjects->where('status', 'completed')->count(),
             'in_progress_count' => $allProjects->whereIn('status', ['in progress', 'in_progress'])->count(),
         ];

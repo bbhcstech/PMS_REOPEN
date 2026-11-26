@@ -72,6 +72,8 @@ Route::post('employees/archive/bulk-restore', [EmployeeController::class, 'bulkR
     ->name('employees.archive.bulkRestore');
 Route::post('employees/{id}/restore', [EmployeeController::class, 'restore'])
     ->name('employees.restore');
+Route::delete('employees/{id}/permanent', [EmployeeController::class, 'deletePermanently'])
+    ->name('employees.delete-permanent');
 
 Route::get('employees/org-tree', [EmployeeController::class, 'orgTree'])
     ->name('employees.org-tree');
