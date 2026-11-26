@@ -11,36 +11,12 @@
         <img src="{{ asset('logos/bitroxia_logo.png') }}" alt="" width="58" height="58">
     </a>
     <style>
-        #pms-ai-assistant-launcher {
-            --launcher-size: 58px;
-            position: fixed;
-            right: max(24px, env(safe-area-inset-right));
-            bottom: max(24px, env(safe-area-inset-bottom));
-            z-index: 1040;
-            display: grid;
-            place-items: center;
-            box-sizing: border-box;
-            width: var(--launcher-size) !important;
-            height: var(--launcher-size) !important;
-            min-width: 0 !important;
-            min-height: 0 !important;
-            padding: 0 !important;
-            border: 1px solid rgba(255, 255, 255, .38);
-            border-radius: 50% !important;
-            overflow: hidden;
-            background: #141a2a !important;
-            color: #fff !important;
-            text-decoration: none;
-            box-shadow: 0 8px 22px rgba(40, 70, 168, .34), inset 0 1px 0 rgba(255, 255, 255, .18);
-            transition: opacity .18s ease, transform .18s ease, visibility .18s;
-        }
-        #pms-ai-assistant-launcher img { display: block; width: 100%; height: 100%; object-fit: cover; transform: translateY(11%) scale(1.8); }
-        #pms-ai-assistant-launcher:hover { transform: translateY(-2px); }
-        #pms-ai-assistant-launcher:focus-visible { outline: 3px solid #5e8bff; outline-offset: 4px; }
-        @media (max-width: 575px) {
-            #pms-ai-assistant-launcher { --launcher-size: 54px; right: max(16px, env(safe-area-inset-right)); bottom: max(16px, env(safe-area-inset-bottom)); }
-        }
-        @media (prefers-reduced-motion: reduce) { #pms-ai-assistant-launcher { transition: none; } }
+        #pms-ai-assistant-launcher { position: fixed; right: 24px; bottom: 24px; z-index: 1040; display: inline-flex; align-items: center; gap: 9px; padding: 11px 18px; border: 1px solid rgba(147, 197, 253, 0.45); border-radius: 999px; background: #2563eb !important; color: #fff !important; text-decoration: none; box-shadow: 0 8px 24px rgba(37, 99, 235, 0.32); font-size: 0.86rem; font-weight: 600; }
+        #pms-ai-assistant-launcher span, #pms-ai-assistant-launcher svg { color: #fff !important; -webkit-text-fill-color: #fff !important; }
+        #pms-ai-assistant-launcher svg { background: transparent !important; flex-shrink: 0; width: 20px; height: 20px; }
+        #pms-ai-assistant-launcher:hover { background: #1d4ed8 !important; transform: translateY(-1px); box-shadow: 0 10px 28px rgba(37, 99, 235, 0.4); }
+        #pms-ai-assistant-launcher:focus-visible { outline: 3px solid #93c5fd; outline-offset: 4px; }
+        @media (max-width: 575px) { #pms-ai-assistant-launcher { right: 16px; bottom: 20px; padding: 10px 14px; } }
         /* Never cover page controls: step aside while a menu is open or a control sits underneath. */
         body:has(.pms-table-export.is-open, .dropdown-menu.show, .select2-container--open, .swal2-container) #pms-ai-assistant-launcher,
         #pms-ai-assistant-launcher.is-tucked { opacity: 0; visibility: hidden; transform: translateY(10px); pointer-events: none; }

@@ -4,7 +4,7 @@
 
 @section('content')
 @php $links = $company->social_links ?? []; @endphp
-<div class="partner-page">
+<div id="partner-workspace" class="partner-page">
     <section class="partner-hero">
         <div>
             <span class="partner-eyebrow"><i class="fas fa-building"></i> Collaborating Company</span>

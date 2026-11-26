@@ -35,12 +35,6 @@
 <main id="projects-list-page" class="projects-page">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <!-- Breadcrumb -->
-    <div class="breadcrumb">
-        <i class="fas fa-folder-open"></i>
-        <span>Dashboard / <strong>Projects</strong></span>
-    </div>
-
     <!-- Header Card -->
     <div class="header-card">
         <div class="header-left">
@@ -53,20 +47,22 @@
             </div>
         </div>
         <div class="header-actions">
-            <button type="button" class="btn-icon" data-project-search-focus title="Search">
+            <button type="button" class="btn-icon pms-header-search-btn" data-project-search-focus title="Search">
                 <svg class="project-toolbar-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg>
             </button>
-            <a href="{{ route('projects.index') }}" class="btn-icon active" title="List View" aria-label="List View">
-                <svg class="project-toolbar-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5h12M9 12h12M9 19h12M3 5h1M3 12h1M3 19h1"/></svg>
-            </a>
-            <a href="{{ route('projects.calendar') }}" class="btn-icon" title="Calendar">
-                <svg class="project-toolbar-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18M7 14h2M15 14h2M7 17h2"/></svg>
-            </a>
-            @if($isAdmin)
-                <a href="{{ route('projects.archive') }}" class="btn-icon" title="Archive">
-                    <svg class="project-toolbar-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="5" rx="1"/><path d="M5 8v12h14V8M9 12h6"/></svg>
+            <div class="pms-header-view-group">
+                <a href="{{ route('projects.index') }}" class="btn-icon active" title="List View" aria-label="List View">
+                    <svg class="project-toolbar-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5h12M9 12h12M9 19h12M3 5h1M3 12h1M3 19h1"/></svg>
                 </a>
-            @endif
+                <a href="{{ route('projects.calendar') }}" class="btn-icon" title="Calendar">
+                    <svg class="project-toolbar-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18M7 14h2M15 14h2M7 17h2"/></svg>
+                </a>
+                @if($isAdmin)
+                    <a href="{{ route('projects.archive') }}" class="btn-icon" title="Archive">
+                        <svg class="project-toolbar-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="5" rx="1"/><path d="M5 8v12h14V8M9 12h6"/></svg>
+                    </a>
+                @endif
+            </div>
         </div>
     </div>
 
@@ -127,11 +123,14 @@
             </div>
             <div class="filter-group">
                 <label><i class="fas fa-chart-line"></i> Progress</label>
-                <select name="progress[]" class="form-select" multiple>
+                <div class="pms-progress-checklist" role="group" aria-label="Progress filter">
                     @foreach($progressOptions as $value => $label)
-                        <option value="{{ $value }}" @selected(in_array($value, request('progress', []), true))>{{ $label }}</option>
+                        <label class="pms-progress-option">
+                            <input type="checkbox" name="progress[]" value="{{ $value }}" @checked(in_array($value, request('progress', []), true))>
+                            <span>{{ $label }}</span>
+                        </label>
                     @endforeach
-                </select>
+                </div>
             </div>
             @if($isAdmin)
                 <div class="filter-group">
@@ -144,16 +143,18 @@
                     </select>
                 </div>
             @endif
-            <div class="filter-group search-group">
-                <label><i class="fas fa-search"></i> Search</label>
-                <div class="search-box">
-                    <i class="fas fa-search"></i>
-                    <input type="text" name="search" id="projectSearchInput" class="form-control" value="{{ request('search') }}" placeholder="Search projects...">
+            <div class="pms-filter-bottom-row">
+                <div class="filter-group search-group">
+                    <label><i class="fas fa-search"></i> Search</label>
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" name="search" id="projectSearchInput" class="form-control" value="{{ request('search') }}" placeholder="Search projects...">
+                    </div>
                 </div>
-            </div>
-            <div class="filter-actions">
-                <button class="btn btn-primary"><i class="fas fa-filter"></i> Apply Filters</button>
-                <a href="{{ route('projects.index') }}" class="btn btn-outline"><i class="fas fa-undo"></i> Reset</a>
+                <div class="filter-actions">
+                    <button class="btn btn-primary"><i class="fas fa-filter"></i> Apply Filters</button>
+                    <a href="{{ route('projects.index') }}" class="btn btn-outline"><i class="fas fa-undo"></i> Reset</a>
+                </div>
             </div>
         </form>
     </div>
@@ -210,6 +211,10 @@
                     <h4>Project List</h4>
                     <span class="muted">{{ $projects->count() }} projects found</span>
                 </div>
+            </div>
+            <div class="pms-table-meta">
+                <span>Sorted by: <strong>Created Date</strong></span>
+                <i class="fas fa-chevron-down" aria-hidden="true"></i>
             </div>
         </div>
 
@@ -397,9 +402,21 @@
                         <tr>
                             <td colspan="{{ $isAdmin ? 12 : 10 }}">
                                 <div class="empty-state">
-                                    <i class="fas fa-project-diagram"></i>
-                                    <h5>{{ $isEmployee ? 'No assigned projects found' : 'No projects found' }}</h5>
-                                    <p>{{ $isEmployee ? 'Only projects assigned to you will appear here.' : 'Try changing the filters or create the first project.' }}</p>
+                                    <div class="pms-empty-icon-box" aria-hidden="true">
+                                        <i class="fas fa-folder"></i>
+                                    </div>
+                                    <h5>{{ $isEmployee ? 'No assigned projects found' : 'No projects found in this view' }}</h5>
+                                    <p>{{ $isEmployee ? 'Only projects assigned to you will appear here.' : 'No matching records found for the selected filter parameters. Try clearing your filters or create a new project.' }}</p>
+                                    @if($isAdmin)
+                                        <div class="pms-empty-actions">
+                                            <a href="{{ route('projects.create') }}" class="btn btn-primary">
+                                                <i class="fas fa-plus"></i> Add First Project
+                                            </a>
+                                            <a href="{{ route('projects.index') }}" class="btn btn-outline">
+                                                <i class="fas fa-undo"></i> Clear All Filters
+                                            </a>
+                                        </div>
+                                    @endif
                                 </div>
                             </td>
                         </tr>
@@ -1668,7 +1685,7 @@
         padding: 60px 20px;
     }
 
-    .empty-state i {
+    .empty-state > i {
         font-size: 4rem;
         color: #C7D2FE;
         margin-bottom: 18px;
@@ -2420,6 +2437,615 @@
         color: inherit !important;
         -webkit-text-fill-color: currentColor !important;
         box-shadow: none !important;
+    }
+
+    /* Clean SaaS Workspace Redesign (Scoped to #projects-list-page) */
+    #projects-list-page.projects-page {
+        padding: 0 0 2rem !important;
+        margin: 0 !important;
+        min-height: 0 !important;
+        background: transparent !important;
+        font-family: 'Inter', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 16px !important;
+    }
+
+    /* Header Card */
+    #projects-list-page .header-card {
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 16px !important;
+        padding: 20px 24px !important;
+        margin: 0 !important;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04), 0 8px 20px rgba(15, 23, 42, 0.03) !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 16px !important;
+    }
+
+    #projects-list-page .header-card::before,
+    #projects-list-page .header-card::after {
+        display: none !important;
+    }
+
+    #projects-list-page .header-left {
+        display: flex !important;
+        align-items: center !important;
+        gap: 16px !important;
+    }
+
+    #projects-list-page .header-icon {
+        width: 48px !important;
+        height: 48px !important;
+        border-radius: 12px !important;
+        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
+        color: #ffffff !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 1.25rem !important;
+        box-shadow: 0 8px 18px rgba(37, 99, 235, 0.22) !important;
+        flex-shrink: 0 !important;
+    }
+
+    #projects-list-page .header-icon i {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        background: transparent !important;
+    }
+
+    #projects-list-page .header-left h1 {
+        margin: 0 !important;
+        font-size: 1.35rem !important;
+        font-weight: 700 !important;
+        color: #0f172a !important;
+        letter-spacing: -0.02em !important;
+        line-height: 1.25 !important;
+    }
+
+    #projects-list-page .header-left p {
+        margin: 3px 0 0 !important;
+        font-size: 0.85rem !important;
+        color: #64748b !important;
+    }
+
+    #projects-list-page .header-actions {
+        display: flex !important;
+        align-items: center !important;
+        gap: 10px !important;
+    }
+
+    #projects-list-page .header-actions .pms-header-search-btn {
+        width: 38px !important;
+        height: 38px !important;
+        border-radius: 10px !important;
+        border: 1px solid #e2e8f0 !important;
+        background: #ffffff !important;
+        color: #475569 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04) !important;
+    }
+
+    #projects-list-page .header-actions .pms-header-search-btn:hover {
+        background: #f8fafc !important;
+        border-color: #cbd5e1 !important;
+        color: #0f172a !important;
+    }
+
+    #projects-list-page .pms-header-view-group {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 4px !important;
+        padding: 4px !important;
+        border-radius: 12px !important;
+        background: #f1f5f9 !important;
+        border: 1px solid #e2e8f0 !important;
+    }
+
+    #projects-list-page .pms-header-view-group .btn-icon {
+        width: 32px !important;
+        height: 32px !important;
+        border-radius: 8px !important;
+        border: none !important;
+        background: transparent !important;
+        color: #64748b !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        box-shadow: none !important;
+        transition: all 0.16s ease !important;
+    }
+
+    #projects-list-page .pms-header-view-group .btn-icon:hover {
+        background: #ffffff !important;
+        color: #0f172a !important;
+    }
+
+    #projects-list-page .pms-header-view-group .btn-icon.active {
+        background: #2563eb !important;
+        color: #ffffff !important;
+        box-shadow: 0 2px 6px rgba(37, 99, 235, 0.28) !important;
+    }
+
+    #projects-list-page .header-actions .project-toolbar-icon {
+        width: 16px !important;
+        height: 16px !important;
+        stroke: currentColor !important;
+        fill: none !important;
+        stroke-width: 2 !important;
+    }
+
+    /* Filter Panel */
+    #projects-list-page .filter-panel {
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 16px !important;
+        padding: 20px 24px !important;
+        margin: 0 !important;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04) !important;
+    }
+
+    #projects-list-page .filter-grid {
+        display: grid !important;
+        grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+        gap: 16px !important;
+        align-items: start !important;
+    }
+
+    #projects-list-page .filter-group {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 6px !important;
+        margin: 0 !important;
+    }
+
+    #projects-list-page .filter-group > label {
+        font-size: 0.7rem !important;
+        font-weight: 700 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.05em !important;
+        color: #334155 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+        margin: 0 !important;
+    }
+
+    #projects-list-page .filter-group > label i {
+        color: #2563eb !important;
+        font-size: 0.72rem !important;
+        width: 13px !important;
+        text-align: center !important;
+    }
+
+    #projects-list-page .filter-panel .form-control,
+    #projects-list-page .filter-panel .form-select {
+        height: 40px !important;
+        border-radius: 10px !important;
+        border: 1px solid #e2e8f0 !important;
+        background-color: #ffffff !important;
+        color: #0f172a !important;
+        font-size: 0.85rem !important;
+        padding: 0 12px !important;
+        box-shadow: none !important;
+    }
+
+    #projects-list-page .filter-panel .form-select {
+        padding-right: 32px !important;
+    }
+
+    #projects-list-page .filter-panel .form-control:focus,
+    #projects-list-page .filter-panel .form-select:focus {
+        border-color: #2563eb !important;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12) !important;
+    }
+
+    #projects-list-page .pms-progress-checklist {
+        max-height: 112px !important;
+        overflow-y: auto !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 10px !important;
+        background: #ffffff !important;
+        padding: 8px 12px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 6px !important;
+    }
+
+    #projects-list-page .pms-progress-option {
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        font-size: 0.82rem !important;
+        font-weight: 500 !important;
+        color: #1e293b !important;
+        cursor: pointer !important;
+        margin: 0 !important;
+        text-transform: none !important;
+        letter-spacing: 0 !important;
+    }
+
+    #projects-list-page .pms-progress-option input[type="checkbox"] {
+        width: 14px !important;
+        height: 14px !important;
+        accent-color: #2563eb !important;
+        margin: 0 !important;
+        cursor: pointer !important;
+    }
+
+    #projects-list-page .pms-filter-bottom-row {
+        grid-column: 1 / -1 !important;
+        display: flex !important;
+        align-items: flex-end !important;
+        justify-content: space-between !important;
+        gap: 16px !important;
+        padding-top: 2px !important;
+        flex-wrap: wrap !important;
+    }
+
+    #projects-list-page .pms-filter-bottom-row .search-group {
+        flex: 1 1 320px !important;
+        max-width: 520px !important;
+    }
+
+    #projects-list-page .search-box {
+        position: relative !important;
+    }
+
+    #projects-list-page .search-box > i {
+        position: absolute !important;
+        left: 12px !important;
+        top: 50% !important;
+        transform: translateY(-50%) !important;
+        color: #94a3b8 !important;
+        font-size: 0.82rem !important;
+        pointer-events: none !important;
+    }
+
+    #projects-list-page .search-box .form-control {
+        padding-left: 36px !important;
+    }
+
+    #projects-list-page .filter-actions {
+        display: flex !important;
+        align-items: center !important;
+        gap: 10px !important;
+        margin: 0 !important;
+    }
+
+    /* Uniform Rectangular Buttons (Override pms-refresh pill rules) */
+    #projects-list-page .btn,
+    #projects-list-page .filter-actions .btn,
+    #projects-list-page .toolbar .btn,
+    #projects-list-page .pms-empty-actions .btn {
+        border-radius: 10px !important;
+        height: 38px !important;
+        padding: 0 16px !important;
+        font-size: 0.84rem !important;
+        font-weight: 600 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 8px !important;
+        box-shadow: none !important;
+        transition: all 0.16s ease !important;
+    }
+
+    #projects-list-page .btn-primary {
+        background: #2563eb !important;
+        border: 1px solid #2563eb !important;
+        color: #ffffff !important;
+    }
+
+    #projects-list-page .btn-primary:hover {
+        background: #1d4ed8 !important;
+        border-color: #1d4ed8 !important;
+        color: #ffffff !important;
+        transform: translateY(-1px) !important;
+        box-shadow: 0 6px 14px rgba(37, 99, 235, 0.24) !important;
+    }
+
+    #projects-list-page .btn-outline {
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        color: #0f172a !important;
+    }
+
+    #projects-list-page .btn-outline:hover:not(:disabled) {
+        background: #f8fafc !important;
+        border-color: #cbd5e1 !important;
+        color: #0f172a !important;
+    }
+
+    #projects-list-page .btn-outline:disabled {
+        opacity: 0.55 !important;
+        cursor: not-allowed !important;
+    }
+
+    /* Toolbar */
+    #projects-list-page .toolbar {
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 14px !important;
+        padding: 14px 18px !important;
+        margin: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 12px !important;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04) !important;
+    }
+
+    #projects-list-page .toolbar-left {
+        display: flex !important;
+        align-items: center !important;
+        flex-wrap: wrap !important;
+        gap: 10px !important;
+    }
+
+    #projects-list-page .toolbar-right .view-toggle {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+        background: transparent !important;
+        padding: 0 !important;
+        border: none !important;
+    }
+
+    #projects-list-page .toolbar-right .view-btn {
+        width: 36px !important;
+        height: 36px !important;
+        border-radius: 10px !important;
+        border: 1px solid #e2e8f0 !important;
+        background: #ffffff !important;
+        color: #475569 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        box-shadow: none !important;
+        text-decoration: none !important;
+    }
+
+    #projects-list-page .toolbar-right .view-btn:hover {
+        background: #f8fafc !important;
+        border-color: #cbd5e1 !important;
+        color: #0f172a !important;
+    }
+
+    #projects-list-page .toolbar-right .view-btn.active {
+        background: #2563eb !important;
+        border-color: #2563eb !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 10px rgba(37, 99, 235, 0.24) !important;
+    }
+
+    /* Project List Card & Table */
+    #projects-list-page #projects-list-card.table-card {
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 16px !important;
+        margin: 0 !important;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04) !important;
+        overflow: hidden !important;
+    }
+
+    #projects-list-page #projects-list-header.table-header {
+        background: #ffffff !important;
+        padding: 16px 22px !important;
+        border-bottom: 1px solid #f1f5f9 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 12px !important;
+    }
+
+    #projects-list-page .table-title {
+        display: flex !important;
+        align-items: center !important;
+        gap: 12px !important;
+    }
+
+    #projects-list-page .table-title-icon {
+        width: 36px !important;
+        height: 36px !important;
+        border-radius: 10px !important;
+        background: #eff6ff !important;
+        color: #2563eb !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 0.92rem !important;
+    }
+
+    #projects-list-page .table-title-icon i {
+        color: #2563eb !important;
+    }
+
+    #projects-list-page .table-title h4 {
+        margin: 0 !important;
+        font-size: 1rem !important;
+        font-weight: 700 !important;
+        color: #0f172a !important;
+    }
+
+    #projects-list-page .table-title .muted {
+        font-size: 0.78rem !important;
+        color: #64748b !important;
+    }
+
+    #projects-list-page .pms-table-meta {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+        font-size: 0.8rem !important;
+        color: #64748b !important;
+    }
+
+    #projects-list-page .pms-table-meta strong {
+        color: #0f172a !important;
+        font-weight: 600 !important;
+    }
+
+    #projects-list-page .pms-table-meta i {
+        font-size: 0.7rem !important;
+        color: #64748b !important;
+    }
+
+    #projects-list-page #projectTable thead th {
+        background: #f8fafc !important;
+        color: #475569 !important;
+        font-size: 0.72rem !important;
+        font-weight: 700 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.04em !important;
+        border-bottom: 1px solid #e2e8f0 !important;
+        padding: 12px 14px !important;
+    }
+
+    #projects-list-page #projectTable tbody td {
+        border-bottom: 1px solid #f1f5f9 !important;
+        vertical-align: middle !important;
+        padding: 14px !important;
+    }
+
+    /* Empty State */
+    #projects-list-page .empty-state {
+        padding: 52px 24px !important;
+        text-align: center !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+
+    #projects-list-page .empty-state .pms-empty-icon-box {
+        width: 58px !important;
+        height: 58px !important;
+        border-radius: 16px !important;
+        background: #eff6ff !important;
+        color: #2563eb !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 1.45rem !important;
+        margin-bottom: 16px !important;
+        box-shadow: inset 0 0 0 1px rgba(37, 99, 235, 0.12) !important;
+    }
+
+    #projects-list-page .empty-state .pms-empty-icon-box i {
+        margin: 0 !important;
+        color: #2563eb !important;
+        font-size: 1.4rem !important;
+    }
+
+    #projects-list-page .empty-state h5 {
+        margin: 0 0 8px !important;
+        font-size: 1.05rem !important;
+        font-weight: 700 !important;
+        color: #0f172a !important;
+    }
+
+    #projects-list-page .empty-state p {
+        margin: 0 0 20px !important;
+        max-width: 440px !important;
+        font-size: 0.84rem !important;
+        line-height: 1.5 !important;
+        color: #64748b !important;
+    }
+
+    #projects-list-page .pms-empty-actions {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        flex-wrap: wrap !important;
+        gap: 10px !important;
+    }
+
+    #projects-list-page .pms-empty-actions .btn i {
+        font-size: 0.85rem !important;
+        line-height: 1 !important;
+        margin: 0 !important;
+        color: inherit !important;
+    }
+
+    /* Dark Mode Overrides */
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) #projects-list-page .header-card,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) #projects-list-page .filter-panel,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) #projects-list-page .toolbar,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) #projects-list-page #projects-list-card.table-card,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) #projects-list-page #projects-list-header.table-header {
+        background: #0f172a !important;
+        border-color: rgba(148, 163, 184, 0.2) !important;
+        box-shadow: 0 10px 26px rgba(2, 6, 23, 0.35) !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) #projects-list-page .header-left h1,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) #projects-list-page .table-title h4,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) #projects-list-page .pms-table-meta strong,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) #projects-list-page .empty-state h5 {
+        color: #f8fafc !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) #projects-list-page .filter-group > label,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) #projects-list-page .pms-progress-option {
+        color: #cbd5e1 !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) #projects-list-page .filter-panel .form-control,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) #projects-list-page .filter-panel .form-select,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) #projects-list-page .pms-progress-checklist,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) #projects-list-page .btn-outline,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) #projects-list-page .header-actions .pms-header-search-btn,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) #projects-list-page .toolbar-right .view-btn:not(.active) {
+        background-color: #1e293b !important;
+        border-color: rgba(148, 163, 184, 0.25) !important;
+        color: #e2e8f0 !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) #projects-list-page .pms-header-view-group {
+        background: #1e293b !important;
+        border-color: rgba(148, 163, 184, 0.25) !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) #projects-list-page .table-title-icon,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) #projects-list-page .empty-state .pms-empty-icon-box {
+        background: rgba(37, 99, 235, 0.16) !important;
+        color: #60a5fa !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) #projects-list-page #projectTable thead th {
+        background: #1e293b !important;
+        color: #cbd5e1 !important;
+        border-color: rgba(148, 163, 184, 0.2) !important;
+    }
+
+    @media (max-width: 1100px) {
+        #projects-list-page .filter-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        }
+    }
+
+    @media (max-width: 640px) {
+        #projects-list-page .header-card,
+        #projects-list-page .toolbar,
+        #projects-list-page #projects-list-header.table-header {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+        }
+        #projects-list-page .filter-grid {
+            grid-template-columns: 1fr !important;
+        }
+        #projects-list-page .pms-filter-bottom-row {
+            flex-direction: column !important;
+            align-items: stretch !important;
+        }
+        #projects-list-page .pms-filter-bottom-row .search-group {
+            max-width: none !important;
+        }
     }
 </style>
 

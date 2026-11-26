@@ -933,26 +933,270 @@
         color: #ffffff !important;
         -webkit-text-fill-color: #ffffff !important;
     }
+
+    /* Clean SaaS Workspace Redesign (Scoped to #pms-events-page) */
+    #pms-events-page.pms-events-page {
+        padding: 0 0 2rem !important;
+        margin: 0 !important;
+        background: transparent !important;
+        font-family: 'Inter', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif !important;
+    }
+
+    #pms-events-page .pms-events-topbar {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 16px !important;
+        margin-bottom: 18px !important;
+    }
+
+    #pms-events-page .pms-events-title-wrap {
+        display: flex !important;
+        align-items: center !important;
+        gap: 14px !important;
+    }
+
+    #pms-events-page .pms-events-title-icon {
+        width: 44px !important;
+        height: 44px !important;
+        border-radius: 12px !important;
+        background: #eff6ff !important;
+        border: 1px solid #dbeafe !important;
+        color: #2563eb !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 1.3rem !important;
+        flex-shrink: 0 !important;
+    }
+
+    #pms-events-page .pms-events-title {
+        margin: 0 !important;
+        font-size: 1.35rem !important;
+        font-weight: 700 !important;
+        color: #0f172a !important;
+        letter-spacing: -0.02em !important;
+        line-height: 1.25 !important;
+    }
+
+    #pms-events-page .pms-events-sub {
+        margin: 2px 0 0 !important;
+        font-size: 0.84rem !important;
+        color: #64748b !important;
+    }
+
+    #pms-events-page .pms-events-btn-primary,
+    .events-section .pms-events-btn-primary {
+        background: #2563eb !important;
+        border: 1px solid #2563eb !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        border-radius: 10px !important;
+        height: 38px !important;
+        padding: 0 18px !important;
+        font-size: 0.84rem !important;
+        font-weight: 600 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 7px !important;
+        box-shadow: 0 6px 14px rgba(37, 99, 235, 0.22) !important;
+    }
+
+    #pms-events-page .pms-events-btn-primary:hover {
+        background: #1d4ed8 !important;
+        border-color: #1d4ed8 !important;
+    }
+
+    #pms-events-page .pms-events-btn-primary i {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
+    #pms-events-page .kpi-card {
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 14px !important;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04) !important;
+    }
+
+    #pms-events-page .pms-kpi-label {
+        font-size: 0.68rem !important;
+        font-weight: 700 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.05em !important;
+        color: #64748b !important;
+    }
+
+    #pms-events-page .kpi-card h3 {
+        font-size: 1.55rem !important;
+        font-weight: 800 !important;
+        color: #0f172a !important;
+    }
+
+    #pms-events-page .kpi-icon-box {
+        width: 44px !important;
+        height: 44px !important;
+        border-radius: 12px !important;
+        font-size: 1.25rem !important;
+    }
+
+    #pms-events-page .events-filter-card {
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 14px !important;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04) !important;
+    }
+
+    #pms-events-page .events-filter-card .input-group-text {
+        background: #ffffff !important;
+        border-color: #e2e8f0 !important;
+        color: #64748b !important;
+        border-top-left-radius: 10px !important;
+        border-bottom-left-radius: 10px !important;
+    }
+
+    #pms-events-page .events-filter-card .form-control,
+    #pms-events-page .events-filter-card .form-select {
+        height: 40px !important;
+        border-color: #e2e8f0 !important;
+        background-color: #ffffff !important;
+        font-size: 0.84rem !important;
+        box-shadow: none !important;
+    }
+
+    #pms-events-page .events-filter-card .form-control {
+        border-top-right-radius: 10px !important;
+        border-bottom-right-radius: 10px !important;
+    }
+
+    #pms-events-page .events-filter-card .form-select {
+        border-radius: 10px !important;
+    }
+
+    #pms-events-page .events-filter-card .form-control:focus,
+    #pms-events-page .events-filter-card .form-select:focus {
+        border-color: #2563eb !important;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12) !important;
+    }
+
+    #pms-events-page .pms-events-btn-reset {
+        height: 38px !important;
+        border-radius: 10px !important;
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        color: #0f172a !important;
+        padding: 0 14px !important;
+        font-size: 0.84rem !important;
+        font-weight: 600 !important;
+    }
+
+    #pms-events-page .pms-events-switcher {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 4px !important;
+        padding: 4px !important;
+        background: #f1f5f9 !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 12px !important;
+    }
+
+    #pms-events-page .pms-events-switcher .btn {
+        height: 32px !important;
+        padding: 0 12px !important;
+        border-radius: 8px !important;
+        border: none !important;
+        background: transparent !important;
+        color: #475569 !important;
+        font-size: 0.8rem !important;
+        font-weight: 600 !important;
+        box-shadow: none !important;
+    }
+
+    #pms-events-page .pms-events-switcher .btn.active {
+        background: #2563eb !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25) !important;
+    }
+
+    #pms-events-page .pms-events-switcher .btn.active i {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
+    #pms-events-page .event-card,
+    #pms-events-page .gallery-card,
+    #pms-events-page #eventCalendar,
+    #pms-events-page .pms-events-empty-card {
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 16px !important;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04) !important;
+    }
+
+    #pms-events-page .pms-events-empty-card {
+        background: #ffffff !important;
+        padding: 52px 24px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        text-align: center !important;
+    }
+
+    #pms-events-page .event-empty-icon {
+        width: 58px !important;
+        height: 58px !important;
+        border-radius: 16px !important;
+        background: #eff6ff !important;
+        border: 1px solid #dbeafe !important;
+        color: #2563eb !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        margin: 0 auto 16px !important;
+    }
+
+    #pms-events-page .event-empty-icon i {
+        color: #2563eb !important;
+        font-size: 1.45rem !important;
+    }
+
+    .events-section .form-section-title {
+        color: #2563eb !important;
+        background: #eff6ff !important;
+        border-left-color: #2563eb !important;
+    }
+
+    .events-section .premium-input,
+    .events-section .premium-select {
+        border-radius: 10px !important;
+        border: 1px solid #e2e8f0 !important;
+    }
 </style>
 @include('admin.events.dark-theme')
 @include('admin.events.presentation')
 @endpush
 
 @section('content')
-<div id="events-page" class="container-xxl flex-grow-1 container-p-y events-section">
+<div id="pms-events-page" class="events-section pms-events-page">
 
     {{-- HEADER BLOCK --}}
-    <header class="events-hero">
-        <div class="events-heading">
-            <span class="events-heading-icon" aria-hidden="true"><i class="bx bx-calendar-event"></i></span>
+    <div class="pms-events-topbar">
+        <div class="pms-events-title-wrap">
+            <div class="pms-events-title-icon" aria-hidden="true">
+                <i class="bx bx-calendar-event"></i>
+            </div>
             <div>
-                <h1>Events &amp; Memories</h1>
-                <p>Company activities, schedules, and photo memories.</p>
+                <h4 class="pms-events-title">Events &amp; Memories</h4>
+                <p class="pms-events-sub">Company events, activities, and photo archive</p>
             </div>
         </div>
         @if($canManage)
-            <button type="button" class="btn btn-primary events-create-button" onclick="openCreateModal()">
-                <i class="bx bx-plus" aria-hidden="true"></i> Create Event
+        <div>
+            <button type="button" class="btn pms-events-btn-primary" onclick="openCreateModal()">
+                <i class="bx bx-plus"></i> Create Event
             </button>
         @endif
     </header>
@@ -981,22 +1225,61 @@
     @endif
 
     {{-- KPI SUMMARY CARDS --}}
-    <dl class="events-kpis" aria-label="Event totals">
-        <div class="kpi-card">
-            <dt>Total Events</dt>
-            <dd>{{ number_format($totalEvents) }} <span class="kpi-icon-box" aria-hidden="true"><i class="bx bx-calendar-event"></i></span></dd>
+    <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-lg-3">
+            <div class="card kpi-card p-3">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="pms-kpi-label d-block">Total Events</span>
+                        <h3 class="fw-bold mb-0 mt-1">{{ number_format($totalEvents) }}</h3>
+                    </div>
+                    <div class="kpi-icon-box bg-label-primary text-primary">
+                        <i class="bx bx-calendar-event"></i>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="kpi-card event-kpi-upcoming">
-            <dt>Upcoming Events</dt>
-            <dd>{{ number_format($upcomingEvents) }} <span class="kpi-icon-box" aria-hidden="true"><i class="bx bx-time-five"></i></span></dd>
+
+        <div class="col-sm-6 col-lg-3">
+            <div class="card kpi-card p-3">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="pms-kpi-label d-block">Upcoming Events</span>
+                        <h3 class="fw-bold mb-0 mt-1">{{ number_format($upcomingEvents) }}</h3>
+                    </div>
+                    <div class="kpi-icon-box bg-label-success text-success">
+                        <i class="bx bx-time-five"></i>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="kpi-card event-kpi-today">
-            <dt>Today's Events</dt>
-            <dd>{{ number_format($todayEvents) }} <span class="kpi-icon-box" aria-hidden="true"><i class="bx bx-calendar-check"></i></span></dd>
+
+        <div class="col-sm-6 col-lg-3">
+            <div class="card kpi-card p-3">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="pms-kpi-label d-block">Today's Events</span>
+                        <h3 class="fw-bold mb-0 mt-1">{{ number_format($todayEvents) }}</h3>
+                    </div>
+                    <div class="kpi-icon-box bg-label-warning text-warning">
+                        <i class="bx bx-calendar-check"></i>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="kpi-card event-kpi-past">
-            <dt>Past Events</dt>
-            <dd>{{ number_format($pastEvents) }} <span class="kpi-icon-box" aria-hidden="true"><i class="bx bx-history"></i></span></dd>
+
+        <div class="col-sm-6 col-lg-3">
+            <div class="card kpi-card p-3">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="pms-kpi-label d-block">Past Events</span>
+                        <h3 class="fw-bold mb-0 mt-1">{{ number_format($pastEvents) }}</h3>
+                    </div>
+                    <div class="kpi-icon-box bg-label-secondary text-secondary">
+                        <i class="bx bx-history"></i>
+                    </div>
+                </div>
+            </div>
         </div>
     </dl>
 
@@ -1008,14 +1291,14 @@
                     {{-- Search Input --}}
                     <div class="filter-search-box">
                         <div class="input-group">
-                            <span class="input-group-text bg-light border-end-0" aria-hidden="true"><i class="bx bx-search"></i></span>
-                            <input type="text" name="search" class="form-control border-start-0 bg-light" aria-label="Search events" placeholder="Search events" value="{{ request('search') }}">
+                            <span class="input-group-text border-end-0"><i class="bx bx-search"></i></span>
+                            <input type="text" name="search" class="form-control border-start-0" placeholder="Search title, desc, location..." value="{{ request('search') }}">
                         </div>
                     </div>
 
                     {{-- Event Type Filter --}}
                     <div class="filter-select-box">
-                        <select name="event_type" class="form-select bg-light" aria-label="Event type">
+                        <select name="event_type" class="form-select">
                             <option value="all">All Types</option>
                             @foreach($eventTypes as $type)
                                 <option value="{{ $type }}" {{ request('event_type') == $type ? 'selected' : '' }}>{{ $type }}</option>
@@ -1025,7 +1308,7 @@
 
                     {{-- Status Filter --}}
                     <div class="filter-select-box">
-                        <select name="status" class="form-select bg-light" aria-label="Event status">
+                        <select name="status" class="form-select">
                             <option value="all">All Statuses</option>
                             <option value="published" {{ request('status') == 'published' ? 'selected' : '' }}>Published</option>
                             @if($canManage)
@@ -1038,7 +1321,7 @@
 
                     {{-- Time Filter --}}
                     <div class="filter-select-box">
-                        <select name="time_filter" class="form-select bg-light" aria-label="Event date range">
+                        <select name="time_filter" class="form-select">
                             <option value="">All Time</option>
                             <option value="upcoming" {{ request('time_filter') == 'upcoming' ? 'selected' : '' }}>Upcoming</option>
                             <option value="today" {{ request('time_filter') == 'today' ? 'selected' : '' }}>Today</option>
@@ -1047,14 +1330,26 @@
                     </div>
 
                     {{-- Filter Action Buttons --}}
-                    <div class="events-filter-actions">
-                        <button type="submit" class="btn btn-primary filter-btn-nowrap">
+                    <div class="d-flex align-items-center gap-2 flex-wrap ms-auto">
+                        <button type="submit" class="btn pms-events-btn-primary filter-btn-nowrap">
                             <i class="bx bx-filter-alt"></i> Apply
                         </button>
-                        <a href="{{ route('events.index') }}" class="btn btn-outline-secondary filter-btn-nowrap">
+                        <a href="{{ route('events.index') }}" class="btn pms-events-btn-reset filter-btn-nowrap">
                             <i class="bx bx-reset"></i> Reset
                         </a>
 
+                        {{-- ENHANCED VIEW TOGGLE BUTTONS [LIST] [CALENDAR] [GALLERY] --}}
+                        <div class="pms-events-switcher filter-btn-group ms-1" role="group">
+                            <button type="button" class="btn active" id="btnListView" onclick="switchView('list')">
+                                <i class="bx bx-list-ul"></i> List
+                            </button>
+                            <button type="button" class="btn" id="btnCalendarView" onclick="switchView('calendar')">
+                                <i class="bx bx-calendar"></i> Calendar
+                            </button>
+                            <button type="button" class="btn" id="btnGalleryView" onclick="switchView('gallery')">
+                                <i class="bx bx-images"></i> Gallery
+                            </button>
+                        </div>
                     </div>
                 </div>
                 <div class="btn-group filter-btn-group" role="group" aria-label="Event view">
@@ -1219,14 +1514,16 @@
             </div>
         @else
             {{-- EMPTY STATE --}}
-            <div class="events-empty">
-                <span class="events-empty-icon" aria-hidden="true"><i class="bx bx-calendar-event"></i></span>
-                <h2>No events found</h2>
-                <p>Try a different filter to see more events.</p>
+            <div class="card pms-events-empty-card my-4">
+                <div class="event-empty-icon">
+                    <i class="bx bx-calendar-event"></i>
+                </div>
+                <h5 class="fw-bold text-dark mb-1">No upcoming events</h5>
+                <p class="text-muted small mb-4">Company events and activities will appear here.</p>
                 @if($canManage)
                     <div>
-                        <button type="button" class="btn btn-primary events-primary-button" onclick="openCreateModal()">
-                            <i class="bx bx-plus" aria-hidden="true"></i> Create Event
+                        <button type="button" class="btn pms-events-btn-primary" onclick="openCreateModal()">
+                            <i class="bx bx-plus"></i> Create Event
                         </button>
                     </div>
                 @endif
@@ -1313,10 +1610,19 @@
                 @endforeach
             </div>
         @else
-            <div class="events-empty">
-                <span class="events-empty-icon" aria-hidden="true"><i class="bx bx-images"></i></span>
-                <h3>No event memories</h3>
-                <p>Event photos will appear here when they’re available.</p>
+            <div class="card pms-events-empty-card my-4">
+                <div class="event-empty-icon">
+                    <i class="bx bx-images"></i>
+                </div>
+                <h5 class="fw-bold text-dark mb-1">No Event Memories</h5>
+                <p class="text-muted small mb-4">No event photo memories have been created yet.</p>
+                @if($canManage)
+                    <div>
+                        <button type="button" class="btn pms-events-btn-primary" onclick="openCreateModal()">
+                            <i class="bx bx-plus"></i> Create Event
+                        </button>
+                    </div>
+                @endif
             </div>
         @endif
     </div>

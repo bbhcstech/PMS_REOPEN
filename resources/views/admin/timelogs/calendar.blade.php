@@ -3,52 +3,59 @@
 @section('title', 'Timesheet Calendar')
 
 @section('content')
-<div class="container-fluid px-4 py-4">
+@include('admin.timelogs.partials.workspace-styles')
+
+<div id="pms-timelogs-calendar-page" class="pms-ts-page">
     <!-- Header -->
-    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
-        <div>
-            <h3 class="fw-bold mb-0 text-dark"><i class="bx bx-calendar text-primary me-2"></i> Timesheet Calendar</h3>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item"><a href="{{ route('dashboard') }}" class="text-decoration-none">Dashboard</a></li>
-                    <li class="breadcrumb-item"><a href="{{ route('timelogs.index') }}" class="text-decoration-none">Timesheet</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Calendar View</li>
-                </ol>
-            </nav>
+    <div class="pms-ts-topbar">
+        <div class="pms-ts-title-wrap">
+            <div class="pms-ts-title-icon" aria-hidden="true">
+                <i class="bx bx-calendar"></i>
+            </div>
+            <div>
+                <h3 class="pms-ts-title">Timesheet Calendar</h3>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="{{ route('dashboard') }}" class="text-decoration-none">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="{{ route('timelogs.index') }}" class="text-decoration-none">Timesheet</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Calendar View</li>
+                    </ol>
+                </nav>
+            </div>
         </div>
 
-        <div class="d-flex align-items-center gap-2">
-            <a href="{{ route('timelogs.create') }}" class="btn btn-primary rounded-pill px-4 shadow-sm">
-                <i class="bx bx-plus-circle me-1"></i> Log Time
+        <div class="pms-ts-actions">
+            <a href="{{ route('timelogs.create') }}" class="btn pms-ts-btn-primary">
+                <i class="bx bx-plus-circle"></i> Log Time
             </a>
         </div>
     </div>
 
     <!-- Actions & Views Switcher Toolbar -->
-    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+    <div class="pms-ts-switcher-bar">
         <div class="text-muted small">
             <i class="bx bx-info-circle text-primary me-1"></i> Showing log entries on calendar view. Click any event to view log details.
         </div>
 
         <!-- View Switcher -->
-        <div class="btn-group" role="group">
-            <a href="{{ route('timelogs.index') }}" class="btn btn-sm btn-outline-primary {{ request()->routeIs('timelogs.index') ? 'active' : '' }}" title="Timesheet List">
-                <i class="bx bx-list-ul me-1"></i> List
+        <div class="pms-ts-switcher" role="group" aria-label="Timesheet views">
+            <a href="{{ route('timelogs.index') }}" class="pms-ts-tab {{ request()->routeIs('timelogs.index') ? 'active' : '' }}" title="Timesheet List">
+                <i class="bx bx-list-ul"></i> List
             </a>
-            <a href="{{ route('timelogs.calendar') }}" class="btn btn-sm btn-outline-primary {{ request()->routeIs('timelogs.calendar') ? 'active' : '' }}" title="Calendar View">
-                <i class="bx bx-calendar me-1"></i> Calendar
+            <a href="{{ route('timelogs.calendar') }}" class="pms-ts-tab {{ request()->routeIs('timelogs.calendar') ? 'active' : '' }}" title="Calendar View">
+                <i class="bx bx-calendar"></i> Calendar
             </a>
-            <a href="{{ route('timelogs.byEmployee')}}" class="btn btn-sm btn-outline-primary {{ request()->routeIs('timelogs.byEmployee') ? 'active' : '' }}" title="By Employee Summary">
-                <i class="bx bx-user me-1"></i> By Employee
+            <a href="{{ route('timelogs.byEmployee')}}" class="pms-ts-tab {{ request()->routeIs('timelogs.byEmployee') ? 'active' : '' }}" title="By Employee Summary">
+                <i class="bx bx-user"></i> By Employee
             </a>
-            <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#howItWorksModal" title="How It Works">
+            <button type="button" class="pms-ts-tab" data-bs-toggle="modal" data-bs-target="#howItWorksModal" title="How It Works">
                 <i class="bx bx-help-circle"></i>
             </button>
         </div>
     </div>
 
     <!-- Calendar Card Container -->
-    <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+    <div class="card pms-ts-card p-4">
         <div id="calendar" style="min-height: 680px;"></div>
     </div>
 </div>
@@ -63,25 +70,25 @@
         font-family: inherit;
     }
     .fc .fc-toolbar-title {
-        font-size: 1.35rem;
+        font-size: 1.25rem;
         font-weight: 700;
-        color: #1f2937;
+        color: #0f172a;
     }
     .fc .fc-button-primary {
-        background-color: #2F6BFF !important;
-        border-color: #2F6BFF !important;
-        border-radius: 50rem !important;
-        padding: 0.4rem 1rem !important;
+        background-color: #2563eb !important;
+        border-color: #2563eb !important;
+        border-radius: 10px !important;
+        padding: 0.42rem 0.95rem !important;
         font-weight: 600 !important;
-        box-shadow: 0 2px 4px rgba(47, 107, 255, 0.15) !important;
+        box-shadow: 0 2px 6px rgba(37, 99, 235, 0.2) !important;
     }
     .fc .fc-button-primary:hover {
-        background-color: #0b593a !important;
-        border-color: #0b593a !important;
+        background-color: #1d4ed8 !important;
+        border-color: #1d4ed8 !important;
     }
     .fc .fc-button-primary:disabled {
-        background-color: #9ca3af !important;
-        border-color: #9ca3af !important;
+        background-color: #94a3b8 !important;
+        border-color: #94a3b8 !important;
     }
     .fc .fc-daygrid-day-number {
         font-weight: 600;

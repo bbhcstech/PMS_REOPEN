@@ -31,16 +31,7 @@
     $canManageDirectory = in_array(auth()->user()?->role, ['admin', 'hr'], true);
 @endphp
 
-<div class="org-page">
-    <!-- Breadcrumb -->
-    <div class="org-breadcrumb">
-        <a href="{{ route('dashboard') }}"><i class="fas fa-home me-1"></i> Dashboard</a>
-        <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
-        <a href="{{ route('organization.index') }}">Organization Details</a>
-        <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
-        <span class="text-dark font-semibold">{{ $employee->name }}</span>
-    </div>
-
+<div id="pms-org-show-page" class="org-page">
     @if(session('success'))
         <div class="alert alert-success border-0 shadow-sm rounded-xl py-3 px-4 mb-4 fw-bold text-emerald-800 bg-emerald-50">
             <i class="fas fa-check-circle me-2 text-emerald-600"></i> {{ session('success') }}
@@ -54,32 +45,32 @@
     @endif
 
     <!-- Profile Executive Hero Banner -->
-    <div class="org-profile-banner" style="background: linear-gradient(135deg, #1E4FCC 0%, #2F6BFF 65%, #1E3A8A 100%) !important; color: #ffffff !important;">
+    <div class="org-profile-banner pms-org-profile-card">
         <div class="org-banner-content">
             <div class="org-profile-user-group">
                 @if($avatar)
                     <img src="{{ $avatar }}" alt="{{ $employee->name }}" class="org-banner-avatar">
                 @else
-                    <div class="org-banner-avatar" style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important;">{{ $initials }}</div>
+                    <div class="org-banner-avatar">{{ $initials }}</div>
                 @endif
                 <div class="org-banner-info">
-                    <h1 style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; text-shadow: 0 2px 6px rgba(0,0,0,0.3) !important; font-weight: 800 !important;">{{ $employee->name }}</h1>
+                    <h1>{{ $employee->name }}</h1>
                     <div class="org-banner-chips">
-                        <span class="org-banner-chip" style="background: rgba(255, 255, 255, 0.2) !important; border: 1px solid rgba(255, 255, 255, 0.35) !important;">
-                            <i class="fas fa-briefcase" style="color: #C7D2FE !important; -webkit-text-fill-color: #C7D2FE !important;"></i>
-                            <span style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; font-weight: 700 !important; background: transparent !important; border: none !important; padding: 0 !important; margin: 0 !important;">{{ $designationName }}</span>
+                        <span class="org-banner-chip">
+                            <i class="fas fa-briefcase"></i>
+                            <span>{{ $designationName }}</span>
                         </span>
-                        <span class="org-banner-chip" style="background: rgba(255, 255, 255, 0.2) !important; border: 1px solid rgba(255, 255, 255, 0.35) !important;">
-                            <i class="fas fa-building" style="color: #C7D2FE !important; -webkit-text-fill-color: #C7D2FE !important;"></i>
-                            <span style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; font-weight: 700 !important; background: transparent !important; border: none !important; padding: 0 !important; margin: 0 !important;">{{ $deptName }}</span>
+                        <span class="org-banner-chip">
+                            <i class="fas fa-building"></i>
+                            <span>{{ $deptName }}</span>
                         </span>
-                        <span class="org-banner-chip" style="background: rgba(255, 255, 255, 0.2) !important; border: 1px solid rgba(255, 255, 255, 0.35) !important;">
-                            <i class="fas fa-id-badge" style="color: #C7D2FE !important; -webkit-text-fill-color: #C7D2FE !important;"></i>
-                            <span style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; font-weight: 700 !important; background: transparent !important; border: none !important; padding: 0 !important; margin: 0 !important;">{{ $empCode }}</span>
+                        <span class="org-banner-chip">
+                            <i class="fas fa-id-badge"></i>
+                            <span>{{ $empCode }}</span>
                         </span>
-                        <span class="org-banner-chip org-status-chip {{ $status }}" style="background: rgba(255, 255, 255, 0.2) !important; border: 1px solid rgba(255, 255, 255, 0.35) !important; padding: 5px 14px !important; font-size: 0.82rem !important; font-weight: 800 !important; display: inline-flex !important; align-items: center !important;">
-                            <span class="org-status-dot" style="background: #60A5FA !important; box-shadow: 0 0 8px #60A5FA !important; width: 7px !important; height: 7px !important; border-radius: 50% !important; display: inline-block !important; margin-right: 7px !important;"></span>
-                            <span style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; font-weight: 800 !important; background: transparent !important; border: none !important; padding: 0 !important; margin: 0 !important;">{{ ucfirst($status) }}</span>
+                        <span class="org-banner-chip org-status-chip {{ $status }}">
+                            <span class="org-status-dot"></span>
+                            <span>{{ ucfirst($status) }}</span>
                         </span>
                     </div>
                 </div>
@@ -87,18 +78,18 @@
 
             <div class="d-flex align-items-center gap-2 flex-wrap">
                 @if($canManageDirectory)
-                    <a href="{{ route('employees.edit', ['employee' => $employee, 'return_url' => url()->full()]) }}" class="org-btn org-banner-btn-primary" style="background: #ffffff !important; color: #2F6BFF !important; -webkit-text-fill-color: #2F6BFF !important; border: 1px solid #ffffff !important; font-weight: 800 !important;">
-                        <i class="fas fa-user-pen" style="color: #2F6BFF !important; -webkit-text-fill-color: #2F6BFF !important;"></i> Full HR Edit
+                    <a href="{{ route('employees.edit', ['employee' => $employee, 'return_url' => url()->full()]) }}" class="org-btn org-btn-primary">
+                        <i class="fas fa-user-pen"></i> Full HR Edit
                     </a>
-                    <a href="#directory-editor" class="org-btn org-banner-btn-secondary" style="background: rgba(255, 255, 255, 0.2) !important; color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; border: 1px solid rgba(255, 255, 255, 0.4) !important; font-weight: 700 !important;">
-                        <i class="fas fa-pen-to-square" style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important;"></i> Edit Public Info
+                    <a href="#directory-editor" class="org-btn org-btn-secondary">
+                        <i class="fas fa-pen-to-square"></i> Edit Public Info
                     </a>
                 @endif
                 @php
                     $backToDirUrl = request('from_view') ? route('organization.index', ['view' => request('from_view')]) : route('organization.index');
                 @endphp
-                <a href="{{ $backToDirUrl }}" class="org-btn org-banner-btn-outline" style="background: transparent !important; color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; border: 1px solid rgba(255, 255, 255, 0.45) !important; font-weight: 700 !important;">
-                    <i class="fas fa-arrow-left" style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important;"></i> Back to Organization Details
+                <a href="{{ $backToDirUrl }}" class="org-btn org-btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Directory
                 </a>
             </div>
         </div>

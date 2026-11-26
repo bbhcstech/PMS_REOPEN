@@ -3,18 +3,18 @@
 @section('title', 'Collaborating Companies')
 
 @section('content')
-<div class="partner-page">
+<div id="partner-workspace" class="partner-page">
     <section class="partner-hero">
         <div>
-            <span class="partner-eyebrow"><i class="fas fa-handshake"></i> Company Network</span>
+            <span class="partner-eyebrow"><i class="bx bx-group"></i> Company Network</span>
             <h1>Collaborating Companies</h1>
             <p>{{ $isAdmin ? 'Add and maintain the companies collaborating with our organization.' : 'View the companies currently collaborating with our organization.' }}</p>
         </div>
         <div class="partner-actions">
             @if($isAdmin)
-                <a href="{{ route('collaborating-companies.create') }}" class="btn btn-primary"><i class="fas fa-plus"></i> Add Company</a>
+                <a href="{{ route('collaborating-companies.create') }}" class="btn btn-primary"><i class="bx bx-plus"></i> Add Company</a>
             @endif
-            <a href="{{ route('dashboard') }}" class="btn btn-light"><i class="fas fa-arrow-left"></i> Dashboard</a>
+            <a href="{{ route('dashboard') }}" class="btn btn-light"><i class="bx bx-arrow-back"></i> Dashboard</a>
         </div>
     </section>
 
@@ -30,7 +30,10 @@
 
     <section class="partner-filter">
         <form method="GET" action="{{ route('collaborating-companies.index') }}">
-            <input type="text" name="search" class="form-control" value="{{ request('search') }}" placeholder="Search company, industry, services">
+            <div class="partner-search-box">
+                <i class="bx bx-search" aria-hidden="true"></i>
+                <input type="text" name="search" class="form-control" value="{{ request('search') }}" placeholder="Search company, industry, services">
+            </div>
             @if($isAdmin)
                 <select name="status" class="form-select">
                     <option value="all">All Status</option>
@@ -38,8 +41,8 @@
                     <option value="inactive" @selected(request('status') === 'inactive')>Inactive</option>
                 </select>
             @endif
-            <button class="btn btn-primary"><i class="fas fa-filter"></i> Filter</button>
-            <a href="{{ route('collaborating-companies.index') }}" class="btn btn-light"><i class="fas fa-rotate-left"></i> Reset</a>
+            <button class="btn btn-primary"><i class="bx bx-filter-alt"></i> Filter</button>
+            <a href="{{ route('collaborating-companies.index') }}" class="btn btn-light"><i class="bx bx-refresh"></i> Reset</a>
         </form>
     </section>
 
@@ -100,9 +103,17 @@
             </article>
         @empty
             <div class="partner-empty">
-                <i class="fas fa-building-circle-exclamation"></i>
+                <div class="partner-empty-icon-wrap" aria-hidden="true">
+                    <i class="bx bx-buildings"></i>
+                    <span class="partner-empty-badge"><i class="bx bx-error"></i></span>
+                </div>
                 <h2>No collaborating companies found</h2>
                 <p>{{ $isAdmin ? 'Add the first company to share it with employees.' : 'No active collaboration details are available yet.' }}</p>
+                @if($isAdmin)
+                    <a href="{{ route('collaborating-companies.create') }}" class="btn btn-primary partner-empty-cta">
+                        <i class="bx bx-plus"></i> Add Collaborating Company
+                    </a>
+                @endif
             </div>
         @endforelse
     </section>

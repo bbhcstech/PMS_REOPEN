@@ -1082,11 +1082,11 @@
         $returnUrl = request('return_url') ?: old('return_url', route('employees.index'));
     @endphp
 
-    <div class="container-fluid">
+    <div class="container-fluid" id="pms-emp-edit-page">
         <div class="page-header-enterprise fade-up-stagger">
             <div class="header-title">
-                <h1 style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; font-weight: 800 !important;"><i class="fas fa-user-edit" style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important;"></i> Edit Employee</h1>
-                <p style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; font-weight: 800 !important;">Update employee information and configuration settings</p>
+                <h1><i class="fas fa-user-edit"></i> Edit Employee</h1>
+                <p>Update employee information and configuration settings</p>
             </div>
             <div>
                 <a href="{{ $returnUrl }}" class="btn-header-enterprise">
@@ -1869,6 +1869,7 @@
         min-height: 44px;
     }
 </style>
+@include('admin.employees.partials.workspace-overrides')
 @endpush
 
 @push('js')

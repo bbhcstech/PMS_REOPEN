@@ -1057,6 +1057,7 @@
     :is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) #archivedEmployeesPage .archive-icon-danger { background: rgba(239, 68, 68, 0.18) !important; border-color: rgba(248, 113, 113, 0.45) !important; color: #FECACA !important; -webkit-text-fill-color: #FECACA !important; }
     :is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) #archivedEmployeesPage .archive-icon-danger:hover { background: #dc2626 !important; border-color: #ef4444 !important; color: #FFFFFF !important; -webkit-text-fill-color: #FFFFFF !important; }
 </style>
+@include('admin.employees.partials.workspace-overrides')
 
 @push('js')
 <script>

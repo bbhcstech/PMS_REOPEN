@@ -802,21 +802,30 @@ body[data-pms-theme="dark"] .badge-pill-status-lost,
 }
 </style>
 
-<div class="container-fluid py-3">
+@include('admin.partials.crm-workspace-styles')
+
+<div class="container-fluid" id="pms-crm-workspace">
 
     {{-- HEADER & BREADCRUMB --}}
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h4 class="fw-bold mb-1 page-title-text"><i class="fas fa-users-cog me-2 text-success"></i>Lead Contact Management</h4>
-            <p class="text-muted small mb-0">Manage your organization's sales leads, prospects, and contact details</p>
+    <div class="pms-crm-topbar">
+        <div class="pms-crm-heading-group">
+            <div class="pms-crm-title-icon">
+                <i class="fas fa-users-cog"></i>
+            </div>
+            <div>
+                <h1 class="pms-crm-title">Lead Contact Management</h1>
+                <p class="pms-crm-subtitle">Manage your organization's sales leads, prospects, and contact details.</p>
+            </div>
         </div>
-        <div class="d-flex gap-2">
-            <a href="{{ route('leads.contacts.create') }}" class="btn btn-success fw-semibold shadow-sm px-3">
-                <i class="fas fa-plus me-1"></i> Add Lead Contact
-            </a>
-            <button class="btn btn-outline-secondary px-3" data-bs-toggle="modal" data-bs-target="#importModal">
-                <i class="fas fa-file-import me-1"></i> Import
+        <div class="pms-crm-actions">
+            <button class="pms-crm-btn-secondary" data-bs-toggle="modal" data-bs-target="#importModal">
+                <i class="fas fa-file-import"></i>
+                <span>Import</span>
             </button>
+            <a href="{{ route('leads.contacts.create') }}" class="pms-crm-btn-primary">
+                <i class="fas fa-plus"></i>
+                <span>Add Lead Contact</span>
+            </a>
         </div>
     </div>
 
@@ -935,13 +944,15 @@ body[data-pms-theme="dark"] .badge-pill-status-lost,
                 </select>
             </div>
 
-            <button type="button" class="btn btn-outline-primary btn-sm" id="openFilterBtn">
-                <i class="fas fa-sliders-h me-1"></i> More Filters
+            <button type="button" class="pms-crm-btn-outline-primary" id="openFilterBtn">
+                <i class="fas fa-sliders-h"></i>
+                <span>More Filters</span>
             </button>
 
             @if(request()->hasAny(['search', 'status', 'priority', 'lead_owner_id', 'lead_source', 'industry', 'score_rating', 'created_from', 'created_to']))
-                <a href="{{ route('leads.contacts.index') }}" class="btn btn-outline-danger btn-sm">
-                    <i class="fas fa-undo me-1"></i> Reset Filters
+                <a href="{{ route('leads.contacts.index') }}" class="pms-crm-btn-danger">
+                    <i class="fas fa-undo"></i>
+                    <span>Reset Filters</span>
                 </a>
             @endif
         </div>
@@ -951,7 +962,7 @@ body[data-pms-theme="dark"] .badge-pill-status-lost,
     <div class="filter-overlay" id="filterOverlay"></div>
     <div class="filter-sidebar" id="filterSidebar">
         <div class="filter-header">
-            <h5 class="fw-bold mb-0 text-dark"><i class="fas fa-filter text-primary me-2"></i>Advanced Lead Filters</h5>
+            <h5 class="fw-bold mb-0"><i class="fas fa-filter text-primary me-2"></i>Advanced Lead Filters</h5>
             <button type="button" class="btn-close" id="closeFilter"></button>
         </div>
 
@@ -1034,9 +1045,9 @@ body[data-pms-theme="dark"] .badge-pill-status-lost,
                 </div>
 
             </div>
-            <div class="p-3 border-top d-flex gap-2 bg-light">
-                <a href="{{ route('leads.contacts.index') }}" class="btn btn-secondary btn-sm flex-fill">Clear All</a>
-                <button type="submit" class="btn btn-primary btn-sm flex-fill">Apply Filters</button>
+            <div class="p-3 border-top d-flex gap-2 filter-footer">
+                <a href="{{ route('leads.contacts.index') }}" class="pms-crm-btn-secondary flex-fill">Clear All</a>
+                <button type="submit" class="pms-crm-btn-primary flex-fill">Apply Filters</button>
             </div>
         </form>
     </div>
@@ -1072,13 +1083,13 @@ body[data-pms-theme="dark"] .badge-pill-status-lost,
                                         {{ strtoupper(substr($lead->contact_name, 0, 2)) }}
                                     </div>
                                     <div>
-                                        <a href="{{ route('leads.contacts.show', $lead->id) }}" class="fw-bold text-decoration-none d-block" style="color: #0f172a; font-size: 0.9rem;">
+                                        <a href="{{ route('leads.contacts.show', $lead->id) }}" class="pms-crm-entity-link d-block">
                                             {{ $lead->salutation ? $lead->salutation . ' ' : '' }}{{ $lead->contact_name }}
                                         </a>
                                         @if($lead->job_title)
                                             <div class="fw-semibold text-muted" style="font-size: 0.78rem;">{{ $lead->job_title }}</div>
                                         @endif
-                                        <div class="mt-1" style="font-size: 0.79rem; color: #475569;">
+                                        <div class="pms-crm-subtext mt-1">
                                             <div><i class="far fa-envelope text-muted me-1"></i>{{ $lead->email }}</div>
                                             @if($lead->mobile || $lead->phone)
                                                 <div class="mt-1"><i class="fas fa-phone-alt text-muted me-1"></i>{{ $lead->mobile ?? $lead->phone }}</div>
@@ -1088,7 +1099,7 @@ body[data-pms-theme="dark"] .badge-pill-status-lost,
                                 </div>
                             </td>
                             <td>
-                                <div class="fw-bold" style="color: #1e293b; font-size: 0.88rem;">{{ $lead->company_name ?: 'N/A' }}</div>
+                                <div class="pms-crm-cell-strong">{{ $lead->company_name ?: 'N/A' }}</div>
                                 @if($lead->industry)
                                     <div class="text-muted small mt-1"><i class="far fa-building me-1"></i>{{ $lead->industry }}</div>
                                 @endif
@@ -1143,8 +1154,8 @@ body[data-pms-theme="dark"] .badge-pill-status-lost,
                                 </span>
                             </td>
                             <td>
-                                <div class="d-flex align-items-center gap-2" style="font-size: 0.84rem; font-weight: 600; color: #334155;">
-                                    <i class="fas fa-user-circle text-secondary fs-6"></i>
+                                <div class="d-flex align-items-center gap-2 pms-crm-cell-strong" style="font-size: 0.84rem;">
+                                    <i class="fas fa-user-circle text-muted fs-6"></i>
                                     <span>{{ $lead->owner->name ?? 'Unassigned' }}</span>
                                 </div>
                             </td>
@@ -1175,10 +1186,15 @@ body[data-pms-theme="dark"] .badge-pill-status-lost,
                     @empty
                         <tr>
                             <td colspan="9" class="text-center py-5 text-muted">
-                                <i class="fas fa-users-slash fa-3x mb-3 text-muted opacity-50"></i>
-                                <h5 class="fw-bold">No Lead Contacts Found</h5>
+                                <div class="pms-crm-empty-icon">
+                                    <i class="fas fa-users-slash"></i>
+                                </div>
+                                <h5 class="fw-bold mb-1">No Lead Contacts Found</h5>
                                 <p class="small mb-3">No lead contacts have been added yet or match your current filter options.</p>
-                                <a href="{{ route('leads.contacts.create') }}" class="btn-submit-emerald d-inline-flex align-items-center text-decoration-none px-3 py-2" style="font-size: 0.85rem;"><i class="fas fa-plus me-1"></i> Add First Lead Contact</a>
+                                <a href="{{ route('leads.contacts.create') }}" class="pms-crm-btn-primary">
+                                    <i class="fas fa-plus"></i>
+                                    <span>Add First Lead Contact</span>
+                                </a>
                             </td>
                         </tr>
                     @endforelse
@@ -1220,8 +1236,8 @@ body[data-pms-theme="dark"] .badge-pill-status-lost,
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-success btn-sm px-4">Upload & Import</button>
+                    <button type="button" class="pms-crm-btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="pms-crm-btn-primary">Upload &amp; Import</button>
                 </div>
             </form>
         </div>

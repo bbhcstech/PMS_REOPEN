@@ -171,19 +171,27 @@ html[data-pms-theme="dark"] .btn-cancel-modern:hover {
 }
 </style>
 
-<div class="container-fluid py-3">
+@include('admin.partials.crm-workspace-styles')
+
+<div class="container-fluid" id="pms-crm-workspace">
 
     {{-- BREADCRUMB & HEADER --}}
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h4 class="fw-bold mb-1 d-flex align-items-center gap-2" style="color: #0f172a;">
-                <span class="fs-4">👤+</span> Add Lead Contact
-            </h4>
-            <p class="text-muted small mb-0">Create a new sales lead contact record in your organization pipeline</p>
+    <div class="pms-crm-topbar">
+        <div class="pms-crm-heading-group">
+            <div class="pms-crm-title-icon">
+                <i class="fas fa-user-plus"></i>
+            </div>
+            <div>
+                <h1 class="pms-crm-title">Add Lead Contact</h1>
+                <p class="pms-crm-subtitle">Create a new sales lead contact record in your organization pipeline.</p>
+            </div>
         </div>
-        <a href="{{ route('leads.contacts.index') }}" class="btn-back-pill">
-            <i class="fas fa-arrow-left me-1"></i> Back to Lead Contacts
-        </a>
+        <div class="pms-crm-actions">
+            <a href="{{ route('leads.contacts.index') }}" class="pms-crm-btn-secondary">
+                <i class="fas fa-arrow-left"></i>
+                <span>Back to Lead Contacts</span>
+            </a>
+        </div>
     </div>
 
     {{-- DUPLICATE WARNING BANNER --}}
@@ -208,7 +216,7 @@ html[data-pms-theme="dark"] .btn-cancel-modern:hover {
         {{-- SECTION 1: BASIC INFORMATION --}}
         <div class="card form-card-modern mb-4">
             <div class="card-header form-card-header-modern">
-                <h6 class="fw-bold mb-0 text-dark d-flex align-items-center gap-2"><span class="fs-5">💳</span> 1. Basic Information</h6>
+                <h6 class="fw-bold mb-0 d-flex align-items-center gap-2"><span class="pms-crm-sec-icon"><i class="fas fa-id-card"></i></span> 1. Basic Information</h6>
             </div>
             <div class="card-body p-4">
                 <div class="row g-3">
@@ -307,7 +315,7 @@ html[data-pms-theme="dark"] .btn-cancel-modern:hover {
         {{-- SECTION 2: LOCATION --}}
         <div class="card form-card-modern mb-4">
             <div class="card-header form-card-header-modern">
-                <h6 class="fw-bold mb-0 text-dark d-flex align-items-center gap-2"><span class="fs-5">📍</span> 2. Location Details</h6>
+                <h6 class="fw-bold mb-0 d-flex align-items-center gap-2"><span class="pms-crm-sec-icon"><i class="fas fa-map-marker-alt"></i></span> 2. Location Details</h6>
             </div>
             <div class="card-body p-4">
                 <div class="row g-3">
@@ -338,7 +346,7 @@ html[data-pms-theme="dark"] .btn-cancel-modern:hover {
         {{-- SECTION 3: LEAD INFORMATION --}}
         <div class="card form-card-modern mb-4">
             <div class="card-header form-card-header-modern">
-                <h6 class="fw-bold mb-0 text-dark d-flex align-items-center gap-2"><span class="fs-5">🎯</span> 3. Lead Information & Routing</h6>
+                <h6 class="fw-bold mb-0 d-flex align-items-center gap-2"><span class="pms-crm-sec-icon"><i class="fas fa-bullseye"></i></span> 3. Lead Information & Routing</h6>
             </div>
             <div class="card-body p-4">
                 <div class="row g-3">
@@ -449,7 +457,7 @@ html[data-pms-theme="dark"] .btn-cancel-modern:hover {
         {{-- SECTION 4: NOTES --}}
         <div class="card form-card-modern mb-4">
             <div class="card-header form-card-header-modern">
-                <h6 class="fw-bold mb-0 text-dark d-flex align-items-center gap-2"><span class="fs-5">📝</span> 4. Notes & Description</h6>
+                <h6 class="fw-bold mb-0 d-flex align-items-center gap-2"><span class="pms-crm-sec-icon"><i class="fas fa-sticky-note"></i></span> 4. Notes & Description</h6>
             </div>
             <div class="card-body p-4">
                 <textarea name="description" class="form-control form-control-modern" rows="4" placeholder="Enter any initial discussion notes, requirements, or client background details...">{{ old('description') }}</textarea>

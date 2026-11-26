@@ -1,9 +1,47 @@
 <style>
     :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) .events-section .event-empty-icon > i,
     :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) .events-section .event-empty-icon > i::before {
-        color: #166534 !important;
-        -webkit-text-fill-color: #166534 !important;
+        color: #60a5fa !important;
+        -webkit-text-fill-color: #60a5fa !important;
         opacity: 1 !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body.dark-mode, [data-bs-theme="dark"]) #pms-events-page :is(.pms-events-empty-card, .kpi-card, .events-filter-card, .event-card, .gallery-card, #eventCalendar) {
+        background: #0f172a !important;
+        border-color: rgba(148, 163, 184, 0.2) !important;
+        color: #e2e8f0 !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body.dark-mode, [data-bs-theme="dark"]) #pms-events-page :is(.pms-events-title, .kpi-card h3, .pms-events-empty-card h5) {
+        color: #f8fafc !important;
+        -webkit-text-fill-color: #f8fafc !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body.dark-mode, [data-bs-theme="dark"]) #pms-events-page :is(.pms-events-sub, .pms-kpi-label, .pms-events-empty-card p) {
+        color: #94a3b8 !important;
+        -webkit-text-fill-color: #94a3b8 !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body.dark-mode, [data-bs-theme="dark"]) #pms-events-page .pms-events-title-icon,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body.dark-mode, [data-bs-theme="dark"]) #pms-events-page .event-empty-icon {
+        background: rgba(37, 99, 235, 0.16) !important;
+        border-color: rgba(59, 130, 246, 0.3) !important;
+        color: #60a5fa !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body.dark-mode, [data-bs-theme="dark"]) #pms-events-page .event-empty-icon i {
+        color: #60a5fa !important;
+        -webkit-text-fill-color: #60a5fa !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) #pms-events-page .pms-events-switcher {
+        background: #1e293b !important;
+        border-color: rgba(148, 163, 184, 0.25) !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) #pms-events-page .pms-events-switcher .btn:not(.active) {
+        color: #cbd5e1 !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) #pms-events-page .events-filter-card .form-control,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) #pms-events-page .events-filter-card .form-select,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) #pms-events-page .events-filter-card .input-group-text,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) #pms-events-page .pms-events-btn-reset {
+        background-color: #1e293b !important;
+        border-color: rgba(148, 163, 184, 0.25) !important;
+        color: #e2e8f0 !important;
     }
     /* Keep these overrides within Events, including its detached Bootstrap modals. */
     :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) .events-section {

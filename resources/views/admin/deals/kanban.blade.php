@@ -1,24 +1,40 @@
 @extends('admin.layout.app')
 
 @section('content')
-<div class="container-fluid">
+@include('admin.partials.crm-workspace-styles')
+
+<div class="container-fluid" id="pms-crm-workspace">
+    <div class="pms-crm-topbar">
+        <div class="pms-crm-heading-group">
+            <div class="pms-crm-title-icon">
+                <i class="fas fa-columns"></i>
+            </div>
+            <div>
+                <h1 class="pms-crm-title">Deals Pipeline Board</h1>
+                <p class="pms-crm-subtitle">Drag and drop deals across pipeline stages to update progress.</p>
+            </div>
+        </div>
+        <div class="pms-crm-actions">
+            <div class="pms-crm-switcher" role="group" aria-label="Deals view toggle">
+                <button type="button" class="pms-crm-switch-btn border-0" onclick="toggleView()">
+                    <i class="fas fa-table"></i>
+                    <span>Table View</span>
+                </button>
+                <span class="pms-crm-switch-btn is-active">
+                    <i class="fas fa-columns"></i>
+                    <span>Kanban View</span>
+                </span>
+            </div>
+            <a href="{{ route('admin.deals.create') }}" class="pms-crm-btn-primary">
+                <i class="fas fa-plus"></i>
+                <span>Add Deal</span>
+            </a>
+        </div>
+    </div>
+
     <div class="row">
         <div class="col-md-12">
             <div class="card">
-                <div class="card-header">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h4 class="mb-0">Deals - Kanban View</h4>
-                        <div class="d-flex gap-2">
-                            <button type="button" class="btn btn-outline-primary" onclick="toggleView()">
-                                <i class="fas fa-exchange-alt"></i> Table View
-                            </button>
-                            <a href="{{ route('admin.deals.create') }}" class="btn btn-primary">
-                                <i class="fas fa-plus"></i> Add Deal
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
                 <div class="card-body">
                     <!-- Filters Section (same as index view - you can include it) -->
                     <form method="GET" action="{{ route('admin.deals.index') }}" id="filterForm">
@@ -109,7 +125,7 @@
     });
 
     function updateDealStage(dealId, stageId) {
-        fetch(`/deals/${dealId}/update-stage`, {
+        fetch(`{{ url('admin/deals') }}/${dealId}/update-stage`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
