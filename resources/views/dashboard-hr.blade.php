@@ -879,9 +879,6 @@
                 <h1>{{ $roleName }} Dashboard</h1>
                 <p>Monitor workforce health, leave flow, attendance, tasks, and HR analytics from one responsive workspace.</p>
                 <div class="role-hero-actions">
-                    @if(Route::has('leaves.create'))
-                        <a href="{{ route('leaves.create') }}" class="role-btn role-btn-primary"><i class="bx bx-calendar-plus"></i> Apply Leave</a>
-                    @endif
                     @if(Route::has('projects.create'))
                         <a href="{{ route('projects.create') }}" class="role-btn role-btn-light"><i class="bx bx-plus"></i> Add Project</a>
                     @endif
@@ -1379,9 +1376,6 @@
                         <a href="{{ route('leaves.mine') }}" class="btn btn-sm btn-outline-primary me-2">
                             <i class="bi bi-list-ul me-1"></i> My Leave Report
                         </a>
-                        <a href="{{ route('leaves.create') }}" class="btn btn-sm btn-primary">
-                            <i class="bi bi-plus-circle me-1"></i> New Leave
-                        </a>
                     </div>
                 </div>
             </div>
@@ -1421,10 +1415,6 @@
                     <a href="{{ route('admin.leave.report') }}"
                        class="btn btn-sm btn-outline-info">
                         <i class="bi bi-graph-up me-1"></i> Reports
-                    </a>
-                    <a href="{{ route('leaves.create') }}"
-                       class="btn btn-sm btn-primary">
-                        <i class="bi bi-plus-circle me-1"></i> New Leave Request
                     </a>
                 </div>
             </div>

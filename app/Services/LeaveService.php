@@ -264,7 +264,7 @@ class LeaveService
             if ($advanceDays < 0) {
                 $errors[] = 'Casual Leave cannot be applied for past dates.';
             } elseif ($advanceDays < (int) $policy->casual_manual_review_days && empty($data['emergency_flag'])) {
-                $errors[] = 'Casual Leave within ' . $policy->casual_manual_review_days . ' days must be marked as emergency for HR review.';
+                $errors[] = 'Casual Leave within ' . $policy->casual_manual_review_days . ' days must be marked as emergency for manual review.';
             }
         }
 

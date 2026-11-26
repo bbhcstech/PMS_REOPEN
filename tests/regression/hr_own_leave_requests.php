@@ -4,9 +4,15 @@
 // HR applies for leave -> the company admin reviews it -> HR can follow it on "My Leave Requests".
 require __DIR__.'/authority_admin_delivery.php';
 
-use App\Models\{Leave, User};
+use App\Http\Middleware\{EnsureModuleAccess, ProtectWorkforceRecords};
+use App\Models\{Leave, LeaveType, User};
+use App\Notifications\SystemNotification;
+use App\Services\CompanyContext;
 use App\Services\{LeaveService, WorkforceAccess};
-use Illuminate\Support\Facades\{Auth, Blade, DB, Storage};
+use Carbon\Carbon;
+use Illuminate\Http\{Request, UploadedFile};
+use Illuminate\Support\Facades\{Auth, Blade, DB, Notification, Schema, Storage};
+use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 $failures = 0;
@@ -154,11 +160,131 @@ foreach ([5, 6, 8] as $ownerId) {
     }
 }
 
+echo "Embedded HR leave application\n";
+Schema::create('modules', function ($table) {
+    $table->id();
+    $table->string('slug');
+    $table->string('name');
+    $table->boolean('is_active')->default(true);
+});
+Schema::create('role_permissions', function ($table) {
+    $table->id();
+    $table->string('role');
+    $table->unsignedBigInteger('module_id');
+    $table->boolean('can_view');
+    $table->boolean('can_create');
+});
+DB::table('modules')->insert([
+    ['id' => 1, 'slug' => 'leaves', 'name' => 'My Leave'],
+    ['id' => 2, 'slug' => 'leaves-apply', 'name' => 'Apply Leave'],
+]);
+DB::table('role_permissions')->insert([
+    ['role' => 'hr', 'module_id' => 1, 'can_view' => true, 'can_create' => false],
+    ['role' => 'hr', 'module_id' => 2, 'can_view' => true, 'can_create' => true],
+]);
+app()->instance(CompanyContext::class, new class extends CompanyContext {
+    public function __construct() {}
+    public function current() { return new class { public function hasFeature($slug) { return true; } }; }
+});
+Schema::table('users', function ($table) {
+    $table->timestamps();
+    $table->integer('annual_leave_balance')->nullable();
+    $table->integer('remaining_leaves')->nullable();
+    $table->integer('leaves_taken_this_year')->nullable();
+    $table->date('last_leave_reset')->nullable();
+});
+Schema::table('leaves', function ($table) {
+    $table->timestamps();
+    $table->string('duration')->nullable();
+});
+Schema::create('employee_details', function ($table) {
+    $table->id();
+    $table->unsignedBigInteger('user_id');
+});
+Schema::create('holidays', function ($table) {
+    $table->id();
+    $table->date('date');
+    $table->timestamp('archived_at')->nullable();
+});
+foreach ([
+    '2026_02_09_130245_create_leave_policies_table.php',
+    '2026_02_09_130311_create_leave_balances_table.php',
+    '2026_06_17_010000_upgrade_leave_management_system.php',
+    '2026_06_17_030000_add_paid_unpaid_days_to_leaves_table.php',
+] as $migration) (require database_path('migrations/tenant/'.$migration))->up();
+
+Auth::guard('web')->setUser($hr);
+$legacy = $controller->create();
+$applicationUrl = fn () => route('leaves.mine', ['apply' => 1]).'#apply-leave';
+$check($legacy->getTargetUrl() === $applicationUrl(), 'The standalone Apply Leave URL opens the embedded form');
+$open = $controller->myLeaves($request(['apply' => 1]))->getData();
+$applicationHtml = Blade::render(preg_replace('/^@(extends|section|endsection).*$/m', '', file_get_contents(resource_path('views/admin/leaves/personal.blade.php'))),
+    $open + ['errors' => new \Illuminate\Support\ViewErrorBag]);
+$check($open['showLeaveApplication'] && str_contains($applicationHtml, 'id="hr-leave-application"') && str_contains($applicationHtml, 'Send to admin')
+    && !str_contains($applicationHtml, 'name="user_id"') && !str_contains($applicationHtml, 'name="admin_note"'), 'The embedded form has no employee picker or management fields');
+
+Carbon::setTestNow(Carbon::parse('2026-11-27 12:00:00'));
+Notification::fake();
+Storage::fake('local');
+$sick = LeaveType::where('code', 'SL')->firstOrFail();
+$submit = function (array $input, array $files = []) {
+    $request = Request::create('/leaves/store', 'POST', $input, [], $files);
+    $request->setLaravelSession(app('session')->driver());
+    $request->setUserResolver(fn () => Auth::user());
+    $route = app('router')->getRoutes()->match($request);
+    $request->setRouteResolver(fn () => $route);
+    app()->instance('request', $request);
+
+    return (new ProtectWorkforceRecords)->handle($request, fn () => app(EnsureModuleAccess::class)->handle($request, fn () => $route->run()));
+};
+$input = [
+    'leave_type_id' => $sick->id,
+    'start_date' => '2026-12-08',
+    'end_date' => '2026-12-08',
+    'reason' => 'HR test request',
+    'half_day_flag' => '1',
+    'user_id' => 8,
+    'status' => 'approved',
+    'admin_note' => 'Forged reviewer note',
+];
+try {
+    $submit(array_replace($input, ['end_date' => '2026-12-09']));
+    $check(false, 'A multi-day half-day request is rejected');
+} catch (ValidationException $e) {
+    $check(isset($e->errors()['end_date']) && $e->redirectTo === $applicationUrl(), 'Invalid half-day dates reopen the embedded form');
+}
+$response = $submit($input, ['attachment' => UploadedFile::fake()->create('support.pdf', 1, 'application/pdf')]);
+$newLeave = Leave::where('reason', 'HR test request')->firstOrFail();
+$check($newLeave->user_id === 5 && $newLeave->status === 'pending' && (float) $newLeave->total_days === 0.5,
+    'The form saved only HR’s own half-day request with pending status');
+$check($response->getTargetUrl() === route('leaves.mine', ['period' => 'day', 'date' => '2026-12-08']),
+    'Successful submission opens the day report containing the new request');
+$afterSubmit = $controller->myLeaves($request(['period' => 'day', 'date' => '2026-12-08']))->getData();
+$check($afterSubmit['leaves']->pluck('id')->all() === [$newLeave->id], 'The new request appears in HR’s own daily report');
+$check($newLeave->approvals()->firstOrFail()->note === null, 'HR could not submit a reviewer note');
+$check(Storage::disk('local')->exists($newLeave->getRawOriginal('attachment')), 'The application saved the supporting document in private storage');
+foreach ([1, 2] as $adminId) {
+    $reviewer = User::findOrFail($adminId);
+    $check(Notification::sent($reviewer, SystemNotification::class,
+        fn ($notification) => str_contains($notification->toDatabase($reviewer)['url'], '/leaves/'.$newLeave->id))->isNotEmpty(),
+        "Company admin {$adminId} receives the request link");
+}
+$check(Notification::sent($hr, SystemNotification::class)->isEmpty()
+    && Notification::sent(User::findOrFail(3), SystemNotification::class)->isEmpty(), 'Review notification stays with company admins');
+$duplicate = $submit($input);
+$check($duplicate->getTargetUrl() === $applicationUrl() && Leave::where('reason', 'HR test request')->count() === 1,
+    'An overlapping request returns to the same form with no duplicate record');
+DB::table('role_permissions')->where('module_id', 2)->update(['can_create' => false]);
+$check(!$controller->myLeaves($request(['apply' => 1]))->getData()['showLeaveApplication'], 'HR with view-only access cannot open the form');
+$check($submit($input)->getTargetUrl() === route('dashboard'), 'Create permissions are enforced on form submission');
+Storage::disk('local')->delete($newLeave->getRawOriginal('attachment'));
+Carbon::setTestNow();
+
 echo "Pages compile\n";
-foreach (['index', 'show', 'personal'] as $view) {
+foreach (['index', 'show', 'personal', 'partials/personal-application'] as $view) {
     token_get_all(app('blade.compiler')->compileString(file_get_contents(resource_path("views/admin/leaves/{$view}.blade.php"))), TOKEN_PARSE);
 }
 $check(true, 'leave index and show views compile');
 
-echo $failures ? "\nFAIL: {$failures} check(s) failed\n" : "\nPASS: HR personal leave reports, period CSV exports, private details and attachments, write denial, and company admin review.\n";
+echo $failures ? "\nFAIL: {$failures} check(s) failed\n" : "\nPASS: HR personal reports, CSV, private details, embedded applications and admin review.\n";
 exit($failures ? 1 : 0);

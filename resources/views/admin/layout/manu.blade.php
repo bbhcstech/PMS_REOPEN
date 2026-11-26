@@ -364,17 +364,6 @@
                     </li>
                 @endif
 
-                @if($canSeeModule('leaves'))
-                    @if($canSeeModule('leaves-apply'))
-                    <li class="menu-item {{ request()->routeIs('leaves.create') ? 'active' : '' }}">
-                        <a href="{{ route('leaves.create') }}" class="menu-link" data-sidebar-key="leaves-apply">
-                            <i class="menu-icon tf-icons bx bx-calendar-plus"></i>
-                            <div class="text-truncate">Apply Leave</div>
-                        </a>
-                    </li>
-                    @endif
-                @endif
-
                 @if($canSeeModule('holidays'))
                     <li class="menu-item {{ request()->routeIs('holidays.*') ? 'active' : '' }}">
                         <a href="{{ route('holidays.calendar') }}" class="menu-link" data-sidebar-key="holidays">

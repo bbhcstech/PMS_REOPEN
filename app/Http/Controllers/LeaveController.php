@@ -15,6 +15,7 @@ use App\Services\WorkforceAccess;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 class LeaveController extends Controller
@@ -139,6 +140,10 @@ class LeaveController extends Controller
 
     public function create()
     {
+        if (WorkforceAccess::isHr(Auth::user())) {
+            return redirect()->route('leaves.mine', ['apply' => 1])->withFragment('apply-leave');
+        }
+
         $this->leaveService->ensureDefaultTypes();
         $policy = $this->leaveService->policy();
         $leaveTypes = $this->leaveService->leaveTypes();
@@ -163,6 +168,7 @@ class LeaveController extends Controller
 
         $type = LeaveType::where('is_active', true)->findOrFail($request->leave_type_id);
         $data = $request->validated();
+        $isHr = WorkforceAccess::isHr($actor);
         if (Schema::hasColumn('leaves', 'company_id')) {
             $data['company_id'] = $employee->company_id;
         }
@@ -184,6 +190,11 @@ class LeaveController extends Controller
         );
 
         if ($errors) {
+            if ($isHr) {
+                return redirect()->route('leaves.mine', ['apply' => 1])->withFragment('apply-leave')
+                    ->withErrors($errors)->withInput();
+            }
+
             return back()->withErrors($errors)->withInput();
         }
 
@@ -227,6 +238,11 @@ class LeaveController extends Controller
                 route('leaves.show', $leave->id),
                 ['employee_id' => $employee->id, 'entity_type' => Leave::class, 'entity_id' => $leave->id, 'type' => 'leave_added', 'icon' => 'fa-calendar-days']
             );
+        }
+
+        if ($isHr) {
+            return redirect()->route('leaves.mine', ['period' => 'day', 'date' => $leave->start_date->toDateString()])
+                ->with('success', 'Leave request sent to your company admin for review.');
         }
 
         $destination = \App\Services\WorkforceAccess::isAuthority($actor) && ! $isPureAdmin ? 'leaves.mine' : (request()->input('staff_category') === 'authority' ? 'admin.authority-leaves' : 'leaves.index');
@@ -1057,7 +1073,8 @@ class LeaveController extends Controller
         $hasLegacyDate = $query->getModel()->getConnection()->getSchemaBuilder()->hasColumn('leaves', 'date');
         $startColumn = $hasLegacyDate ? 'COALESCE(start_date, date)' : 'start_date';
         $endColumn = $hasLegacyDate ? 'COALESCE(end_date, start_date, date)' : 'COALESCE(end_date, start_date)';
-        $query->whereRaw("$startColumn <= ? AND $endColumn >= ?", [$end->toDateString(), $start->toDateString()]);
+        $query->whereDate(DB::raw($startColumn), '<=', $end)
+            ->whereDate(DB::raw($endColumn), '>=', $start);
 
         $countQuery = clone $query;
         $status = $filters['status'] ?? null;
@@ -1093,9 +1110,15 @@ class LeaveController extends Controller
 
         $counts = $countQuery->select('status')->selectRaw('count(*) as total')->groupBy('status')->pluck('total', 'status');
         $leaves = $query->paginate(20)->appends(array_filter(['period' => $period, 'date' => $date->toDateString(), 'status' => $status]));
+        $canApplyForLeave = $employee->hasModulePermission('leaves-apply', 'create');
+        $showLeaveApplication = $canApplyForLeave && $request->boolean('apply');
+        $leaveTypes = $showLeaveApplication ? $this->leaveService->leaveTypes() : collect();
+        $leaveBalance = $showLeaveApplication ? LeaveBalance::where('user_id', $employee->id)
+            ->where('year', $this->leaveService->leaveYearDates($today)['year'])->first() : null;
 
         return view('admin.leaves.personal', compact(
             'employee', 'period', 'today', 'date', 'start', 'end', 'previous', 'next', 'counts', 'status', 'leaves',
+            'canApplyForLeave', 'showLeaveApplication', 'leaveTypes', 'leaveBalance',
         ));
     }
 

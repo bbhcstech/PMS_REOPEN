@@ -32,7 +32,7 @@
     @endif
         @if((\App\Services\WorkforceAccess::isHr(auth()->user()) || \App\Services\WorkforceAccess::isAdmin(auth()->user())) && auth()->user()->moduleToggleAllows('attendance'))<a class="btn btn-outline-primary" href="{{ \App\Services\WorkforceAccess::isHr(auth()->user()) ? route('attendance.hr') : route('attendance.index') }}">{{ \App\Services\WorkforceAccess::isHr(auth()->user()) ? 'My attendance' : 'Employee attendance' }}</a>@endif
         @if(\App\Services\WorkforceAccess::isHr(auth()->user()) && auth()->user()->moduleToggleAllows('leaves'))<a class="btn btn-outline-primary" href="{{ route('leaves.mine') }}">My leave report</a>@endif
-        @if(auth()->user()->moduleToggleAllows('leaves-apply') && auth()->user()->moduleToggleAllows('leaves'))<a class="btn btn-primary" href="{{ route('leaves.create') }}">Apply leave</a>@endif
+        @if(!\App\Services\WorkforceAccess::isHr(auth()->user()) && auth()->user()->moduleToggleAllows('leaves-apply') && auth()->user()->moduleToggleAllows('leaves'))<a class="btn btn-primary" href="{{ route('leaves.create') }}">Apply leave</a>@endif
     </div>
     <div id="clockRequirementStatus" role="status"></div>
     <p class="staff-clock-note">Your company admin manages attendance corrections and reviews your leave requests.</p>

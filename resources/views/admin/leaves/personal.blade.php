@@ -35,8 +35,8 @@
         --hl-rose-soft: #482d41;
         --hl-shadow: 0 8px 24px rgb(0 0 0 / 14%);
     }
-    #hr-leave :is(a, button, input, select, span, p, h1, h2, h3, strong, small, time, label) { -webkit-text-fill-color: currentColor !important; }
-    #hr-leave :is(a, button, input, select):focus-visible { outline: 2px solid var(--hl-accent); outline-offset: 3px; }
+    #hr-leave :is(a, button, input, select, textarea, span, p, h1, h2, h3, strong, small, time, label) { -webkit-text-fill-color: currentColor !important; }
+    #hr-leave :is(a, button, input, select, textarea):focus-visible { outline: 2px solid var(--hl-accent); outline-offset: 3px; }
     #hr-leave :is(h1, h2, h3, p) { margin: 0; }
     #hr-leave i.bx {
         width: 1em;
@@ -129,12 +129,47 @@
     #hr-leave .hl-empty { border-top: 1px solid var(--hl-line); padding: 28px 16px; text-align: center; color: var(--hl-muted) !important; font-size: .9rem; }
     #hr-leave .hl-empty p { margin-top: 8px; color: var(--hl-muted) !important; }
     #hr-leave .hl-pagination { padding: 12px 18px; border-top: 1px solid var(--hl-line); }
+    #hr-leave .hl-apply { scroll-margin-top: 90px; }
+    #hr-leave .hl-apply-header { justify-content: space-between; flex-wrap: wrap; }
+    #hr-leave .hl-primary { color: #fff !important; background: #14665b; border-color: #14665b; }
+    #hr-leave .hl-primary:hover { color: #fff !important; background: #104e46; border-color: #104e46; }
+    #hr-leave .hl-form { display: grid; gap: 16px; padding: 18px; border-top: 1px solid var(--hl-line); }
+    #hr-leave .hl-form-grid { display: grid; gap: 14px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    #hr-leave .hl-balance { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; width: fit-content; padding: 8px 12px; border-radius: 9px; background: var(--hl-accent-soft); color: var(--hl-accent) !important; font-size: .85rem; }
+    #hr-leave .hl-balance strong { color: inherit !important; }
+    #hr-leave .hl-primary:disabled { opacity: .65; cursor: wait; }
+    #hr-leave .hl-field { min-width: 0; }
+    #hr-leave .hl-field label { display: block; margin-bottom: 5px; color: var(--hl-text) !important; font-size: .86rem; font-weight: 700; }
+    #hr-leave .hl-field small, #hr-leave .hl-duration { display: block; margin-top: 4px; color: var(--hl-muted) !important; font-size: .8rem; }
+    #hr-leave .hl-field :is(input, select, textarea) {
+        display: block;
+        width: 100%;
+        min-height: 42px;
+        padding: 8px 10px;
+        border: 1px solid var(--hl-line);
+        border-radius: 8px;
+        background: var(--hl-soft) !important;
+        color: var(--hl-text) !important;
+        font: inherit;
+        color-scheme: light;
+    }
+    :is([data-pms-theme="dark"], [data-bs-theme="dark"], [data-theme="dark"], .dark, .dark-mode) #hr-leave .hl-field :is(input, select, textarea) { color-scheme: dark; }
+    #hr-leave .hl-field textarea { resize: vertical; }
+    #hr-leave .hl-form :is(.hl-options, .hl-form-footer) { display: flex; flex-wrap: wrap; align-items: center; column-gap: 16px; row-gap: 8px; }
+    #hr-leave .hl-options label { display: inline-flex; align-items: center; gap: 6px; color: var(--hl-text) !important; font-size: .86rem; }
+    #hr-leave .hl-options input { accent-color: #14665b; }
+    #hr-leave .hl-form-footer { justify-content: flex-end; }
+    #hr-leave .hl-duration { margin: 0 auto 0 0; }
+    #hr-leave .hl-form-error { padding: 12px 14px; border-radius: 9px; color: var(--hl-rose) !important; background: var(--hl-rose-soft); }
+    #hr-leave .hl-form-error ul { padding-left: 20px; margin: 4px 0 0; }
+    #hr-leave .hl-form-error :is(strong, li) { color: var(--hl-rose) !important; }
     @media (max-width: 720px) {
         #hr-leave .hl-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
         #hr-leave .hl-summary-card { gap: 8px; }
         #hr-leave .hl-summary-card .hl-icon { width: 33px; height: 33px; }
     }
     @media (max-width: 520px) {
+        #hr-leave .hl-form-grid { grid-template-columns: minmax(0, 1fr); }
         #hr-leave .hl-periods { flex: 1 1 100%; }
         #hr-leave .hl-periods .hl-button { flex: 1; padding-inline: 6px; }
         #hr-leave .hl-request { gap: 8px; padding-inline: 12px; }
@@ -167,7 +202,7 @@
             <div><h1>My Leave Report</h1><p>{{ $employee->name }}</p></div>
         </div>
         <div class="hl-actions">
-            <span class="hl-readonly"><i class="bx bx-lock-alt" aria-hidden="true"></i> Read only</span>
+            <span class="hl-readonly"><i class="bx bx-lock-alt" aria-hidden="true"></i> Read-only report</span>
             <a class="hl-button hl-export" href="{{ route('leaves.mine', $periodParams($period, $date) + ['format' => 'csv']) }}">
                 <i class="bx bx-download" aria-hidden="true"></i> Export CSV
             </a>
@@ -180,6 +215,28 @@
     @error('date')
         <div class="alert alert-danger mb-0" role="alert">{{ $message }}</div>
     @enderror
+
+    @if($canApplyForLeave)
+        <section class="hl-panel hl-apply" id="apply-leave" aria-labelledby="hl-apply-heading">
+            <header class="hl-list-title hl-apply-header">
+                <div class="hl-identity">
+                    <span class="hl-icon" aria-hidden="true"><i class="bx bx-calendar-plus"></i></span>
+                    <div>
+                        <h2 id="hl-apply-heading">Apply for Leave</h2>
+                        <p>Send a new request to your company admin for review.</p>
+                    </div>
+                </div>
+                @unless($showLeaveApplication)
+                    <a class="hl-button hl-primary" href="{{ route('leaves.mine', $periodParams($period, $date) + ['apply' => 1]) }}#apply-leave">
+                        <i class="bx bx-plus" aria-hidden="true"></i> New request
+                    </a>
+                @endunless
+            </header>
+            @if($showLeaveApplication)
+                @include('admin.leaves.partials.personal-application', ['cancelUrl' => $report($period, $date).'#apply-leave'])
+            @endif
+        </section>
+    @endif
 
     <div class="hl-summary" aria-label="Leave request totals for {{ $range }}">
         @foreach($metrics as [$icon, $tone, $label, $value])
