@@ -14,7 +14,7 @@
             </div>
             <div class="cai-head-text">
                 <h1 id="assistant-display-name">{{ $assistantName }}</h1>
-                <p><span class="cai-live-dot" aria-hidden="true"></span>{{ $configured ? 'Connected to your live workspace' : 'Waiting for AI service setup' }}</p>
+                <p><span class="cai-live-dot" aria-hidden="true"></span>{{ $configured ? 'Answers from your workspace' : 'Waiting for AI service setup' }}</p>
             </div>
             <button type="button" class="cai-ghost" id="company-ai-reset" title="Start a new conversation">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
@@ -111,11 +111,11 @@
     #company-ai-page .cai-shell::before { content: ''; position: absolute; inset: 0 0 auto 0; height: 220px; background: radial-gradient(600px 200px at 15% -40px, rgba(47, 107, 255, .14), transparent 70%), radial-gradient(500px 200px at 90% -60px, rgba(139, 92, 246, .14), transparent 70%); pointer-events: none; }
 
     #company-ai-page .cai-head { position: relative; display: flex; align-items: center; gap: 14px; padding: 18px 22px; border-bottom: 1px solid var(--cai-border); }
-    #company-ai-page .cai-orb { width: 44px; height: 44px; flex-shrink: 0; border-radius: 14px; display: grid; place-items: center; background: var(--cai-gradient); color: #fff; box-shadow: 0 8px 20px rgba(47, 107, 255, .3); }
+    #company-ai-page .cai-orb { width: 44px; height: 44px; flex-shrink: 0; border-radius: 50%; display: grid; place-items: center; background: var(--cai-gradient); color: #fff; box-shadow: 0 8px 20px rgba(47, 107, 255, .3); }
     #company-ai-page .cai-orb svg { width: 22px; height: 22px; color: #fff; stroke: #fff; }
-    #company-ai-page .cai-orb.is-large { width: 64px; height: 64px; border-radius: 20px; }
+    #company-ai-page .cai-orb.is-large { width: 64px; height: 64px; }
     #company-ai-page .cai-orb.is-large svg { width: 32px; height: 32px; }
-    #company-ai-page .cai-orb.is-small { width: 32px; height: 32px; border-radius: 10px; box-shadow: none; }
+    #company-ai-page .cai-orb.is-small { width: 32px; height: 32px; box-shadow: none; }
     #company-ai-page .cai-orb.is-small svg { width: 16px; height: 16px; }
     #company-ai-page .cai-head-text { min-width: 0; flex: 1; }
     #company-ai-page .cai-head h1 { margin: 0; font-size: 1.08rem; font-weight: 700; line-height: 1.3; color: var(--cai-ink) !important; -webkit-text-fill-color: var(--cai-ink) !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -141,6 +141,7 @@
     #company-ai-page .cai-row.is-user .cai-bubble { background: var(--cai-gradient); color: #fff !important; -webkit-text-fill-color: #fff !important; border-bottom-right-radius: 6px; white-space: pre-wrap; }
     #company-ai-page .cai-row.is-assistant .cai-bubble { background: var(--cai-surface-2); border: 1px solid var(--cai-border); color: var(--cai-ink) !important; -webkit-text-fill-color: var(--cai-ink) !important; border-top-left-radius: 6px; }
     #company-ai-page .cai-row.is-error .cai-bubble { background: var(--cai-warn-bg); border-color: transparent; color: var(--cai-warn-ink) !important; -webkit-text-fill-color: var(--cai-warn-ink) !important; }
+    #company-ai-page .cai-retry { margin-top: 8px; }
     #company-ai-page .cai-bubble :is(p, ul, ol) { margin: 0; color: inherit !important; -webkit-text-fill-color: currentColor !important; }
     #company-ai-page .cai-bubble :is(p, ul, ol) + :is(p, ul, ol) { margin-top: 8px; }
     #company-ai-page .cai-bubble :is(ul, ol) { padding-left: 20px; }
@@ -161,7 +162,7 @@
     #company-ai-page .cai-inputbox:focus-within { border-color: var(--cai-primary); box-shadow: 0 0 0 4px var(--cai-focus); }
     #company-ai-page #company-ai-question { flex: 1; min-height: 24px; max-height: 160px; margin: 0; padding: 8px 0 !important; border: 0 !important; outline: 0 !important; box-shadow: none !important; background: transparent !important; color: var(--cai-ink) !important; -webkit-text-fill-color: var(--cai-ink) !important; font: inherit; font-size: .93rem; line-height: 1.5; resize: none; overflow-y: auto; }
     #company-ai-page #company-ai-question::placeholder { color: var(--cai-faint) !important; -webkit-text-fill-color: var(--cai-faint) !important; opacity: 1; }
-    #company-ai-page .cai-send { width: 42px !important; height: 42px !important; min-width: 42px; min-height: 0 !important; flex-shrink: 0; padding: 0 !important; border: 0 !important; border-radius: 14px !important; display: grid !important; place-items: center; background: var(--cai-gradient) !important; color: #fff !important; cursor: pointer; box-shadow: 0 8px 18px rgba(47, 107, 255, .3) !important; transition: transform .15s, opacity .15s; }
+    #company-ai-page .cai-send { width: 42px !important; height: 42px !important; min-width: 42px; min-height: 0 !important; flex-shrink: 0; padding: 0 !important; border: 0 !important; border-radius: 50% !important; display: grid !important; place-items: center; background: var(--cai-gradient) !important; color: #fff !important; cursor: pointer; box-shadow: 0 8px 18px rgba(47, 107, 255, .3) !important; transition: transform .15s, opacity .15s; }
     #company-ai-page .cai-send svg { width: 19px; height: 19px; color: #fff; stroke: #fff; }
     #company-ai-page .cai-send:hover:not(:disabled) { transform: translateY(-1px); }
     #company-ai-page :is(.cai-send, .cai-ghost, .cai-chip):focus-visible { outline: 3px solid var(--cai-focus); outline-offset: 2px; }
@@ -278,29 +279,47 @@ document.addEventListener('DOMContentLoaded', () => {
         input.style.height = Math.min(160, input.scrollHeight) + 'px';
         counter.textContent = input.value.length + ' / 1000';
     }
-    async function ask(question) {
+    async function ask(question, retryRow = null) {
         if (!question || busy || button.disabled) return;
         busy = true; button.disabled = true; input.disabled = true;
-        add('user', question);
+        if (retryRow) retryRow.remove();
+        else add('user', question);
         input.value = ''; resize();
         const pending = typing();
+        const controller = new AbortController();
+        const deadline = setTimeout(() => controller.abort(), 45000);
+        let retryable = true;
         try {
             const response = await fetch(@json($askUrl), {
                 method: 'POST', cache: 'no-store', credentials: 'same-origin',
                 headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-Company-Workspace': @json($workspaceKey), 'X-CSRF-TOKEN': form.querySelector('[name="_token"]').value },
-                body: JSON.stringify({ question }), signal: AbortSignal.timeout(45000)
+                body: JSON.stringify({ question }), signal: controller.signal
             });
             if (response.status === 401 || response.status === 419) { location.replace(@json(route('login'))); return; }
             if (response.status === 409) { location.reload(); return; }
             const data = await response.json().catch(() => ({}));
-            if (!response.ok) throw new Error(response.status === 429 ? 'Please wait a minute before asking another question.' : (data.message || 'Unable to answer. Please try again.'));
+            if (!response.ok) {
+                retryable = response.status >= 500;
+                throw new Error(response.status === 429 ? 'Please wait a minute before asking another question.' : (data.message || 'Unable to answer. Please try again.'));
+            }
+            if (typeof data.answer !== 'string') throw new Error('The assistant did not return an answer.');
             if (data.assistant_name) document.getElementById('assistant-display-name').textContent = data.assistant_name;
             pending.remove();
             add('assistant', data.answer, data.sources || []);
         } catch (error) {
             pending.remove();
-            add('error', error.name === 'TimeoutError' ? 'The response took too long. Please try again.' : error.message);
+            const message = controller.signal.aborted ? 'The response took too long.' :
+                (error instanceof TypeError ? 'The connection was interrupted while sending your question.' : error.message);
+            const row = add('error', message);
+            if (retryable) {
+                const retry = el('button', 'cai-ghost cai-retry', 'Retry question');
+                retry.type = 'button';
+                retry.addEventListener('click', () => ask(question, row));
+                row.querySelector('.cai-bubble').append(retry);
+                scrollDown();
+            }
         } finally {
+            clearTimeout(deadline);
             busy = false; button.disabled = false; input.disabled = false; input.focus();
         }
     }

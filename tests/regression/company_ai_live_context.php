@@ -12,7 +12,9 @@ use App\Models\Central\Company;
 use App\Models\User;
 use App\Services\{CompanyAiLiveContext, GroundedAiResponse};
 use Carbon\Carbon;
-use Illuminate\Support\Facades\{DB, Http, Schema};
+use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Support\Facades\{Cache, DB, Http, Schema};
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 foreach (['tenant', 'mysql', 'central'] as $connection) {
     config(["database.connections.{$connection}" => ['driver' => 'sqlite', 'database' => ':memory:', 'prefix' => '']]);
@@ -115,7 +117,8 @@ $check(isset($byId['live:guide']) && ! str_contains(json_encode($byId['live:guid
 $check($live->build($company, $user, []) === [], 'no topic -> no records');
 
 // 6. Grounded provider payload carries live facts, history and the improved company prompt
-config(['company_ai.api_key' => 'fake-test-key']);
+$providerConfig = config('company_ai');
+config(['company_ai.api_key' => 'fake-test-key', 'company_ai.model' => 'openai/gpt-oss-120b', 'cache.default' => 'array']);
 Http::preventStrayRequests();
 Http::fake(['api.groq.com/*' => Http::response(['choices' => [['message' => ['content' => json_encode(['in_scope' => true, 'answer' => 'There are 2 holidays this week.', 'source_ids' => ['live:holidays', 'live:today']])]]]])]);
 $records = $live->build($company, $user, $live->topics('how many holiday present in this week'));
@@ -125,10 +128,51 @@ $sent = Http::recorded()->first()[0]->data();
 $payload = json_decode($sent['messages'][1]['content'], true);
 $check(isset($payload['recent_conversation']) && str_contains($sent['messages'][0]['content'], 'live:today'), 'provider receives conversation memory and the live-data instructions');
 $check(collect($payload['authorized_company_records'])->contains(fn ($record) => $record['id'] === 'live:holidays' && $record['facts']['holidays_this_week_count'] === 2), 'provider receives the computed holiday count');
+$check(data_get($sent, 'response_format.json_schema.strict') === true, 'supported models use a strict response schema');
+
+// 7. Provider failures fall back without relaxing source checks.
+$fakeProvider = function (callable $respond) {
+    Http::swap(new Illuminate\Http\Client\Factory);
+    Http::preventStrayRequests();
+    Http::fake(['api.groq.com/*' => $respond]);
+};
+$ask = fn () => app(GroundedAiResponse::class)->answer('How many holidays are there this week?', $records, 'Fixture Assistant', 'company');
+$validReply = fn ($id = 'live:holidays') => Http::response(['choices' => [['message' => ['content' => json_encode([
+    'in_scope' => true, 'answer' => 'There are 2 holidays this week.', 'source_ids' => [$id],
+])]]]]);
+config(['company_ai.model' => 'fixture-retired-model', 'company_ai.fallback_models' => ['openai/gpt-oss-120b', 'openai/gpt-oss-20b']]);
+$fakeProvider(fn ($request) => match ($request->data()['model']) {
+    'fixture-retired-model' => Http::response(['error' => ['code' => 'model_not_found']], 404),
+    'openai/gpt-oss-120b' => Http::response([], 503),
+    default => $validReply(),
+});
+$check($ask()['sources'][0]['id'] === 'live:holidays' && Http::recorded()->count() === 3, 'a missing model and a provider outage fall through to the working model');
+$check(Cache::has('company_ai.unavailable.' . md5('fixture-retired-model')), 'a missing model is skipped on later requests');
+
+config(['company_ai.model' => 'fixture-timeout-model', 'company_ai.fallback_models' => ['openai/gpt-oss-120b', 'openai/gpt-oss-20b']]);
+$fakeProvider(fn ($request) => match ($request->data()['model']) {
+    'fixture-timeout-model' => throw new ConnectionException('Fixture timeout'),
+    'openai/gpt-oss-120b' => Http::response(['choices' => [['message' => ['content' => '{']]]]),
+    default => $validReply(),
+});
+$check($ask()['answer'] === 'There are 2 holidays this week.', 'connection failure and malformed JSON both recover through fallback');
+
+$fakeProvider(fn () => $validReply('other-company:private'));
+$check($ask()['sources'] === [] && Http::recorded()->count() === 1, 'unapproved citations are refused without exposing workspace data');
+
+$fakeProvider(fn () => Http::response(['error' => ['message' => 'Fixture provider detail']], 401));
+try {
+    $ask();
+    $check(false, 'provider authentication errors fail clearly');
+} catch (HttpException $error) {
+    $check($error->getStatusCode() === 503 && str_contains($error->getMessage(), 'platform administrator')
+        && !str_contains($error->getMessage(), 'Fixture provider detail') && Http::recorded()->count() === 1,
+        'provider authentication errors stop failover and return a safe configuration message');
+}
 
 if (getenv('RUN_LIVE_AI')) {
     // Synthetic data only. Uses the configured provider key from .env.
-    config(['company_ai.api_key' => env('GROQ_API_KEY')]);
+    config(['company_ai' => $providerConfig]);
     Http::swap(new Illuminate\Http\Client\Factory);
     foreach (['how many holiday present in this week', 'what are the office timings?', 'who is my manager?', 'Kal chutti hai kya?', 'any holiday next week?'] as $question) {
         $records = $live->build($company, $user, $live->topics($question));

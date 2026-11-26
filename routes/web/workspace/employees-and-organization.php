@@ -70,6 +70,10 @@ Route::get('employees/archive', [EmployeeController::class, 'archive'])
     ->name('employees.archive');
 Route::post('employees/archive/bulk-restore', [EmployeeController::class, 'bulkRestore'])
     ->name('employees.archive.bulkRestore');
+Route::post('employees/{id}/inactive', [EmployeeController::class, 'markInactive'])
+    ->name('employees.inactive.update');
+Route::delete('employees/{id}/permanent', [EmployeeController::class, 'deletePermanently'])
+    ->name('employees.delete-permanent');
 Route::post('employees/{id}/restore', [EmployeeController::class, 'restore'])
     ->name('employees.restore');
 
