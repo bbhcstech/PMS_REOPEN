@@ -5,20 +5,17 @@
 @endsection
 
 @section('content')
-<div class="employee-dashboard !min-h-screen !overflow-x-hidden !px-3 !py-4 sm:!px-5 sm:!py-5 lg:!px-8 lg:!py-7">
+<div class="employee-dashboard" id="employee-directory">
 
-    {{-- Breadcrumb with Animation --}}
-    <div class="breadcrumb-wrapper animate-slideDown !mb-4 !overflow-x-auto !rounded-[18px]">
+    <div class="breadcrumb-wrapper">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item">
                     <a href="{{ route('dashboard') }}">
-                        <i class="fas fa-home me-1"></i> Dashboard
+                        <i class="fas fa-house" aria-hidden="true"></i> Dashboard
                     </a>
                 </li>
-                <li class="breadcrumb-item active">
-                    <i class="fas fa-users me-1"></i> Employees
-                </li>
+                <li class="breadcrumb-item active" aria-current="page">Employees</li>
             </ol>
         </nav>
     </div>
@@ -65,103 +62,56 @@
         };
     @endphp
 
-    {{-- Header Section --}}
-    <div class="header-section animate-fadeIn !rounded-[22px] !p-4 sm:!p-5 lg:!p-6" style="position: relative !important; z-index: 1050 !important; overflow: visible !important;">
-        <div class="header-content !flex !flex-col !gap-4 lg:!flex-row lg:!items-center lg:!justify-between" style="position: relative !important; z-index: 1050 !important; overflow: visible !important;">
-            <div class="title-wrapper !flex !items-center !gap-3 sm:!gap-4">
-                <div class="icon-circle animate-float !shrink-0">
-                    <i class="fas fa-users"></i>
-                </div>
-                <div>
-                    <h1 class="!text-xl !font-black !leading-tight sm:!text-2xl lg:!text-3xl">Employee Management</h1>
-                    <p class="subtitle !mt-1 !text-sm sm:!text-base">Manage all employees, their details, and permissions</p>
-                </div>
+    <header class="directory-hero">
+        <div class="directory-hero-intro">
+            <div class="directory-hero-icon" aria-hidden="true">
+                <i class="fas fa-address-book"></i>
             </div>
-            <div class="action-buttons !flex !w-full !flex-wrap !items-center !gap-2 sm:!gap-3 lg:!w-auto lg:!justify-end" style="position: relative !important; z-index: 1050 !important; overflow: visible !important;">
-                <!-- Quick Actions Dropdown -->
-                <div class="quick-actions" style="position: relative !important; z-index: 1060 !important; overflow: visible !important;">
-                    <div class="dropdown" style="position: relative !important; z-index: 1060 !important; overflow: visible !important;">
-                        <button class="btn btn-outline-light dropdown-toggle !w-full !justify-center sm:!w-auto" type="button" data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false">
-                            <i class="fas fa-bolt me-2"></i>Quick Actions
-                        </button>
-                        <ul class="dropdown-menu" style="position: absolute !important; top: 100% !important; bottom: auto !important; left: 0 !important; right: auto !important; margin-top: 0.5rem !important; min-width: 220px !important; transform: none !important; z-index: 999999 !important;">
-                            <li><a class="dropdown-item" href="{{ route('employees.archive') }}"><i class="fas fa-box-archive me-2 text-success"></i>Archived Employees</a></li>
-                            <li><a class="dropdown-item" href="#" id="bulkDeleteTrigger"><i class="fas fa-box-archive me-2 text-danger"></i>Archive Inactive</a></li>
-                        </ul>
-                    </div>
-                </div>
-
-                <!-- Archived Employees Button -->
-                <a href="{{ route('employees.archive') }}" class="btn btn-archive-employees !min-w-[150px] !justify-center" style="background: var(--pms-archive-btn-bg, #ffffff) !important; border: 1px solid var(--pms-archive-btn-border, rgba(47, 107, 255, 0.18)) !important; color: var(--pms-archive-btn-color, #2F6BFF) !important; -webkit-text-fill-color: var(--pms-archive-btn-color, #2F6BFF) !important;">
-                    <i class="fas fa-box-archive me-2" style="color: var(--pms-archive-btn-icon, #2F6BFF) !important; -webkit-text-fill-color: var(--pms-archive-btn-icon, #2F6BFF) !important;"></i>
-                    <span class="btn-archive-text" style="color: var(--pms-archive-btn-color, #2F6BFF) !important; -webkit-text-fill-color: var(--pms-archive-btn-color, #2F6BFF) !important;">Archived</span>
-                </a>
-
-                <!-- Add Employee Button -->
-                <a href="{{ route('employees.create') }}" class="btn btn-add animate-pulse !min-w-[140px] !justify-center" style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important;">
-                    <i class="fas fa-user-plus me-2" style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important;"></i>
-                    <span style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important;">Add Employee</span>
-                </a>
-
-                <!-- Invite Button -->
-                <button type="button" class="btn btn-invite animate-pulse !min-w-[110px] !justify-center" data-bs-toggle="modal" data-bs-target="#inviteModal" style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important;">
-                    <i class="fas fa-envelope me-2" style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important;"></i>
-                    <span style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important;">Invite</span>
+            <div>
+                <h1>Employee Management</h1>
+                <p>Manage employee records and permissions.</p>
+            </div>
+        </div>
+        <div class="directory-hero-actions">
+            <div class="dropdown">
+                <button class="btn directory-button dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false">
+                    <i class="fas fa-bolt" aria-hidden="true"></i>Quick Actions
                 </button>
+                <ul class="dropdown-menu directory-quick-menu">
+                    <li><a class="dropdown-item" href="{{ route('employees.archive') }}"><i class="fas fa-box-archive me-2" aria-hidden="true"></i>Archived Employees</a></li>
+                    <li><a class="dropdown-item" href="#" id="bulkDeleteTrigger"><i class="fas fa-user-slash me-2 text-danger" aria-hidden="true"></i>Archive Inactive</a></li>
+                </ul>
             </div>
+            <a href="{{ route('employees.archive') }}" class="btn directory-button">
+                <i class="fas fa-box-archive" aria-hidden="true"></i>Archived
+            </a>
+            <a href="{{ route('employees.create') }}" class="btn directory-button directory-button-primary">
+                <i class="fas fa-user-plus" aria-hidden="true"></i>Add Employee
+            </a>
+            <button type="button" class="btn directory-button" data-bs-toggle="modal" data-bs-target="#inviteModal">
+                <i class="fas fa-envelope" aria-hidden="true"></i>Invite
+            </button>
         </div>
-    </div>
+    </header>
 
-    {{-- Stats Cards - 5 Cards Perfect Alignment with Animation --}}
-    <div class="stats-grid !grid !grid-cols-1 !gap-3 sm:!grid-cols-2 sm:!gap-4 xl:!grid-cols-4 xl:!gap-5" style="position: relative !important; z-index: 1 !important;">
-        <!-- Total Employees Card -->
-        <div class="stat-card total animate-slideUp" style="animation-delay: 0.1s; position: relative !important; z-index: 1 !important;">
-            <div class="stat-icon">
-                <i class="fas fa-users"></i>
-            </div>
-            <div class="stat-content">
-                <span class="stat-label">Total Employees</span>
-                <span class="stat-value">{{ $totalEmployees }}</span>
-            </div>
-            <div class="stat-glow"></div>
+    <dl class="directory-metrics" aria-label="Employee totals">
+        <div class="directory-metric">
+            <dt>Total Employees</dt>
+            <dd>{{ $totalEmployees }} <span class="directory-metric-icon" aria-hidden="true"><i class="fas fa-users"></i></span></dd>
         </div>
-
-        <!-- Active Employees Card -->
-        <div class="stat-card active animate-slideUp" style="animation-delay: 0.2s; position: relative !important; z-index: 1 !important;">
-            <div class="stat-icon">
-                <i class="fas fa-user-check"></i>
-            </div>
-            <div class="stat-content">
-                <span class="stat-label">Active</span>
-                <span class="stat-value">{{ $activeEmployees }}</span>
-            </div>
-            <div class="stat-glow"></div>
+        <div class="directory-metric directory-metric-active">
+            <dt>Active</dt>
+            <dd>{{ $activeEmployees }} <span class="directory-metric-icon" aria-hidden="true"><i class="fas fa-user-check"></i></span></dd>
         </div>
-
-        <!-- Inactive Employees Card -->
-        <div class="stat-card inactive animate-slideUp" style="animation-delay: 0.3s; position: relative !important; z-index: 1 !important;">
-            <div class="stat-icon">
-                <i class="fas fa-user-slash"></i>
-            </div>
-            <div class="stat-content">
-                <span class="stat-label">Inactive</span>
-                <span class="stat-value">{{ $inactiveEmployees }}</span>
-            </div>
-            <div class="stat-glow"></div>
+        <div class="directory-metric directory-metric-inactive">
+            <dt>Inactive</dt>
+            <dd>{{ $inactiveEmployees }} <span class="directory-metric-icon" aria-hidden="true"><i class="fas fa-user-slash"></i></span></dd>
         </div>
-
-        <!-- On Notice Card -->
-        <div class="stat-card notice animate-slideUp" style="animation-delay: 0.4s; position: relative !important; z-index: 1 !important;">
-            <div class="stat-icon">
-                <i class="fas fa-clock"></i>
-            </div>
-            <div class="stat-content">
-                <span class="stat-label">On Notice</span>
-                <span class="stat-value">{{ $noticeEmployees }}</span>
-            </div>
-            <div class="stat-glow"></div>
+        <div class="directory-metric directory-metric-notice">
+            <dt>On Notice</dt>
+            <dd>{{ $noticeEmployees }} <span class="directory-metric-icon" aria-hidden="true"><i class="fas fa-clock"></i></span></dd>
         </div>
-    </div>
+    </dl>
 
     @if(\App\Services\TenantScope::isPlatformAdmin())
     {{-- Company Selector - SaaS company workspace filter (platform Super Admin only; company users see only their own company) --}}
@@ -351,54 +301,48 @@
 
     @include('admin.employees.partials.org-tree')
 
-    {{-- Filter & Export Section - PERFECT ALIGNMENT --}}
-    <div class="filter-export-card employee-filter-polish animate-fadeIn !overflow-visible !rounded-[22px]">
-        <div class="filter-header !flex !flex-col !gap-4 !p-4 sm:!p-5 lg:!flex-row lg:!items-center lg:!justify-between">
-            <div class="header-left !flex !items-start !gap-3 sm:!items-center">
-                <div class="header-icon-wrapper !shrink-0">
-                    <i class="fas fa-sliders-h"></i>
-                </div>
-                <div class="header-text">
-                    <h3>Filter Employees</h3>
-                    <p>Narrow down your employee list</p>
-                </div>
+    <div class="filter-export-card">
+        <div class="directory-panel-header">
+            <div class="directory-panel-title">
+                <span class="directory-panel-icon" aria-hidden="true"><i class="fas fa-sliders"></i></span>
+                <h2>Filter Employees</h2>
             </div>
-            <div class="header-right !flex !w-full !flex-col !gap-2 sm:!w-auto sm:!flex-row sm:!flex-wrap sm:!items-center sm:!justify-end">
-                <span id="export-selected-count" class="selected-badge !inline-flex !justify-center">0 selected</span>
-                <button type="button" class="btn btn-export-all !justify-center" id="export-all">
-                    <i class="fas fa-download me-2"></i>Export All
+            <div class="directory-export">
+                <span id="export-selected-count" class="directory-count">0 selected</span>
+                <button type="button" class="btn directory-button" id="export-all">
+                    <i class="fas fa-download" aria-hidden="true"></i>Export All
                 </button>
-                <div class="btn-group !flex !flex-wrap !gap-2">
-                    <button type="button" class="btn btn-outline-secondary" id="export-copy" disabled title="Copy">
-                        <i class="fas fa-copy"></i>
+                <div class="directory-export-formats" role="group" aria-label="Export selected employees">
+                    <button type="button" class="btn directory-button" id="export-copy" disabled title="Copy" aria-label="Copy selected employees">
+                        <i class="fas fa-copy" aria-hidden="true"></i>
                     </button>
-                    <button type="button" class="btn btn-outline-success" id="export-csv" disabled title="CSV">
-                        <i class="fas fa-file-csv"></i>
+                    <button type="button" class="btn directory-button" id="export-csv" disabled title="CSV" aria-label="Export selected employees as CSV">
+                        <i class="fas fa-file-csv" aria-hidden="true"></i>
                     </button>
-                    <button type="button" class="btn btn-outline-info" id="export-excel" disabled title="Excel">
-                        <i class="fas fa-file-excel"></i>
+                    <button type="button" class="btn directory-button" id="export-excel" disabled title="Excel" aria-label="Export selected employees as Excel">
+                        <i class="fas fa-file-excel" aria-hidden="true"></i>
                     </button>
-                    <button type="button" class="btn btn-outline-danger" id="export-pdf" disabled title="PDF">
-                        <i class="fas fa-file-pdf"></i>
+                    <button type="button" class="btn directory-button" id="export-pdf" disabled title="PDF" aria-label="Export selected employees as PDF">
+                        <i class="fas fa-file-pdf" aria-hidden="true"></i>
                     </button>
-                    <button type="button" class="btn btn-outline-secondary" id="export-print" disabled title="Print">
-                        <i class="fas fa-print"></i>
+                    <button type="button" class="btn directory-button" id="export-print" disabled title="Print" aria-label="Print selected employees">
+                        <i class="fas fa-print" aria-hidden="true"></i>
                     </button>
                 </div>
             </div>
         </div>
-        <div class="filter-body employee-filter-body !p-4 sm:!p-5">
+        <div class="directory-filter-body">
             <form method="GET" action="{{ route('employees.index') }}" class="filter-form">
-                <div class="filter-grid employee-filter-grid !grid !grid-cols-1 !gap-4 sm:!grid-cols-2 xl:!grid-cols-4">
+                <div class="directory-filter-fields">
                     @if($selectedCompanyId)
                         <input type="hidden" name="company_id" value="{{ $selectedCompanyId }}">
                     @endif
                     <!-- Employee ID -->
-                    <div class="filter-item employee-filter-field">
-                        <label class="filter-label">
-                            <i class="fas fa-id-card me-1"></i>Employee ID
+                    <div class="directory-filter-field">
+                        <label for="directory-employee-id">
+                            <i class="fas fa-id-card" aria-hidden="true"></i>Employee ID
                         </label>
-                        <select name="employee_id" class="form-select select2">
+                        <select name="employee_id" id="directory-employee-id" class="form-select select2">
                             <option value="">All Employees</option>
                             @php
                                 $edOptions = $employeeDetails->filter(function($d){
@@ -419,11 +363,11 @@
                     </div>
 
                     <!-- Designation -->
-                    <div class="filter-item employee-filter-field">
-                        <label class="filter-label">
-                            <i class="fas fa-briefcase me-1"></i>Designation
+                    <div class="directory-filter-field">
+                        <label for="directory-designation">
+                            <i class="fas fa-briefcase" aria-hidden="true"></i>Designation
                         </label>
-                        <select name="designation_id" class="form-select select2">
+                        <select name="designation_id" id="directory-designation" class="form-select select2">
                             <option value="">All Designations</option>
                             @foreach($designations as $designation)
                                 <option value="{{ $designation->id }}" {{ request('designation_id') == $designation->id ? 'selected' : '' }}>
@@ -434,11 +378,11 @@
                     </div>
 
                     <!-- Search Name/Email -->
-                    <div class="filter-item employee-filter-field">
-                        <label class="filter-label">
-                            <i class="fas fa-user me-1"></i>Search Name/Email
+                    <div class="directory-filter-field">
+                        <label for="directory-user">
+                            <i class="fas fa-magnifying-glass" aria-hidden="true"></i>Name or email
                         </label>
-                        <select name="user_id" class="form-select select2">
+                        <select name="user_id" id="directory-user" class="form-select select2">
                             <option value="">Search Employee...</option>
                             @foreach($edOptions as $detail)
                                 <option value="{{ $detail->user_id }}" {{ request('user_id') == $detail->user_id ? 'selected' : '' }}>
@@ -449,12 +393,12 @@
                     </div>
 
                     <!-- Buttons -->
-                    <div class="filter-actions employee-filter-actions !flex !flex-col !gap-2 sm:!flex-row sm:!items-end xl:!justify-end">
-                        <button type="submit" class="btn btn-apply !justify-center">
-                            <i class="fas fa-search me-2"></i>Apply Filters
+                    <div class="directory-filter-actions">
+                        <button type="submit" class="btn directory-button directory-button-primary">
+                            <i class="fas fa-magnifying-glass" aria-hidden="true"></i>Apply Filters
                         </button>
-                        <a href="{{ route('employees.index') }}" class="btn btn-reset !justify-center">
-                            <i class="fas fa-redo me-2"></i>Reset
+                        <a href="{{ route('employees.index') }}" class="btn directory-button">
+                            <i class="fas fa-rotate-right" aria-hidden="true"></i>Reset
                         </a>
                     </div>
                 </div>
@@ -462,23 +406,16 @@
         </div>
     </div>
 
-    {{-- Main Table Card - PERFECT ALIGNMENT --}}
-    <div class="table-card animate-slideUp !overflow-hidden !rounded-[22px]">
-        <div class="table-header !flex !flex-col !gap-4 !p-4 sm:!p-5 lg:!flex-row lg:!items-center lg:!justify-between">
-            <div class="table-title !flex !items-start !gap-3 sm:!items-center">
-                <div class="title-icon-wrapper !shrink-0">
-                    <i class="fas fa-list"></i>
-                </div>
-                <div class="title-text">
-                    <h3>Employee List</h3>
-                    <span class="employee-count" style="color: var(--emp-count-color, #6b4e9e) !important; -webkit-text-fill-color: var(--emp-count-color, #6b4e9e) !important; font-weight: 600;">{{ $visibleEmployees->count() }} employees</span>
-                </div>
+    <div class="table-card">
+        <div class="directory-panel-header" data-pms-table-header>
+            <div class="directory-panel-title">
+                <span class="directory-panel-icon" aria-hidden="true"><i class="fas fa-list-ul"></i></span>
+                <h2>Employee List</h2>
+                <span class="directory-count">{{ $visibleEmployees->count() }} employees</span>
             </div>
-            <div class="table-actions !flex !w-full !flex-wrap !items-center !gap-2 sm:!w-auto sm:!justify-end">
-                <button id="btn-bulk-delete" class="btn btn-bulk-delete is-awaiting-selection !justify-center" aria-disabled="true" title="Select inactive employees to archive">
-                    <i class="fas fa-box-archive me-2"></i>Archive Inactive
-                </button>
-            </div>
+            <button id="btn-bulk-delete" class="btn directory-button btn-bulk-delete is-awaiting-selection" aria-disabled="true" title="Select inactive employees to archive">
+                <i class="fas fa-box-archive" aria-hidden="true"></i>Archive Inactive
+            </button>
         </div>
 
         <div class="table-responsive !w-full !overflow-x-auto">
@@ -504,11 +441,11 @@
                         <tr>
                             <td colspan="8" class="text-center py-5">
                                 <div class="empty-state">
-                                    <i class="fas fa-users fa-4x text-muted mb-3"></i>
-                                    <h5 class="text-muted">No Employees Found</h5>
-                                    <p class="text-muted mb-3">Try adjusting your filters or add new employees</p>
-                                    <a href="{{ route('employees.create') }}" class="btn btn-primary">
-                                        <i class="fas fa-user-plus me-2"></i>Add First Employee
+                                    <span class="directory-panel-icon" aria-hidden="true"><i class="fas fa-users"></i></span>
+                                    <h3>No employees found</h3>
+                                    <p>Try adjusting your filters or add a new employee.</p>
+                                    <a href="{{ route('employees.create') }}" class="btn directory-button directory-button-primary">
+                                        <i class="fas fa-user-plus" aria-hidden="true"></i>Add First Employee
                                     </a>
                                 </div>
                             </td>
@@ -765,8 +702,8 @@
     </div>
 </div>
 
-{{-- LIGHT PURPLE THEME - SOFT & ANIMATED --}}
 @include('admin.employees.partials.directory-styles')
+@include('admin.employees.partials.directory-presentation')
 
 {{-- JavaScript - COMPLETELY UNCHANGED FUNCTIONALITY --}}
 @push('js')

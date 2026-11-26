@@ -16,7 +16,7 @@
             <span class="eot-title-mark"><i class="fas fa-sitemap" aria-hidden="true"></i></span>
             <div>
                 <h3>Organization Tree</h3>
-                <p id="eotSummary">Loading structure…</p>
+                <p id="eotSummary" role="status">Loading structure…</p>
             </div>
         </div>
         <div class="eot-controls">
@@ -28,6 +28,9 @@
             <select id="eotDepartment" class="eot-select" aria-label="Highlight department">
                 <option value="">All departments</option>
             </select>
+            <select id="eotLevel" class="eot-select" aria-label="Jump to designation level">
+                <option value="">Jump to level</option>
+            </select>
             <div class="eot-group eot-modes" role="group" aria-label="Tree layout">
                 <button type="button" class="eot-mode is-on" data-eot-action="mode-chart" aria-pressed="true" title="Chart view"><i class="fas fa-sitemap" aria-hidden="true"></i><span>Chart</span></button>
                 <button type="button" class="eot-mode" data-eot-action="mode-table" aria-pressed="false" title="Table view with reporting flow"><i class="fas fa-table-list" aria-hidden="true"></i><span>Table</span></button>
@@ -38,8 +41,8 @@
                 <button type="button" class="eot-tool" data-eot-action="zoom-in" title="Zoom in"><i class="fas fa-plus" aria-hidden="true"></i></button>
             </div>
             <div class="eot-group" role="group" aria-label="Layout">
-                <button type="button" class="eot-tool" data-eot-action="fit" title="Fit to screen"><i class="fas fa-expand" aria-hidden="true"></i></button>
-                <button type="button" class="eot-tool" data-eot-action="center" title="Center on root"><i class="fas fa-crosshairs" aria-hidden="true"></i></button>
+                <button type="button" class="eot-tool eot-chart-only" data-eot-action="fit" title="Fit to screen"><i class="fas fa-expand" aria-hidden="true"></i></button>
+                <button type="button" class="eot-tool eot-chart-only" data-eot-action="center" title="Center on root"><i class="fas fa-crosshairs" aria-hidden="true"></i></button>
                 <button type="button" class="eot-tool" data-eot-action="expand" title="Expand all"><i class="fas fa-angles-down" aria-hidden="true"></i></button>
                 <button type="button" class="eot-tool" data-eot-action="collapse" title="Collapse all"><i class="fas fa-angles-up" aria-hidden="true"></i></button>
                 <button type="button" class="eot-tool" data-eot-action="refresh" title="Refresh tree"><i class="fas fa-rotate" aria-hidden="true"></i></button>
@@ -53,7 +56,7 @@
             <div class="eot-empty" id="eotEmpty" hidden>
                 <i class="fas fa-users-slash" aria-hidden="true"></i>
                 <strong>No employees to show yet</strong>
-                <span>Add an employee with a designation and department and they will appear in the tree automatically.</span>
+                <span>Employees in this workspace will appear here when they’re available to you.</span>
             </div>
             <div class="eot-pan" role="group" aria-label="Slide chart">
                 <button type="button" class="eot-tool" data-eot-action="pan-up" title="Slide up"><i class="fas fa-chevron-up" aria-hidden="true"></i></button>
@@ -64,7 +67,7 @@
                 <button type="button" class="eot-tool" data-eot-action="pan-down" title="Slide down"><i class="fas fa-chevron-down" aria-hidden="true"></i></button>
             </div>
             <div class="eot-legend">
-                <span><i class="eot-dot is-reporting"></i>Reporting manager</span>
+                <span><i class="eot-dot is-reporting"></i>Recorded reporting line</span>
                 <span><i class="eot-dot is-level"></i>Placed by designation level</span>
             </div>
         </div>
@@ -87,9 +90,9 @@
             </table>
         </div>
 
-        <aside class="eot-inspector" id="eotInspector" aria-label="Member inspector" aria-hidden="true">
+        <aside class="eot-inspector" id="eotInspector" aria-label="Employee details" aria-hidden="true" inert>
             <div class="eot-inspector-head">
-                <span>Member Inspector</span>
+                <span>Employee details</span>
                 <button type="button" class="eot-tool" data-eot-action="close-inspector" title="Close"><i class="fas fa-xmark" aria-hidden="true"></i></button>
             </div>
             <div class="eot-inspector-body" id="eotInspectorBody"></div>
@@ -100,66 +103,114 @@
 <style>
     .emp-orgtree, .eot-switch {
         --eot-surface: #ffffff;
-        --eot-canvas: #f6f4fb;
-        --eot-grid: rgba(107, 78, 158, .09);
-        --eot-border: #e5e0f0;
-        --eot-text: #1f2937;
-        --eot-muted: #64748b;
-        --eot-accent: #6b4e9e;
-        --eot-accent-soft: #efe9fa;
-        --eot-line: #c9bfdd;
-        --eot-path: #8b5cf6;
-        --eot-ok: #16a34a;
+        --eot-canvas: #f4f7fc;
+        --eot-grid: rgba(36, 87, 214, .11);
+        --eot-border: #dce5f1;
+        --eot-text: #14223a;
+        --eot-muted: #52637b;
+        --eot-accent: #2457d6;
+        --eot-accent-soft: #eaf0ff;
+        --eot-accent-contrast: #ffffff;
+        --eot-line: #aebed6;
+        --eot-path: #2457d6;
+        --eot-ok: #117054;
         --eot-ok-soft: #dcfce7;
         --eot-warn: #b45309;
         --eot-warn-soft: #fef3c7;
-        --eot-shadow: 0 10px 30px rgba(31, 41, 55, .08);
+        --eot-shadow: 0 4px 16px rgba(20, 34, 58, .07);
     }
-    html[data-pms-theme="dark"] :is(.emp-orgtree, .eot-switch),
-    html[data-bs-theme="dark"] :is(.emp-orgtree, .eot-switch),
-    html[data-theme="dark"] :is(.emp-orgtree, .eot-switch),
-    html.dark :is(.emp-orgtree, .eot-switch),
-    body[data-pms-theme="dark"] :is(.emp-orgtree, .eot-switch),
-    body[data-bs-theme="dark"] :is(.emp-orgtree, .eot-switch),
-    body.dark :is(.emp-orgtree, .eot-switch) {
-        --eot-surface: #161b2e;
-        --eot-canvas: #0f1424;
-        --eot-grid: rgba(167, 139, 250, .08);
-        --eot-border: #2a3150;
-        --eot-text: #e5e7eb;
-        --eot-muted: #9ca3af;
-        --eot-accent: #a78bfa;
-        --eot-accent-soft: rgba(167, 139, 250, .16);
-        --eot-line: #3b4466;
-        --eot-path: #a78bfa;
+    :is([data-pms-theme="dark"], [data-bs-theme="dark"], [data-theme="dark"], .dark, .dark-mode) :is(.emp-orgtree, .eot-switch) {
+        --eot-surface: #121e32;
+        --eot-canvas: #0d1728;
+        --eot-grid: rgba(168, 193, 255, .12);
+        --eot-border: #2b3b54;
+        --eot-text: #edf3ff;
+        --eot-muted: #a8b8cf;
+        --eot-accent: #a8c1ff;
+        --eot-accent-soft: #21355b;
+        --eot-accent-contrast: #13294c;
+        --eot-line: #526887;
+        --eot-path: #a8c1ff;
         --eot-ok: #4ade80;
         --eot-ok-soft: rgba(74, 222, 128, .14);
         --eot-warn: #fbbf24;
         --eot-warn-soft: rgba(251, 191, 36, .14);
-        --eot-shadow: 0 10px 30px rgba(0, 0, 0, .35);
+        --eot-shadow: 0 4px 16px rgba(0, 0, 0, .24);
     }
 
     /* Employee List: reporting flow under "Reports To" */
     .employee-dashboard .role-info .reports-flow { display: flex; align-items: center; gap: 5px; min-width: 0; max-width: 260px; font-size: .75rem; font-weight: 600; color: var(--emp-reports-color, #64748b) !important; -webkit-text-fill-color: var(--emp-reports-color, #64748b) !important; }
     .employee-dashboard .role-info .reports-flow > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: inherit !important; -webkit-text-fill-color: currentColor !important; }
-    .employee-dashboard .role-info .reports-flow i { flex-shrink: 0; font-size: .7rem; font-style: normal; color: #8b5cf6 !important; -webkit-text-fill-color: #8b5cf6 !important; }
-    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body.dark) .employee-dashboard .role-info .reports-flow i { color: #c4b5fd !important; -webkit-text-fill-color: #c4b5fd !important; }
+    .employee-dashboard .role-info .reports-flow i { flex-shrink: 0; font-size: .7rem; font-style: normal; color: #2457d6 !important; -webkit-text-fill-color: #2457d6 !important; }
+    :is([data-pms-theme="dark"], [data-bs-theme="dark"], [data-theme="dark"], .dark, .dark-mode) .employee-dashboard .role-info .reports-flow i { color: #a8c1ff !important; -webkit-text-fill-color: #a8c1ff !important; }
 
     .employee-dashboard.eot-tree-mode .filter-export-card,
     .employee-dashboard.eot-tree-mode .table-card { display: none !important; }
 
-    .eot-switch { display: inline-flex; gap: 4px; padding: 4px; margin: 0 0 16px; border-radius: 14px; background: var(--eot-surface); border: 1px solid var(--eot-border); box-shadow: var(--eot-shadow); max-width: 100%; }
-    .eot-switch .eot-switch-tab { display: inline-flex !important; align-items: center; gap: 8px; padding: 9px 16px !important; border: 0 !important; border-radius: 10px !important; background: transparent !important; color: var(--eot-muted) !important; -webkit-text-fill-color: var(--eot-muted) !important; font-weight: 600; font-size: 14px; cursor: pointer; width: auto !important; min-height: 0 !important; box-shadow: none !important; transition: background .2s, color .2s; }
-    .eot-switch .eot-switch-tab i { color: inherit !important; -webkit-text-fill-color: currentColor !important; font-size: 13px; }
-    .eot-switch .eot-switch-tab.is-active { background: var(--eot-accent) !important; color: #fff !important; -webkit-text-fill-color: #fff !important; }
-    .eot-switch .eot-switch-tab:focus-visible { outline: 2px solid var(--eot-accent); outline-offset: 2px; }
+    .eot-switch {
+        display: inline-flex;
+        gap: 4px;
+        max-width: 100%;
+        padding: 4px;
+        margin: 0 0 16px;
+        border: 1px solid var(--eot-border);
+        border-radius: 13px;
+        background: var(--eot-surface);
+        box-shadow: var(--eot-shadow);
+    }
+
+    #employee-directory .eot-switch-tab {
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-height: 42px !important;
+        width: auto !important;
+        padding: 8px 15px !important;
+        border: 1px solid transparent !important;
+        border-radius: 9px !important;
+        background: transparent !important;
+        color: var(--eot-muted) !important;
+        -webkit-text-fill-color: currentColor !important;
+        box-shadow: none !important;
+        font-size: .875rem;
+        font-weight: 650;
+        line-height: 1.2;
+        cursor: pointer;
+        transition: background-color .18s, color .18s, border-color .18s;
+    }
+
+    #employee-directory .eot-switch-tab:hover {
+        background: var(--eot-canvas) !important;
+        color: var(--eot-text) !important;
+    }
+
+    #employee-directory .eot-switch-tab.is-active {
+        border-color: var(--eot-border) !important;
+        background: var(--eot-accent-soft) !important;
+        color: var(--eot-accent) !important;
+    }
+
+    #employee-directory .eot-switch-tab > :is(span, i),
+    #employeeOrgTree .eot-mode > :is(span, i) {
+        color: inherit !important;
+        -webkit-text-fill-color: currentColor !important;
+    }
+
+    #employee-directory .eot-switch-tab > span { font-weight: inherit !important; }
+    #employee-directory .eot-switch-tab > i { font-size: .8125rem; filter: none !important; }
+    #employee-directory .eot-switch-tab:focus-visible,
+    #employeeOrgTree .eot-mode:focus-visible {
+        outline: 2px solid var(--eot-accent) !important;
+        outline-offset: 2px;
+    }
 
     .emp-orgtree { margin-bottom: 24px; border-radius: 22px; background: var(--eot-surface); border: 1px solid var(--eot-border); box-shadow: var(--eot-shadow); overflow: hidden; color: var(--eot-text); }
     .emp-orgtree[hidden] { display: none !important; }
-    .emp-orgtree i { font-style: normal; }
+    #employeeOrgTree i { font-style: normal; filter: none !important; }
     .eot-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; padding: 16px 20px; border-bottom: 1px solid var(--eot-border); }
     .eot-title { display: flex; align-items: center; gap: 12px; min-width: 0; }
-    .eot-title-mark { width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center; background: var(--eot-accent-soft); flex-shrink: 0; }
+    .eot-title-mark { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; background: var(--eot-accent-soft); flex-shrink: 0; }
     .eot-title-mark i { color: var(--eot-accent) !important; -webkit-text-fill-color: var(--eot-accent) !important; font-size: 18px; }
     .eot-title h3 { margin: 0; font-size: 18px; font-weight: 700; color: var(--eot-text) !important; -webkit-text-fill-color: var(--eot-text) !important; }
     .eot-title p { margin: 2px 0 0; font-size: 13px; color: var(--eot-muted) !important; -webkit-text-fill-color: var(--eot-muted) !important; }
@@ -175,10 +226,10 @@
     .emp-orgtree .eot-tool i { color: inherit !important; -webkit-text-fill-color: currentColor !important; font-size: 13px; }
     .emp-orgtree .eot-tool:hover { background: var(--eot-accent-soft) !important; color: var(--eot-accent) !important; -webkit-text-fill-color: var(--eot-accent) !important; }
     .emp-orgtree .eot-tool:focus-visible { outline: 2px solid var(--eot-accent); outline-offset: 1px; }
-    .eot-zoom { min-width: 46px; text-align: center; font-size: 12px; font-weight: 700; color: var(--eot-muted) !important; -webkit-text-fill-color: var(--eot-muted) !important; }
+    #employeeOrgTree .eot-zoom { min-width: 46px; text-align: center; font-size: 12px; font-weight: 700 !important; color: var(--eot-muted) !important; -webkit-text-fill-color: var(--eot-muted) !important; }
 
-    .eot-body { position: relative; display: flex; }
-    .eot-viewport { position: relative; flex: 1; height: min(72vh, 760px); min-height: 460px; overflow: hidden; cursor: grab; touch-action: none; user-select: none; outline: none;
+    .eot-body { position: relative; }
+    .eot-viewport { position: relative; height: min(72vh, 760px); min-height: 460px; overflow: hidden; cursor: grab; touch-action: none; user-select: none; outline: none;
         background-color: var(--eot-canvas); background-image: radial-gradient(var(--eot-grid) 1.2px, transparent 1.2px); background-size: 22px 22px; }
     .eot-viewport.is-dragging { cursor: grabbing; }
     .eot-stage { position: absolute; left: 0; top: 0; width: max-content; transform-origin: 0 0; padding: 40px 40px 60px; will-change: transform; }
@@ -186,32 +237,26 @@
     .eot-empty[hidden] { display: none; }
     .eot-empty i { font-size: 34px; color: var(--eot-accent) !important; -webkit-text-fill-color: var(--eot-accent) !important; }
     .eot-empty strong { color: var(--eot-text) !important; -webkit-text-fill-color: var(--eot-text) !important; }
-    .eot-empty span { max-width: 360px; font-size: 13px; color: var(--eot-muted) !important; -webkit-text-fill-color: var(--eot-muted) !important; }
+    #employeeOrgTree .eot-empty span { max-width: 360px; font-size: 13px; font-weight: 400 !important; color: var(--eot-muted) !important; -webkit-text-fill-color: var(--eot-muted) !important; }
     .eot-pan { position: absolute; left: 16px; bottom: 16px; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px; border-radius: 12px; background: var(--eot-surface); border: 1px solid var(--eot-border); box-shadow: var(--eot-shadow); }
     .eot-pan > div { display: flex; gap: 30px; }
     .eot-legend { position: absolute; right: 16px; bottom: 16px; display: flex; flex-wrap: wrap; gap: 12px; padding: 8px 12px; border-radius: 10px; background: var(--eot-surface); border: 1px solid var(--eot-border); font-size: 12px; color: var(--eot-muted); }
-    .eot-legend span { display: inline-flex; align-items: center; gap: 6px; color: var(--eot-muted) !important; -webkit-text-fill-color: var(--eot-muted) !important; }
+    #employeeOrgTree .eot-legend span { display: inline-flex; align-items: center; gap: 6px; font-weight: 500 !important; color: var(--eot-muted) !important; -webkit-text-fill-color: var(--eot-muted) !important; }
     .eot-dot { width: 18px; height: 0; border-top: 2px solid var(--eot-line); display: inline-block; }
     .eot-dot.is-level { border-top-style: dashed; }
 
-    /* Tree connectors */
-    .eot-tree, .eot-tree ul { margin: 0; padding: 0; }
-    .eot-tree ul { display: flex; justify-content: center; position: relative; padding-top: 26px; }
-    .eot-tree li { list-style: none; flex-shrink: 0; position: relative; display: flex; flex-direction: column; align-items: center; padding: 26px 10px 0; }
-    .eot-tree li::before, .eot-tree li::after { content: ''; position: absolute; top: 0; right: 50%; width: 50%; height: 26px; border-top: 2px solid var(--eot-line); }
-    .eot-tree li::after { right: auto; left: 50%; border-left: 2px solid var(--eot-line); }
-    .eot-tree li:only-child::before, .eot-tree li:only-child::after { display: none; }
-    .eot-tree li:only-child { padding-top: 0; }
-    .eot-tree li:first-child::before, .eot-tree li:last-child::after { border: 0 none; }
-    .eot-tree li:last-child::before { border-right: 2px solid var(--eot-line); border-radius: 0 10px 0 0; }
-    .eot-tree li:first-child::after { border-radius: 10px 0 0 0; }
-    .eot-tree ul ul::before { content: ''; position: absolute; top: 0; left: 50%; height: 26px; border-left: 2px solid var(--eot-line); }
-    .eot-tree > ul { padding-top: 0; }
-    .eot-tree li.is-level-placed::after, .eot-tree li.is-level-placed:last-child::before { border-style: dashed; }
-    .eot-tree li.is-path::after { border-left-color: var(--eot-path); }
-    .eot-tree li.is-path:last-child::before { border-right-color: var(--eot-path); }
-    .eot-tree li.is-path > ul::before { border-left-color: var(--eot-path); }
-    .eot-tree li.is-collapsed > ul { display: none; }
+    .eot-chart { position: relative; }
+    .eot-connectors { position: absolute; inset: 0; pointer-events: none; }
+    .eot-connector { fill: none; stroke: var(--eot-line); stroke-width: 2; }
+    .eot-connector.is-level-placed { stroke-dasharray: 6 4; }
+    .eot-connector.is-company-root { stroke-dasharray: 2 4; }
+    .eot-connector.is-path { stroke: var(--eot-path); stroke-width: 3; }
+    #employeeOrgTree .eot-lane {
+        position: absolute; left: 0; right: 0; height: 157px; padding: 8px 10px;
+        border-top: 1px solid var(--eot-border); background: var(--eot-accent-soft);
+        color: var(--eot-accent) !important; -webkit-text-fill-color: currentColor !important;
+        font-size: 12px; font-weight: 700; pointer-events: none;
+    }
 
     /* Member tiles */
     .eot-tile { position: relative; width: 236px; padding: 14px 14px 12px; border-radius: 16px; background: var(--eot-surface); border: 1px solid var(--eot-border); box-shadow: var(--eot-shadow); cursor: pointer; text-align: left; transition: border-color .2s, box-shadow .2s, transform .2s, opacity .2s; }
@@ -220,41 +265,53 @@
     .eot-tile.is-path { border-color: var(--eot-path); }
     .eot-tile.is-dim { opacity: .35; }
     .eot-tile.is-match { box-shadow: 0 0 0 3px var(--eot-warn-soft), var(--eot-shadow); border-color: var(--eot-warn); }
-    .eot-tile-flag { position: absolute; top: -10px; left: 14px; padding: 2px 8px; border-radius: 999px; background: var(--eot-path); color: #fff !important; -webkit-text-fill-color: #fff !important; font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; display: none; }
-    .eot-tile.is-path .eot-tile-flag, .eot-tile.is-selected .eot-tile-flag { display: inline-block; }
+    #employeeOrgTree .eot-tile-flag { position: absolute; top: -10px; left: 14px; padding: 2px 8px; border-radius: 999px; background: var(--eot-path); color: var(--eot-accent-contrast) !important; -webkit-text-fill-color: currentColor !important; font-size: 10px; font-weight: 700 !important; letter-spacing: .06em; text-transform: uppercase; display: none; }
+    #employeeOrgTree :is(.eot-tile.is-path, .eot-tile.is-selected) .eot-tile-flag { display: inline-block; }
     .eot-tile-top { display: flex; align-items: center; gap: 10px; }
-    .eot-photo { width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0; overflow: hidden; display: grid; place-items: center; background: linear-gradient(135deg, #8b5cf6, #6b4e9e); color: #fff !important; -webkit-text-fill-color: #fff !important; font-weight: 700; font-size: 15px; }
+    #employeeOrgTree .eot-photo { width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0; overflow: hidden; display: grid; place-items: center; background: var(--eot-accent-soft); color: var(--eot-accent) !important; -webkit-text-fill-color: currentColor !important; font-weight: 700 !important; font-size: 15px; }
     .eot-photo img { width: 100% !important; height: 100% !important; max-width: none !important; object-fit: cover; display: block; }
-    .eot-photo.is-large { width: 72px; height: 72px; font-size: 24px; }
-    .eot-photo.is-company { border-radius: 12px; }
+    #employeeOrgTree .eot-photo.is-large { width: 72px; height: 72px; font-size: 24px; }
+    #employeeOrgTree .eot-photo.is-company { border-radius: 12px; }
     .eot-who { min-width: 0; flex: 1; }
     .eot-name { display: flex; align-items: center; gap: 5px; margin: 0; font-size: 14px; font-weight: 700; color: var(--eot-text) !important; -webkit-text-fill-color: var(--eot-text) !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .eot-name > span { overflow: hidden; text-overflow: ellipsis; }
-    .eot-name i { color: #3b82f6 !important; -webkit-text-fill-color: #3b82f6 !important; font-size: 12px; flex-shrink: 0; }
+    #employeeOrgTree :is(.eot-name, .eot-tile-foot, .eot-action) > span { color: inherit !important; -webkit-text-fill-color: currentColor !important; font-weight: inherit !important; }
+    .eot-name i { color: var(--eot-accent) !important; -webkit-text-fill-color: currentColor !important; font-size: 12px; flex-shrink: 0; }
     .eot-role { margin: 2px 0 0; font-size: 12px; color: var(--eot-muted) !important; -webkit-text-fill-color: var(--eot-muted) !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .eot-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 10px; }
-    .eot-tag { display: inline-flex; align-items: center; gap: 4px; max-width: 100%; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; background: var(--eot-accent-soft); color: var(--eot-accent) !important; -webkit-text-fill-color: var(--eot-accent) !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .eot-tag.is-dept { background: var(--eot-canvas); color: var(--eot-muted) !important; -webkit-text-fill-color: var(--eot-muted) !important; border: 1px solid var(--eot-border); }
-    .eot-tag.is-ok { background: var(--eot-ok-soft); color: var(--eot-ok) !important; -webkit-text-fill-color: var(--eot-ok) !important; }
-    .eot-tag.is-warn { background: var(--eot-warn-soft); color: var(--eot-warn) !important; -webkit-text-fill-color: var(--eot-warn) !important; }
+    #employeeOrgTree .eot-tag { display: inline-flex; align-items: center; gap: 4px; max-width: 100%; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 600 !important; background: var(--eot-accent-soft); color: var(--eot-accent) !important; -webkit-text-fill-color: currentColor !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    #employeeOrgTree .eot-tag.is-dept { background: var(--eot-canvas); color: var(--eot-muted) !important; border: 1px solid var(--eot-border); }
+    #employeeOrgTree .eot-tag.is-ok { background: var(--eot-ok-soft); color: var(--eot-ok) !important; }
+    #employeeOrgTree .eot-tag.is-warn { background: var(--eot-warn-soft); color: var(--eot-warn) !important; }
     .eot-tile-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--eot-border); font-size: 12px; color: var(--eot-muted) !important; -webkit-text-fill-color: var(--eot-muted) !important; }
     .eot-tile-foot strong { color: var(--eot-text) !important; -webkit-text-fill-color: var(--eot-text) !important; }
     .emp-orgtree .eot-toggle { position: absolute; left: 50%; bottom: -13px; transform: translateX(-50%); width: 26px !important; height: 26px !important; min-height: 0 !important; padding: 0 !important; border-radius: 50% !important; border: 1px solid var(--eot-border) !important; background: var(--eot-surface) !important; color: var(--eot-accent) !important; -webkit-text-fill-color: var(--eot-accent) !important; display: grid !important; place-items: center; cursor: pointer; z-index: 2; box-shadow: var(--eot-shadow) !important; font-size: 11px; font-weight: 700; }
     .emp-orgtree .eot-toggle i { color: inherit !important; -webkit-text-fill-color: currentColor !important; font-size: 11px; transition: transform .2s; }
-    .eot-tree li.is-collapsed > .eot-tile .eot-toggle i { transform: rotate(-90deg); }
-    .eot-tree li > .eot-tile { margin-bottom: 14px; }
-    .eot-tree li.is-leaf > .eot-tile { margin-bottom: 0; }
-    .eot-tile.is-company { width: 260px; background: linear-gradient(135deg, var(--eot-accent-soft), var(--eot-surface)); }
+    .eot-toggle[aria-expanded="false"] i { transform: rotate(-90deg); }
+    .eot-chart .eot-tile { position: absolute; display: flex; flex-direction: column; gap: 7px; }
+    .eot-chart .eot-tags { margin: 0; flex-wrap: nowrap; }
+    .eot-chart .eot-tags .is-dept { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .eot-chart .eot-tile-foot { margin-top: auto; }
+    .eot-chart .eot-tile-foot > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .eot-chart .eot-tile-foot > span:first-child { flex-shrink: 0; }
+    #employeeOrgTree .eot-card-chevron { color: var(--eot-accent) !important; -webkit-text-fill-color: currentColor !important; font-size: 11px; }
+    .eot-chart .eot-tile.is-company { cursor: default; background: linear-gradient(135deg, var(--eot-accent-soft), var(--eot-surface)); }
+    .eot-chart .eot-tile:hover { transform: none; }
+    #employeeOrgTree .eot-card-open {
+        position: absolute; inset: 0; background: transparent !important; border: 0 !important;
+        border-radius: inherit !important; box-shadow: none !important; cursor: pointer;
+    }
+    #employeeOrgTree .eot-card-open:focus-visible { outline: 2px solid var(--eot-accent) !important; outline-offset: 3px; }
 
     /* Inspector */
     .eot-inspector { position: absolute; top: 0; right: 0; bottom: 0; width: 380px; max-width: 100%; display: flex; flex-direction: column; background: var(--eot-surface); border-left: 1px solid var(--eot-border); box-shadow: -12px 0 30px rgba(0, 0, 0, .12); transform: translateX(105%); visibility: hidden; transition: transform .28s ease, visibility 0s linear .28s; z-index: 5; }
     .eot-inspector.is-open { transform: translateX(0); visibility: visible; transition: transform .28s ease; }
     .eot-inspector-head { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid var(--eot-border); font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--eot-muted) !important; -webkit-text-fill-color: var(--eot-muted) !important; }
-    .eot-inspector-head span { color: var(--eot-muted) !important; -webkit-text-fill-color: var(--eot-muted) !important; }
+    #employeeOrgTree .eot-inspector-head span { color: inherit !important; -webkit-text-fill-color: currentColor !important; }
     .eot-inspector-body { flex: 1; overflow-y: auto; padding: 18px 16px 22px; overscroll-behavior: contain; }
     .eot-hero { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 6px; }
     .eot-hero h4 { margin: 6px 0 0; font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 6px; color: var(--eot-text) !important; -webkit-text-fill-color: var(--eot-text) !important; }
-    .eot-hero h4 i { color: #3b82f6 !important; -webkit-text-fill-color: #3b82f6 !important; font-size: 14px; }
+    .eot-hero h4 i { color: var(--eot-accent) !important; -webkit-text-fill-color: currentColor !important; font-size: 14px; }
     .eot-hero p { margin: 0; font-size: 13px; color: var(--eot-muted) !important; -webkit-text-fill-color: var(--eot-muted) !important; }
     .eot-hero .eot-tags { justify-content: center; margin-top: 4px; }
     .eot-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 16px 0; }
@@ -267,14 +324,14 @@
     .eot-person { display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px 10px !important; border-radius: 12px !important; border: 1px solid var(--eot-border) !important; background: var(--eot-canvas) !important; text-align: left; cursor: pointer; min-height: 0 !important; box-shadow: none !important; color: var(--eot-text) !important; -webkit-text-fill-color: var(--eot-text) !important; }
     .eot-person + .eot-person { margin-top: 6px; }
     .eot-person:hover { border-color: var(--eot-accent) !important; }
-    .eot-person .eot-photo { width: 34px; height: 34px; font-size: 12px; }
+    #employeeOrgTree .eot-person .eot-photo { width: 34px; height: 34px; font-size: 12px; }
     .eot-person strong { display: block; font-size: 13px; color: var(--eot-text) !important; -webkit-text-fill-color: var(--eot-text) !important; }
     .eot-person small { display: block; font-size: 12px; color: var(--eot-muted) !important; -webkit-text-fill-color: var(--eot-muted) !important; }
     .eot-person > i { margin-left: auto; color: var(--eot-muted) !important; -webkit-text-fill-color: var(--eot-muted) !important; font-size: 11px; }
     .eot-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     .eot-stats div { padding: 12px; border-radius: 12px; background: var(--eot-accent-soft); text-align: center; }
     .eot-stats strong { display: block; font-size: 22px; font-weight: 800; color: var(--eot-accent) !important; -webkit-text-fill-color: var(--eot-accent) !important; }
-    .eot-stats span { font-size: 12px; color: var(--eot-muted) !important; -webkit-text-fill-color: var(--eot-muted) !important; }
+    #employeeOrgTree .eot-stats span { font-size: 12px; font-weight: 600 !important; color: var(--eot-muted) !important; -webkit-text-fill-color: currentColor !important; }
     .eot-facts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 0; }
     .eot-facts div { min-width: 0; padding: 10px; border-radius: 12px; border: 1px solid var(--eot-border); }
     .eot-facts div.is-wide { grid-column: 1 / -1; }
@@ -284,12 +341,30 @@
     .eot-note { font-size: 12px; color: var(--eot-muted) !important; -webkit-text-fill-color: var(--eot-muted) !important; margin: 0; }
 
     /* Chart / Table layout switch */
-    .emp-orgtree .eot-mode { display: inline-flex !important; align-items: center; gap: 6px; height: 32px; padding: 0 10px !important; border: 0 !important; border-radius: 8px !important; background: transparent !important; color: var(--eot-muted) !important; -webkit-text-fill-color: var(--eot-muted) !important; font-size: 12px; font-weight: 700; cursor: pointer; width: auto !important; min-height: 0 !important; box-shadow: none !important; }
-    .emp-orgtree .eot-mode i { color: inherit !important; -webkit-text-fill-color: currentColor !important; font-size: 12px; }
-    .emp-orgtree .eot-mode.is-on { background: var(--eot-accent) !important; color: #fff !important; -webkit-text-fill-color: #fff !important; }
+    #employeeOrgTree .eot-mode { display: inline-flex !important; align-items: center; gap: 6px; height: 32px; padding: 0 10px !important; border: 0 !important; border-radius: 8px !important; background: transparent !important; color: var(--eot-muted) !important; -webkit-text-fill-color: currentColor !important; font-size: 12px; font-weight: 650; cursor: pointer; width: auto !important; min-height: 0 !important; box-shadow: none !important; }
+    #employeeOrgTree .eot-mode i { font-size: 12px; }
+    #employeeOrgTree .eot-mode > span { font-weight: inherit !important; }
+    #employeeOrgTree .eot-mode:hover { color: var(--eot-text) !important; }
+    #employeeOrgTree .eot-mode.is-on { background: var(--eot-accent-soft) !important; color: var(--eot-accent) !important; }
     .emp-orgtree.is-table-mode .eot-chart-only, .emp-orgtree.is-table-mode .eot-viewport { display: none !important; }
-    .eot-tablewrap { flex: 1; min-width: 0; height: min(72vh, 760px); min-height: 460px; overflow: auto; background: var(--eot-surface); }
+    .eot-tablewrap { min-width: 0; height: min(72vh, 760px); min-height: 460px; overflow: auto; background: var(--eot-surface); }
     .eot-tablewrap[hidden] { display: none !important; }
+
+    /* The shared export toolbar is inserted before the reporting table. */
+    #employeeOrgTree:not(.is-table-mode) .eot-body > .pms-table-tools { display: none !important; }
+    #employeeOrgTree .eot-body > .pms-table-tools {
+        border: 0 !important;
+        border-bottom: 1px solid var(--eot-border) !important;
+        border-radius: 0;
+        background: var(--eot-surface) !important;
+    }
+    #employeeOrgTree .eot-tablewrap.pms-table-scroll-host {
+        border: 0;
+        border-radius: 0;
+        background: var(--eot-surface);
+        box-shadow: none;
+    }
+
     .emp-orgtree .eot-flow { width: 100%; min-width: 980px; border-collapse: separate; border-spacing: 0; margin: 0; background: transparent !important; }
     .emp-orgtree .eot-flow th { position: sticky; top: 0; z-index: 1; padding: 11px 14px; background: var(--eot-canvas) !important; border-bottom: 1px solid var(--eot-border); font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; text-align: left; white-space: nowrap; color: var(--eot-muted) !important; -webkit-text-fill-color: var(--eot-muted) !important; }
     .emp-orgtree .eot-flow td { padding: 10px 14px; border-bottom: 1px solid var(--eot-border); vertical-align: middle; font-size: 13px; background: transparent !important; color: var(--eot-text) !important; -webkit-text-fill-color: var(--eot-text) !important; }
@@ -308,14 +383,14 @@
     .emp-orgtree .eot-rowtoggle[aria-expanded="false"] i { transform: rotate(-90deg); }
     .eot-rowspacer { width: 22px; flex-shrink: 0; display: inline-grid; place-items: center; }
     .eot-rowspacer::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--eot-line); }
-    .eot-cell-person .eot-photo { width: 32px; height: 32px; font-size: 12px; }
+    #employeeOrgTree .eot-cell-person .eot-photo { width: 32px; height: 32px; font-size: 12px; }
     .eot-cell-person strong { display: block; font-size: 13px; white-space: nowrap; color: var(--eot-text) !important; -webkit-text-fill-color: var(--eot-text) !important; }
     .eot-cell-person small { display: block; font-size: 11px; color: var(--eot-muted) !important; -webkit-text-fill-color: var(--eot-muted) !important; }
     .eot-chain { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; max-width: 360px; }
-    .eot-chain-step { padding: 2px 8px !important; border-radius: 999px !important; border: 1px solid var(--eot-border) !important; background: var(--eot-canvas) !important; font-size: 11px; font-weight: 600; white-space: nowrap; color: var(--eot-muted) !important; -webkit-text-fill-color: var(--eot-muted) !important; }
-    .eot-chain-step.is-self { border-color: var(--eot-accent) !important; background: var(--eot-accent-soft) !important; color: var(--eot-accent) !important; -webkit-text-fill-color: var(--eot-accent) !important; }
+    #employeeOrgTree .eot-chain-step { padding: 2px 8px !important; border-radius: 999px !important; border: 1px solid var(--eot-border) !important; background: var(--eot-canvas) !important; font-size: 11px; font-weight: 600 !important; white-space: nowrap; color: var(--eot-muted) !important; -webkit-text-fill-color: currentColor !important; }
+    #employeeOrgTree .eot-chain-step.is-self { border-color: var(--eot-accent) !important; background: var(--eot-accent-soft) !important; color: var(--eot-accent) !important; }
     .emp-orgtree button.eot-chain-step { cursor: pointer; min-height: 0 !important; box-shadow: none !important; width: auto !important; line-height: 1.5; }
-    .emp-orgtree button.eot-chain-step:hover { border-color: var(--eot-accent) !important; color: var(--eot-accent) !important; -webkit-text-fill-color: var(--eot-accent) !important; }
+    #employeeOrgTree button.eot-chain-step:hover { border-color: var(--eot-accent) !important; color: var(--eot-accent) !important; }
     .emp-orgtree .eot-chain-sep { font-size: 9px; color: var(--eot-muted) !important; -webkit-text-fill-color: var(--eot-muted) !important; }
     .eot-team { white-space: nowrap; }
     .emp-orgtree .eot-flow td.eot-team { color: var(--eot-muted) !important; -webkit-text-fill-color: var(--eot-muted) !important; }
@@ -327,11 +402,14 @@
     }
     @media (max-width: 575.98px) {
         .eot-switch { display: flex; }
-        .eot-switch .eot-switch-tab { flex: 1; justify-content: center; padding: 9px 10px !important; }
+        #employee-directory .eot-switch-tab { flex: 1; padding-inline: 10px !important; }
         .eot-toolbar { padding: 14px 16px; }
         .eot-controls, .eot-search, .emp-orgtree .eot-search input, .emp-orgtree .eot-select { width: 100%; max-width: none; }
         .eot-viewport { height: 64vh; min-height: 380px; }
         .eot-pan { left: 10px; bottom: 10px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+        #employee-directory .eot-switch-tab { transition: none; }
     }
     @media print {
         .eot-switch, .emp-orgtree { display: none !important; }
@@ -353,13 +431,15 @@
     const searchInput = document.getElementById('eotSearch');
     const searchList = document.getElementById('eotSearchList');
     const departmentSelect = document.getElementById('eotDepartment');
+    const levelSelect = document.getElementById('eotLevel');
     const inspector = document.getElementById('eotInspector');
     const inspectorBody = document.getElementById('eotInspectorBody');
     const tableWrap = document.getElementById('eotTableWrap');
     const tableBody = document.getElementById('eotTableBody');
     const MODE_KEY = 'pmsEmployeeTreeMode';
     const VIEW_KEY = 'pmsEmployeeView';
-    const MIN_SCALE = 0.2, MAX_SCALE = 2.5;
+    const MAX_SCALE = 2.5;
+    const CARD_WIDTH = 236, CARD_HEIGHT = 132, COLUMN_WIDTH = 268, LEVEL_HEIGHT = 184;
 
     const state = { nodes: new Map(), children: new Map(), roots: [], company: null, collapsed: new Set(), selected: null, loaded: false, loading: false, x: 0, y: 0, scale: 1 };
 
@@ -404,7 +484,7 @@
         });
         if (persist) storage.set(VIEW_KEY, view);
         if (tree) {
-            if (!state.loaded) load(true); else requestAnimationFrame(() => { if (!state.userMoved) fit(); });
+            if (!state.loaded) load(true); else requestAnimationFrame(() => { if (!state.userMoved) fit(true); });
         } else {
             closeInspector();
         }
@@ -413,7 +493,7 @@
 
     /* ---------- Data ---------- */
     async function load(fitAfter) {
-        if (state.loading) return;
+        if (state.loading) { state.reloadPending = true; return; }
         state.loading = true;
         if (!state.loaded) summary.textContent = 'Loading structure…';
         try {
@@ -424,13 +504,17 @@
             const firstLoad = !state.loaded;
             state.loaded = true;
             render();
-            if (firstLoad || fitAfter) requestAnimationFrame(fit);
+            if (firstLoad || fitAfter) requestAnimationFrame(() => fit(true));
             if (state.selected && state.nodes.has(state.selected)) openInspector(state.selected, false);
             else if (state.selected) closeInspector();
         } catch (error) {
             summary.textContent = 'Unable to load the organization tree. Please refresh and try again.';
         } finally {
             state.loading = false;
+            if (state.reloadPending) {
+                state.reloadPending = false;
+                if (!root.hidden) load(false); else state.loaded = false;
+            }
         }
     }
 
@@ -451,10 +535,11 @@
             return lb - la || String(na.department || '').localeCompare(String(nb.department || '')) || na.name.localeCompare(nb.name);
         }));
         state.roots = state.children.get(null) || [];
+        state.collapsed = new Set([...state.collapsed].filter(id => state.children.has(id)));
         if (!state.initialCollapse) {
             state.initialCollapse = true;
             // Large organizations open three levels deep; everything stays one click away.
-            if (state.nodes.size > 40) state.nodes.forEach(node => { if (depthOf(node.id) >= 2 && (state.children.get(node.id) || []).length) state.collapsed.add(node.id); });
+            if (state.nodes.size > 40) visibleBranches().forEach(({ id, depth, children }) => { if (depth === 2 && children.length) state.collapsed.add(id); });
         }
         const departments = new Map();
         state.nodes.forEach(node => { if (node.department_id) departments.set(String(node.department_id), node.department); });
@@ -462,20 +547,24 @@
         departmentSelect.replaceChildren(new Option('All departments', ''));
         Array.from(departments.entries()).sort((a, b) => String(a[1]).localeCompare(String(b[1]))).forEach(([id, name]) => departmentSelect.add(new Option(name, id)));
         departmentSelect.value = departments.has(current) ? current : '';
-        searchList.replaceChildren(...Array.from(state.nodes.values()).map(node => new Option(node.name + (node.designation ? ' — ' + node.designation : ''), node.name)));
-        const roots = state.roots.length;
-        summary.textContent = state.nodes.size + ' employee' + (state.nodes.size === 1 ? '' : 's') + ' · ' + departments.size + ' department' + (departments.size === 1 ? '' : 's') + ' · ' + (roots > 1 ? roots + ' top-level leads' : 'single reporting line');
+        const levels = [...new Set([...state.nodes.values()].map(node => node.level ?? -1))].sort((a, b) => b - a);
+        levelSelect.replaceChildren(new Option('Jump to level', ''));
+        levels.forEach(level => levelSelect.add(new Option(level === -1 ? 'No level' : 'L' + level, level)));
+        const suggestions = document.createDocumentFragment();
+        state.nodes.forEach(node => suggestions.appendChild(new Option([node.name, node.designation, node.employee_code].filter(Boolean).join(' — '), node.employee_code || node.name)));
+        searchList.replaceChildren(suggestions);
+        const assignedLevels = levels.filter(level => level !== -1).length;
+        summary.textContent = [
+            state.nodes.size + (state.nodes.size === 1 ? ' employee' : ' employees'),
+            assignedLevels + (assignedLevels === 1 ? ' designation level' : ' designation levels'),
+            departments.size + (departments.size === 1 ? ' department' : ' departments'),
+        ].join(' · ');
     }
 
-    function depthOf(id) {
-        let depth = 0, current = state.nodes.get(id)?.parent ?? null;
-        while (current !== null && depth < 500) { depth++; current = state.nodes.get(current)?.parent ?? null; }
-        return depth;
-    }
     function ancestors(id) {
         const list = [];
         let current = state.nodes.get(id)?.parent ?? null;
-        while (current !== null && list.length < 500) { list.push(current); current = state.nodes.get(current)?.parent ?? null; }
+        while (current !== null) { list.push(current); current = state.nodes.get(current)?.parent ?? null; }
         return list;
     }
 
@@ -483,9 +572,6 @@
     function tile(node) {
         const card = el('div', 'eot-tile');
         card.dataset.id = node.id;
-        card.tabIndex = 0;
-        card.setAttribute('role', 'button');
-        card.setAttribute('aria-label', node.name + (node.designation ? ', ' + node.designation : ''));
         card.appendChild(el('span', 'eot-tile-flag', 'Active branch'));
         const top = el('div', 'eot-tile-top');
         top.appendChild(photo(node));
@@ -508,7 +594,13 @@
         counts.appendChild(el('strong', '', node.total)); counts.appendChild(document.createTextNode(' Total'));
         foot.appendChild(counts);
         foot.appendChild(el('span', '', node.employee_code || ''));
+        foot.appendChild(icon('fa-chevron-right eot-card-chevron'));
         card.appendChild(foot);
+        const open = el('button', 'eot-card-open');
+        open.type = 'button';
+        open.setAttribute('aria-label', 'View details for ' + node.name + ', ' + levelLabel(node));
+        open.setAttribute('aria-controls', 'eotInspector');
+        card.appendChild(open);
         if ((state.children.get(node.id) || []).length) {
             const toggle = el('button', 'eot-toggle');
             toggle.type = 'button';
@@ -519,23 +611,6 @@
             card.appendChild(toggle);
         }
         return card;
-    }
-
-    function branch(id) {
-        const node = state.nodes.get(id);
-        const li = el('li');
-        li.dataset.node = id;
-        if (node.placement === 'level') li.classList.add('is-level-placed');
-        const kids = state.children.get(id) || [];
-        if (!kids.length) li.classList.add('is-leaf');
-        if (state.collapsed.has(id)) li.classList.add('is-collapsed');
-        li.appendChild(tile(node));
-        if (kids.length) {
-            const ul = el('ul');
-            kids.forEach(kid => ul.appendChild(branch(kid)));
-            li.appendChild(ul);
-        }
-        return li;
     }
 
     function companyTile() {
@@ -559,23 +634,84 @@
         return card;
     }
 
-    function render() {
-        const tree = el('div', 'eot-tree');
-        const top = el('ul');
-        if (state.roots.length > 1) {
-            const li = el('li');
-            li.appendChild(companyTile());
-            const ul = el('ul');
-            state.roots.forEach(id => ul.appendChild(branch(id)));
-            li.appendChild(ul);
-            top.appendChild(li);
-        } else {
-            state.roots.forEach(id => top.appendChild(branch(id)));
+    function visibleBranches() {
+        const branches = [];
+        const pending = [...state.roots].reverse().map(id => ({ id, depth: 0 }));
+        while (pending.length) {
+            const { id, depth } = pending.pop();
+            const children = state.collapsed.has(id) ? [] : state.children.get(id) || [];
+            branches.push({ id, depth, children });
+            for (let i = children.length - 1; i >= 0; i--) pending.push({ id: children[i], depth: depth + 1 });
         }
-        tree.appendChild(top);
-        stage.replaceChildren(tree);
+        return branches;
+    }
+
+    function plotBranches(branches) {
+        const positions = new Map();
+        const slots = new Map();
+        const rowLevels = [...new Set(branches.map(({ id }) => state.nodes.get(id).level ?? -1))].sort((a, b) => b - a);
+        const hasCompanyRoot = state.roots.length > 1;
+        const rows = new Map(rowLevels.map((level, index) => [level, (index + Number(hasCompanyRoot)) * LEVEL_HEIGHT]));
+        let leaf = 0;
+        branches.forEach(({ id, children }) => { if (!children.length) slots.set(id, [leaf, leaf++]); });
+        for (let index = branches.length - 1; index >= 0; index--) {
+            const { id, children } = branches[index];
+            if (children.length) slots.set(id, [slots.get(children[0])[0], slots.get(children.at(-1))[1]]);
+            const [first, last] = slots.get(id);
+            positions.set(id, { x: 98 + ((first + last) / 2 + .5) * COLUMN_WIDTH, y: rows.get(state.nodes.get(id).level ?? -1) + 12 });
+        }
+        return { positions, rows, width: 98 + leaf * COLUMN_WIDTH, height: rows.size * LEVEL_HEIGHT + (hasCompanyRoot ? LEVEL_HEIGHT : 0), hasCompanyRoot };
+    }
+
+    function renderChart(branches) {
+        const chart = el('div', 'eot-chart');
+        const { positions, rows, width, height, hasCompanyRoot } = plotBranches(branches);
+        chart.style.width = width + 'px';
+        chart.style.height = height + 'px';
+        rows.forEach((y, level) => {
+            const lane = el('div', 'eot-lane', level === -1 ? 'No level' : 'L' + level);
+            lane.style.top = y + 'px';
+            chart.appendChild(lane);
+        });
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('class', 'eot-connectors');
+        svg.setAttribute('aria-hidden', 'true');
+        svg.setAttribute('width', width);
+        svg.setAttribute('height', height);
+        chart.appendChild(svg);
+
+        const place = (card, point) => {
+            card.style.left = (point.x - CARD_WIDTH / 2) + 'px';
+            card.style.top = point.y + 'px';
+            card.style.width = CARD_WIDTH + 'px';
+            card.style.height = CARD_HEIGHT + 'px';
+            chart.appendChild(card);
+        };
+        const company = hasCompanyRoot ? { x: 98 + (width - 98) / 2, y: 12 } : null;
+        if (company) place(companyTile(), company);
+        branches.forEach(({ id }) => {
+            const node = state.nodes.get(id);
+            const point = positions.get(id);
+            const parent = positions.get(node.parent) || company;
+            if (parent) {
+                const line = document.createElementNS(svg.namespaceURI, 'path');
+                const kind = node.parent === null ? ' is-company-root' : node.placement === 'level' ? ' is-level-placed' : '';
+                line.setAttribute('class', 'eot-connector' + kind);
+                line.dataset.child = id;
+                const start = parent.y + CARD_HEIGHT;
+                line.setAttribute('d', `M ${parent.x} ${start} V ${start + 22} H ${point.x} V ${point.y}`);
+                svg.appendChild(line);
+            }
+            place(tile(node), point);
+        });
+        stage.replaceChildren(chart);
+    }
+
+    function render() {
+        const branches = visibleBranches();
+        renderChart(branches);
         emptyState.hidden = state.nodes.size > 0;
-        renderTable();
+        renderTable(branches);
         paintHighlights();
     }
 
@@ -594,7 +730,7 @@
         });
         return box;
     }
-    function tableRow(id, depth, rows) {
+    function tableRow(id, depth) {
         const node = state.nodes.get(id);
         const kids = state.children.get(id) || [];
         const tr = el('tr');
@@ -603,7 +739,7 @@
         const person = el('td');
         const cell = el('div', 'eot-cell-person');
         const indent = el('span', 'eot-indent');
-        indent.style.width = (depth * 22) + 'px';
+        indent.style.width = (Math.min(depth, 8) * 22) + 'px';
         cell.appendChild(indent);
         if (kids.length) {
             const toggle = el('button', 'eot-rowtoggle');
@@ -638,13 +774,12 @@
         open.appendChild(icon('fa-arrow-right'));
         more.appendChild(open);
         tr.appendChild(more);
-        rows.push(tr);
-        if (!state.collapsed.has(id)) kids.forEach(kid => tableRow(kid, depth + 1, rows));
+        return tr;
     }
-    function renderTable() {
-        const rows = [];
-        state.roots.forEach(id => tableRow(id, 0, rows));
-        tableBody.replaceChildren(...rows);
+    function renderTable(branches) {
+        const fragment = document.createDocumentFragment();
+        branches.forEach(({ id, depth }) => fragment.appendChild(tableRow(id, depth)));
+        tableBody.replaceChildren(fragment);
     }
     tableBody.addEventListener('click', event => {
         const toggle = event.target.closest('[data-toggle]');
@@ -667,7 +802,7 @@
             button.setAttribute('aria-pressed', on ? 'true' : 'false');
         });
         if (persist) storage.set(MODE_KEY, state.mode);
-        if (!table && state.loaded) requestAnimationFrame(() => { if (!state.userMoved) fit(); });
+        if (!table && state.loaded) requestAnimationFrame(() => { if (!state.userMoved) fit(true); });
     }
     function scrollRowIntoView(id) {
         const row = tableBody.querySelector('tr[data-row="' + id + '"]');
@@ -686,9 +821,9 @@
             card.classList.toggle('is-dim', !!dept && String(node.department_id) !== dept);
             card.classList.toggle('is-match', !!query && query.length > 1 && node.name.toLowerCase().includes(query));
         });
-        stage.querySelectorAll('li[data-node]').forEach(li => {
-            const id = Number(li.dataset.node);
-            li.classList.toggle('is-path', path.has(id) || id === state.selected);
+        stage.querySelectorAll('.eot-connector').forEach(line => {
+            const id = Number(line.dataset.child);
+            line.classList.toggle('is-path', path.has(id) || id === state.selected);
         });
         tableBody.querySelectorAll('tr[data-row]').forEach(tr => {
             const id = Number(tr.dataset.row);
@@ -706,7 +841,7 @@
         zoomLabel.textContent = Math.round(state.scale * 100) + '%';
     }
     function zoomAt(nextScale, px, py) {
-        const scale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, nextScale));
+        const scale = Math.min(MAX_SCALE, Math.max(Math.min(.12, state.scale), nextScale));
         if (px === undefined) { px = viewport.clientWidth / 2; py = viewport.clientHeight / 2; }
         state.x = px - (px - state.x) * (scale / state.scale);
         state.y = py - (py - state.y) * (scale / state.scale);
@@ -714,11 +849,19 @@
         state.userMoved = true;
         apply();
     }
-    function fit() {
+    function fit(readable = false) {
         const width = stage.offsetWidth, height = stage.offsetHeight;
         const vw = viewport.clientWidth, vh = viewport.clientHeight;
         if (!width || !height || !vw || !vh) return;
-        const scale = Math.min(1, Math.max(MIN_SCALE, Math.min(vw / width, vh / height)));
+        const scale = Math.min(1, vw / width, vh / height);
+        if (readable && scale < .72) {
+            state.scale = .85;
+            const company = stage.querySelector('.eot-tile.is-company');
+            if (company) centerCard(company, false);
+            else centerOn(state.roots[0], false);
+            state.userMoved = false;
+            return;
+        }
         state.scale = scale;
         state.x = (vw - width * scale) / 2;
         state.y = Math.max(0, (vh - height * scale) / 2);
@@ -726,12 +869,14 @@
         apply();
     }
     function centerOn(id, smooth) {
-        const card = stage.querySelector('.eot-tile[data-id="' + id + '"]');
+        centerCard(stage.querySelector('.eot-tile[data-id="' + id + '"]'), smooth);
+    }
+    function centerCard(card, smooth) {
         if (!card) return;
         let left = 0, top = 0, current = card;
         while (current && current !== stage) { left += current.offsetLeft; top += current.offsetTop; current = current.offsetParent; }
         const panel = inspector.classList.contains('is-open') && window.innerWidth >= 992 ? inspector.offsetWidth : 0;
-        const vw = viewport.clientWidth - panel;
+        const vw = Math.max(0, viewport.clientWidth - panel);
         state.x = vw / 2 - (left + card.offsetWidth / 2) * state.scale;
         state.y = viewport.clientHeight / 3 - (top + card.offsetHeight / 2) * state.scale;
         state.userMoved = true;
@@ -743,7 +888,7 @@
     const pointers = new Map();
     let drag = null, pinch = null, suppressClick = false;
     viewport.addEventListener('pointerdown', event => {
-        if (event.button !== 0 || event.target.closest('button, a, input, select, .eot-pan, .eot-legend')) return;
+        if (event.button !== 0 || event.target.closest('button:not(.eot-card-open), a, input, select, .eot-pan, .eot-legend')) return;
         pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
         if (pointers.size === 1) { drag = { x: event.clientX, y: event.clientY, ox: state.x, oy: state.y, moved: false }; }
         if (pointers.size === 2) {
@@ -806,28 +951,34 @@
         const card = event.target.closest('.eot-tile[data-id]');
         if (card) openInspector(Number(card.dataset.id), true);
     });
-    stage.addEventListener('keydown', event => {
-        const card = event.target.closest('.eot-tile[data-id]');
-        if (card && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); openInspector(Number(card.dataset.id), true); }
-    });
-
-    function toggleBranch(id, forceOpen) {
-        if (forceOpen === true) state.collapsed.delete(id);
-        else if (state.collapsed.has(id)) state.collapsed.delete(id);
+    function toggleBranch(id) {
+        const selector = '.eot-tile[data-id="' + id + '"]';
+        const before = stage.querySelector(selector)?.getBoundingClientRect();
+        const restoreFocus = document.activeElement?.matches('[data-toggle="' + id + '"]');
+        if (state.collapsed.has(id)) state.collapsed.delete(id);
         else state.collapsed.add(id);
-        renderTable();
-        paintHighlights();
-        const li = stage.querySelector('li[data-node="' + id + '"]');
-        if (!li) return;
-        const collapsed = state.collapsed.has(id);
-        li.classList.toggle('is-collapsed', collapsed);
-        const toggle = li.querySelector(':scope > .eot-tile [data-toggle]');
-        if (toggle) { toggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true'); toggle.title = collapsed ? 'Expand team' : 'Collapse team'; }
+        render();
+        const after = stage.querySelector(selector)?.getBoundingClientRect();
+        if (state.mode === 'chart' && before && after) {
+            state.x += before.left - after.left;
+            state.y += before.top - after.top;
+            apply();
+        }
+        if (restoreFocus) (state.mode === 'chart' ? stage : tableBody).querySelector('[data-toggle="' + id + '"]')?.focus({ preventScroll: true });
     }
     function reveal(id) {
-        let changed = false;
-        ancestors(id).forEach(parent => { if (state.collapsed.has(parent)) { toggleBranch(parent, true); changed = true; } });
-        return changed;
+        const hiddenBy = ancestors(id).filter(parent => state.collapsed.has(parent));
+        hiddenBy.forEach(parent => state.collapsed.delete(parent));
+        if (hiddenBy.length) render();
+        return hiddenBy.length > 0;
+    }
+    function jumpTo(id) {
+        reveal(id);
+        if (state.mode === 'table') scrollRowIntoView(id);
+        else {
+            state.scale = Math.max(.85, state.scale);
+            centerOn(id, true);
+        }
     }
 
     root.addEventListener('click', event => {
@@ -838,9 +989,9 @@
             case 'zoom-in': zoomAt(state.scale * 1.2); break;
             case 'zoom-out': zoomAt(state.scale / 1.2); break;
             case 'fit': fit(); break;
-            case 'center': if (state.roots.length === 1) centerOn(state.roots[0], true); else fit(); break;
+            case 'center': if (state.roots.length === 1) jumpTo(state.roots[0]); else centerCard(stage.querySelector('.eot-tile.is-company'), true); break;
             case 'expand': state.collapsed.clear(); render(); break;
-            case 'collapse': state.nodes.forEach(node => { if ((state.children.get(node.id) || []).length && node.parent !== null) state.collapsed.add(node.id); }); render(); fit(); break;
+            case 'collapse': state.nodes.forEach(node => { if ((state.children.get(node.id) || []).length && node.parent !== null) state.collapsed.add(node.id); }); render(); fit(true); break;
             case 'refresh': load(false); break;
             case 'mode-chart': setMode('chart', true); break;
             case 'mode-table': setMode('table', true); break;
@@ -856,6 +1007,12 @@
     });
 
     departmentSelect.addEventListener('change', paintHighlights);
+    levelSelect.addEventListener('change', () => {
+        if (levelSelect.value === '') return;
+        const node = [...state.nodes.values()].find(node => (node.level ?? -1) === Number(levelSelect.value));
+        if (node) jumpTo(node.id);
+        levelSelect.value = '';
+    });
     searchInput.addEventListener('input', paintHighlights);
     searchInput.addEventListener('keydown', event => {
         if (event.key !== 'Enter') return;
@@ -863,11 +1020,11 @@
         const query = searchInput.value.trim().toLowerCase();
         if (!query) return;
         const nodes = Array.from(state.nodes.values());
-        const found = nodes.find(node => node.name.toLowerCase() === query) || nodes.find(node => node.name.toLowerCase().includes(query) || String(node.employee_code || '').toLowerCase() === query);
+        const found = nodes.find(node => String(node.employee_code || '').toLowerCase() === query || node.name.toLowerCase() === query) || nodes.find(node => node.name.toLowerCase().includes(query));
         if (found) openInspector(found.id, true);
     });
     searchInput.addEventListener('change', () => {
-        const found = Array.from(state.nodes.values()).find(node => node.name === searchInput.value);
+        const found = Array.from(state.nodes.values()).find(node => node.employee_code === searchInput.value || node.name === searchInput.value);
         if (found) openInspector(found.id, true);
     });
     document.addEventListener('keydown', event => { if (event.key === 'Escape' && inspector.classList.contains('is-open')) closeInspector(); });
@@ -905,6 +1062,7 @@
     function openInspector(id, focus) {
         const node = state.nodes.get(id);
         if (!node) return;
+        if (focus && !inspector.contains(document.activeElement)) state.inspectorTrigger = document.activeElement;
         state.selected = id;
         const body = inspectorBody;
         body.replaceChildren();
@@ -916,7 +1074,7 @@
         hero.appendChild(name);
         hero.appendChild(el('p', '', node.designation || 'No designation'));
         const tags = el('div', 'eot-tags');
-        tags.appendChild(el('span', 'eot-tag', 'Grade ' + levelLabel(node)));
+        tags.appendChild(el('span', 'eot-tag', levelLabel(node)));
         tags.appendChild(el('span', 'eot-tag is-dept', node.role));
         tags.appendChild(el('span', 'eot-tag ' + (isActive(node) ? 'is-ok' : 'is-warn'), display(node.status)));
         hero.appendChild(tags);
@@ -928,10 +1086,16 @@
         actions.appendChild(action('Profile', 'fa-id-badge', node.show_url));
         body.appendChild(actions);
 
+        const details = section('Employee details');
+        const facts = el('dl', 'eot-facts');
+        detailRows(node).forEach(([label, value, wide]) => facts.appendChild(fact(label, value, wide)));
+        details.appendChild(facts);
+        body.appendChild(details);
+
         const manager = node.parent !== null ? state.nodes.get(node.parent) : null;
-        const reports = section(node.placement === 'level' ? 'Placed under (by designation level)' : 'Reports directly to');
+        const reports = section(node.placement === 'level' ? 'Chart placement by level' : 'Reporting manager');
         if (manager) reports.appendChild(personButton(manager));
-        else reports.appendChild(el('p', 'eot-note', node.reporting_to_name ? node.reporting_to_name + ' (outside this view)' : 'Top of the organization'));
+        else reports.appendChild(el('p', 'eot-note', 'Top of the visible organization'));
         body.appendChild(reports);
 
         const flow = section('Reporting flow');
@@ -939,21 +1103,15 @@
         body.appendChild(flow);
 
         const stats = el('div', 'eot-stats eot-section');
-        const directs = el('div'); directs.appendChild(el('strong', '', node.directs)); directs.appendChild(el('span', '', 'Direct Leads'));
+        const directs = el('div'); directs.appendChild(el('strong', '', node.directs)); directs.appendChild(el('span', '', 'Direct team'));
         const total = el('div'); total.appendChild(el('strong', '', node.total)); total.appendChild(el('span', '', 'Total Staff'));
         stats.appendChild(directs); stats.appendChild(total);
         body.appendChild(stats);
 
-        const details = section('Employee details');
-        const facts = el('dl', 'eot-facts');
-        detailRows(node).forEach(([label, value, wide]) => facts.appendChild(fact(label, value, wide)));
-        details.appendChild(facts);
-        body.appendChild(details);
-
         const kids = state.children.get(id) || [];
-        const team = section('Direct reports (' + kids.length + ')');
-        if (kids.length) kids.forEach(kid => team.appendChild(personButton(state.nodes.get(kid))));
-        else team.appendChild(el('p', 'eot-note', 'No direct reports.'));
+        const team = section('Direct team (' + kids.length + ')');
+        if (kids.length) kids.forEach(kid => team.appendChild(personButton(state.nodes.get(kid), state.nodes.get(kid).placement === 'level' ? 'Placed by level' : 'Recorded report')));
+        else team.appendChild(el('p', 'eot-note', 'No team members under this employee.'));
         body.appendChild(team);
 
         const exports = section('Export employee details');
@@ -967,15 +1125,33 @@
         body.querySelectorAll('[data-person]').forEach(button => button.addEventListener('click', () => openInspector(Number(button.dataset.person), true)));
         inspector.classList.add('is-open');
         inspector.setAttribute('aria-hidden', 'false');
+        inspector.inert = false;
         body.scrollTop = 0;
         const expanded = reveal(id);
         paintHighlights();
-        if (focus) requestAnimationFrame(() => { if (state.mode === 'table') scrollRowIntoView(id); else centerOn(id, !expanded); });
+        if (focus) {
+            inspector.querySelector('[data-eot-action="close-inspector"]').focus({ preventScroll: true });
+            requestAnimationFrame(() => {
+                if (state.selected !== id) return;
+                if (state.mode === 'table') scrollRowIntoView(id);
+                else {
+                    state.scale = Math.max(.85, state.scale);
+                    centerOn(id, !expanded);
+                }
+            });
+        }
     }
     function closeInspector() {
+        const selected = state.selected;
         state.selected = null;
         inspector.classList.remove('is-open');
+        if (inspector.contains(document.activeElement)) {
+            const card = stage.querySelector('.eot-tile[data-id="' + selected + '"] .eot-card-open');
+            const trigger = state.inspectorTrigger?.isConnected ? state.inspectorTrigger : (state.mode === 'chart' ? card : tableBody.querySelector('[data-row="' + selected + '"]'));
+            if (!root.hidden) (trigger || viewport).focus({ preventScroll: true });
+        }
         inspector.setAttribute('aria-hidden', 'true');
+        inspector.inert = true;
         paintHighlights();
     }
 
@@ -1071,7 +1247,7 @@
     /* ---------- Lifecycle ---------- */
     // Live refresh keeps this section intact; reload the tree data so new or moved employees appear in place.
     document.addEventListener('pms:records-updated', () => { if (state.loaded && !root.hidden) load(false); else state.loaded = false; });
-    window.addEventListener('resize', () => { if (!root.hidden && !state.userMoved) fit(); });
+    window.addEventListener('resize', () => { if (!root.hidden && !state.userMoved) fit(true); });
 
     setMode(storage.get(MODE_KEY) === 'table' ? 'table' : 'chart', false);
     const requested = new URLSearchParams(window.location.search).get('view');
