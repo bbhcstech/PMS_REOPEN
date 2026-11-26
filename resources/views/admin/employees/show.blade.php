@@ -990,7 +990,7 @@
                             </div>
                             <div class="info-item">
                                 <div class="info-label"><i class="fas fa-calendar-alt"></i> Date of Birth</div>
-                                <div class="info-value">{{ $detail?->dob ?? 'N/A' }}</div>
+                                <div class="info-value">{{ $detail?->dob ? \Carbon\Carbon::parse($detail->dob)->format('d M, Y') : 'N/A' }}</div>
                             </div>
                             <div class="info-item">
                                 <div class="info-label"><i class="fas fa-venus-mars"></i> Gender</div>
@@ -1027,11 +1027,11 @@
                             </div>
                             <div class="info-item">
                                 <div class="info-label"><i class="fas fa-building"></i> Department</div>
-                                <div class="info-value">{{ $detail?->department->dpt_name ?? 'N/A' }}</div>
+                                <div class="info-value">{{ $detail?->department?->dpt_name ?? 'N/A' }}</div>
                             </div>
                             <div class="info-item">
                                 <div class="info-label"><i class="fas fa-user-tag"></i> Designation</div>
-                                <div class="info-value">{{ $detail?->designation->name ?? 'N/A' }}</div>
+                                <div class="info-value">{{ $detail?->designation?->name ?? 'N/A' }}</div>
                             </div>
                             <div class="info-item">
                                 <div class="info-label"><i class="fas fa-clock"></i> Employment Type</div>
@@ -1043,7 +1043,7 @@
                             </div>
                             <div class="info-item">
                                 <div class="info-label"><i class="fas fa-users"></i> Reporting To</div>
-                                <div class="info-value">{{ $detail?->reportingTo->name ?? 'N/A' }}</div>
+                                <div class="info-value">{{ $detail?->reportingTo?->name ?? 'N/A' }}</div>
                             </div>
                             <div class="info-item">
                                 <div class="info-label"><i class="fas fa-dollar-sign"></i> Hourly Rate</div>
