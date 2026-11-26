@@ -16,11 +16,11 @@
         <span>AI Assistant</span>
     </a>
     <style>
-        #pms-ai-assistant-launcher { position: fixed; right: 24px; bottom: 24px; z-index: 1040; display: inline-flex; align-items: center; gap: 9px; padding: 11px 18px; border: 1px solid rgba(147, 197, 253, 0.45); border-radius: 999px; background: #2563eb !important; color: #fff !important; text-decoration: none; box-shadow: 0 8px 24px rgba(37, 99, 235, 0.32); font-size: 0.86rem; font-weight: 600; }
+        #pms-ai-assistant-launcher { position: fixed; right: 24px; bottom: 24px; z-index: 1040; display: inline-flex; align-items: center; gap: 9px; padding: 11px 18px; border: 1px solid rgba(255, 255, 255, 0.22); border-radius: 999px; background: linear-gradient(135deg, #2F6BFF 0%, #8B5CF6 100%) !important; color: #fff !important; text-decoration: none; box-shadow: 0 10px 26px rgba(47, 107, 255, 0.34); font-size: 0.86rem; font-weight: 600; letter-spacing: .01em; }
         #pms-ai-assistant-launcher span, #pms-ai-assistant-launcher svg { color: #fff !important; -webkit-text-fill-color: #fff !important; }
         #pms-ai-assistant-launcher svg { background: transparent !important; flex-shrink: 0; width: 20px; height: 20px; }
-        #pms-ai-assistant-launcher:hover { background: #1d4ed8 !important; transform: translateY(-1px); box-shadow: 0 10px 28px rgba(37, 99, 235, 0.4); }
-        #pms-ai-assistant-launcher:focus-visible { outline: 3px solid #93c5fd; outline-offset: 4px; }
+        #pms-ai-assistant-launcher:hover { background: linear-gradient(135deg, #1E4FCC 0%, #7C3AED 100%) !important; transform: translateY(-1px); box-shadow: 0 12px 30px rgba(47, 107, 255, 0.42); }
+        #pms-ai-assistant-launcher:focus-visible { outline: 3px solid rgba(47, 107, 255, 0.45); outline-offset: 4px; }
         @media (max-width: 575px) { #pms-ai-assistant-launcher { right: 16px; bottom: 20px; padding: 10px 14px; } }
         /* Never cover page controls: step aside while a menu is open or a control sits underneath. */
         #pms-ai-assistant-launcher { transition: opacity .18s ease, transform .18s ease, visibility .18s; }
