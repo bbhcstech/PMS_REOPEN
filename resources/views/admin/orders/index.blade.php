@@ -103,32 +103,551 @@
         -webkit-text-fill-color: #ffffff !important;
         opacity: 1 !important;
     }
+
+    /* Clean SaaS Workspace Redesign (Scoped to #pms-orders-page) */
+    #pms-orders-page.pms-orders-page {
+        padding: 0 0 2rem !important;
+        margin: 0 !important;
+        min-height: 0 !important;
+        background: transparent !important;
+        font-family: 'Inter', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif !important;
+    }
+
+    #pms-orders-page .pms-orders-topbar {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 16px !important;
+        margin-bottom: 18px !important;
+    }
+
+    #pms-orders-page .pms-orders-title-wrap {
+        display: flex !important;
+        align-items: center !important;
+        gap: 14px !important;
+    }
+
+    #pms-orders-page .pms-orders-title-icon {
+        width: 42px !important;
+        height: 42px !important;
+        border-radius: 12px !important;
+        background: #eff6ff !important;
+        border: 1px solid #dbeafe !important;
+        color: #2563eb !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 1.25rem !important;
+        flex-shrink: 0 !important;
+    }
+
+    #pms-orders-page .pms-orders-title {
+        margin: 0 !important;
+        font-size: 1.35rem !important;
+        font-weight: 700 !important;
+        color: #0f172a !important;
+        letter-spacing: -0.02em !important;
+        line-height: 1.25 !important;
+    }
+
+    #pms-orders-page .breadcrumb {
+        margin: 2px 0 0 !important;
+        padding: 0 !important;
+        background: transparent !important;
+        font-size: 0.78rem !important;
+    }
+
+    #pms-orders-page .breadcrumb-item a,
+    #pms-orders-page .breadcrumb-item + .breadcrumb-item::before {
+        color: #64748b !important;
+    }
+
+    #pms-orders-page .breadcrumb-item.active {
+        color: #0f172a !important;
+        font-weight: 600 !important;
+    }
+
+    #pms-orders-page .pms-orders-actions {
+        display: flex !important;
+        align-items: center !important;
+        gap: 10px !important;
+        flex-wrap: wrap !important;
+    }
+
+    #pms-orders-page .pms-btn-secondary {
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        color: #0f172a !important;
+        font-size: 0.84rem !important;
+        font-weight: 600 !important;
+        height: 38px !important;
+        padding: 0 16px !important;
+        border-radius: 999px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 7px !important;
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04) !important;
+    }
+
+    #pms-orders-page .pms-btn-secondary:hover {
+        background: #f8fafc !important;
+        border-color: #cbd5e1 !important;
+        color: #0f172a !important;
+    }
+
+    #pms-orders-page .pms-btn-add {
+        background: #2563eb !important;
+        border: 1px solid #2563eb !important;
+        color: #ffffff !important;
+        font-size: 0.84rem !important;
+        font-weight: 600 !important;
+        height: 38px !important;
+        padding: 0 18px !important;
+        border-radius: 999px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 7px !important;
+        box-shadow: 0 6px 14px rgba(37, 99, 235, 0.24) !important;
+    }
+
+    #pms-orders-page .pms-btn-add:hover {
+        background: #1d4ed8 !important;
+        border-color: #1d4ed8 !important;
+    }
+
+    /* Quick Stats Cards */
+    #pms-orders-page .pms-stat-card {
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 14px !important;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04) !important;
+        transition: border-color 0.16s ease, box-shadow 0.16s ease !important;
+    }
+
+    #pms-orders-page .pms-stat-card:hover {
+        border-color: #cbd5e1 !important;
+        box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06) !important;
+    }
+
+    #pms-orders-page .pms-stat-label {
+        font-size: 0.68rem !important;
+        font-weight: 700 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.05em !important;
+        color: #64748b !important;
+        margin-bottom: 6px !important;
+        display: block !important;
+    }
+
+    #pms-orders-page .pms-stat-value {
+        font-size: 1.55rem !important;
+        font-weight: 800 !important;
+        color: #0f172a !important;
+        letter-spacing: -0.02em !important;
+        line-height: 1.15 !important;
+        margin: 0 !important;
+    }
+
+    #pms-orders-page .pms-stat-icon {
+        width: 44px !important;
+        height: 44px !important;
+        border-radius: 12px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        flex-shrink: 0 !important;
+        font-size: 1.25rem !important;
+    }
+
+    #pms-orders-page .pms-stat-icon--blue {
+        background: #eff6ff !important;
+        color: #2563eb !important;
+    }
+
+    #pms-orders-page .pms-stat-icon--green {
+        background: #ecfdf5 !important;
+        color: #059669 !important;
+    }
+
+    #pms-orders-page .pms-stat-icon--amber {
+        background: #fef9c3 !important;
+        color: #ca8a04 !important;
+    }
+
+    #pms-orders-page .pms-stat-icon i,
+    #pms-orders-page .pms-orders-title-icon i,
+    #pms-orders-page .pms-section-icon i,
+    #pms-orders-page .pms-table-empty-icon i {
+        color: inherit !important;
+        -webkit-text-fill-color: currentColor !important;
+    }
+
+    /* Filter Bar Card */
+    #pms-orders-page .pms-filter-card {
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 14px !important;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04) !important;
+    }
+
+    #pms-orders-page .pms-filter-card .input-group-text {
+        background: #ffffff !important;
+        border-color: #e2e8f0 !important;
+        color: #94a3b8 !important;
+        border-top-left-radius: 10px !important;
+        border-bottom-left-radius: 10px !important;
+    }
+
+    #pms-orders-page .pms-filter-card .form-control,
+    #pms-orders-page .pms-filter-card .form-select {
+        height: 40px !important;
+        border-color: #e2e8f0 !important;
+        font-size: 0.85rem !important;
+        color: #0f172a !important;
+        background-color: #ffffff !important;
+        box-shadow: none !important;
+    }
+
+    #pms-orders-page .pms-filter-card .form-control {
+        border-top-right-radius: 10px !important;
+        border-bottom-right-radius: 10px !important;
+    }
+
+    #pms-orders-page .pms-filter-card .form-select {
+        border-radius: 10px !important;
+    }
+
+    #pms-orders-page .pms-filter-card .form-control:focus,
+    #pms-orders-page .pms-filter-card .form-select:focus {
+        border-color: #2563eb !important;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12) !important;
+    }
+
+    #pms-orders-page .pms-btn-filter {
+        height: 40px !important;
+        border-radius: 10px !important;
+        background: #2563eb !important;
+        border: 1px solid #2563eb !important;
+        font-size: 0.85rem !important;
+        font-weight: 600 !important;
+        box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2) !important;
+    }
+
+    #pms-orders-page .pms-btn-filter:hover {
+        background: #1d4ed8 !important;
+        border-color: #1d4ed8 !important;
+    }
+
+    #pms-orders-page .pms-btn-reset {
+        height: 40px !important;
+        border-radius: 10px !important;
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        color: #475569 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+
+    /* Orders Table Card */
+    #pms-orders-page .pms-directory-card {
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 16px !important;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04) !important;
+        overflow: hidden !important;
+    }
+
+    #pms-orders-page .pms-orders-card-header {
+        background: #ffffff !important;
+        border-bottom: 1px solid #f1f5f9 !important;
+        padding: 16px 22px !important;
+    }
+
+    #pms-orders-page .pms-section-icon {
+        width: 38px !important;
+        height: 38px !important;
+        border-radius: 10px !important;
+        background: #eff6ff !important;
+        color: #2563eb !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 1.15rem !important;
+    }
+
+    #pms-orders-page .pms-btn-export {
+        height: 34px !important;
+        border-radius: 10px !important;
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        color: #334155 !important;
+        font-size: 0.8rem !important;
+        font-weight: 600 !important;
+        padding: 0 12px !important;
+    }
+
+    #pms-orders-page .pms-btn-export:hover {
+        background: #f8fafc !important;
+        border-color: #cbd5e1 !important;
+    }
+
+    #pms-orders-page .pms-count-pill {
+        background: #eff6ff !important;
+        color: #2563eb !important;
+        -webkit-text-fill-color: #2563eb !important;
+        border: 1px solid #dbeafe !important;
+        border-radius: 999px !important;
+        padding: 6px 14px !important;
+        font-size: 0.78rem !important;
+        font-weight: 600 !important;
+    }
+
+    #pms-orders-page #ordersTable thead th {
+        background: #ffffff !important;
+        color: #475569 !important;
+        font-size: 0.7rem !important;
+        font-weight: 700 !important;
+        letter-spacing: 0.05em !important;
+        border-bottom: 1px solid #f1f5f9 !important;
+        padding: 12px 14px !important;
+    }
+
+    #pms-orders-page #ordersTable tbody td {
+        border-bottom: 1px solid #f1f5f9 !important;
+        padding: 14px !important;
+    }
+
+    /* Empty State inside Table */
+    #pms-orders-page .pms-table-empty {
+        padding: 52px 24px !important;
+        text-align: center !important;
+    }
+
+    #pms-orders-page .pms-table-empty-icon {
+        width: 48px !important;
+        height: 48px !important;
+        border-radius: 12px !important;
+        background: #f8fafc !important;
+        border: 1px solid #e2e8f0 !important;
+        color: #94a3b8 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 1.35rem !important;
+        margin: 0 auto 12px !important;
+    }
+
+    #pms-orders-page .pms-table-empty h6 {
+        margin: 0 0 6px !important;
+        font-size: 0.95rem !important;
+        font-weight: 700 !important;
+        color: #0f172a !important;
+    }
+
+    #pms-orders-page .pms-table-empty p {
+        margin: 0 auto 16px !important;
+        max-width: 360px !important;
+        font-size: 0.8rem !important;
+        color: #64748b !important;
+        line-height: 1.45 !important;
+    }
+
+    #pms-orders-page .pms-empty-cta {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+        background: #eff6ff !important;
+        color: #2563eb !important;
+        border: 1px solid #dbeafe !important;
+        border-radius: 10px !important;
+        padding: 8px 16px !important;
+        font-size: 0.8rem !important;
+        font-weight: 600 !important;
+        text-decoration: none !important;
+        transition: all 0.16s ease !important;
+    }
+
+    #pms-orders-page .pms-empty-cta:hover {
+        background: #dbeafe !important;
+        color: #1d4ed8 !important;
+    }
+
+    /* Dark Mode Overrides */
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-orders-page .pms-stat-card,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-orders-page .pms-filter-card,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-orders-page .pms-directory-card,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-orders-page .pms-orders-card-header,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-orders-page #ordersTable,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-orders-page #ordersTable tbody tr,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-orders-page #ordersTable tbody td {
+        background: #0f172a !important;
+        border-color: rgba(148, 163, 184, 0.2) !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-orders-page #ordersTable thead th,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #orderItemsModal #modalItemsTable thead th {
+        background: #1e293b !important;
+        color: #94a3b8 !important;
+        -webkit-text-fill-color: #94a3b8 !important;
+        border-color: rgba(148, 163, 184, 0.2) !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-orders-page #ordersTable tbody tr:hover > * {
+        background-color: rgba(37, 99, 235, 0.08) !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-orders-page .pms-orders-title,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-orders-page .breadcrumb-item.active,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-orders-page .pms-stat-value,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-orders-page .pms-orders-card-header h5,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-orders-page .pms-table-empty h6,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #orderItemsModal .modal-title {
+        color: #f8fafc !important;
+        -webkit-text-fill-color: #f8fafc !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-orders-page .pms-stat-label,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-orders-page .pms-table-empty p,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-orders-page .text-muted,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #orderItemsModal .text-muted {
+        color: #94a3b8 !important;
+        -webkit-text-fill-color: #94a3b8 !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-orders-page .pms-btn-secondary,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-orders-page .pms-btn-reset,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-orders-page .pms-btn-export,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-orders-page .pms-filter-card .input-group-text,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-orders-page .pms-filter-card .form-control,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-orders-page .pms-filter-card .form-select,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-orders-page .pms-table-tools,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-orders-page .pms-table-empty-icon,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-orders-page .order-item-badge-btn {
+        background: #1e293b !important;
+        border-color: rgba(148, 163, 184, 0.25) !important;
+        color: #e2e8f0 !important;
+        -webkit-text-fill-color: #e2e8f0 !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-orders-page .pms-table-tools .btn,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-orders-page .pms-table-tools button,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-orders-page .pms-table-tools .dropdown-toggle {
+        background: #0f172a !important;
+        border-color: rgba(148, 163, 184, 0.28) !important;
+        color: #e2e8f0 !important;
+        -webkit-text-fill-color: #e2e8f0 !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-orders-page .pms-table-tools .dropdown-toggle span {
+        background: transparent !important;
+        color: inherit !important;
+        -webkit-text-fill-color: currentColor !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-orders-page .pms-orders-title-icon,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-orders-page .pms-stat-icon--blue,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-orders-page .pms-section-icon,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-orders-page .pms-empty-cta,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-orders-page .pms-count-pill {
+        background: rgba(37, 99, 235, 0.18) !important;
+        border-color: rgba(96, 165, 250, 0.34) !important;
+        color: #93c5fd !important;
+        -webkit-text-fill-color: #93c5fd !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-orders-page .pms-stat-icon--green {
+        background: rgba(16, 185, 129, 0.16) !important;
+        border: 1px solid rgba(52, 211, 153, 0.3) !important;
+        color: #34d399 !important;
+        -webkit-text-fill-color: #34d399 !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-orders-page .pms-stat-icon--amber {
+        background: rgba(245, 158, 11, 0.16) !important;
+        border: 1px solid rgba(251, 191, 36, 0.3) !important;
+        color: #fbbf24 !important;
+        -webkit-text-fill-color: #fbbf24 !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-orders-page .dropdown-menu {
+        background: #1e293b !important;
+        border: 1px solid #334155 !important;
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45) !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-orders-page .dropdown-item {
+        color: #e2e8f0 !important;
+        -webkit-text-fill-color: #e2e8f0 !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-orders-page .dropdown-item:hover {
+        background: rgba(37, 99, 235, 0.2) !important;
+        color: #93c5fd !important;
+        -webkit-text-fill-color: #93c5fd !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #orderItemsModal .modal-content {
+        background: #0f172a !important;
+        border: 1px solid rgba(148, 163, 184, 0.22) !important;
+        color: #e2e8f0 !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #orderItemsModal .bg-white,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #orderItemsModal .bg-light,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #orderItemsModal .form-control {
+        background-color: #1e293b !important;
+        border-color: rgba(148, 163, 184, 0.22) !important;
+        color: #f1f5f9 !important;
+        -webkit-text-fill-color: #f1f5f9 !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #orderItemsModal .btn-close {
+        filter: invert(1) grayscale(100%) brightness(200%);
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-orders-page .text-dark,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #orderItemsModal .text-dark {
+        color: #f8fafc !important;
+        -webkit-text-fill-color: #f8fafc !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-orders-page .bg-light {
+        background-color: #1e293b !important;
+        border-color: rgba(148, 163, 184, 0.25) !important;
+        color: #cbd5e1 !important;
+        -webkit-text-fill-color: #cbd5e1 !important;
+    }
 </style>
 
-<div class="container-fluid px-4 py-4">
+<div id="pms-orders-page" class="pms-orders-page">
     <!-- Top Header & Breadcrumbs -->
-    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
-        <div>
-            <h3 class="fw-bold mb-0 text-dark">
-                <i class="bx bx-cart text-primary me-2 align-middle"></i>Orders
-            </h3>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-0 mt-1">
-                    <li class="breadcrumb-item"><a href="{{ route('dashboard') }}" class="text-decoration-none">Dashboard</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Orders</li>
-                </ol>
-            </nav>
+    <div class="pms-orders-topbar">
+        <div class="pms-orders-title-wrap">
+            <div class="pms-orders-title-icon" aria-hidden="true">
+                <i class="bx bx-cart"></i>
+            </div>
+            <div>
+                <h3 class="pms-orders-title">Orders</h3>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="{{ route('dashboard') }}" class="text-decoration-none">Dashboard</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Orders</li>
+                    </ol>
+                </nav>
+            </div>
         </div>
 
-        <div class="d-flex align-items-center gap-2">
-            <a href="{{ route('products.index') }}" class="btn btn-outline-primary rounded-pill px-3 shadow-sm">
-                <i class="bx bx-package me-1"></i> Show All Product
+        <div class="pms-orders-actions">
+            <a href="{{ route('products.index') }}" class="btn pms-btn-secondary">
+                <i class="bx bx-package"></i> Show All Product
             </a>
-            <button type="button" class="btn btn-outline-secondary rounded-pill px-3 shadow-sm" onclick="window.print()">
-                <i class="bx bx-printer me-1"></i> Print
+            <button type="button" class="btn pms-btn-secondary" onclick="window.print()">
+                <i class="bx bx-printer"></i> Print
             </button>
-            <a href="{{ route('projects.create') }}" class="btn btn-primary rounded-pill px-4 shadow-sm">
-                <i class="bx bx-plus-circle me-1"></i> Create Order
+            <a href="{{ route('projects.create') }}" class="btn btn-primary pms-btn-add">
+                <i class="bx bx-plus-circle"></i> Create Order
             </a>
         </div>
     </div>
@@ -136,56 +655,56 @@
     <!-- Quick Stats Cards -->
     <div class="row g-3 mb-4">
         <div class="col-xl-3 col-sm-6">
-            <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
-                <div class="card-body p-3 d-flex align-items-center justify-content-between">
+            <div class="card pms-stat-card h-100">
+                <div class="card-body p-3 d-flex align-items-center justify-content-between gap-2">
                     <div>
-                        <span class="text-muted fw-semibold small d-block mb-1">Total Orders</span>
-                        <h4 class="fw-bold text-dark mb-0">{{ $stats['total_orders'] ?? 0 }}</h4>
+                        <span class="pms-stat-label">Total Orders</span>
+                        <h4 class="pms-stat-value">{{ $stats['total_orders'] ?? 0 }}</h4>
                     </div>
-                    <div class="p-3 rounded-4 bg-primary-subtle text-primary">
-                        <i class="bx bx-shopping-bag fs-3"></i>
+                    <div class="pms-stat-icon pms-stat-icon--blue">
+                        <i class="bx bx-shopping-bag"></i>
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="col-xl-3 col-sm-6">
-            <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
-                <div class="card-body p-3 d-flex align-items-center justify-content-between">
+            <div class="card pms-stat-card h-100">
+                <div class="card-body p-3 d-flex align-items-center justify-content-between gap-2">
                     <div>
-                        <span class="text-muted fw-semibold small d-block mb-1">Completed</span>
-                        <h4 class="fw-bold text-success mb-0">{{ $stats['completed'] ?? 0 }}</h4>
+                        <span class="pms-stat-label">Completed</span>
+                        <h4 class="pms-stat-value">{{ $stats['completed'] ?? 0 }}</h4>
                     </div>
-                    <div class="p-3 rounded-4 bg-success-subtle text-success">
-                        <i class="bx bx-check-double fs-3"></i>
+                    <div class="pms-stat-icon pms-stat-icon--green">
+                        <i class="bx bx-check-double"></i>
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="col-xl-3 col-sm-6">
-            <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
-                <div class="card-body p-3 d-flex align-items-center justify-content-between">
+            <div class="card pms-stat-card h-100">
+                <div class="card-body p-3 d-flex align-items-center justify-content-between gap-2">
                     <div>
-                        <span class="text-muted fw-semibold small d-block mb-1">Processing</span>
-                        <h4 class="fw-bold text-info mb-0">{{ $stats['processing'] ?? 0 }}</h4>
+                        <span class="pms-stat-label">Processing</span>
+                        <h4 class="pms-stat-value">{{ $stats['processing'] ?? 0 }}</h4>
                     </div>
-                    <div class="p-3 rounded-4 bg-info-subtle text-info">
-                        <i class="bx bx-loader-circle fs-3"></i>
+                    <div class="pms-stat-icon pms-stat-icon--blue">
+                        <i class="bx bx-loader-circle"></i>
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="col-xl-3 col-sm-6">
-            <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
-                <div class="card-body p-3 d-flex align-items-center justify-content-between">
+            <div class="card pms-stat-card h-100">
+                <div class="card-body p-3 d-flex align-items-center justify-content-between gap-2">
                     <div>
-                        <span class="text-muted fw-semibold small d-block mb-1">Total Revenue</span>
-                        <h4 class="fw-bold text-dark mb-0">${{ number_format($stats['total_revenue'] ?? 0, 2) }}</h4>
+                        <span class="pms-stat-label">Total Revenue</span>
+                        <h4 class="pms-stat-value">${{ number_format($stats['total_revenue'] ?? 0, 2) }}</h4>
                     </div>
-                    <div class="p-3 rounded-4 bg-warning-subtle text-warning">
-                        <i class="bx bx-dollar-circle fs-3"></i>
+                    <div class="pms-stat-icon pms-stat-icon--amber">
+                        <i class="bx bx-dollar-circle"></i>
                     </div>
                 </div>
             </div>
@@ -193,12 +712,12 @@
     </div>
 
     <!-- Filter Card -->
-    <div class="card border-0 shadow-sm rounded-4 mb-4">
+    <div class="card pms-filter-card mb-4">
         <div class="card-body p-3">
             <form method="GET" action="{{ route('orders.index') }}" class="row g-3 align-items-center">
                 <div class="col-lg-6 col-md-5">
                     <div class="input-group">
-                        <span class="input-group-text bg-white border-end-0"><i class="bx bx-search text-muted"></i></span>
+                        <span class="input-group-text border-end-0"><i class="bx bx-search"></i></span>
                         <input type="text" name="search" class="form-control border-start-0" placeholder="Search by Order #, client or email..." value="{{ $search ?? '' }}">
                     </div>
                 </div>
@@ -214,11 +733,11 @@
                 </div>
 
                 <div class="col-lg-3 col-md-4 d-flex gap-2">
-                    <button type="submit" class="btn btn-primary px-3 rounded-pill flex-grow-1">
+                    <button type="submit" class="btn btn-primary pms-btn-filter px-3 flex-grow-1">
                         <i class="bx bx-filter-alt me-1"></i> Filter
                     </button>
                     @if(!empty($search) || ($status ?? 'all') !== 'all')
-                        <a href="{{ route('orders.index') }}" class="btn btn-outline-secondary rounded-pill px-3">
+                        <a href="{{ route('orders.index') }}" class="btn pms-btn-reset px-3" title="Reset Filters">
                             <i class="bx bx-reset"></i>
                         </a>
                     @endif
@@ -228,11 +747,18 @@
     </div>
 
     <!-- Orders Table Card -->
-    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-        <div class="card-header bg-white py-3 px-4 border-bottom d-flex align-items-center justify-content-between flex-wrap gap-2">
-            <div class="d-flex align-items-center gap-3">
-                <h5 class="fw-bold mb-0 text-dark">Order History</h5>
-                <span class="text-muted small" id="selectedCountText">0 rows selected</span>
+    <div class="card pms-directory-card">
+        <div class="card-header pms-orders-card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div class="d-flex align-items-center gap-3 flex-wrap">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="pms-section-icon">
+                        <i class="bx bx-receipt"></i>
+                    </span>
+                    <div>
+                        <h5 class="fw-bold mb-0 text-dark">Order History</h5>
+                        <small class="text-muted" id="selectedCountText">0 rows selected</small>
+                    </div>
+                </div>
                 
                 <!-- Bulk Payment Actions (shown when items are selected) -->
                 <div id="bulkActionBar" class="d-none align-items-center gap-2 ms-2">
@@ -254,7 +780,7 @@
             
             <div class="d-flex align-items-center gap-2">
                 <div class="dropdown">
-                    <button class="btn btn-outline-secondary btn-sm rounded-3 dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <button class="btn pms-btn-export dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="bx bx-download me-1"></i> Export
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-3">
@@ -262,7 +788,7 @@
                         <li><a class="dropdown-item py-2" href="javascript:void(0)" onclick="exportTableToCsv()"><i class="bx bx-file text-success me-2"></i> Export to CSV</a></li>
                     </ul>
                 </div>
-                <span class="badge bg-light text-dark border">{{ count($orders) }} Records</span>
+                <span class="badge pms-count-pill">{{ count($orders) }} Records</span>
             </div>
         </div>
         <div class="table-responsive">
@@ -442,9 +968,15 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="9" class="text-center py-5 text-muted">
-                                <i class="bx bx-cart fs-1 d-block mb-2 text-secondary"></i>
-                                No client project orders found matching your criteria.
+                            <td colspan="9" class="pms-table-empty">
+                                <div class="pms-table-empty-icon" aria-hidden="true">
+                                    <i class="bx bx-cart"></i>
+                                </div>
+                                <h6>No client project orders found.</h6>
+                                <p>Connect a client project or adjust your search and status filters to view orders.</p>
+                                <a href="{{ route('projects.create') }}" class="pms-empty-cta">
+                                    <i class="bx bx-plus"></i> Create Order
+                                </a>
                             </td>
                         </tr>
                     @endforelse

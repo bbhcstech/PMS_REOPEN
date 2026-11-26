@@ -1196,8 +1196,8 @@
     <div class="container-fluid" id="employee-create-page" data-live-preserve>
         <div class="page-header-enterprise fade-up-stagger">
             <div class="header-title">
-                <h1 style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; font-weight: 800 !important;"><i class="fas fa-user-plus" style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important;"></i> Add New Employee</h1>
-                <p style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; font-weight: 800 !important;">Create employee profile and configuration settings</p>
+                <h1><i class="fas fa-user-plus"></i> Add New Employee</h1>
+                <p>Create employee profile and configuration settings</p>
             </div>
             <div>
                 <a href="{{ $returnUrl }}" class="btn-header-enterprise">
@@ -2008,6 +2008,7 @@
         }
     }
 </style>
+@include('admin.employees.partials.workspace-overrides')
 @endpush
 
 @push('js')

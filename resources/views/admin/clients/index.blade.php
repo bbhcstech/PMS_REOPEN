@@ -3,31 +3,36 @@
 @section('title', 'Clients')
 
 @section('content')
-<style>
-    .dt-buttons {
-        display: none !important;
-    }
-    #clientsTable .dropdown-menu {
-        z-index: 1065 !important;
-    }
-</style>
+@include('admin.clients.partials.workspace-styles')
 
-<div class="container-fluid px-4 py-4">
+<div class="container-fluid" id="pms-client-workspace">
     <!-- Top Header -->
-    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
-        <div>
-            <h3 class="fw-bold mb-0 text-dark"><i class="bx bx-user-voice text-primary me-2"></i> Client Management</h3>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item"><a href="{{ route('dashboard') }}" class="text-decoration-none">Dashboard</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Clients</li>
-                </ol>
-            </nav>
+    <div class="pms-cl-topbar">
+        <div class="pms-cl-heading-group">
+            <div class="pms-cl-title-icon">
+                <i class="bx bx-user-voice"></i>
+            </div>
+            <div>
+                <h1 class="pms-cl-title">Client Management</h1>
+                <p class="pms-cl-subtitle">Manage client accounts, company profiles, verification status, and linked projects.</p>
+            </div>
         </div>
 
-        <div class="d-flex align-items-center gap-2">
-            <a href="{{ route('clients.create') }}" class="btn btn-primary rounded-pill px-4 shadow-sm">
-                <i class="bx bx-plus-circle me-1"></i> Add Client
+        <div class="pms-cl-actions">
+            <div class="pms-cl-switcher" role="group" aria-label="View toggle">
+                <a href="{{ route('clients.index') }}" class="pms-cl-switch-btn is-active" data-toggle="tooltip" title="Table View">
+                    <i class="bi bi-list-ul"></i>
+                    <span>All Clients</span>
+                </a>
+                <a href="{{ route('clients.pending') }}" class="pms-cl-switch-btn show-unverified" data-toggle="tooltip" title="Account verification pending">
+                    <i class="bi bi-person-x"></i>
+                    <span>Pending Verification</span>
+                </a>
+            </div>
+
+            <a href="{{ route('clients.create') }}" class="pms-cl-btn-primary">
+                <i class="bx bx-plus-circle"></i>
+                <span>Add Client</span>
             </a>
         </div>
     </div>
@@ -40,16 +45,16 @@
     @endif
 
     <!-- Filters Section -->
-    <div class="card border-0 shadow-sm rounded-4 mb-4">
+    <div class="pms-cl-card mb-4">
         <div class="card-body p-4">
             <form method="GET" action="{{ route('clients.index') }}">
                 <div class="row g-3 align-items-end">
                     <div class="col-lg-4 col-md-5">
-                        <label for="duration" class="form-label fw-semibold text-dark mb-1">Duration / Date Range</label>
+                        <label for="duration" class="pms-cl-label">Duration / Date Range</label>
                         <div class="input-group">
-                            <span class="input-group-text bg-white border-end-0"><i class="bx bx-calendar text-primary"></i></span>
+                            <span class="input-group-text bg-transparent border-end-0"><i class="bx bx-calendar text-primary"></i></span>
                             <input type="text"
-                                   class="form-control border-start-0 ps-0 rounded-end"
+                                   class="form-control border-start-0 ps-0"
                                    id="duration"
                                    name="duration"
                                    value="{{ request('duration') }}"
@@ -59,8 +64,8 @@
                     </div>
 
                     <div class="col-lg-4 col-md-4">
-                        <label for="name" class="form-label fw-semibold text-dark mb-1">Filter by Client</label>
-                        <select class="form-select rounded-3 select2" id="name" name="name">
+                        <label for="name" class="pms-cl-label">Filter by Client</label>
+                        <select class="form-select select2" id="name" name="name">
                             <option value="">All Clients</option>
                             @foreach($clients as $c)
                                 <option value="{{ $c->id }}" {{ request('name') == $c->id ? 'selected' : '' }}>
@@ -71,11 +76,13 @@
                     </div>
 
                     <div class="col-lg-4 col-md-3 d-flex align-items-center gap-2">
-                        <button type="submit" class="btn btn-primary rounded-pill px-4 flex-grow-1 text-nowrap">
-                            <i class="bx bx-filter-alt me-1"></i> Filter
+                        <button type="submit" class="pms-cl-btn-primary flex-grow-1 text-nowrap">
+                            <i class="bx bx-filter-alt"></i>
+                            <span>Filter</span>
                         </button>
-                        <a href="{{ route('clients.index') }}" class="btn btn-outline-secondary rounded-pill px-4 flex-grow-1 text-nowrap">
-                            <i class="bx bx-refresh me-1"></i> Reset
+                        <a href="{{ route('clients.index') }}" class="pms-cl-btn-secondary flex-grow-1 text-nowrap">
+                            <i class="bx bx-refresh"></i>
+                            <span>Reset</span>
                         </a>
                     </div>
                 </div>
@@ -83,76 +90,68 @@
         </div>
     </div>
 
-    <!-- Actions & Views Switcher Toolbar -->
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <a href="{{ route('clients.create') }}" class="btn btn-primary btn-sm rounded-pill px-3">
-            <i class="bi bi-plus-circle me-1"></i> Add Client
-        </a>
-
-        <div class="btn-group" role="group" aria-label="View toggle">
-            <a href="{{ route('clients.index') }}" class="btn btn-secondary f-14" data-toggle="tooltip" data-original-title="Table View">
-                <i class="side-icon bi bi-list-ul"></i>
-            </a>
-            <a href="{{ route('clients.pending') }}" class="btn btn-secondary f-14 show-unverified btn-active" data-toggle="tooltip" data-original-title="Account verification pending">
-                <i class="side-icon bi bi-person-x"></i>
-            </a>
-        </div>
-    </div>
-
     <!-- Table Card -->
-    <div class="card shadow-sm border-0 mb-4 rounded-4">
+    <div class="pms-cl-card mb-4">
         <div class="card-body p-4">
             <div class="table-responsive">
-                <table id="clientsTable" class="table table-bordered table-hover table-striped align-middle mb-0">
-                    <thead class="table-dark">
+                <table id="clientsTable" class="table table-hover table-striped align-middle pms-cl-table mb-0">
+                    <thead>
                         <tr>
-                            <th style="width:40px;"><input type="checkbox" id="selectAll"></th>
+                            <th style="width:40px;"><input type="checkbox" class="form-check-input" id="selectAll"></th>
                             <th>Client ID</th>
                             <th style="white-space: nowrap;">Name</th>
                             <th>Email</th>
                             <th style="white-space: nowrap;">Company</th>
                             <th>Status</th>
                             <th style="white-space: nowrap;">Created</th>
-                            <th>Action</th>
+                            <th class="text-end">Action</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach($clients as $client)
                             <tr data-id="{{ $client->id }}">
-                                <td><input type="checkbox" class="client-checkbox" value="{{ $client->id }}"></td>
-                                <td>{{ $client->client_uid ?? '—' }}</td>
+                                <td><input type="checkbox" class="form-check-input client-checkbox" value="{{ $client->id }}"></td>
+                                <td><span class="fw-semibold">{{ $client->client_uid ?? '—' }}</span></td>
                                 <td style="white-space: nowrap;">
-                                    <strong>{{ $client->name }}</strong><br>
-                                    @if($client->salutation)
-                                        <small>{{ $client->salutation }} {{ $client->name }}</small>
-                                    @endif
+                                    <div class="d-flex align-items-center gap-2">
+                                        @if(!empty($client->profile_picture))
+                                            <img src="{{ asset($client->profile_picture) }}" alt="{{ $client->name }}" class="pms-cl-avatar">
+                                        @else
+                                            <span class="pms-cl-avatar">{{ strtoupper(substr($client->name ?? 'C', 0, 1)) }}</span>
+                                        @endif
+                                        <div>
+                                            <a href="{{ route('clients.show', $client->id) }}" class="pms-cl-client-link d-block">{{ $client->name }}</a>
+                                            @if($client->salutation)
+                                                <small class="text-muted">{{ $client->salutation }} {{ $client->name }}</small>
+                                            @endif
+                                        </div>
+                                    </div>
                                 </td>
                                 <td>{{ $client->email }}</td>
                                 <td style="white-space: nowrap;">{{ $client->company_name ?? '—' }}</td>
                                 <td>
                                     @php
                                         $clientStatus = strtolower(trim((string)($client->status ?? 'active')));
-                                        $badgeClass = match($clientStatus) {
-                                            'active' => 'bg-success',
-                                            'pending' => 'bg-warning',
-                                            'inactive', 'deactive', 'suspended', 'blocked' => 'bg-danger',
-                                            default => 'bg-secondary'
+                                        $statusPillClass = match($clientStatus) {
+                                            'active' => 'is-active',
+                                            'pending' => 'is-pending',
+                                            default => 'is-inactive'
                                         };
                                     @endphp
-                                    <span class="badge {{ $badgeClass }} text-capitalize">
+                                    <span class="pms-cl-status {{ $statusPillClass }} text-capitalize">
                                         {{ $client->status ?? 'Active' }}
                                     </span>
                                 </td>
                                 <td style="white-space: nowrap;">
                                     {{ $client->created_at ? \Carbon\Carbon::parse($client->created_at)->format('d-m-Y') : '—' }}
                                 </td>
-                                <td>
+                                <td class="text-end">
                                     <div class="dropdown dropup">
-                                        <button class="btn btn-sm btn-light" type="button" id="dropdownMenuButton{{ $client->id }}" data-bs-toggle="dropdown" data-bs-boundary="viewport" data-bs-popper-config='{"strategy":"fixed"}' aria-expanded="false">
+                                        <button class="pms-cl-action-trigger" type="button" id="dropdownMenuButton{{ $client->id }}" data-bs-toggle="dropdown" data-bs-boundary="viewport" data-bs-popper-config='{"strategy":"fixed"}' aria-expanded="false">
                                             <i class="bi bi-three-dots-vertical"></i>
                                         </button>
 
-                                        <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="dropdownMenuButton{{ $client->id }}">
+                                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton{{ $client->id }}">
                                             <li>
                                                 <a class="dropdown-item" href="{{ route('clients.show', $client->id) }}">
                                                     <i class="bi bi-eye me-2"></i> View
@@ -170,6 +169,8 @@
                                                     <i class="bi bi-pencil-square me-2"></i> Edit
                                                 </a>
                                             </li>
+
+                                            <li><hr class="dropdown-divider"></li>
 
                                             <li>
                                                 <form action="{{ route('clients.destroy', $client->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this client?');">
@@ -190,10 +191,11 @@
             </div>
 
             {{-- Footer row: Bulk delete & Pagination --}}
-            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-3 pt-2">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-3 pt-3 border-top">
                 <div>
-                    <button id="bulkDeleteBtn" class="btn btn-danger btn-sm" disabled>
-                        <i class="bi bi-trash me-1"></i> Bulk Delete
+                    <button id="bulkDeleteBtn" class="pms-cl-btn-danger" disabled>
+                        <i class="bi bi-trash"></i>
+                        <span>Bulk Delete</span>
                     </button>
                 </div>
 

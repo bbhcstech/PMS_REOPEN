@@ -14,16 +14,7 @@
         ?? $companies->firstWhere('id', auth()->user()?->company_id)?->name ?? 'Company');
 @endphp
 
-<div class="org-page">
-    <!-- Breadcrumb -->
-    <div class="org-breadcrumb">
-        <a href="{{ route('dashboard') }}"><i class="fas fa-home me-1"></i> Dashboard</a>
-        <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
-        <span>Organization</span>
-        <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
-        <span class="text-dark font-semibold">Employees</span>
-    </div>
-
+<div id="pms-org-page" class="org-page">
     <!-- Page Header Card -->
     <div class="org-header-card">
         <div class="org-header-title">

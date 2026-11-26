@@ -513,27 +513,43 @@ html[data-pms-theme="dark"] .premium-table-footer {
 }
 </style>
 
-<div class="container-fluid py-3">
+@include('admin.partials.crm-workspace-styles')
+
+<div class="container-fluid" id="pms-crm-workspace">
 
     {{-- HEADER --}}
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h4 class="fw-bold mb-1" style="color: #0f172a;"><i class="fas fa-handshake me-2 text-primary"></i>Deals & Sales Pipeline</h4>
-            <p class="text-muted small mb-0">Track pipeline stages, deal probabilities, weighted values, and close rates</p>
+    <div class="pms-crm-topbar">
+        <div class="pms-crm-heading-group">
+            <div class="pms-crm-title-icon">
+                <i class="fas fa-handshake"></i>
+            </div>
+            <div>
+                <h1 class="pms-crm-title">Deals &amp; Sales Pipeline</h1>
+                <p class="pms-crm-subtitle">Track pipeline stages, deal probabilities, weighted values, and close rates.</p>
+            </div>
         </div>
-        <div class="d-flex gap-2">
-            <a href="{{ route('admin.deals.index', array_merge(request()->query(), ['view' => request('view') === 'kanban' ? 'table' : 'kanban'])) }}" class="btn btn-outline-primary fw-semibold px-3">
-                <i class="fas {{ request('view') === 'kanban' ? 'fa-table' : 'fa-columns' }} me-1"></i>
-                Switch to {{ request('view') === 'kanban' ? 'Table View' : 'Kanban View' }}
-            </a>
-            <a href="{{ route('admin.deals.create') }}" class="btn btn-success fw-semibold shadow-sm px-3">
-                <i class="fas fa-plus me-1"></i> Add Deal
-            </a>
-            <button class="btn btn-outline-secondary px-3" data-bs-toggle="modal" data-bs-target="#importDealsModal">
-                <i class="fas fa-file-import me-1"></i> Import
+        <div class="pms-crm-actions">
+            <div class="pms-crm-switcher" role="group" aria-label="Deals view toggle">
+                <a href="{{ route('admin.deals.index', array_merge(request()->query(), ['view' => 'table'])) }}" class="pms-crm-switch-btn {{ request('view', 'table') !== 'kanban' ? 'is-active' : '' }}">
+                    <i class="fas fa-table"></i>
+                    <span>Table View</span>
+                </a>
+                <a href="{{ route('admin.deals.index', array_merge(request()->query(), ['view' => 'kanban'])) }}" class="pms-crm-switch-btn {{ request('view') === 'kanban' ? 'is-active' : '' }}">
+                    <i class="fas fa-columns"></i>
+                    <span>Kanban View</span>
+                </a>
+            </div>
+            <button class="pms-crm-btn-secondary" data-bs-toggle="modal" data-bs-target="#importDealsModal">
+                <i class="fas fa-file-import"></i>
+                <span>Import</span>
             </button>
-            <a href="{{ route('admin.deals.export', request()->query()) }}" class="btn btn-outline-secondary px-3">
-                <i class="fas fa-file-export me-1"></i> Export
+            <a href="{{ route('admin.deals.export', request()->query()) }}" class="pms-crm-btn-secondary">
+                <i class="fas fa-file-export"></i>
+                <span>Export</span>
+            </a>
+            <a href="{{ route('admin.deals.create') }}" class="pms-crm-btn-primary">
+                <i class="fas fa-plus"></i>
+                <span>Add Deal</span>
             </a>
         </div>
     </div>
@@ -638,9 +654,9 @@ html[data-pms-theme="dark"] .premium-table-footer {
                 </select>
             </div>
 
-            <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-filter me-1"></i> Filter</button>
+            <button type="submit" class="pms-crm-btn-primary"><i class="fas fa-filter"></i> Filter</button>
             @if(request()->hasAny(['search', 'pipeline', 'agent_id', 'priority', 'start_date', 'end_date']))
-                <a href="{{ route('admin.deals.index', ['view' => request('view')]) }}" class="btn btn-outline-danger btn-sm">Reset</a>
+                <a href="{{ route('admin.deals.index', ['view' => request('view')]) }}" class="pms-crm-btn-danger">Reset</a>
             @endif
         </div>
     </form>
@@ -653,17 +669,17 @@ html[data-pms-theme="dark"] .premium-table-footer {
                 <div class="kanban-col">
                     <div class="kanban-col-header" style="border-bottom-color: {{ $stg->color ?? '#3b82f6' }};">
                         <div>
-                            <h6 class="fw-bold mb-0" style="color: #0f172a;">{{ $stg->name }}</h6>
+                            <h6 class="fw-bold mb-0">{{ $stg->name }}</h6>
                             <small class="text-muted">{{ count($dealsByStage[$stg->id] ?? []) }} deals</small>
                         </div>
-                        <span class="badge bg-light text-dark border">{{ $stg->default_probability }}% Prob</span>
+                        <span class="badge border">{{ $stg->default_probability }}% Prob</span>
                     </div>
 
                     <div class="kanban-col-body kanban-column" data-stage-id="{{ $stg->id }}" data-stage-name="{{ strtolower($stg->name) }}">
                         @forelse($dealsByStage[$stg->id] ?? [] as $deal)
                             <div class="kanban-card deal-card" data-deal-id="{{ $deal->id }}" draggable="true">
                                 <div class="d-flex justify-content-between align-items-start mb-2">
-                                    <h6 class="fw-bold mb-0"><a href="{{ route('admin.deals.show', $deal->id) }}" class="text-dark text-decoration-none">{{ $deal->deal_name }}</a></h6>
+                                    <h6 class="fw-bold mb-0"><a href="{{ route('admin.deals.show', $deal->id) }}" class="pms-crm-entity-link">{{ $deal->deal_name }}</a></h6>
                                     @php
                                         $prio = strtolower($deal->priority ?? 'medium');
                                         $prioBadge = match($prio) {
@@ -720,19 +736,19 @@ html[data-pms-theme="dark"] .premium-table-footer {
                             <tr>
                                 <td class="ps-4"><input type="checkbox" class="form-check-input deal-checkbox" value="{{ $dl->id }}"></td>
                                 <td>
-                                    <a href="{{ route('admin.deals.show', $dl->id) }}" class="fw-bold text-decoration-none d-block" style="color: #0f172a; font-size: 0.9rem;">{{ $dl->deal_name }}</a>
+                                    <a href="{{ route('admin.deals.show', $dl->id) }}" class="pms-crm-entity-link d-block">{{ $dl->deal_name }}</a>
                                     <span class="text-muted d-block mt-1" style="font-size: 0.79rem;"><i class="far fa-user me-1"></i>{{ $dl->lead_name }}</span>
                                 </td>
-                                <td><span class="fw-semibold text-secondary" style="font-size: 0.88rem;">{{ $dl->company_name ?: 'N/A' }}</span></td>
+                                <td><span class="pms-crm-cell-strong">{{ $dl->company_name ?: 'N/A' }}</span></td>
                                 <td class="fw-bold text-success" style="font-size: 0.9rem;">{{ $dl->currency }} {{ number_format($dl->value, 2) }}</td>
                                 <td class="text-center">
                                     <span class="badge-pill-source text-primary" style="border-color: rgba(47, 107, 255, 0.2);">
                                         <i class="fas fa-layer-group me-1"></i>{{ $dl->stage->name ?? 'N/A' }} ({{ $dl->probability }}%)
                                     </span>
                                 </td>
-                                <td class="fw-bold text-dark" style="font-size: 0.88rem;">{{ $dl->currency }} {{ number_format($dl->weighted_value ?? $dl->calculateWeightedValue(), 2) }}</td>
-                                <td class="text-secondary" style="font-size: 0.84rem; font-weight: 500;">{{ $dl->close_date ? $dl->close_date->format('M d, Y') : 'N/A' }}</td>
-                                <td style="font-size: 0.84rem; font-weight: 600; color: #334155;">{{ $dl->agent->name ?? 'Unassigned' }}</td>
+                                <td class="pms-crm-cell-strong">{{ $dl->currency }} {{ number_format($dl->weighted_value ?? $dl->calculateWeightedValue(), 2) }}</td>
+                                <td class="pms-crm-subtext" style="font-weight: 500;">{{ $dl->close_date ? $dl->close_date->format('M d, Y') : 'N/A' }}</td>
+                                <td class="pms-crm-cell-strong">{{ $dl->agent->name ?? 'Unassigned' }}</td>
                                 <td class="text-center">
                                     @php
                                         $prio = strtolower($dl->priority ?? 'medium');
@@ -769,10 +785,15 @@ html[data-pms-theme="dark"] .premium-table-footer {
                         @empty
                             <tr>
                                 <td colspan="10" class="text-center py-5 text-muted">
-                                    <i class="fas fa-handshake-slash fa-3x mb-3 text-muted opacity-50"></i>
-                                    <h5 class="fw-bold">No Deals Found</h5>
+                                    <div class="pms-crm-empty-icon">
+                                        <i class="fas fa-handshake-slash"></i>
+                                    </div>
+                                    <h5 class="fw-bold mb-1">No Deals Found</h5>
                                     <p class="small mb-3">Create your first deal to start tracking your sales pipeline.</p>
-                                    <a href="{{ route('admin.deals.create') }}" class="btn-submit-emerald d-inline-flex align-items-center text-decoration-none px-3 py-2" style="font-size: 0.85rem;"><i class="fas fa-plus me-1"></i> Add First Deal</a>
+                                    <a href="{{ route('admin.deals.create') }}" class="pms-crm-btn-primary">
+                                        <i class="fas fa-plus"></i>
+                                        <span>Add First Deal</span>
+                                    </a>
                                 </td>
                             </tr>
                         @endforelse
@@ -810,8 +831,8 @@ html[data-pms-theme="dark"] .premium-table-footer {
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-success btn-sm px-4">Import Deals</button>
+                    <button type="button" class="pms-crm-btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="pms-crm-btn-primary">Import Deals</button>
                 </div>
             </form>
         </div>

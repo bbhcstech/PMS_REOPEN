@@ -5,9 +5,9 @@
 @section('content')
 <style>
     #user-docs-workspace.user-docs-page {
-        min-height: calc(100vh - 80px);
-        padding: 1.5rem 1.75rem 2.5rem;
-        background: var(--bx-bg, #F8FAFC) !important;
+        min-height: 0;
+        padding: 0 0 2rem;
+        background: transparent !important;
         color: var(--bx-ink, #0F172A);
     }
 

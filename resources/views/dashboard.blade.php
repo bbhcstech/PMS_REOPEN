@@ -151,13 +151,13 @@
 
     /* Main Container */
     #main {
-        min-height: 100vh;
+        min-height: 0;
         position: relative;
-        background: var(--bx-bg);
+        background: transparent;
     }
 
-    .content-wrapper {
-        padding: 1.5rem 2rem;
+    #main > .content-wrapper {
+        padding: 0;
         max-width: 100%;
         position: relative;
         z-index: 1;
@@ -1472,8 +1472,8 @@
     }
 
     @media (max-width: 575.98px) {
-        .content-wrapper {
-            padding: 1rem;
+        #main > .content-wrapper {
+            padding: 0;
         }
 
         .industry-overview-grid,
@@ -1491,11 +1491,12 @@
        Beats pms-refresh.css while preserving dark mode & functionality
        ====================================================== */
     #main.bx-admin-workspace {
-        background: var(--bx-bg) !important;
+        background: transparent !important;
+        min-height: 0 !important;
     }
 
     #main.bx-admin-workspace .content-wrapper {
-        padding: 1.5rem 1.75rem 2.5rem !important;
+        padding: 0 0 2rem !important;
         max-width: 1440px;
         margin: 0 auto;
     }

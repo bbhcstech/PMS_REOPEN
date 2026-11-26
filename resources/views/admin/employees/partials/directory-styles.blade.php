@@ -3966,3 +3966,4 @@
         -webkit-text-fill-color: #fecdd3 !important;
     }
 </style>
+@include('admin.employees.partials.workspace-overrides')

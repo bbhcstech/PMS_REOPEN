@@ -148,31 +148,524 @@
         background: transparent !important;
         pointer-events: none;
     }
+
+    /* Clean SaaS Workspace Redesign (Scoped to #pms-products-page) */
+    #pms-products-page.pms-products-page {
+        padding: 0 0 2rem !important;
+        margin: 0 !important;
+        min-height: 0 !important;
+        background: transparent !important;
+        font-family: 'Inter', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif !important;
+    }
+
+    #pms-products-page .pms-prod-topbar {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 16px !important;
+        margin-bottom: 18px !important;
+    }
+
+    #pms-products-page .pms-prod-title-wrap {
+        display: flex !important;
+        align-items: center !important;
+        gap: 14px !important;
+    }
+
+    #pms-products-page .pms-prod-title-icon {
+        width: 42px !important;
+        height: 42px !important;
+        border-radius: 12px !important;
+        background: #eff6ff !important;
+        border: 1px solid #dbeafe !important;
+        color: #2563eb !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 1.25rem !important;
+        flex-shrink: 0 !important;
+    }
+
+    #pms-products-page .pms-prod-title {
+        margin: 0 !important;
+        font-size: 1.35rem !important;
+        font-weight: 700 !important;
+        color: #0f172a !important;
+        letter-spacing: -0.02em !important;
+        line-height: 1.25 !important;
+    }
+
+    #pms-products-page .breadcrumb {
+        margin: 2px 0 0 !important;
+        padding: 0 !important;
+        background: transparent !important;
+        font-size: 0.78rem !important;
+    }
+
+    #pms-products-page .breadcrumb-item a,
+    #pms-products-page .breadcrumb-item + .breadcrumb-item::before {
+        color: #64748b !important;
+    }
+
+    #pms-products-page .breadcrumb-item.active {
+        color: #0f172a !important;
+        font-weight: 600 !important;
+    }
+
+    #pms-products-page .pms-prod-actions {
+        display: flex !important;
+        align-items: center !important;
+        gap: 10px !important;
+        flex-wrap: wrap !important;
+    }
+
+    #pms-products-page .pms-btn-deals {
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        color: #0f172a !important;
+        font-size: 0.84rem !important;
+        font-weight: 600 !important;
+        height: 38px !important;
+        padding: 0 16px !important;
+        border-radius: 999px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 7px !important;
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04) !important;
+    }
+
+    #pms-products-page .pms-btn-deals:hover {
+        background: #f8fafc !important;
+        border-color: #cbd5e1 !important;
+        color: #0f172a !important;
+    }
+
+    #pms-products-page .pms-btn-add {
+        background: #2563eb !important;
+        border: 1px solid #2563eb !important;
+        color: #ffffff !important;
+        font-size: 0.84rem !important;
+        font-weight: 600 !important;
+        height: 38px !important;
+        padding: 0 18px !important;
+        border-radius: 999px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 7px !important;
+        box-shadow: 0 6px 14px rgba(37, 99, 235, 0.24) !important;
+    }
+
+    #pms-products-page .pms-btn-add:hover {
+        background: #1d4ed8 !important;
+        border-color: #1d4ed8 !important;
+    }
+
+    /* Quick Stats Cards */
+    #pms-products-page .pms-stat-card {
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 14px !important;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04) !important;
+        transition: border-color 0.16s ease, box-shadow 0.16s ease !important;
+    }
+
+    #pms-products-page .pms-stat-card:hover {
+        border-color: #cbd5e1 !important;
+        box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06) !important;
+    }
+
+    #pms-products-page .pms-stat-label {
+        font-size: 0.68rem !important;
+        font-weight: 700 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.05em !important;
+        color: #64748b !important;
+        margin-bottom: 6px !important;
+        display: block !important;
+    }
+
+    #pms-products-page .pms-stat-value {
+        font-size: 1.55rem !important;
+        font-weight: 800 !important;
+        color: #0f172a !important;
+        letter-spacing: -0.02em !important;
+        line-height: 1.15 !important;
+        margin-bottom: 4px !important;
+    }
+
+    #pms-products-page .pms-stat-sub {
+        font-size: 0.76rem !important;
+        color: #64748b !important;
+    }
+
+    #pms-products-page .pms-stat-icon {
+        width: 44px !important;
+        height: 44px !important;
+        border-radius: 12px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        flex-shrink: 0 !important;
+        font-size: 1.25rem !important;
+    }
+
+    #pms-products-page .pms-stat-icon--blue {
+        background: #eff6ff !important;
+        color: #2563eb !important;
+    }
+
+    #pms-products-page .pms-stat-icon--amber {
+        background: #fef9c3 !important;
+        color: #ca8a04 !important;
+    }
+
+    #pms-products-page .pms-stat-icon i,
+    #pms-products-page .pms-prod-title-icon i,
+    #pms-products-page .pms-section-icon i,
+    #pms-products-page .pms-table-empty-icon i {
+        color: inherit !important;
+        -webkit-text-fill-color: currentColor !important;
+    }
+
+    /* Filter Bar Card */
+    #pms-products-page .pms-filter-card {
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 14px !important;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04) !important;
+    }
+
+    #pms-products-page .pms-filter-card .input-group-text {
+        background: #ffffff !important;
+        border-color: #e2e8f0 !important;
+        color: #94a3b8 !important;
+        border-top-left-radius: 10px !important;
+        border-bottom-left-radius: 10px !important;
+    }
+
+    #pms-products-page .pms-filter-card .form-control,
+    #pms-products-page .pms-filter-card .form-select {
+        height: 40px !important;
+        border-color: #e2e8f0 !important;
+        font-size: 0.85rem !important;
+        color: #0f172a !important;
+        background-color: #ffffff !important;
+        box-shadow: none !important;
+    }
+
+    #pms-products-page .pms-filter-card .form-control {
+        border-top-right-radius: 10px !important;
+        border-bottom-right-radius: 10px !important;
+    }
+
+    #pms-products-page .pms-filter-card .form-select {
+        border-radius: 10px !important;
+    }
+
+    #pms-products-page .pms-filter-card .form-control:focus,
+    #pms-products-page .pms-filter-card .form-select:focus {
+        border-color: #2563eb !important;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12) !important;
+    }
+
+    #pms-products-page .pms-btn-filter {
+        height: 40px !important;
+        border-radius: 10px !important;
+        background: #2563eb !important;
+        border: 1px solid #2563eb !important;
+        font-size: 0.85rem !important;
+        font-weight: 600 !important;
+        box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2) !important;
+    }
+
+    #pms-products-page .pms-btn-filter:hover {
+        background: #1d4ed8 !important;
+        border-color: #1d4ed8 !important;
+    }
+
+    #pms-products-page .pms-btn-reset {
+        height: 40px !important;
+        border-radius: 10px !important;
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        color: #475569 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+
+    /* Directory Table Cards */
+    #pms-products-page .pms-directory-card {
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 16px !important;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04) !important;
+        overflow: hidden !important;
+    }
+
+    #pms-products-page .project-card-header {
+        background: #ffffff !important;
+        border-bottom: 1px solid #f1f5f9 !important;
+        padding: 16px 22px !important;
+    }
+
+    #pms-products-page .pms-section-icon {
+        width: 38px !important;
+        height: 38px !important;
+        border-radius: 10px !important;
+        background: #eff6ff !important;
+        color: #2563eb !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 1.15rem !important;
+    }
+
+    #pms-products-page .pms-count-pill {
+        background: #eff6ff !important;
+        color: #2563eb !important;
+        -webkit-text-fill-color: #2563eb !important;
+        border: 1px solid #dbeafe !important;
+        border-radius: 999px !important;
+        padding: 6px 14px !important;
+        font-size: 0.78rem !important;
+        font-weight: 600 !important;
+    }
+
+    #pms-products-page .pms-count-pill--green {
+        background: #ecfdf5 !important;
+        color: #059669 !important;
+        -webkit-text-fill-color: #059669 !important;
+        border: 1px solid #a7f3d0 !important;
+    }
+
+    #pms-products-page .project-selection-tools .pms-table-tools {
+        background: #f8fafc !important;
+        border-bottom: 1px solid #f1f5f9 !important;
+        padding: 10px 22px !important;
+    }
+
+    #pms-products-page .table thead th {
+        background: #ffffff !important;
+        color: #475569 !important;
+        font-size: 0.7rem !important;
+        font-weight: 700 !important;
+        letter-spacing: 0.05em !important;
+        border-bottom: 1px solid #f1f5f9 !important;
+        padding: 12px 14px !important;
+    }
+
+    #pms-products-page .table tbody td {
+        border-bottom: 1px solid #f1f5f9 !important;
+        padding: 14px !important;
+    }
+
+    /* Empty State inside Table */
+    #pms-products-page .pms-table-empty {
+        padding: 52px 24px !important;
+        text-align: center !important;
+    }
+
+    #pms-products-page .pms-table-empty-icon {
+        width: 48px !important;
+        height: 48px !important;
+        border-radius: 12px !important;
+        background: #f8fafc !important;
+        border: 1px solid #e2e8f0 !important;
+        color: #94a3b8 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 1.35rem !important;
+        margin: 0 auto 12px !important;
+    }
+
+    #pms-products-page .pms-table-empty h6 {
+        margin: 0 0 6px !important;
+        font-size: 0.95rem !important;
+        font-weight: 700 !important;
+        color: #0f172a !important;
+    }
+
+    #pms-products-page .pms-table-empty p {
+        margin: 0 auto 16px !important;
+        max-width: 340px !important;
+        font-size: 0.8rem !important;
+        color: #64748b !important;
+        line-height: 1.45 !important;
+    }
+
+    #pms-products-page .pms-empty-cta {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+        background: #eff6ff !important;
+        color: #2563eb !important;
+        border: 1px solid #dbeafe !important;
+        border-radius: 10px !important;
+        padding: 8px 16px !important;
+        font-size: 0.8rem !important;
+        font-weight: 600 !important;
+        text-decoration: none !important;
+        transition: all 0.16s ease !important;
+    }
+
+    #pms-products-page .pms-empty-cta:hover {
+        background: #dbeafe !important;
+        color: #1d4ed8 !important;
+    }
+
+    /* Dark Mode Overrides */
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-products-page .pms-stat-card,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-products-page .pms-filter-card,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-products-page .pms-directory-card,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-products-page .project-card-header,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-products-page .table,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-products-page .table tbody tr,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-products-page .table tbody td {
+        background: #0f172a !important;
+        border-color: rgba(148, 163, 184, 0.2) !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-products-page .table thead th {
+        background: #1e293b !important;
+        color: #94a3b8 !important;
+        -webkit-text-fill-color: #94a3b8 !important;
+        border-color: rgba(148, 163, 184, 0.2) !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-products-page .table-hover > tbody > tr:hover > * {
+        background-color: rgba(37, 99, 235, 0.08) !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-products-page .pms-prod-title,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-products-page .breadcrumb-item.active,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-products-page .pms-stat-value,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-products-page .pms-stat-sub strong,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-products-page .project-card-header h5,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-products-page .pms-table-empty h6 {
+        color: #f8fafc !important;
+        -webkit-text-fill-color: #f8fafc !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-products-page .pms-stat-label,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-products-page .pms-stat-sub,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-products-page .pms-table-empty p,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-products-page .text-muted {
+        color: #94a3b8 !important;
+        -webkit-text-fill-color: #94a3b8 !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-products-page .pms-btn-deals,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-products-page .pms-btn-reset,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-products-page .pms-filter-card .input-group-text,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-products-page .pms-filter-card .form-control,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-products-page .pms-filter-card .form-select,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-products-page .project-selection-tools .pms-table-tools,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-products-page .pms-table-empty-icon {
+        background: #1e293b !important;
+        border-color: rgba(148, 163, 184, 0.25) !important;
+        color: #e2e8f0 !important;
+        -webkit-text-fill-color: #e2e8f0 !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-products-page .pms-table-tools .btn,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-products-page .pms-table-tools button,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-products-page .pms-table-tools .dropdown-toggle {
+        background: #0f172a !important;
+        border-color: rgba(148, 163, 184, 0.28) !important;
+        color: #e2e8f0 !important;
+        -webkit-text-fill-color: #e2e8f0 !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-products-page .pms-table-tools .dropdown-toggle span {
+        background: transparent !important;
+        color: inherit !important;
+        -webkit-text-fill-color: currentColor !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-products-page .pms-prod-title-icon,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-products-page .pms-stat-icon--blue,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-products-page .pms-section-icon,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-products-page .pms-empty-cta,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-products-page .pms-count-pill:not(.pms-count-pill--green) {
+        background: rgba(37, 99, 235, 0.18) !important;
+        border-color: rgba(96, 165, 250, 0.34) !important;
+        color: #93c5fd !important;
+        -webkit-text-fill-color: #93c5fd !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-products-page .pms-stat-icon--amber {
+        background: rgba(245, 158, 11, 0.16) !important;
+        border: 1px solid rgba(251, 191, 36, 0.3) !important;
+        color: #fbbf24 !important;
+        -webkit-text-fill-color: #fbbf24 !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-products-page .pms-count-pill--green {
+        background: rgba(16, 185, 129, 0.16) !important;
+        border-color: rgba(52, 211, 153, 0.32) !important;
+        color: #34d399 !important;
+        -webkit-text-fill-color: #34d399 !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-products-page .dropdown-menu {
+        background: #1e293b !important;
+        border: 1px solid #334155 !important;
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45) !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-products-page .dropdown-item {
+        color: #e2e8f0 !important;
+        -webkit-text-fill-color: #e2e8f0 !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-products-page .dropdown-item:hover {
+        background: rgba(37, 99, 235, 0.2) !important;
+        color: #93c5fd !important;
+        -webkit-text-fill-color: #93c5fd !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-products-page .text-dark {
+        color: #f8fafc !important;
+        -webkit-text-fill-color: #f8fafc !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode, [data-bs-theme="dark"]) #pms-products-page .bg-light {
+        background-color: #1e293b !important;
+        border-color: rgba(148, 163, 184, 0.25) !important;
+        color: #cbd5e1 !important;
+        -webkit-text-fill-color: #cbd5e1 !important;
+    }
 </style>
 
-<div class="container-fluid px-4 py-4">
+<div id="pms-products-page" class="pms-products-page">
     <!-- Top Header & Breadcrumbs -->
-    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
-        <div>
-            <h3 class="fw-bold mb-0 text-dark">
-                <i class="bx bx-package text-primary me-2 align-middle"></i>Products & Projects
-            </h3>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-0 mt-1">
-                    <li class="breadcrumb-item"><a href="{{ route('dashboard') }}" class="text-decoration-none">Dashboard</a></li>
-                    <li class="breadcrumb-item"><a href="{{ route('projects.index') }}" class="text-decoration-none">Projects</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Products</li>
-                </ol>
-            </nav>
+    <div class="pms-prod-topbar">
+        <div class="pms-prod-title-wrap">
+            <div class="pms-prod-title-icon" aria-hidden="true">
+                <i class="bx bx-cube"></i>
+            </div>
+            <div>
+                <h3 class="pms-prod-title">Products &amp; Projects</h3>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="{{ route('dashboard') }}" class="text-decoration-none">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="{{ route('projects.index') }}" class="text-decoration-none">Projects</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Products</li>
+                    </ol>
+                </nav>
+            </div>
         </div>
 
-        <div class="d-flex align-items-center gap-2">
+        <div class="pms-prod-actions">
             @if(in_array(strtolower((string) auth()->user()?->role), ['admin', 'hr', 'manager'], true))
-                <a href="{{ route('admin.deals.index') }}" class="btn btn-outline-primary rounded-pill px-3 shadow-sm">
-                    <i class="bx bx-target-lock me-1"></i> View Deals
+                <a href="{{ route('admin.deals.index') }}" class="btn pms-btn-deals">
+                    <i class="bx bx-target-lock"></i> View Deals
                 </a>
-                <a href="{{ route('projects.create') }}" class="btn btn-primary rounded-pill px-4 shadow-sm">
-                    <i class="bx bx-plus-circle me-1"></i> Add Project
+                <a href="{{ route('projects.create') }}" class="btn btn-primary pms-btn-add">
+                    <i class="bx bx-plus-circle"></i> Add Project
                 </a>
             @endif
         </div>
@@ -182,15 +675,15 @@
     <div class="row g-3 mb-4">
         <!-- Total Projects -->
         <div class="col-xl-3 col-sm-6">
-            <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
-                <div class="card-body p-3 d-flex align-items-center justify-content-between">
+            <div class="card pms-stat-card h-100">
+                <div class="card-body p-3 d-flex align-items-center justify-content-between gap-2">
                     <div>
-                        <span class="text-muted fw-semibold small d-block mb-1">Total Products / Projects</span>
-                        <h4 class="fw-bold text-dark mb-0">{{ $stats['total_projects'] }}</h4>
-                        <small class="text-muted">{{ $stats['in_progress_count'] }} in progress • {{ $stats['completed_count'] }} completed</small>
+                        <span class="pms-stat-label">Total Products / Projects</span>
+                        <h4 class="pms-stat-value">{{ $stats['total_projects'] }}</h4>
+                        <small class="pms-stat-sub">{{ $stats['in_progress_count'] }} in progress • {{ $stats['completed_count'] }} completed</small>
                     </div>
-                    <div class="p-3 rounded-4 bg-primary-subtle text-primary">
-                        <i class="bx bx-cube fs-3"></i>
+                    <div class="pms-stat-icon pms-stat-icon--blue">
+                        <i class="bx bx-cube"></i>
                     </div>
                 </div>
             </div>
@@ -198,15 +691,15 @@
 
         <!-- Home Projects Count -->
         <div class="col-xl-3 col-sm-6">
-            <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
-                <div class="card-body p-3 d-flex align-items-center justify-content-between">
+            <div class="card pms-stat-card h-100">
+                <div class="card-body p-3 d-flex align-items-center justify-content-between gap-2">
                     <div>
-                        <span class="text-muted fw-semibold small d-block mb-1">🏠 Home Projects (In-House)</span>
-                        <h4 class="fw-bold text-info mb-0">{{ $stats['home_projects_count'] }}</h4>
-                        <small class="text-muted">Total Cost: ${{ number_format($stats['home_cost'], 2) }}</small>
+                        <span class="pms-stat-label">🏠 Home Projects (In-House)</span>
+                        <h4 class="pms-stat-value">{{ $stats['home_projects_count'] }}</h4>
+                        <small class="pms-stat-sub">Total Cost: <strong class="text-dark">${{ number_format($stats['home_cost'], 2) }}</strong></small>
                     </div>
-                    <div class="p-3 rounded-4 bg-info-subtle text-info">
-                        <i class="bx bx-home-alt fs-3"></i>
+                    <div class="pms-stat-icon pms-stat-icon--blue">
+                        <i class="bx bx-home-alt"></i>
                     </div>
                 </div>
             </div>
@@ -214,15 +707,15 @@
 
         <!-- Client Projects Count -->
         <div class="col-xl-3 col-sm-6">
-            <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
-                <div class="card-body p-3 d-flex align-items-center justify-content-between">
+            <div class="card pms-stat-card h-100">
+                <div class="card-body p-3 d-flex align-items-center justify-content-between gap-2">
                     <div>
-                        <span class="text-muted fw-semibold small d-block mb-1">💼 Client Projects (Client)</span>
-                        <h4 class="fw-bold text-success mb-0">{{ $stats['client_projects_count'] }}</h4>
-                        <small class="text-muted">Total Cost: ${{ number_format($stats['client_cost'], 2) }}</small>
+                        <span class="pms-stat-label">💼 Client Projects (Client)</span>
+                        <h4 class="pms-stat-value">{{ $stats['client_projects_count'] }}</h4>
+                        <small class="pms-stat-sub">Total Cost: <strong class="text-dark">${{ number_format($stats['client_cost'], 2) }}</strong></small>
                     </div>
-                    <div class="p-3 rounded-4 bg-success-subtle text-success">
-                        <i class="bx bx-buildings fs-3"></i>
+                    <div class="pms-stat-icon pms-stat-icon--blue">
+                        <i class="bx bx-buildings"></i>
                     </div>
                 </div>
             </div>
@@ -230,10 +723,10 @@
 
         <!-- Total Deal Value / Budget -->
         <div class="col-xl-3 col-sm-6">
-            <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
-                <div class="card-body p-3 d-flex align-items-center justify-content-between">
+            <div class="card pms-stat-card h-100">
+                <div class="card-body p-3 d-flex align-items-center justify-content-between gap-2">
                     <div>
-                        <span class="text-muted fw-semibold small d-block mb-1">💰 Total Pipeline &amp; Deal Value</span>
+                        <span class="pms-stat-label">💰 Total Pipeline &amp; Deal Value</span>
                         @php
                             // 10 lakh (1,000,000) and above reads as M / B / T; the exact amount stays in the tooltip.
                             $pipelineValue = (float) ($stats['total_deal_cost'] ?? 0);
@@ -246,11 +739,11 @@
                                 }
                             }
                         @endphp
-                        <h4 class="fw-bold text-dark mb-0" title="${{ number_format($pipelineValue, 2) }}">${{ $pipelineLabel }}</h4>
-                        <small class="text-success"><i class="bx bx-trending-up me-1"></i>Combined Project Valuation</small>
+                        <h4 class="pms-stat-value" title="${{ number_format($pipelineValue, 2) }}">${{ $pipelineLabel }}</h4>
+                        <small class="text-success fw-medium"><i class="bx bx-trending-up me-1"></i>Combined Project Valuation</small>
                     </div>
-                    <div class="p-3 rounded-4 bg-warning-subtle text-warning">
-                        <i class="bx bx-dollar-circle fs-3"></i>
+                    <div class="pms-stat-icon pms-stat-icon--amber">
+                        <i class="bx bx-dollar-circle"></i>
                     </div>
                 </div>
             </div>
@@ -258,12 +751,12 @@
     </div>
 
     <!-- Filters Section & Navigation Tabs -->
-    <div class="card border-0 shadow-sm rounded-4 mb-4">
+    <div class="card pms-filter-card mb-4">
         <div class="card-body p-3">
             <form method="GET" action="{{ route('products.index') }}" class="row g-3 align-items-center">
                 <div class="col-lg-5 col-md-4">
                     <div class="input-group">
-                        <span class="input-group-text bg-white border-end-0"><i class="bx bx-search text-muted"></i></span>
+                        <span class="input-group-text border-end-0"><i class="bx bx-search"></i></span>
                         <input type="text" name="search" class="form-control border-start-0" placeholder="Search by project name, code, client or description..." value="{{ $search ?? '' }}">
                     </div>
                 </div>
@@ -291,11 +784,11 @@
                 </div>
 
                 <div class="col-lg-3 col-md-2 d-flex gap-2">
-                    <button type="submit" class="btn btn-primary px-3 rounded-pill flex-grow-1">
+                    <button type="submit" class="btn btn-primary pms-btn-filter px-3 flex-grow-1">
                         <i class="bx bx-filter-alt me-1"></i> Filter
                     </button>
                     @if(!empty($search) || ($status ?? 'all') !== 'all' || ($priority ?? 'all') !== 'all')
-                        <a href="{{ route('products.index') }}" class="btn btn-outline-secondary rounded-pill px-3" title="Reset Filters">
+                        <a href="{{ route('products.index') }}" class="btn pms-btn-reset px-3" title="Reset Filters">
                             <i class="bx bx-reset"></i>
                         </a>
                     @endif
@@ -307,18 +800,18 @@
     <!-- ===================================================================== -->
     <!-- TABLE 1: HOME PROJECTS (IN-HOUSE / INTERNAL PRODUCTS)                 -->
     <!-- ===================================================================== -->
-    <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
-        <div class="card-header bg-white py-3 px-4 d-flex align-items-center justify-content-between project-card-header">
-            <div class="d-flex align-items-center gap-2">
-                <span class="p-2 rounded-3 bg-info-subtle text-info d-flex align-items-center justify-content-center">
-                    <i class="bx bx-home-alt fs-4"></i>
+    <div class="card pms-directory-card mb-4">
+        <div class="card-header d-flex align-items-center justify-content-between project-card-header">
+            <div class="d-flex align-items-center gap-3">
+                <span class="pms-section-icon">
+                    <i class="bx bx-home-alt"></i>
                 </span>
                 <div>
                     <h5 class="fw-bold mb-0 text-dark">Home Projects</h5>
                     <small class="text-muted">In-house products and internal company projects</small>
                 </div>
             </div>
-            <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill px-3 py-2 fw-semibold">
+            <span class="badge pms-count-pill">
                 {{ count($homeProjects) }} Home Project(s)
             </span>
         </div>
@@ -481,9 +974,17 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="text-center py-5 text-muted">
-                                <i class="bx bx-home-alt fs-1 d-block mb-2 text-secondary"></i>
-                                No Home Projects found.
+                            <td colspan="8" class="pms-table-empty">
+                                <div class="pms-table-empty-icon" aria-hidden="true">
+                                    <i class="bx bx-home-alt"></i>
+                                </div>
+                                <h6>No Home Projects found.</h6>
+                                <p>Get started by creating your first in-house product or feature branch.</p>
+                                @if(in_array(strtolower((string) auth()->user()?->role), ['admin', 'hr', 'manager'], true))
+                                    <a href="{{ route('projects.create') }}" class="pms-empty-cta">
+                                        <i class="bx bx-plus"></i> Create In-House Project
+                                    </a>
+                                @endif
                             </td>
                         </tr>
                     @endforelse
@@ -495,18 +996,18 @@
     <!-- ===================================================================== -->
     <!-- TABLE 2: CLIENT PROJECTS (CLIENT COMMISSIONED PRODUCTS)               -->
     <!-- ===================================================================== -->
-    <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
-        <div class="card-header bg-white py-3 px-4 d-flex align-items-center justify-content-between project-card-header">
-            <div class="d-flex align-items-center gap-2">
-                <span class="p-2 rounded-3 bg-success-subtle text-success d-flex align-items-center justify-content-center">
-                    <i class="bx bx-buildings fs-4"></i>
+    <div class="card pms-directory-card mb-4">
+        <div class="card-header d-flex align-items-center justify-content-between project-card-header">
+            <div class="d-flex align-items-center gap-3">
+                <span class="pms-section-icon">
+                    <i class="bx bx-buildings"></i>
                 </span>
                 <div>
                     <h5 class="fw-bold mb-0 text-dark">Client Projects</h5>
                     <small class="text-muted">Client-commissioned products, commercial builds &amp; client contracts</small>
                 </div>
             </div>
-            <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-2 fw-semibold">
+            <span class="badge pms-count-pill pms-count-pill--green">
                 {{ count($clientProjects) }} Client Project(s)
             </span>
         </div>
@@ -694,9 +1195,17 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="9" class="text-center py-5 text-muted">
-                                <i class="bx bx-buildings fs-1 d-block mb-2 text-secondary"></i>
-                                No Client Projects found.
+                            <td colspan="9" class="pms-table-empty">
+                                <div class="pms-table-empty-icon" aria-hidden="true">
+                                    <i class="bx bx-buildings"></i>
+                                </div>
+                                <h6>No Client Projects found.</h6>
+                                <p>Connect your sales pipeline or import active enterprise client contracts.</p>
+                                @if(in_array(strtolower((string) auth()->user()?->role), ['admin', 'hr', 'manager'], true))
+                                    <a href="{{ route('projects.create') }}" class="pms-empty-cta">
+                                        <i class="bx bx-plus"></i> Create Client Project
+                                    </a>
+                                @endif
                             </td>
                         </tr>
                     @endforelse

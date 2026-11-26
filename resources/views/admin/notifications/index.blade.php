@@ -12,7 +12,7 @@
 <style>
   #company-notification-center {
     max-width: 1180px;
-    padding: 1.5rem 1.75rem 2.5rem;
+    padding: 0 0 2rem;
   }
 
   /* Hero Header Card */
@@ -476,7 +476,7 @@
 
   @media (max-width: 767.98px) {
     #company-notification-center {
-      padding: 1rem !important;
+      padding: 0 0 1.5rem !important;
     }
     #company-notification-center .notification-kpi-grid,
     #company-notification-center .notif-sub-grid {

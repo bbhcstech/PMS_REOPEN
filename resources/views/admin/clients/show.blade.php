@@ -234,9 +234,11 @@
     }
 </style>
 
-<div class="container-xxl flex-grow-1 container-p-y">
+@include('admin.clients.partials.workspace-styles')
+
+<div class="container-xxl flex-grow-1" id="pms-client-workspace">
     {{-- Header Banner --}}
-    <div class="card client-hero-card border-0 shadow-sm rounded-4 mb-4" style="background: linear-gradient(135deg, #ffffff 0%, #f8fbf9 100%); border: 1px solid rgba(226, 232, 240, 0.85);">
+    <div class="card client-hero-card mb-4">
         <div class="card-body p-4">
             <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
                 <div class="d-flex align-items-center gap-3">
@@ -261,12 +263,14 @@
                     </div>
                 </div>
 
-                <div class="d-flex align-items-center gap-2 flex-wrap">
-                    <a href="{{ route('clients.edit', $client->id) }}" class="btn btn-warning rounded-pill px-3 shadow-sm">
-                        <i class="bx bx-edit me-1"></i> Edit Client
+                <div class="pms-cl-actions">
+                    <a href="{{ route('clients.edit', $client->id) }}" class="pms-cl-btn-warning">
+                        <i class="bx bx-edit"></i>
+                        <span>Edit Client</span>
                     </a>
-                    <a href="{{ route('clients.index') }}" class="btn btn-outline-secondary rounded-pill px-3">
-                        <i class="bx bx-arrow-back me-1"></i> Back to Clients
+                    <a href="{{ route('clients.index') }}" class="pms-cl-btn-secondary">
+                        <i class="bx bx-arrow-back"></i>
+                        <span>Back to Clients</span>
                     </a>
                 </div>
             </div>

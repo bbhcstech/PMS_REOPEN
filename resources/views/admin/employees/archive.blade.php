@@ -1046,6 +1046,7 @@
     :is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) #archivedEmployeesPage .archive-btn:disabled,
     :is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) #archivedEmployeesPage .archive-btn[disabled] { background: rgba(148, 163, 184, 0.18) !important; color: #CBD5E1 !important; -webkit-text-fill-color: #CBD5E1 !important; }
 </style>
+@include('admin.employees.partials.workspace-overrides')
 
 @push('js')
 <script>
