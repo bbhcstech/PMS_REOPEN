@@ -3,7 +3,7 @@
 @section('title', 'Create Project')
 
 @section('content')
-<div class="create-project-page">
+<div id="project-create-page" class="create-project-page" data-live-preserve>
     <div class="container-fluid px-4">
 
         <!-- Breadcrumb -->
@@ -20,13 +20,23 @@
                 </div>
                 <div>
                     <h1>Create New Project</h1>
-                    <p>Fill in the details to create a new project</p>
+                    @if(!empty($isClientFixed) && $selectedClient)
+                        <p>Adding project under client <strong>{{ $selectedClient->name }}</strong></p>
+                    @else
+                        <p>Fill in the details to create a new project</p>
+                    @endif
                 </div>
             </div>
             <div class="header-actions">
-                <a href="{{ route('projects.index') }}" class="btn btn-outline">
-                    <i class="fas fa-arrow-left"></i> Back to Projects
-                </a>
+                @if(!empty($isClientFixed) && $selectedClient)
+                    <a href="{{ route('clients.show', $selectedClient->id) }}#projects" class="btn btn-outline">
+                        <i class="fas fa-arrow-left"></i> Back to {{ $selectedClient->name }}
+                    </a>
+                @else
+                    <a href="{{ route('projects.index') }}" class="btn btn-outline">
+                        <i class="fas fa-arrow-left"></i> Back to Projects
+                    </a>
+                @endif
             </div>
         </div>
 
@@ -59,7 +69,7 @@
                 </div>
             </div>
 
-            <form action="{{ route('projects.store') }}" method="POST" enctype="multipart/form-data" id="projectForm">
+            <form action="{{ route('projects.store') }}" method="POST" enctype="multipart/form-data" id="projectForm" novalidate>
                 @csrf
 
                 <div class="form-body">
@@ -140,14 +150,6 @@
                             </select>
                         </div>
 
-                        <!-- Progress -->
-                        <div class="form-group">
-                            <label class="form-label">
-                                <i class="fas fa-chart-simple"></i> Progress Percentage
-                            </label>
-                            <input type="number" name="completion_percent" class="form-control" min="0" max="100" value="{{ old('completion_percent', 0) }}" placeholder="0">
-                        </div>
-
                         <!-- Project Category -->
                         <div class="form-group">
                             <label class="form-label">
@@ -160,8 +162,8 @@
                                         <option value="{{ $cat->id }}" {{ old('category_id') == $cat->id ? 'selected' : '' }}>{{ $cat->category_name }}</option>
                                     @endforeach
                                 </select>
-                                <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#catModal">
-                                    <i class="fas fa-plus"></i>
+                                <button type="button" class="btn btn-outline-secondary flex-shrink-0 text-nowrap px-3" data-bs-toggle="modal" data-bs-target="#catModal" style="white-space: nowrap; min-width: 75px;">
+                                    <i class="fas fa-plus me-1"></i> Add
                                 </button>
                             </div>
                         </div>
@@ -174,14 +176,36 @@
                             @php
                                 $selectedDepartmentIds = collect(old('department_ids', []))->map(fn($id) => (string) $id)->all();
                             @endphp
+                            <div class="project-department-split">
+                            <div class="project-department-part">
+                                <span class="project-department-sublabel">Parent Department</span>
+                                <div class="project-parent-row">
+                                    <select id="project_parent_department" class="form-control" aria-label="Parent department">
+                                        <option value="">Select parent department</option>
+                                        @foreach($prtdepartments as $prt)
+                                            <option value="{{ $prt->id }}">{{ $prt->dpt_name }}</option>
+                                        @endforeach
+                                    </select>
+                                    <button type="button" class="btn btn-outline-primary project-parent-add-toggle" id="toggleAddParentDepartment">
+                                        <i class="fas fa-plus"></i> Add
+                                    </button>
+                                </div>
+                                <div class="project-parent-quick-add d-none" id="parentDepartmentQuickAdd">
+                                    <input type="text" id="quick_parent_department_name" class="form-control" placeholder="New parent department name" maxlength="191">
+                                    <button type="button" class="btn btn-primary" id="quickAddParentDepartment"><i class="fas fa-check"></i> Save</button>
+                                </div>
+                                <div id="quickParentDepartmentError" class="quick-add-error d-none"></div>
+                            </div>
+                            <div class="project-department-part">
+                                <span class="project-department-sublabel">Sub Department</span>
                             <div class="department-picker" id="projectDepartmentPicker">
                                 <button type="button" class="department-picker-toggle" id="departmentPickerToggle" aria-expanded="false">
-                                    <span id="departmentPickerText">Select project departments</span>
+                                    <span id="departmentPickerText">Select a parent department first</span>
                                     <i class="fas fa-chevron-down"></i>
                                 </button>
 
                                 <div class="department-picker-menu d-none" id="departmentPickerMenu">
-                                    <input type="text" class="department-search" id="departmentSearch" placeholder="Search departments...">
+                                    <input type="text" class="department-search" id="departmentSearch" placeholder="Search sub departments...">
 
                                     <div class="department-picker-actions">
                                         <button type="button" id="selectAllDepartments">Select All</button>
@@ -193,7 +217,7 @@
                                             @php
                                                 $departmentLabel = trim(($department->dpt_code ? $department->dpt_code . ' - ' : '') . $department->dpt_name);
                                             @endphp
-                                            <label class="department-option" data-label="{{ strtolower($departmentLabel . ' ' . optional($department->parent)->dpt_name) }}">
+                                            <label class="department-option" data-parent-id="{{ $department->parent_dpt_id }}" data-label="{{ strtolower($departmentLabel . ' ' . optional($department->parent)->dpt_name) }}">
                                                 <input
                                                     type="checkbox"
                                                     class="department-checkbox"
@@ -210,7 +234,7 @@
                                     </div>
 
                                     <div class="department-quick-add">
-                                        <strong>Add Department</strong>
+                                        <strong>Add Sub Department</strong>
                                         <div class="department-quick-grid">
                                             <select id="quick_parent_dpt_id" class="form-control">
                                                 <option value="">Parent Department</option>
@@ -227,6 +251,8 @@
                                     </div>
                                 </div>
                             </div>
+                            </div>
+                            </div>
 
                             <select name="department_ids[]" id="project_department_ids" class="department-native-select" multiple>
                                 @foreach($departments as $department)
@@ -238,25 +264,59 @@
                                     </option>
                                 @endforeach
                             </select>
-                            <small class="form-hint">Select one or more departments. New departments are saved to the department database.</small>
+                            <small class="form-hint">Select a parent department, then one or more of its sub departments. New departments are saved to the department database.</small>
+                        </div>
+
+                        <!-- Project Type (Client vs Home) -->
+                        <div class="form-group full-width mb-3">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-layer-group text-primary me-1"></i> Project Type <span class="text-danger">*</span>
+                            </label>
+                            <div class="d-flex align-items-center gap-4 p-3 bg-light rounded-3 border">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="project_type" id="project_type_client" value="client" {{ old('project_type', 'client') === 'client' ? 'checked' : '' }} onchange="toggleProjectType()">
+                                    <label class="form-check-label fw-semibold text-dark" for="project_type_client" style="cursor: pointer;">
+                                        <i class="fas fa-user-tie text-primary me-1"></i> Client
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="project_type" id="project_type_home" value="home" {{ old('project_type') === 'home' ? 'checked' : '' }} onchange="toggleProjectType()">
+                                    <label class="form-check-label fw-semibold text-dark" for="project_type_home" style="cursor: pointer;">
+                                        <i class="fas fa-home text-success me-1"></i> Home
+                                    </label>
+                                </div>
+                            </div>
+                            <small class="form-hint">Choose <strong>Client</strong> for client projects or <strong>Home</strong> for in-house/internal projects.</small>
                         </div>
 
                         <!-- Client -->
-                        <div class="form-group">
-                            <label class="form-label">
-                                <i class="fas fa-user-tie"></i> Client <span class="text-danger">*</span>
+                        <div class="form-group" id="client_select_wrapper">
+                            <label class="form-label d-flex align-items-center justify-content-between">
+                                <span><i class="fas fa-user-tie"></i> Client <span class="text-danger" id="client_required_star">*</span></span>
+                                @if(!empty($isClientFixed) && $selectedClient)
+                                    <span class="badge bg-light text-success border"><i class="fas fa-lock me-1"></i> Fixed Client</span>
+                                @endif
                             </label>
-                            <div class="input-group">
-                                <select name="client_id" id="client_id" class="form-control" required>
-                                    <option value="">Select Client</option>
-                                    @foreach($clients as $client)
-                                        <option value="{{ $client->id }}" {{ old('client_id') == $client->id ? 'selected' : '' }}>{{ $client->name }}</option>
-                                    @endforeach
-                                </select>
-                                <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#clientModal">
-                                    <i class="fas fa-plus"></i>
-                                </button>
-                            </div>
+                            @if(!empty($isClientFixed) && $selectedClient)
+                                <input type="hidden" name="client_id" value="{{ $selectedClient->id }}">
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light text-muted border-end-0"><i class="fas fa-lock"></i></span>
+                                    <input type="text" class="form-control bg-light fw-bold border-start-0" value="{{ $selectedClient->name }} ({{ $selectedClient->client_uid ?? ('CL-' . $selectedClient->id) }})" readonly style="cursor: not-allowed; color: #0f172a;">
+                                </div>
+                                <small class="form-hint text-success"><i class="fas fa-shield-alt me-1"></i> Project will be created under <strong>{{ $selectedClient->name }}</strong> (cannot be overridden).</small>
+                            @else
+                                <div class="input-group">
+                                    <select name="client_id" id="client_id" class="form-control">
+                                        <option value="">Select Client</option>
+                                        @foreach($clients as $c)
+                                            <option value="{{ $c->id }}" {{ old('client_id', $selectedClientId ?? null) == $c->id ? 'selected' : '' }}>{{ $c->name }}</option>
+                                        @endforeach
+                                    </select>
+                                    <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#clientModal">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                            @endif
                         </div>
 
                         <!-- Project Summary -->
@@ -366,9 +426,9 @@
                             <small class="form-hint">Hold Ctrl/Cmd to select multiple members</small>
                         </div>
                         <div class="add-member-btn">
-                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#employeeModal">
+                            <a href="{{ route('employees.create', ['return_url' => route('projects.create')]) }}" class="btn btn-primary">
                                 <i class="fas fa-user-plus"></i> Add Employee
-                            </button>
+                            </a>
                         </div>
                     </div>
 
@@ -447,6 +507,7 @@
                     </div>
 
                     <!-- Form Actions -->
+                    <div id="project-form-feedback" class="alert alert-danger d-none" role="alert" tabindex="-1"></div>
                     <div class="form-actions">
                         <button type="submit" class="btn btn-primary">
                             <i class="fas fa-save"></i> Create Project
@@ -472,7 +533,7 @@
         padding: 30px 0;
         min-height: 100vh;
         background: linear-gradient(145deg, #f7fbf9, #eef7f2);
-        color: #07130d;
+        color: #070B1A;
     }
 
     /* Breadcrumb */
@@ -481,21 +542,21 @@
         backdrop-filter: blur(10px);
         padding: 16px 26px;
         border-radius: 18px;
-        border: 1px solid rgba(15, 116, 76, .12);
+        border: 1px solid rgba(47, 107, 255, .12);
         margin-bottom: 28px;
-        color: #0f744c;
+        color: #2F6BFF;
         font-weight: 600;
         font-size: 1.05rem;
     }
 
     .breadcrumb i {
         margin-right: 12px;
-        color: #34d399;
+        color: #60A5FA;
         font-size: 1.1rem;
     }
 
     .breadcrumb strong {
-        color: #07130d;
+        color: #070B1A;
     }
 
     /* Header Card */
@@ -507,8 +568,8 @@
         justify-content: space-between;
         align-items: center;
         gap: 24px;
-        box-shadow: 0 18px 45px rgba(15, 116, 76, .09);
-        border: 1px solid rgba(15, 116, 76, .12);
+        box-shadow: 0 18px 45px rgba(47, 107, 255, .09);
+        border: 1px solid rgba(47, 107, 255, .12);
         margin-bottom: 28px;
     }
 
@@ -521,21 +582,21 @@
     .header-icon {
         width: 70px;
         height: 70px;
-        background: linear-gradient(145deg, #34d399, #10b981);
+        background: linear-gradient(145deg, #60A5FA, #10b981);
         color: white;
         border-radius: 20px;
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 32px;
-        box-shadow: 0 10px 25px rgba(16, 185, 129, .2);
+        box-shadow: 0 10px 25px rgba(47, 107, 255, .2);
     }
 
     .header-card h1 {
         font-size: 34px;
         font-weight: 700;
         margin-bottom: 6px;
-        color: #07130d;
+        color: #070B1A;
     }
 
     .header-card p {
@@ -567,26 +628,26 @@
 
     .btn-outline {
         background: transparent;
-        border: 1px solid rgba(15, 116, 76, .2);
-        color: #0f744c;
+        border: 1px solid rgba(47, 107, 255, .2);
+        color: #2F6BFF;
     }
 
     .btn-outline:hover {
         background: #edf8f2;
-        border-color: #34d399;
+        border-color: #60A5FA;
         transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(15, 116, 76, .1);
+        box-shadow: 0 8px 20px rgba(47, 107, 255, .1);
     }
 
     .btn-primary {
-        background: linear-gradient(145deg, #34d399, #10b981);
+        background: linear-gradient(145deg, #60A5FA, #10b981);
         color: white;
-        box-shadow: 0 8px 20px rgba(16, 185, 129, .25);
+        box-shadow: 0 8px 20px rgba(47, 107, 255, .25);
     }
 
     .btn-primary:hover {
         transform: translateY(-2px);
-        box-shadow: 0 12px 28px rgba(16, 185, 129, .35);
+        box-shadow: 0 12px 28px rgba(47, 107, 255, .35);
     }
 
     /* Alert */
@@ -623,8 +684,8 @@
     .content-card {
         background: white;
         border-radius: 24px;
-        border: 1px solid rgba(15, 116, 76, .12);
-        box-shadow: 0 18px 45px rgba(15, 116, 76, .08);
+        border: 1px solid rgba(47, 107, 255, .12);
+        box-shadow: 0 18px 45px rgba(47, 107, 255, .08);
         overflow: hidden;
     }
 
@@ -632,7 +693,7 @@
     .form-header {
         padding: 22px 28px;
         background: linear-gradient(135deg, #ffffff, #f5fbf7);
-        border-bottom: 1px solid rgba(15, 116, 76, .1);
+        border-bottom: 1px solid rgba(47, 107, 255, .1);
     }
 
     .form-title {
@@ -645,7 +706,7 @@
         width: 48px;
         height: 48px;
         background: #e7f5ee;
-        color: #0f744c;
+        color: #2F6BFF;
         border-radius: 14px;
         display: flex;
         align-items: center;
@@ -657,12 +718,12 @@
         font-size: 1.3rem;
         font-weight: 700;
         margin: 0;
-        color: #07130d;
+        color: #070B1A;
     }
 
     .form-title .muted {
         font-size: 0.95rem;
-        color: #8ba198;
+        color: #64748B;
         display: block;
         margin-top: 2px;
     }
@@ -683,14 +744,14 @@
         gap: 12px;
         font-size: 1.1rem;
         font-weight: 700;
-        color: #07130d;
+        color: #070B1A;
         padding-bottom: 12px;
-        border-bottom: 2px solid rgba(15, 116, 76, .08);
+        border-bottom: 2px solid rgba(47, 107, 255, .08);
         margin-bottom: 20px;
     }
 
     .section-title i {
-        color: #0f744c;
+        color: #2F6BFF;
         font-size: 1.2rem;
     }
 
@@ -719,20 +780,20 @@
     .form-label {
         font-weight: 600;
         font-size: 0.95rem;
-        color: #07130d;
+        color: #070B1A;
         display: flex;
         align-items: center;
         gap: 8px;
     }
 
     .form-label i {
-        color: #0f744c;
+        color: #2F6BFF;
         font-size: 0.9rem;
     }
 
     .form-control {
         border-radius: 12px;
-        border: 1px solid rgba(15, 116, 76, .18);
+        border: 1px solid rgba(47, 107, 255, .18);
         padding: 12px 16px;
         font-weight: 500;
         font-size: 1rem;
@@ -743,12 +804,12 @@
     }
 
     .form-control:focus {
-        border-color: #34d399;
-        box-shadow: 0 0 0 3px rgba(16, 185, 129, .1);
+        border-color: #60A5FA;
+        box-shadow: 0 0 0 3px rgba(47, 107, 255, .1);
     }
 
     .form-control[readonly] {
-        background: #f0f9f4;
+        background: #F8FAFC;
         cursor: not-allowed;
     }
 
@@ -770,14 +831,14 @@
         border-radius: 0 12px 12px 0;
         min-height: 48px;
         padding: 0 16px;
-        background: #f0f9f4;
-        color: #0f744c;
-        border: 1px solid rgba(15, 116, 76, .18);
+        background: #F8FAFC;
+        color: #2F6BFF;
+        border: 1px solid rgba(47, 107, 255, .18);
         border-left: none;
     }
 
     .input-group .btn:hover {
-        background: #d1fae5;
+        background: #E0E7FF;
     }
 
     .department-picker {
@@ -787,10 +848,10 @@
     .department-picker-toggle {
         width: 100%;
         min-height: 52px;
-        border: 1px solid rgba(15, 116, 76, .18);
+        border: 1px solid rgba(47, 107, 255, .18);
         border-radius: 12px;
         background: #fafefb;
-        color: #07130d;
+        color: #070B1A;
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -813,15 +874,15 @@
         right: 0;
         z-index: 1080;
         background: #ffffff;
-        border: 1px solid rgba(15, 116, 76, .16);
+        border: 1px solid rgba(47, 107, 255, .16);
         border-radius: 14px;
-        box-shadow: 0 18px 45px rgba(15, 116, 76, .16);
+        box-shadow: 0 18px 45px rgba(47, 107, 255, .16);
         padding: 14px;
     }
 
     .department-search {
         width: 100%;
-        border: 1px solid rgba(15, 116, 76, .18);
+        border: 1px solid rgba(47, 107, 255, .18);
         border-radius: 10px;
         padding: 10px 12px;
         margin-bottom: 12px;
@@ -837,8 +898,8 @@
 
     .department-picker-actions button {
         border: none;
-        background: #f0f9f4;
-        color: #0f744c;
+        background: #F8FAFC;
+        color: #2F6BFF;
         border-radius: 10px;
         padding: 10px;
         font-weight: 700;
@@ -857,13 +918,13 @@
         display: flex;
         align-items: center;
         gap: 10px;
-        border: 1px solid rgba(15, 116, 76, .10);
+        border: 1px solid rgba(47, 107, 255, .10);
         border-radius: 999px;
         padding: 10px 14px;
         background: #ffffff;
         cursor: pointer;
         font-weight: 700;
-        color: #07130d;
+        color: #070B1A;
     }
 
     .department-option:hover {
@@ -873,7 +934,7 @@
     .department-option input {
         width: 18px;
         height: 18px;
-        accent-color: #0f744c;
+        accent-color: #2F6BFF;
     }
 
     .department-option small {
@@ -883,7 +944,7 @@
     }
 
     .department-quick-add {
-        border-top: 1px solid rgba(15, 116, 76, .10);
+        border-top: 1px solid rgba(47, 107, 255, .10);
         margin-top: 14px;
         padding-top: 14px;
     }
@@ -902,6 +963,62 @@
         font-weight: 600;
     }
 
+    .project-department-split {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+    }
+
+    .project-department-part {
+        min-width: 0;
+    }
+
+    .project-department-sublabel {
+        display: block;
+        font-size: 0.82rem;
+        font-weight: 700;
+        margin-bottom: 6px;
+        opacity: 0.85;
+    }
+
+    .project-parent-row,
+    .project-parent-quick-add {
+        display: flex;
+        gap: 8px;
+        align-items: stretch;
+    }
+
+    .project-parent-row .form-control,
+    .project-parent-quick-add .form-control {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    .project-parent-row .btn,
+    .project-parent-quick-add .btn {
+        flex: 0 0 auto;
+        white-space: nowrap;
+    }
+
+    .project-parent-quick-add {
+        margin-top: 8px;
+    }
+
+    .department-option.is-other-parent {
+        display: none !important;
+    }
+
+    .department-picker-toggle.is-disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    @media (max-width: 768px) {
+        .project-department-split {
+            grid-template-columns: 1fr;
+        }
+    }
+
     .department-native-select {
         position: absolute;
         width: 1px;
@@ -912,7 +1029,7 @@
 
     .form-hint {
         font-size: 0.85rem;
-        color: #8ba198;
+        color: #64748B;
         margin-top: 4px;
     }
 
@@ -925,7 +1042,7 @@
 
     .shortcode-display {
         font-weight: 700;
-        color: #0f744c;
+        color: #2F6BFF;
     }
 
     /* Settings Grid */
@@ -951,14 +1068,14 @@
         width: 18px;
         height: 18px;
         border-radius: 4px;
-        border: 2px solid #a7f3d0;
+        border: 2px solid #C7D2FE;
         cursor: pointer;
         transition: all 0.2s;
     }
 
     .form-check-input:checked {
-        background-color: #0f744c;
-        border-color: #0f744c;
+        background-color: #2F6BFF;
+        border-color: #2F6BFF;
     }
 
     .form-check-input[type="radio"] {
@@ -968,7 +1085,7 @@
     .form-check-label {
         font-size: 0.95rem;
         cursor: pointer;
-        color: #07130d;
+        color: #070B1A;
         font-weight: 500;
     }
 
@@ -990,21 +1107,21 @@
         align-items: center;
         gap: 12px;
         padding: 14px 20px;
-        background: #f0f9f4;
+        background: #F8FAFC;
         border-radius: 12px;
         cursor: pointer;
         transition: all 0.2s;
         font-weight: 700;
         font-size: 1rem;
-        color: #07130d;
+        color: #070B1A;
     }
 
     .other-details-toggle:hover {
-        background: #d1fae5;
+        background: #E0E7FF;
     }
 
     .other-details-toggle i:first-child {
-        color: #0f744c;
+        color: #2F6BFF;
         transition: transform 0.3s;
     }
 
@@ -1020,7 +1137,7 @@
         padding: 20px;
         background: #fafefb;
         border-radius: 0 0 12px 12px;
-        border: 1px solid rgba(15, 116, 76, .08);
+        border: 1px solid rgba(47, 107, 255, .08);
         border-top: none;
     }
 
@@ -1037,7 +1154,7 @@
         gap: 16px;
         margin-top: 28px;
         padding-top: 24px;
-        border-top: 1px solid rgba(15, 116, 76, .08);
+        border-top: 1px solid rgba(47, 107, 255, .08);
     }
 
     /* Responsive */
@@ -1106,14 +1223,14 @@
 
     /* Dark Mode Support */
     html[data-pms-theme="dark"] .create-project-page {
-        background: linear-gradient(145deg, #07130d, #102119);
+        background: linear-gradient(145deg, #070B1A, #0F1530);
     }
 
     html[data-pms-theme="dark"] .breadcrumb,
     html[data-pms-theme="dark"] .header-card,
     html[data-pms-theme="dark"] .content-card {
-        background: #102119;
-        border-color: rgba(122, 240, 181, .18);
+        background: #0F1530;
+        border-color: rgba(79, 131, 255, .18);
     }
 
     html[data-pms-theme="dark"] .header-card h1,
@@ -1123,85 +1240,85 @@
     }
 
     html[data-pms-theme="dark"] .form-control {
-        background: #183026;
+        background: #141B3D;
         color: #ffffff;
-        border-color: rgba(122, 240, 181, .18);
+        border-color: rgba(79, 131, 255, .18);
     }
 
     html[data-pms-theme="dark"] .form-control[readonly] {
-        background: #142a20;
+        background: #0F1530;
     }
 
     html[data-pms-theme="dark"] .form-header {
-        background: #142a20;
-        border-color: rgba(122, 240, 181, .16);
+        background: #141B3D;
+        border-color: rgba(79, 131, 255, .16);
     }
 
     html[data-pms-theme="dark"] .form-title-icon {
-        background: rgba(122, 240, 181, .15);
-        color: #7af0b5;
+        background: rgba(79, 131, 255, .15);
+        color: #60A5FA;
     }
 
     html[data-pms-theme="dark"] .other-details-toggle {
-        background: #142a20;
+        background: #141B3D;
         color: #ffffff;
     }
 
     html[data-pms-theme="dark"] .other-details-toggle:hover {
-        background: #183026;
+        background: #141B3D;
     }
 
     html[data-pms-theme="dark"] .other-details-body {
-        background: #142a20;
-        border-color: rgba(122, 240, 181, .08);
+        background: #0F1530;
+        border-color: rgba(79, 131, 255, .08);
     }
 
     html[data-pms-theme="dark"] .form-label {
-        color: #d9f1e4;
+        color: #EEF1FB;
     }
 
     html[data-pms-theme="dark"] .form-check-label {
-        color: #d9f1e4;
+        color: #EEF1FB;
     }
 
     html[data-pms-theme="dark"] .input-group .btn {
-        background: #183026;
-        color: #7af0b5;
-        border-color: rgba(122, 240, 181, .18);
+        background: #141B3D;
+        color: #60A5FA;
+        border-color: rgba(79, 131, 255, .18);
     }
 
     html[data-pms-theme="dark"] .input-group .btn:hover {
-        background: #142a20;
+        background: rgba(79, 131, 255, 0.15);
     }
 
     html[data-pms-theme="dark"] .department-picker-toggle,
     html[data-pms-theme="dark"] .department-picker-menu,
     html[data-pms-theme="dark"] .department-search,
     html[data-pms-theme="dark"] .department-option {
-        background: #183026;
+        background: #141B3D;
         color: #ffffff;
-        border-color: rgba(122, 240, 181, .18);
+        border-color: rgba(79, 131, 255, .18);
     }
 
     html[data-pms-theme="dark"] .department-picker-actions button {
-        background: #142a20;
-        color: #7af0b5;
+        background: rgba(79, 131, 255, 0.15);
+        color: #60A5FA;
     }
 
     html[data-pms-theme="dark"] .department-option:hover {
-        background: #142a20;
+        background: rgba(79, 131, 255, 0.15);
     }
 
     html[data-pms-theme="dark"] .department-option small {
-        color: #8ba198;
+        color: #94A3B8;
     }
 
     html[data-pms-theme="dark"] .section-title {
-        border-color: rgba(122, 240, 181, .08);
+        border-color: rgba(79, 131, 255, .08);
     }
 
     html[data-pms-theme="dark"] .form-actions {
-        border-color: rgba(122, 240, 181, .08);
+        border-color: rgba(79, 131, 255, .08);
     }
 
     html[data-pms-theme="dark"] .alert-danger {
@@ -1214,7 +1331,10 @@
     }
 </style>
 
+@include('admin.projects.partials.member-select-styles')
+
 @push('js')
+<script src="{{ asset('admin/assets/js/pms-project-create-validation.js') }}?v={{ filemtime(public_path('admin/assets/js/pms-project-create-validation.js')) }}" defer></script>
 <script>
     // Shortcode toggle + hidden fallback sync
     (function () {
@@ -1325,10 +1445,50 @@
         const quickName = document.getElementById('quick_department_name');
         const quickParent = document.getElementById('quick_parent_dpt_id');
         const quickError = document.getElementById('quickDepartmentError');
+        const parentSelect = document.getElementById('project_parent_department');
+        const parentAddToggle = document.getElementById('toggleAddParentDepartment');
+        const parentAddRow = document.getElementById('parentDepartmentQuickAdd');
+        const parentAddName = document.getElementById('quick_parent_department_name');
+        const parentAddSave = document.getElementById('quickAddParentDepartment');
+        const parentAddError = document.getElementById('quickParentDepartmentError');
 
         if (!picker || !toggle || !menu || !nativeSelect) return;
 
         const getCheckboxes = () => Array.from(picker.querySelectorAll('.department-checkbox'));
+        // Sub departments of the selected parent that are not hidden by the search box.
+        const getVisibleCheckboxes = () => getCheckboxes().filter(checkbox => {
+            const option = checkbox.closest('.department-option');
+            return option && !option.classList.contains('is-other-parent') && !option.classList.contains('d-none');
+        });
+
+        function showParentError(message) {
+            if (!parentAddError) return;
+            parentAddError.textContent = message || '';
+            parentAddError.classList.toggle('d-none', !message);
+        }
+
+        // Show only the selected parent's sub departments; selections under another parent are cleared.
+        function applyParentFilter() {
+            const parentId = parentSelect ? parentSelect.value : '';
+            picker.querySelectorAll('.department-option').forEach(option => {
+                const belongs = !!parentId && String(option.dataset.parentId || '') === String(parentId);
+                option.classList.toggle('is-other-parent', !belongs);
+                if (!belongs) {
+                    const checkbox = option.querySelector('.department-checkbox');
+                    if (checkbox) checkbox.checked = false;
+                }
+            });
+            if (quickParent) {
+                quickParent.value = parentId;
+                quickParent.disabled = true;
+            }
+            toggle.classList.toggle('is-disabled', !parentId);
+            if (!parentId) {
+                menu.classList.add('d-none');
+                toggle.setAttribute('aria-expanded', 'false');
+            }
+            syncNativeSelect();
+        }
 
         function syncNativeSelect() {
             const checkedValues = getCheckboxes()
@@ -1344,7 +1504,7 @@
                 .map(checkbox => checkbox.dataset.label);
 
             if (!checkedLabels.length) {
-                text.textContent = 'Select project departments';
+                text.textContent = parentSelect && !parentSelect.value ? 'Select a parent department first' : 'Select sub departments';
             } else if (checkedLabels.length <= 2) {
                 text.textContent = checkedLabels.join(', ');
             } else {
@@ -1356,6 +1516,7 @@
             const label = `${department.dpt_code ? department.dpt_code + ' - ' : ''}${department.dpt_name}`;
             const optionWrapper = document.createElement('label');
             optionWrapper.className = 'department-option';
+            optionWrapper.dataset.parentId = department.parent_dpt_id ?? '';
             optionWrapper.dataset.label = `${label} ${parentLabel}`.toLowerCase();
 
             const checkbox = document.createElement('input');
@@ -1385,6 +1546,11 @@
         }
 
         toggle.addEventListener('click', function () {
+            if (parentSelect && !parentSelect.value) {
+                showParentError('Select a parent department first.');
+                parentSelect.focus();
+                return;
+            }
             const willOpen = menu.classList.contains('d-none');
             menu.classList.toggle('d-none');
             toggle.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
@@ -1411,7 +1577,7 @@
         });
 
         selectAll.addEventListener('click', function () {
-            getCheckboxes().forEach(checkbox => checkbox.checked = true);
+            getVisibleCheckboxes().forEach(checkbox => checkbox.checked = true);
             syncNativeSelect();
         });
 
@@ -1425,7 +1591,7 @@
             quickError.textContent = '';
 
             if (!quickParent.value || !quickName.value.trim()) {
-                quickError.textContent = 'Choose a parent department and enter a department name.';
+                quickError.textContent = 'Select a parent department and enter a sub department name.';
                 quickError.classList.remove('d-none');
                 return;
             }
@@ -1459,21 +1625,82 @@
             });
         });
 
+        if (parentSelect) {
+            parentSelect.addEventListener('change', function () {
+                showParentError('');
+                applyParentFilter();
+            });
+        }
+
+        if (parentAddToggle && parentAddRow) {
+            parentAddToggle.addEventListener('click', function () {
+                parentAddRow.classList.toggle('d-none');
+                showParentError('');
+                if (!parentAddRow.classList.contains('d-none')) parentAddName.focus();
+            });
+        }
+
+        if (parentAddSave) {
+            parentAddSave.addEventListener('click', function () {
+                const name = parentAddName.value.trim();
+                if (!name) {
+                    showParentError('Enter a parent department name.');
+                    return;
+                }
+                parentAddSave.disabled = true;
+                $.ajax({
+                    url: '{{ route('parent-departments.quick-create') }}',
+                    method: 'POST',
+                    data: { _token: '{{ csrf_token() }}', dpt_name: name, status: 'Active' },
+                    success: function (res) {
+                        if (res.status === 'success' && res.department) {
+                            [parentSelect, quickParent].forEach(select => {
+                                if (select) select.add(new Option(res.department.dpt_name, res.department.id));
+                            });
+                            parentSelect.value = String(res.department.id);
+                            parentAddName.value = '';
+                            parentAddRow.classList.add('d-none');
+                            showParentError('');
+                            applyParentFilter();
+                        }
+                    },
+                    error: function (xhr) {
+                        const errors = xhr.responseJSON?.errors || {};
+                        showParentError(errors.dpt_name?.[0] || xhr.responseJSON?.message || 'Could not add parent department.');
+                    },
+                    complete: function () {
+                        parentAddSave.disabled = false;
+                    }
+                });
+            });
+        }
+
         const form = document.getElementById('projectForm');
         if (form) {
             form.addEventListener('submit', function (event) {
                 syncNativeSelect();
+                if (parentSelect && !parentSelect.value) {
+                    event.preventDefault();
+                    showParentError('Select a parent department.');
+                    parentSelect.focus();
+                    return;
+                }
                 if (!Array.from(nativeSelect.selectedOptions).length) {
                     event.preventDefault();
                     menu.classList.remove('d-none');
                     toggle.setAttribute('aria-expanded', 'true');
-                    quickError.textContent = 'Select at least one project department.';
+                    quickError.textContent = 'Select at least one sub department.';
                     quickError.classList.remove('d-none');
                 }
             });
         }
 
-        syncNativeSelect();
+        // Restore the parent of previously selected sub departments (e.g. after a validation error).
+        const firstChecked = getCheckboxes().find(checkbox => checkbox.checked);
+        if (parentSelect && firstChecked) {
+            parentSelect.value = String(firstChecked.closest('.department-option')?.dataset.parentId || '');
+        }
+        applyParentFilter();
     }
 
     // Add Project Category via AJAX
@@ -1591,6 +1818,26 @@
             allowClear: true,
             width: '100%'
         });
+    });
+
+    // Toggle Project Type (Client vs Home)
+    function toggleProjectType() {
+        const isClient = $('#project_type_client').is(':checked');
+        if (isClient) {
+            $('#client_select_wrapper').show();
+            @if(empty($isClientFixed))
+                $('#client_id').prop('required', true);
+            @endif
+        } else {
+            $('#client_select_wrapper').hide();
+            @if(empty($isClientFixed))
+                $('#client_id').prop('required', false).val('');
+            @endif
+        }
+    }
+
+    $(document).ready(function() {
+        toggleProjectType();
     });
 
     // Employee names hidden inputs for form submission

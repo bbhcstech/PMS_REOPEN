@@ -2,10 +2,23 @@
   'use strict';
 
   var controllerNumber = 0;
-  var cardNumber = 0;
   var controllers = new WeakMap();
+  var controllerList = [];
   var actionHeaderPattern = /^(action|actions|option|options|control|controls|manage|management|operation|operations)$/i;
-  var cardSelector = '.card, [data-pms-card-border], div[class*="-card"], section[class*="-card"], article[class*="-card"], aside[class*="-card"], li[class*="-card"], a[class*="-card"], form[class*="-card"]';
+
+  function isDarkMode() {
+    return (document.documentElement.getAttribute('data-pms-theme') === 'dark') ||
+           (document.documentElement.getAttribute('data-bs-theme') === 'dark') ||
+           (document.documentElement.getAttribute('data-theme') === 'dark') ||
+           document.documentElement.classList.contains('dark') ||
+           (document.body && (
+             document.body.getAttribute('data-pms-theme') === 'dark' ||
+             document.body.getAttribute('data-bs-theme') === 'dark' ||
+             document.body.classList.contains('dark')
+           )) ||
+           localStorage.getItem('pms-theme') === 'dark' ||
+           localStorage.getItem('bitroxia-theme') === 'dark';
+  }
 
   function icon(name) {
     if (name === 'download') {
@@ -19,6 +32,11 @@
 
   function isEligible(table) {
     if (!table || table.tagName !== 'TABLE') return false;
+    // FullCalendar tables are layout grids, not selectable/exportable records.
+    if (table.closest('.fc')) return false;
+    // Date-range picker calendars are temporary form controls, not record tables.
+    // Enhancing them creates scroll hosts/toolbars outside the hidden picker.
+    if (table.closest('.daterangepicker')) return false;
     if (table.matches('[data-pms-export="off"], [role="presentation"]')) return false;
     if (table.closest('[data-pms-export="off"]')) return false;
     if (!table.tHead || !table.tBodies.length) return false;
@@ -84,17 +102,8 @@
   }
 
   function removeLegacySelectionControls(controller, cell) {
-    if (!controller.legacySelectionColumn || !cell) return;
-    var inputs = cell.querySelectorAll('input[type="checkbox"]:not([data-pms-select])');
-
-    Array.prototype.forEach.call(inputs, function (input) {
-      var wrapper = input.closest('label, .form-check, .custom-control');
-      input.remove();
-
-      if (wrapper && cell.contains(wrapper) && !wrapper.querySelector('input, button, select, textarea, a') && !(wrapper.textContent || '').trim()) {
-        wrapper.remove();
-      }
-    });
+    // Keep legacy selection controls intact so application bulk forms and page scripts function properly
+    return;
   }
 
   function ensureTableScrolling(controller) {
@@ -111,12 +120,37 @@
     var minimumWidth = Math.min(2200, Math.max(720, columnCount * 155));
     table.style.setProperty('--pms-table-content-min-width', minimumWidth + 'px');
 
+    var dataTableWrapper = table.closest('.dataTables_wrapper');
+    if (dataTableWrapper) {
+      var outerResponsive = dataTableWrapper.closest('.table-responsive');
+      if (outerResponsive) {
+        // Move dataTables_wrapper outside outer table-responsive so search, length and pagination controls never scroll
+        outerResponsive.parentNode.insertBefore(dataTableWrapper, outerResponsive);
+        outerResponsive.remove();
+      }
+
+      var currentParent = table.parentElement;
+      if (currentParent && currentParent.classList.contains('table-responsive')) {
+        currentParent.classList.add('pms-table-scroll-host');
+        controller.scrollHost = currentParent;
+        return;
+      }
+
+      var innerResponsive = document.createElement('div');
+      innerResponsive.className = 'table-responsive pms-table-scroll-host';
+      table.parentNode.insertBefore(innerResponsive, table);
+      innerResponsive.appendChild(table);
+      controller.scrollHost = innerResponsive;
+      return;
+    }
+
     var scrollHost = table.closest('.table-responsive') ||
       table.closest('.dataTables_scrollBody') ||
-      table.closest('.dataTables_wrapper') ||
+      table.closest('.gantt-matrix-wrapper') ||
+      table.closest('.table-wrapper') ||
       table.parentElement;
 
-    if (scrollHost) {
+    if (scrollHost && !scrollHost.classList.contains('dataTables_wrapper')) {
       scrollHost.classList.add('pms-table-scroll-host');
       controller.scrollHost = scrollHost;
     }
@@ -129,6 +163,55 @@
     label.addEventListener('click', function (event) { event.stopPropagation(); });
   }
 
+  function placeToolbar(controller, toolbar) {
+    var table = controller.table;
+    var hostId = table.getAttribute('data-pms-toolbar-host');
+    var host = hostId ? document.getElementById(hostId) : null;
+    if (host && (host.compareDocumentPosition(table) & 4)) {
+      if (!host.contains(toolbar)) host.appendChild(toolbar);
+      return;
+    }
+
+    // Use the nearest header belonging to this table, never a page header or another table's header.
+    var container = table.parentElement;
+    while (container && container !== document.body) {
+      var tables = container.querySelectorAll('table');
+      if (tables.length > 1) break;
+      var header = container.querySelector('.table-header, .card-header, [data-pms-table-header]');
+      if (header && !header.closest('table') &&
+          (header.compareDocumentPosition(table) & 4)) {
+        var headerHost = host || header.querySelector('.pms-table-header-tools');
+        if (!headerHost) {
+          headerHost = document.createElement('div');
+          headerHost.className = 'pms-table-header-tools';
+          headerHost.setAttribute('data-live-preserve', '');
+          header.appendChild(headerHost);
+        }
+        if (headerHost.parentNode !== header) {
+          headerHost.classList.add('pms-table-header-tools');
+          header.appendChild(headerHost);
+        }
+        header.classList.add('pms-table-header-with-tools');
+        if (!headerHost.contains(toolbar)) headerHost.appendChild(toolbar);
+        return;
+      }
+      if (container.matches('.content-wrapper, main, body')) break;
+      container = container.parentElement;
+    }
+
+    // Tables without a title header get a toolbar immediately above their scroll area.
+    var anchor = table.closest('.dataTables_wrapper') || controller.scrollHost || table;
+    if (anchor.querySelectorAll('table').length > 1) anchor = table;
+    if (host && anchor.parentNode) {
+      if (host.parentNode !== anchor.parentNode || host.nextElementSibling !== anchor) anchor.parentNode.insertBefore(host, anchor);
+      if (!host.contains(toolbar)) host.appendChild(toolbar);
+      return;
+    }
+    if (anchor.parentNode && (toolbar.parentNode !== anchor.parentNode || toolbar.nextElementSibling !== anchor)) {
+      anchor.parentNode.insertBefore(toolbar, anchor);
+    }
+  }
+
   function createToolbar(controller) {
     var toolbar = document.createElement('div');
     toolbar.className = 'pms-table-tools';
@@ -139,18 +222,28 @@
         '<button class="pms-table-export__toggle" type="button" aria-haspopup="menu" aria-expanded="false">' +
           icon('download') + '<span>Export</span>' + icon('chevron') +
         '</button>' +
-        '<div class="pms-table-export__menu" role="menu">' +
+        '<div class="pms-table-export__menu" role="menu" popover="manual">' +
           '<button class="pms-table-export__option" type="button" role="menuitem" data-export-scope="all">' + icon('rows') + '<span>Export all</span></button>' +
           '<button class="pms-table-export__option" type="button" role="menuitem" data-export-scope="selected">' + icon('download') + '<span>Export selected</span></button>' +
         '</div>' +
       '</div>';
 
-    var responsiveParent = controller.table.closest('.table-responsive');
-    var dataTableWrapper = controller.table.closest('.dataTables_wrapper');
-    var anchor = responsiveParent || dataTableWrapper || controller.table;
-    var parent = anchor.parentNode;
+    if (isDarkMode()) {
+      var initialStatus = toolbar.querySelector('.pms-table-tools__status');
+      if (initialStatus) {
+        initialStatus.style.setProperty('color', '#f8fffb', 'important');
+        initialStatus.style.setProperty('-webkit-text-fill-color', '#f8fffb', 'important');
+        initialStatus.style.setProperty('font-weight', '700', 'important');
+      }
+      var exportToggleSpan = toolbar.querySelector('.pms-table-export__toggle span');
+      if (exportToggleSpan) {
+        exportToggleSpan.style.setProperty('color', '#ffffff', 'important');
+        exportToggleSpan.style.setProperty('-webkit-text-fill-color', '#ffffff', 'important');
+      }
+    }
+
     ensureTableScrolling(controller);
-    if (parent) parent.insertBefore(toolbar, anchor);
+    placeToolbar(controller, toolbar);
     controller.toolbar = toolbar;
   }
 
@@ -158,7 +251,17 @@
     var row = headerRow(controller.table);
     if (!row || !row.cells.length) return;
     var cell = row.cells[0];
-    removeLegacySelectionControls(controller, cell);
+    if (controller.legacySelectionColumn) {
+      var existingAll = cell.querySelector('input[type="checkbox"]');
+      if (existingAll) {
+        controller.selectAll = existingAll;
+        if (!existingAll.hasAttribute('data-pms-select')) {
+          existingAll.setAttribute('data-pms-select', 'all');
+          existingAll.setAttribute('data-pms-table', controller.id);
+        }
+        return;
+      }
+    }
     cell.classList.add('pms-table-selection-cell');
     if (cell.querySelector('[data-pms-select="all"]')) {
       controller.selectAll = cell.querySelector('[data-pms-select="all"]');
@@ -177,7 +280,18 @@
       return;
     }
     var cell = row.cells[0];
-    removeLegacySelectionControls(controller, cell);
+    if (controller.legacySelectionColumn) {
+      var existingRowInput = cell.querySelector('input[type="checkbox"]');
+      if (existingRowInput) {
+        if (!existingRowInput.hasAttribute('data-pms-select')) {
+          existingRowInput.setAttribute('data-pms-select', 'row');
+          existingRowInput.setAttribute('data-pms-table', controller.id);
+        }
+        if (existingRowInput.checked) controller.selectedRows.add(row);
+        row.classList.toggle('pms-row-selected', existingRowInput.checked);
+        return;
+      }
+    }
     cell.classList.add('pms-table-selection-cell');
     var input = cell.querySelector(':scope > .pms-table-select > [data-pms-select="row"]');
     if (!input) {
@@ -207,6 +321,13 @@
 
     if (controller.selectAll) {
       controller.selectAll.disabled = rows.length === 0;
+      // Explain the disabled state instead of looking like a broken checkbox.
+      var selectAllLabel = rows.length === 0 ? 'No rows to select yet' : 'Select all rows';
+      controller.selectAll.title = selectAllLabel;
+      controller.selectAll.setAttribute('aria-label', selectAllLabel);
+      if (controller.selectAll.parentElement && controller.selectAll.parentElement.classList.contains('pms-table-select')) {
+        controller.selectAll.parentElement.title = selectAllLabel;
+      }
       controller.selectAll.checked = rows.length > 0 && selected.length === rows.length;
       controller.selectAll.indeterminate = selected.length > 0 && selected.length < rows.length;
     }
@@ -220,6 +341,48 @@
     if (allLabel) allLabel.textContent = 'Export all (' + rows.length + ')';
     if (selectedLabel) selectedLabel.textContent = 'Export selected (' + selected.length + ')';
     if (selectedButton) selectedButton.disabled = selected.length === 0;
+
+    var isDark = isDarkMode();
+    if (status) {
+      if (isDark) {
+        status.style.setProperty('color', '#f8fffb', 'important');
+        status.style.setProperty('-webkit-text-fill-color', '#f8fffb', 'important');
+        status.style.setProperty('font-weight', '700', 'important');
+      } else {
+        status.style.removeProperty('color');
+        status.style.removeProperty('-webkit-text-fill-color');
+        status.style.removeProperty('font-weight');
+      }
+    }
+    if (isDark) {
+      var exportToggleSpan = controller.toolbar.querySelector('.pms-table-export__toggle span');
+      if (exportToggleSpan) {
+        exportToggleSpan.style.setProperty('color', '#ffffff', 'important');
+        exportToggleSpan.style.setProperty('-webkit-text-fill-color', '#ffffff', 'important');
+      }
+      if (allLabel) {
+        allLabel.style.setProperty('color', '#ffffff', 'important');
+        allLabel.style.setProperty('-webkit-text-fill-color', '#ffffff', 'important');
+      }
+      if (selectedLabel) {
+        selectedLabel.style.setProperty('color', '#ffffff', 'important');
+        selectedLabel.style.setProperty('-webkit-text-fill-color', '#ffffff', 'important');
+      }
+    } else {
+      var exportToggleSpan = controller.toolbar.querySelector('.pms-table-export__toggle span');
+      if (exportToggleSpan) {
+        exportToggleSpan.style.removeProperty('color');
+        exportToggleSpan.style.removeProperty('-webkit-text-fill-color');
+      }
+      if (allLabel) {
+        allLabel.style.removeProperty('color');
+        allLabel.style.removeProperty('-webkit-text-fill-color');
+      }
+      if (selectedLabel) {
+        selectedLabel.style.removeProperty('color');
+        selectedLabel.style.removeProperty('-webkit-text-fill-color');
+      }
+    }
   }
 
   function cleanCell(cell) {
@@ -320,6 +483,8 @@
     var exportBox = controller.toolbar.querySelector('.pms-table-export');
     var toggle = controller.toolbar.querySelector('.pms-table-export__toggle');
     if (exportBox) exportBox.classList.remove('is-open');
+    var menu = controller.toolbar.querySelector('.pms-table-export__menu');
+    if (menu && typeof menu.hidePopover === 'function' && menu.matches(':popover-open')) menu.hidePopover();
     if (toggle) toggle.setAttribute('aria-expanded', 'false');
   }
 
@@ -342,12 +507,21 @@
       if (!input || input.getAttribute('data-pms-table') !== controller.id) return;
 
       if (input.getAttribute('data-pms-select') === 'all') {
+        // Row change handlers update the header state; preserve the user's intent.
+        var selectAllChecked = input.checked;
         dataRows(controller.table).forEach(function (row) {
-          var rowCheckbox = row.querySelector('[data-pms-select="row"][data-pms-table="' + controller.id + '"]');
-          if (input.checked) controller.selectedRows.add(row);
+          var rowCheckbox = row.querySelector('[data-pms-select="row"][data-pms-table="' + controller.id + '"]') ||
+                            (row.cells[0] ? row.cells[0].querySelector('input[type="checkbox"]') : null);
+          if (rowCheckbox) {
+            var stateChanged = (rowCheckbox.checked !== selectAllChecked);
+            rowCheckbox.checked = selectAllChecked;
+            if (stateChanged) {
+              rowCheckbox.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+          }
+          if (selectAllChecked) controller.selectedRows.add(row);
           else controller.selectedRows.delete(row);
-          if (rowCheckbox) rowCheckbox.checked = input.checked;
-          row.classList.toggle('pms-row-selected', input.checked);
+          row.classList.toggle('pms-row-selected', selectAllChecked);
         });
       } else {
         var selectedRow = input.closest('tr');
@@ -367,11 +541,49 @@
         var isOpen = !exportBox.classList.contains('is-open');
         document.querySelectorAll('.pms-table-export.is-open').forEach(function (openMenu) {
           openMenu.classList.remove('is-open');
+          var popup = openMenu.querySelector('.pms-table-export__menu');
+          if (popup && typeof popup.hidePopover === 'function' && popup.matches(':popover-open')) popup.hidePopover();
           var openToggle = openMenu.querySelector('.pms-table-export__toggle');
           if (openToggle) openToggle.setAttribute('aria-expanded', 'false');
         });
         exportBox.classList.toggle('is-open', isOpen);
+        var toggleRect = toggle.getBoundingClientRect();
+        exportBox.classList.toggle('opens-up', window.innerHeight - toggleRect.bottom < 140 && toggleRect.top > 140);
         toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        var popupMenu = exportBox.querySelector('.pms-table-export__menu');
+        if (isOpen && popupMenu) {
+          // Native popovers render above overflow and stacking contexts while retaining event handlers.
+          if (typeof popupMenu.showPopover === 'function') popupMenu.showPopover();
+          popupMenu.style.setProperty('position', 'fixed', 'important');
+          popupMenu.style.setProperty('margin', '0', 'important');
+          popupMenu.style.setProperty('right', 'auto', 'important');
+          popupMenu.style.setProperty('bottom', 'auto', 'important');
+          popupMenu.style.setProperty('max-width', 'calc(100vw - 16px)', 'important');
+          var popupBounds = popupMenu.getBoundingClientRect();
+          var popupLeft = Math.max(8, Math.min(toggleRect.right - popupBounds.width, window.innerWidth - popupBounds.width - 8));
+          var popupTop = toggleRect.bottom + 8;
+          if (popupTop + popupBounds.height > window.innerHeight - 8) popupTop = toggleRect.top - popupBounds.height - 8;
+          popupMenu.style.setProperty('left', popupLeft + 'px', 'important');
+          popupMenu.style.setProperty('top', Math.max(8, popupTop) + 'px', 'important');
+        }
+        var isDarkClick = isDarkMode();
+        if (isDarkClick) {
+          var tSpan = toggle.querySelector('span');
+          if (tSpan) {
+            tSpan.style.setProperty('color', '#ffffff', 'important');
+            tSpan.style.setProperty('-webkit-text-fill-color', '#ffffff', 'important');
+          }
+          var allSpan = exportBox.querySelector('[data-export-scope="all"] span');
+          if (allSpan) {
+            allSpan.style.setProperty('color', '#ffffff', 'important');
+            allSpan.style.setProperty('-webkit-text-fill-color', '#ffffff', 'important');
+          }
+          var selSpan = exportBox.querySelector('[data-export-scope="selected"] span');
+          if (selSpan) {
+            selSpan.style.setProperty('color', '#ffffff', 'important');
+            selSpan.style.setProperty('-webkit-text-fill-color', '#ffffff', 'important');
+          }
+        }
         return;
       }
 
@@ -398,7 +610,12 @@
   }
 
   function enhance(table) {
-    if (!isEligible(table) || controllers.has(table)) return;
+    if (!isEligible(table)) return;
+    if (controllers.has(table)) {
+      var existing = controllers.get(table);
+      placeToolbar(existing, existing.toolbar);
+      return;
+    }
     controllerNumber += 1;
     var controller = {
       id: 'pms-table-' + controllerNumber,
@@ -414,6 +631,7 @@
       legacySelectionColumn: hasLegacySelectionColumn(table)
     };
     controllers.set(table, controller);
+    controllerList.push(controller);
     table.classList.add('pms-exportable-table');
     table.setAttribute('data-pms-table-tools-id', controller.id);
     createToolbar(controller);
@@ -422,52 +640,55 @@
     bindController(controller);
   }
 
-  function isCardCandidate(element) {
-    if (!element || element.nodeType !== 1 || element.matches('[data-pms-card-border="off"]')) return false;
-    if (!element.matches('div, section, article, aside, li, a, form')) return false;
-    if (Array.prototype.some.call(element.classList, function (className) { return /^fa[srlbd]?(-|$)|^bx(-|$)/.test(className); })) return false;
-    if (element.classList.contains('card')) return true;
-
-    return Array.prototype.some.call(element.classList, function (className) {
-      if (className.endsWith('-card')) return true;
-      if (className.indexOf('-card-') === -1) return false;
-      return !/-card-(body|content|footer|header|icon|image|img|left|right|title|subtitle|text|meta|actions?|wrapper|section|grid|row|col)(-|$)/.test(className);
-    });
-  }
-
-  function enhanceCard(card) {
-    if (!isCardCandidate(card) || card.getAttribute('data-pms-card-border-ready') === 'true') return;
-    cardNumber += 1;
-
-    var hue = Math.round((cardNumber * 137.508) % 360);
-    var secondHue = Math.round((hue + 52) % 360);
-    var layer = document.createElement('span');
-    layer.className = 'pms-card-border-layer';
-    layer.setAttribute('aria-hidden', 'true');
-
-    card.setAttribute('data-pms-card-border-ready', 'true');
-    card.classList.add('pms-animated-card-border');
-    if (window.getComputedStyle(card).position === 'static') card.classList.add('pms-card-needs-position');
-    card.style.setProperty('--pms-card-color-a', 'hsl(' + hue + ' 84% 52%)');
-    card.style.setProperty('--pms-card-color-b', 'hsl(' + secondHue + ' 88% 58%)');
-    var borderDuration = 9.5 + (cardNumber % 6) * 0.65;
-    card.style.setProperty('--pms-card-border-duration', borderDuration.toFixed(2) + 's');
-    card.style.setProperty('--pms-card-border-hover-duration', (borderDuration * 0.58).toFixed(2) + 's');
-    card.style.setProperty('--pms-card-border-delay', (-cardNumber * 0.31).toFixed(2) + 's');
-    card.insertBefore(layer, card.firstChild);
-  }
-
-  function scanCards(root) {
+  function removeCardBorderLayers(root) {
     if (!root) return;
-    if (root.matches && root.matches(cardSelector)) enhanceCard(root);
-    if (root.querySelectorAll) root.querySelectorAll(cardSelector).forEach(enhanceCard);
+    try {
+      if (root.matches && (root.matches('.pms-card-border-layer') || root.classList.contains('pms-card-border-layer'))) {
+        if (root.parentNode) {
+          root.parentNode.classList.remove('pms-animated-card-border', 'pms-card-needs-position');
+          root.parentNode.removeAttribute('data-pms-card-border-ready');
+        }
+        root.remove();
+        return;
+      }
+      if (root.querySelectorAll) {
+        var layers = root.querySelectorAll('.pms-card-border-layer');
+        for (var i = 0; i < layers.length; i++) {
+          var layer = layers[i];
+          var parent = layer.parentNode;
+          if (parent) {
+            parent.classList.remove('pms-animated-card-border', 'pms-card-needs-position');
+            parent.removeAttribute('data-pms-card-border-ready');
+            parent.style.removeProperty('--pms-card-color-a');
+            parent.style.removeProperty('--pms-card-color-b');
+            parent.style.removeProperty('--pms-card-border-duration');
+            parent.style.removeProperty('--pms-card-border-hover-duration');
+            parent.style.removeProperty('--pms-card-border-delay');
+          }
+          layer.remove();
+        }
+        var animatedCards = root.querySelectorAll('.pms-animated-card-border');
+        for (var j = 0; j < animatedCards.length; j++) {
+          var card = animatedCards[j];
+          card.classList.remove('pms-animated-card-border', 'pms-card-needs-position');
+          card.removeAttribute('data-pms-card-border-ready');
+          card.style.removeProperty('--pms-card-color-a');
+          card.style.removeProperty('--pms-card-color-b');
+          card.style.removeProperty('--pms-card-border-duration');
+          card.style.removeProperty('--pms-card-border-hover-duration');
+          card.style.removeProperty('--pms-card-border-delay');
+        }
+      }
+    } catch (e) {
+      // Ignore cleanup errors
+    }
   }
 
   function scan(root) {
     if (!root) return;
     if (root.matches && root.matches('table')) enhance(root);
     if (root.querySelectorAll) root.querySelectorAll('table').forEach(enhance);
-    scanCards(root);
+    removeCardBorderLayers(root);
   }
 
   function start() {
@@ -483,6 +704,12 @@
         scanQueued = false;
         pendingScanRoots.forEach(function (root) { scan(root); });
         pendingScanRoots.clear();
+        // Live DOM reconciliation and DataTables can move preserved toolbars.
+        // Repair existing controls too, retaining their selection state and handlers.
+        controllerList.forEach(function (controller) {
+          if (controller.table.isConnected) placeToolbar(controller, controller.toolbar);
+          else if (controller.toolbar && controller.toolbar.isConnected) controller.toolbar.remove();
+        });
       });
     }
 
@@ -495,10 +722,28 @@
     });
     pageObserver.observe(document.body, { childList: true, subtree: true });
 
+    if (window.MutationObserver) {
+      var themeObserver = new MutationObserver(function () {
+        controllerList.forEach(function (ctrl) { if (ctrl.table && ctrl.table.isConnected) syncToolbar(ctrl); });
+      });
+      themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-pms-theme', 'data-bs-theme', 'data-theme', 'class'] });
+      if (document.body) {
+        themeObserver.observe(document.body, { attributes: true, attributeFilter: ['data-pms-theme', 'data-bs-theme', 'data-theme', 'class'] });
+      }
+    }
+
+    window.addEventListener('storage', function (e) {
+      if (e.key === 'pms-theme' || e.key === 'bitroxia-theme') {
+        controllerList.forEach(function (ctrl) { if (ctrl.table && ctrl.table.isConnected) syncToolbar(ctrl); });
+      }
+    });
+
     document.addEventListener('click', function (event) {
       if (event.target.closest('.pms-table-export')) return;
       document.querySelectorAll('.pms-table-export.is-open').forEach(function (menu) {
         menu.classList.remove('is-open');
+        var popup = menu.querySelector('.pms-table-export__menu');
+        if (popup && typeof popup.hidePopover === 'function' && popup.matches(':popover-open')) popup.hidePopover();
         var toggle = menu.querySelector('.pms-table-export__toggle');
         if (toggle) toggle.setAttribute('aria-expanded', 'false');
       });
@@ -508,6 +753,8 @@
       if (event.key !== 'Escape') return;
       document.querySelectorAll('.pms-table-export.is-open').forEach(function (menu) {
         menu.classList.remove('is-open');
+        var popup = menu.querySelector('.pms-table-export__menu');
+        if (popup && typeof popup.hidePopover === 'function' && popup.matches(':popover-open')) popup.hidePopover();
         var toggle = menu.querySelector('.pms-table-export__toggle');
         if (toggle) {
           toggle.setAttribute('aria-expanded', 'false');

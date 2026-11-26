@@ -11,6 +11,10 @@ use Illuminate\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 
+use App\Models\Central\ComplaintAttachment;
+use App\Services\CompanyContext;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+
 class CompanyComplaintController extends Controller
 {
     protected ComplaintService $complaintService;
@@ -22,29 +26,20 @@ class CompanyComplaintController extends Controller
 
     private function getActiveCompany(): Company
     {
+        \App\Support\PlatformSupportAccess::authorizeCompanyAdmin(auth()->user());
+        $company = app(CompanyContext::class)->current();
+        if ($company instanceof Company) {
+            \App\Support\PlatformSupportAccess::authorizeCompanyAdmin(auth()->user(), (int) $company->id);
+            return $company;
+        }
+
         $user = auth()->user();
-        $companyId = $user?->company_id ?? session('current_company_id');
-
-        if ($companyId) {
-            $company = Company::on('central')->find($companyId);
-            if ($company) return $company;
+        if ($user && $user->company_id) {
+            $comp = Company::on('central')->find($user->company_id);
+            if ($comp) return $comp;
         }
 
-        $dbName = session('current_company_db');
-        if ($dbName) {
-            $company = Company::on('central')->where('db_name', $dbName)->first();
-            if ($company) return $company;
-        }
-
-        $first = Company::on('central')->first();
-        if ($first) return $first;
-
-        // Fallback
-        return new Company([
-            'id'    => 1,
-            'name'  => config('app.name', 'Default Company'),
-            'email' => 'admin@company.com'
-        ]);
+        abort(403, 'Unauthorized: Active company context could not be identified.');
     }
 
     /**
@@ -53,6 +48,8 @@ class CompanyComplaintController extends Controller
     public function index(Request $request): View
     {
         $company = $this->getActiveCompany();
+
+        app(\App\Services\InternalTicketRouting::class)->reconcile($company);
 
         $query = CompanyComplaint::on('central')
             ->where('company_id', $company->id)
@@ -105,7 +102,10 @@ class CompanyComplaintController extends Controller
             'Payroll', 'HR', 'Security', 'Performance', 'Feature Request', 'Bug Report', 'Other'
         ];
 
-        return view('admin.complaints.create', compact('company', 'categories'));
+        $currentLevel = \App\Services\PlanEligibilityService::getCurrentLevel($company);
+        $plans = \App\Models\Central\Plan::standard()->where('is_active', true)->orderBy('sort_order')->get()
+            ->filter(fn ($plan) => \App\Services\PlanEligibilityService::getPlanLevel($plan) < $currentLevel);
+        return view('admin.complaints.create', compact('company', 'categories', 'plans'));
     }
 
     /**
@@ -113,6 +113,7 @@ class CompanyComplaintController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        $company = $this->getActiveCompany();
         $request->validate([
             'subject'           => 'required|string|max:255',
             'category'          => 'required|string',
@@ -121,12 +122,14 @@ class CompanyComplaintController extends Controller
             'attachment'        => 'nullable|file|max:5120',
             'related_module'    => 'nullable|string|max:100',
             'related_record_id' => 'nullable|string|max:100',
+            'requested_plan_id' => ['nullable', 'integer', \Illuminate\Validation\Rule::exists('central.plans', 'id')->where(fn ($q) => $q->whereIn('slug', \App\Support\SupportedPlans::SLUGS)->where('is_active', true))],
         ]);
 
-        $company = $this->getActiveCompany();
         $user = auth()->user();
 
-        $complaint = $this->complaintService->createComplaint($request->all(), $company, $user);
+        $complaint = $request->filled('requested_plan_id')
+            ? app(\App\Services\SubscriptionDowngradeRequests::class)->create($request->all(), $company, $user)
+            : $this->complaintService->createComplaint($request->all(), $company, $user);
 
         return redirect()->route('admin.company-complaints.show', $complaint->id)
             ->with('success', "Ticket created successfully! Your Ticket ID is: {$complaint->ticket_id}");
@@ -142,7 +145,14 @@ class CompanyComplaintController extends Controller
         $ticket = CompanyComplaint::on('central')
             ->where('company_id', $company->id)
             ->with(['conversations', 'attachments', 'activities'])
-            ->findOrFail($id);
+            ->where(function ($q) use ($id) {
+                if (is_numeric($id)) {
+                    $q->where('id', $id)->orWhere('ticket_id', $id);
+                } else {
+                    $q->where('ticket_id', $id);
+                }
+            })
+            ->firstOrFail();
 
         return view('admin.complaints.show', compact('ticket', 'company'));
     }
@@ -150,8 +160,18 @@ class CompanyComplaintController extends Controller
     /**
      * Send Reply to Super Admin.
      */
-    public function reply(Request $request, $id): RedirectResponse
+    public function messages(Request $request, $id): JsonResponse
     {
+        $company = $this->getActiveCompany();
+        abort_unless(auth()->user() && (int) auth()->user()->company_id === (int) $company->id, 403);
+        $ticket = CompanyComplaint::on('central')->where('company_id', $company->id)->findOrFail($id);
+        return app(\App\Services\ComplaintConversationFeed::class)->response($request, $ticket);
+    }
+
+    public function reply(Request $request, $id): RedirectResponse|JsonResponse
+    {
+        $company = $this->getActiveCompany();
+        abort_unless(auth()->user() && (int) auth()->user()->company_id === (int) $company->id, 403);
         $request->validate([
             'message'       => 'required|string|min:2',
             'attachments.*' => 'nullable|file|max:5120',
@@ -160,7 +180,14 @@ class CompanyComplaintController extends Controller
         $company = $this->getActiveCompany();
         $ticket = CompanyComplaint::on('central')
             ->where('company_id', $company->id)
-            ->findOrFail($id);
+            ->where(function ($q) use ($id) {
+                if (is_numeric($id)) {
+                    $q->where('id', $id)->orWhere('ticket_id', $id);
+                } else {
+                    $q->where('ticket_id', $id);
+                }
+            })
+            ->firstOrFail();
 
         $user = auth()->user();
         $files = $request->file('attachments', []);
@@ -169,6 +196,8 @@ class CompanyComplaintController extends Controller
         }
 
         $this->complaintService->addResponse($ticket, $request->message, $user, 'company_admin', $files);
+
+        if ($request->expectsJson()) return response()->json(['success' => true]);
 
         return redirect()->back()->with('success', 'Response sent successfully to Super Admin.');
     }
@@ -181,11 +210,47 @@ class CompanyComplaintController extends Controller
         $company = $this->getActiveCompany();
         $ticket = CompanyComplaint::on('central')
             ->where('company_id', $company->id)
-            ->findOrFail($id);
+            ->where(function ($q) use ($id) {
+                if (is_numeric($id)) {
+                    $q->where('id', $id)->orWhere('ticket_id', $id);
+                } else {
+                    $q->where('ticket_id', $id);
+                }
+            })
+            ->firstOrFail();
 
         $user = auth()->user();
         $this->complaintService->updateStatus($ticket, 'REOPENED', $user, 'company_admin', 'Ticket reopened by Company Admin.');
 
         return redirect()->back()->with('success', 'Ticket reopened successfully.');
+    }
+
+    /**
+     * Securely download complaint attachment with tenant ownership validation.
+     */
+    public function downloadAttachment($ticketId, $attachmentId): BinaryFileResponse
+    {
+        $company = $this->getActiveCompany();
+        $ticket = CompanyComplaint::on('central')
+            ->where('company_id', $company->id)
+            ->where(function ($q) use ($ticketId) {
+                if (is_numeric($ticketId)) {
+                    $q->where('id', $ticketId)->orWhere('ticket_id', $ticketId);
+                } else {
+                    $q->where('ticket_id', $ticketId);
+                }
+            })
+            ->firstOrFail();
+
+        $attachment = ComplaintAttachment::on('central')
+            ->where('complaint_id', $ticket->id)
+            ->findOrFail($attachmentId);
+
+        $filePath = public_path($attachment->file_path);
+        if (!file_exists($filePath)) {
+            abort(404, 'Attachment file not found.');
+        }
+
+        return response()->download($filePath, $attachment->original_name);
     }
 }

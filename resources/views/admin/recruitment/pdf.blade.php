@@ -1,6 +1,11 @@
+@php
+    $pdfHeaderImage = method_exists($requirement, 'pdfImageDataUri') ? $requirement->pdfImageDataUri('pdf_header_image') : null;
+    $pdfFooterImage = method_exists($requirement, 'pdfImageDataUri') ? $requirement->pdfImageDataUri('pdf_footer_image') : null;
+@endphp
 <!doctype html>
 <html>
 <head>
+    @include('documents.pdf-styles')
     <meta charset="utf-8"/>
     <title>Job Requirement - {{ $requirement->title }}</title>
     <style>
@@ -10,7 +15,7 @@
             box-sizing: border-box;
         }
         body {
-            font-family: 'Helvetica Neue', 'Helvetica', 'DejaVu Sans', Arial, sans-serif;
+            font-family: 'DejaVu Sans', sans-serif;
             font-size: 11px;
             color: #1f2937;
             background: #ffffff;
@@ -135,8 +140,29 @@
             color: #9ca3af;
         }
     </style>
+    @if($pdfHeaderImage || $pdfFooterImage)
+    <style>
+        /* Company header/footer repeat on every page; the page margins reserve their space. */
+        @page { size: A4 portrait; margin: {{ $pdfHeaderImage ? '42mm' : '15mm' }} 15mm {{ $pdfFooterImage ? '34mm' : '18mm' }} 15mm; }
+        body { padding: 0; }
+        .pdf-brand-header, .pdf-brand-footer { position: fixed; left: 15mm; right: 15mm; text-align: center; }
+        .pdf-brand-header { top: 10mm; height: 24mm; }
+        .pdf-brand-footer { bottom: 8mm; height: 16mm; }
+        .pdf-brand-header img { max-width: 180mm; max-height: 24mm; width: auto; height: auto; }
+        .pdf-brand-footer img { max-width: 180mm; max-height: 16mm; width: auto; height: auto; }
+        .header-table, .title-box, .params-table { page-break-inside: avoid; }
+        .section-header { page-break-after: avoid; }
+        .section-text { overflow-wrap: break-word; word-wrap: break-word; }
+    </style>
+    @endif
 </head>
 <body>
+    @if($pdfHeaderImage)
+    <div class="pdf-brand-header"><img src="{{ $pdfHeaderImage }}" alt="Company header"></div>
+    @endif
+    @if($pdfFooterImage)
+    <div class="pdf-brand-footer"><img src="{{ $pdfFooterImage }}" alt="Company footer"></div>
+    @endif
 
     <table class="header-table">
         <tr>

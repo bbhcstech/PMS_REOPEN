@@ -15,7 +15,7 @@
         <!-- Top Header -->
         <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
             <div>
-                <h3 class="fw-bold mb-0 text-dark">Support Tickets</h3>
+                <h3 class="fw-bold mb-0 text-dark">Internal Tickets</h3>
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb mb-0">
                         <li class="breadcrumb-item"><a href="{{ route('dashboard') }}" class="text-decoration-none">Dashboard</a></li>
@@ -24,7 +24,7 @@
                 </nav>
             </div>
 
-            @if(in_array(strtolower((string) auth()->user()?->role), ['admin', 'hr', 'manager'], true))
+            @if(auth()->user()->canViewModule('tickets') && (\App\Services\WorkforceAccess::isAdmin(auth()->user()) || auth()->user()->moduleToggleAllows('tickets', 'create')))
                 <a href="{{ route('tickets.create') }}" class="btn btn-primary rounded-pill px-4 shadow-sm">
                     <i class="bx bx-plus-circle me-1"></i> Create Ticket
                 </a>
@@ -68,10 +68,11 @@
                         <label for="status" class="form-label fw-semibold text-dark mb-1">Filter by Status</label>
                         <select class="form-select rounded-3" id="status" name="status">
                             <option value="">All Statuses</option>
-                            <option value="open" {{ request('status') == 'open' ? 'selected' : '' }}>Open</option>
+                            <option value="open" {{ request('status') == 'open' ? 'selected' : '' }}>Start</option>
                             <option value="reopened" {{ request('status') == 'reopened' ? 'selected' : '' }}>REOPENED</option>
-                            <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
-                            <option value="resolved" {{ request('status') == 'resolved' ? 'selected' : '' }}>Resolved</option>
+                            <option value="in_progress" {{ request('status') == 'in_progress' ? 'selected' : '' }}>In progress</option>
+                            <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>On hold</option>
+                            <option value="resolved" {{ request('status') == 'resolved' ? 'selected' : '' }}>Finished</option>
                             <option value="closed" {{ request('status') == 'closed' ? 'selected' : '' }}>Closed</option>
                         </select>
                     </div>
@@ -101,28 +102,28 @@
 
         <div class="col-lg-2 col-md-4 col-6">
             <div class="card border-0 shadow-sm rounded-4 text-center p-3 h-100 bg-warning-subtle text-dark border-start border-warning border-4">
-                <small class="text-warning-emphasis text-uppercase fw-bold mb-1">Open</small>
+                <small class="text-warning-emphasis text-uppercase fw-bold mb-1">Start</small>
                 <h4 class="fw-extrabold text-warning-emphasis mb-0">{{ $tickets->where('status', 'open')->count() }}</h4>
             </div>
         </div>
 
         <div class="col-lg-2 col-md-4 col-6">
             <div class="card border-0 shadow-sm rounded-4 text-center p-3 h-100 bg-danger-subtle text-danger border-start border-danger border-4">
-                <small class="text-danger text-uppercase fw-bold mb-1">Reopened</small>
-                <h4 class="fw-extrabold text-danger mb-0">{{ $tickets->where('status', 'reopened')->count() }}</h4>
+                <small class="text-danger text-uppercase fw-bold mb-1">In progress</small>
+                <h4 class="fw-extrabold text-danger mb-0">{{ $tickets->where('status', 'in_progress')->count() }}</h4>
             </div>
         </div>
 
         <div class="col-lg-2 col-md-4 col-6">
             <div class="card border-0 shadow-sm rounded-4 text-center p-3 h-100 bg-info-subtle text-info border-start border-info border-4">
-                <small class="text-info-emphasis text-uppercase fw-bold mb-1">Pending</small>
+                <small class="text-info-emphasis text-uppercase fw-bold mb-1">On hold</small>
                 <h4 class="fw-extrabold text-info-emphasis mb-0">{{ $tickets->where('status', 'pending')->count() }}</h4>
             </div>
         </div>
 
         <div class="col-lg-2 col-md-4 col-6">
             <div class="card border-0 shadow-sm rounded-4 text-center p-3 h-100 bg-success-subtle text-success border-start border-success border-4">
-                <small class="text-success text-uppercase fw-bold mb-1">Resolved</small>
+                <small class="text-success text-uppercase fw-bold mb-1">Finished</small>
                 <h4 class="fw-extrabold text-success mb-0">{{ $tickets->where('status', 'resolved')->count() }}</h4>
             </div>
         </div>
@@ -136,6 +137,7 @@
     </div>
 
     <!-- Bulk Action Toolbar -->
+    @if(\App\Support\TicketAccess::canManage())
     <div class="d-flex align-items-center justify-content-between mb-3" id="bulk-action-div" style="display: none !important;">
         <div class="d-flex align-items-center gap-2 bg-white p-2 px-3 rounded-pill shadow-sm border">
             <span class="fw-semibold text-dark small me-1"><i class="bx bx-check-square text-primary me-1"></i> Bulk Action:</span>
@@ -149,6 +151,7 @@
     </div>
 
     <!-- Tickets Datatable Card -->
+    @endif
     <div class="card border-0 shadow-sm rounded-4">
         <div class="card-body p-4">
             <div class="table-responsive">
@@ -159,7 +162,7 @@
                             <th style="width: 80px;">Ticket#</th>
                             <th>Subject & Project</th>
                             <th>Requester (Client)</th>
-                            <th>Assigned Developer</th>
+                            <th>Assigned Employee</th>
                             <th>Requested On</th>
                             <th>Priority</th>
                             <th>Status</th>
@@ -213,11 +216,13 @@
                                     <select name="status"
                                             class="form-select form-select-sm change-status rounded-pill px-3"
                                             data-ticket-id="{{ $ticket->id }}"
+                                            @disabled(!\App\Support\TicketAccess::canManage() && (int) $ticket->agent_id !== (int) auth()->id())
                                             style="min-width: 130px;">
-                                        <option value="open" {{ strtolower($ticket->status) == 'open' ? 'selected' : '' }}>Open</option>
+                                        <option value="open" {{ strtolower($ticket->status) == 'open' ? 'selected' : '' }}>Start</option>
                                         <option value="reopened" {{ strtolower($ticket->status) == 'reopened' ? 'selected' : '' }}>REOPENED</option>
-                                        <option value="pending" {{ strtolower($ticket->status) == 'pending' ? 'selected' : '' }}>Pending</option>
-                                        <option value="resolved" {{ strtolower($ticket->status) == 'resolved' ? 'selected' : '' }}>Resolved</option>
+                                        <option value="in_progress" {{ strtolower($ticket->status) == 'in_progress' ? 'selected' : '' }}>In progress</option>
+                            <option value="pending" {{ strtolower($ticket->status) == 'pending' ? 'selected' : '' }}>On hold</option>
+                                        <option value="resolved" {{ strtolower($ticket->status) == 'resolved' ? 'selected' : '' }}>Finished</option>
                                         <option value="closed" {{ strtolower($ticket->status) == 'closed' ? 'selected' : '' }}>Closed</option>
                                     </select>
                                 </td>
@@ -232,6 +237,7 @@
                                                     <i class="bx bx-show me-2 text-primary"></i> View Details
                                                 </a>
                                             </li>
+                                            @if(\App\Support\TicketAccess::canManage())
                                             <li>
                                                 <a class="dropdown-item py-2" href="{{ route('tickets.edit', $ticket->id) }}">
                                                     <i class="bx bx-edit me-2 text-info"></i> Edit Ticket
@@ -249,6 +255,7 @@
                                                     </button>
                                                 </form>
                                             </li>
+                                            @endif
                                         </ul>
                                     </div>
                                 </td>
@@ -281,8 +288,8 @@
         box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
     }
     .dt-buttons .btn:hover {
-        background: var(--pms-primary-soft, #e4f3eb) !important;
-        color: var(--pms-primary, #0f744c) !important;
+        background: var(--pms-primary-soft, #EEF2FF) !important;
+        color: var(--pms-primary, #2F6BFF) !important;
     }
     .dataTables_filter input {
         border-radius: 50rem !important;
@@ -291,10 +298,255 @@
         outline: none !important;
     }
     .dataTables_paginate .paginate_button.current {
-        background: var(--pms-primary, #0f744c) !important;
+        background: var(--pms-primary, #2F6BFF) !important;
         color: #ffffff !important;
         border-radius: 50rem !important;
         border: none !important;
+    }
+    html[data-pms-theme="dark"] .dt-buttons .btn {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.16) !important;
+        color: #CBD5E1 !important;
+    }
+    html[data-pms-theme="dark"] .dt-buttons .btn:hover {
+        background: #1A2247 !important;
+        color: #2F6BFF !important;
+        border-color: #2F6BFF !important;
+    }
+    html[data-pms-theme="dark"] .dataTables_filter input {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.16) !important;
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .dataTables_paginate .paginate_button.current {
+        background: #2F6BFF !important;
+        color: #ffffff !important;
+    }
+
+    /* DateRangePicker Dark Mode Polish */
+    html[data-pms-theme="dark"] .daterangepicker,
+    html[data-bs-theme="dark"] .daterangepicker,
+    html[data-theme="dark"] .daterangepicker {
+        background-color: #0F1530 !important;
+        border: 1px solid rgba(238, 241, 251, 0.16) !important;
+        border-radius: 12px !important;
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6) !important;
+        color: #EEF1FB !important;
+        padding: 6px !important;
+    }
+
+    html[data-pms-theme="dark"] .daterangepicker:before,
+    html[data-bs-theme="dark"] .daterangepicker:before,
+    html[data-theme="dark"] .daterangepicker:before {
+        border-bottom-color: rgba(238, 241, 251, 0.2) !important;
+    }
+
+    html[data-pms-theme="dark"] .daterangepicker:after,
+    html[data-bs-theme="dark"] .daterangepicker:after,
+    html[data-theme="dark"] .daterangepicker:after {
+        border-bottom-color: #0F1530 !important;
+    }
+
+    html[data-pms-theme="dark"] .daterangepicker .ranges,
+    html[data-bs-theme="dark"] .daterangepicker .ranges,
+    html[data-theme="dark"] .daterangepicker .ranges {
+        background-color: transparent !important;
+        padding: 4px !important;
+        margin: 0 !important;
+    }
+
+    html[data-pms-theme="dark"] .daterangepicker .ranges ul,
+    html[data-bs-theme="dark"] .daterangepicker .ranges ul,
+    html[data-theme="dark"] .daterangepicker .ranges ul {
+        padding: 0 !important;
+        margin: 0 !important;
+        width: 100% !important;
+        list-style: none !important;
+    }
+
+    html[data-pms-theme="dark"] .daterangepicker .ranges li,
+    html[data-bs-theme="dark"] .daterangepicker .ranges li,
+    html[data-theme="dark"] .daterangepicker .ranges li {
+        background-color: transparent !important;
+        color: #CBD5E1 !important;
+        font-size: 13px !important;
+        font-weight: 500 !important;
+        padding: 9px 14px !important;
+        margin-bottom: 2px !important;
+        border-radius: 8px !important;
+        cursor: pointer !important;
+        transition: all 0.18s ease !important;
+        border: none !important;
+    }
+
+    html[data-pms-theme="dark"] .daterangepicker .ranges li:hover,
+    html[data-bs-theme="dark"] .daterangepicker .ranges li:hover,
+    html[data-theme="dark"] .daterangepicker .ranges li:hover {
+        background-color: rgba(47, 107, 255, 0.18) !important;
+        color: #60A5FA !important;
+    }
+
+    html[data-pms-theme="dark"] .daterangepicker .ranges li.active,
+    html[data-bs-theme="dark"] .daterangepicker .ranges li.active,
+    html[data-theme="dark"] .daterangepicker .ranges li.active {
+        background-color: #2F6BFF !important;
+        color: #FFFFFF !important;
+        font-weight: 600 !important;
+    }
+
+    html[data-pms-theme="dark"] .daterangepicker .calendar-table,
+    html[data-bs-theme="dark"] .daterangepicker .calendar-table,
+    html[data-theme="dark"] .daterangepicker .calendar-table {
+        background-color: #0F1530 !important;
+        border: 1px solid rgba(238, 241, 251, 0.09) !important;
+        border-radius: 8px !important;
+        padding: 6px !important;
+    }
+
+    html[data-pms-theme="dark"] .daterangepicker .calendar-table table,
+    html[data-bs-theme="dark"] .daterangepicker .calendar-table table,
+    html[data-theme="dark"] .daterangepicker .calendar-table table {
+        background-color: transparent !important;
+    }
+
+    html[data-pms-theme="dark"] .daterangepicker .calendar-table th,
+    html[data-bs-theme="dark"] .daterangepicker .calendar-table th,
+    html[data-theme="dark"] .daterangepicker .calendar-table th {
+        color: #9AA3C7 !important;
+        font-weight: 600 !important;
+    }
+
+    html[data-pms-theme="dark"] .daterangepicker .calendar-table th.month,
+    html[data-bs-theme="dark"] .daterangepicker .calendar-table th.month,
+    html[data-theme="dark"] .daterangepicker .calendar-table th.month {
+        color: #EEF1FB !important;
+        font-weight: 700 !important;
+    }
+
+    html[data-pms-theme="dark"] .daterangepicker th.prev span,
+    html[data-pms-theme="dark"] .daterangepicker th.next span,
+    html[data-bs-theme="dark"] .daterangepicker th.prev span,
+    html[data-bs-theme="dark"] .daterangepicker th.next span,
+    html[data-theme="dark"] .daterangepicker th.prev span,
+    html[data-theme="dark"] .daterangepicker th.next span {
+        border-color: #EEF1FB !important;
+    }
+
+    html[data-pms-theme="dark"] .daterangepicker th.prev:hover,
+    html[data-pms-theme="dark"] .daterangepicker th.next:hover,
+    html[data-bs-theme="dark"] .daterangepicker th.prev:hover,
+    html[data-bs-theme="dark"] .daterangepicker th.next:hover,
+    html[data-theme="dark"] .daterangepicker th.prev:hover,
+    html[data-theme="dark"] .daterangepicker th.next:hover {
+        background-color: rgba(47, 107, 255, 0.18) !important;
+    }
+
+    html[data-pms-theme="dark"] .daterangepicker select.monthselect,
+    html[data-pms-theme="dark"] .daterangepicker select.yearselect,
+    html[data-bs-theme="dark"] .daterangepicker select.monthselect,
+    html[data-bs-theme="dark"] .daterangepicker select.yearselect,
+    html[data-theme="dark"] .daterangepicker select.monthselect,
+    html[data-theme="dark"] .daterangepicker select.yearselect {
+        background-color: #141B3D !important;
+        color: #EEF1FB !important;
+        border: 1px solid rgba(238, 241, 251, 0.16) !important;
+        border-radius: 6px !important;
+        padding: 3px 6px !important;
+    }
+
+    html[data-pms-theme="dark"] .daterangepicker .calendar-table td,
+    html[data-bs-theme="dark"] .daterangepicker .calendar-table td,
+    html[data-theme="dark"] .daterangepicker .calendar-table td {
+        color: #CBD5E1 !important;
+        background-color: transparent !important;
+        border-radius: 6px !important;
+        transition: all 0.15s ease !important;
+    }
+
+    html[data-pms-theme="dark"] .daterangepicker .calendar-table td.available:hover,
+    html[data-bs-theme="dark"] .daterangepicker .calendar-table td.available:hover,
+    html[data-theme="dark"] .daterangepicker .calendar-table td.available:hover {
+        background-color: rgba(47, 107, 255, 0.18) !important;
+        color: #60A5FA !important;
+    }
+
+    html[data-pms-theme="dark"] .daterangepicker .calendar-table td.off,
+    html[data-pms-theme="dark"] .daterangepicker .calendar-table td.off.in-range,
+    html[data-pms-theme="dark"] .daterangepicker .calendar-table td.off.start-date,
+    html[data-pms-theme="dark"] .daterangepicker .calendar-table td.off.end-date,
+    html[data-bs-theme="dark"] .daterangepicker .calendar-table td.off,
+    html[data-theme="dark"] .daterangepicker .calendar-table td.off {
+        background-color: transparent !important;
+        color: #6B739A !important;
+        opacity: 0.5 !important;
+    }
+
+    html[data-pms-theme="dark"] .daterangepicker .calendar-table td.in-range,
+    html[data-bs-theme="dark"] .daterangepicker .calendar-table td.in-range,
+    html[data-theme="dark"] .daterangepicker .calendar-table td.in-range {
+        background-color: rgba(47, 107, 255, 0.22) !important;
+        color: #93C5FD !important;
+        border-radius: 0 !important;
+    }
+
+    html[data-pms-theme="dark"] .daterangepicker .calendar-table td.active,
+    html[data-pms-theme="dark"] .daterangepicker .calendar-table td.active:hover,
+    html[data-bs-theme="dark"] .daterangepicker .calendar-table td.active,
+    html[data-bs-theme="dark"] .daterangepicker .calendar-table td.active:hover,
+    html[data-theme="dark"] .daterangepicker .calendar-table td.active,
+    html[data-theme="dark"] .daterangepicker .calendar-table td.active:hover {
+        background-color: #2F6BFF !important;
+        color: #FFFFFF !important;
+        font-weight: 600 !important;
+    }
+
+    html[data-pms-theme="dark"] .daterangepicker .drp-buttons,
+    html[data-bs-theme="dark"] .daterangepicker .drp-buttons,
+    html[data-theme="dark"] .daterangepicker .drp-buttons {
+        border-top: 1px solid rgba(238, 241, 251, 0.12) !important;
+        background-color: #141B3D !important;
+        padding: 8px 12px !important;
+        border-radius: 0 0 10px 10px !important;
+    }
+
+    html[data-pms-theme="dark"] .daterangepicker .drp-selected,
+    html[data-bs-theme="dark"] .daterangepicker .drp-selected,
+    html[data-theme="dark"] .daterangepicker .drp-selected {
+        color: #9AA3C7 !important;
+        font-size: 12px !important;
+    }
+
+    html[data-pms-theme="dark"] .daterangepicker .drp-buttons .btn,
+    html[data-bs-theme="dark"] .daterangepicker .drp-buttons .btn,
+    html[data-theme="dark"] .daterangepicker .drp-buttons .btn {
+        font-weight: 600 !important;
+        border-radius: 6px !important;
+        padding: 6px 14px !important;
+        font-size: 12px !important;
+        transition: all 0.2s ease !important;
+    }
+
+    html[data-pms-theme="dark"] .daterangepicker .drp-buttons .btn.applyBtn,
+    html[data-bs-theme="dark"] .daterangepicker .drp-buttons .btn.applyBtn,
+    html[data-theme="dark"] .daterangepicker .drp-buttons .btn.applyBtn {
+        background-color: #2F6BFF !important;
+        border-color: #2F6BFF !important;
+        color: #FFFFFF !important;
+    }
+
+    html[data-pms-theme="dark"] .daterangepicker .drp-buttons .btn.cancelBtn,
+    html[data-bs-theme="dark"] .daterangepicker .drp-buttons .btn.cancelBtn,
+    html[data-theme="dark"] .daterangepicker .drp-buttons .btn.cancelBtn {
+        background-color: #0F1530 !important;
+        border: 1px solid rgba(238, 241, 251, 0.16) !important;
+        color: #CBD5E1 !important;
+    }
+
+    html[data-pms-theme="dark"] .daterangepicker .drp-buttons .btn.cancelBtn:hover,
+    html[data-bs-theme="dark"] .daterangepicker .drp-buttons .btn.cancelBtn:hover,
+    html[data-theme="dark"] .daterangepicker .drp-buttons .btn.cancelBtn:hover {
+        background-color: #1A2247 !important;
+        color: #FFFFFF !important;
     }
 </style>
 
@@ -307,8 +559,6 @@
 <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
 <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.3.0-beta.1/pdfmake.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.3.0-beta.1/vfs_fonts.js"></script>
 
 <script>
     $(document).ready(function () {
@@ -333,9 +583,13 @@
         });
 
         // Status change handler
-        $('#tickets-table').on('change', '.change-status', function () {
-            var ticketId = $(this).data('ticket-id');
-            var status = $(this).val();
+        $('#tickets-table').on('focus', '.change-status', function () {
+            $(this).data('prev-val', $(this).val());
+        }).on('change', '.change-status', function () {
+            var $select = $(this);
+            var prevVal = $select.data('prev-val') || $select.val();
+            var ticketId = $select.data('ticket-id');
+            var status = $select.val();
             var token = '{{ csrf_token() }}';
 
             $.ajax({
@@ -348,11 +602,16 @@
                 },
                 success: function (response) {
                     if (response.status === 'success') {
-                        // Toast or alert notification
+                        $select.data('prev-val', status);
+                    } else {
+                        $select.val(prevVal);
+                        alert(response.message || 'Error updating ticket status');
                     }
                 },
-                error: function () {
-                    alert('Error updating ticket status');
+                error: function (xhr) {
+                    $select.val(prevVal);
+                    var msg = xhr.responseJSON && xhr.responseJSON.error ? xhr.responseJSON.error : 'Error updating ticket status';
+                    alert(msg);
                 }
             });
         });

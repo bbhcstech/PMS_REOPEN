@@ -7,8 +7,8 @@
     .org-details-page {
         min-height: calc(100vh - 100px);
         padding: 2rem 1.75rem;
-        background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 50%, #f4fbf7 100%);
-        color: #0a2e1f;
+        background: linear-gradient(135deg, #F8FAFC 0%, #EEF2FF 50%, #F8FAFC 100%);
+        color: #0F172A;
     }
 
     .org-details-shell {
@@ -32,7 +32,7 @@
         right: -100px;
         width: 500px;
         height: 500px;
-        background: radial-gradient(circle, rgba(52, 211, 153, 0.12) 0%, transparent 70%);
+        background: radial-gradient(circle, rgba(79, 131, 255, 0.12) 0%, transparent 70%);
         animation: orbFloat 20s ease-in-out infinite;
     }
 
@@ -41,7 +41,7 @@
         left: -100px;
         width: 450px;
         height: 450px;
-        background: radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, transparent 70%);
+        background: radial-gradient(circle, rgba(47, 107, 255, 0.1) 0%, transparent 70%);
         animation: orbFloat 25s ease-in-out infinite reverse;
     }
 
@@ -68,13 +68,13 @@
     }
 
     .breadcrumb-custom a {
-        color: #059669;
+        color: #2F6BFF;
         text-decoration: none;
         transition: color 0.2s ease;
     }
 
     .breadcrumb-custom a:hover {
-        color: #047857;
+        color: #1E4FCC;
     }
 
     /* ===== HEADER CARD ===== */
@@ -84,8 +84,8 @@
         border-radius: 28px;
         padding: 1.75rem 2.25rem;
         margin-bottom: 2rem;
-        border: 1px solid rgba(16, 185, 129, 0.15);
-        box-shadow: 0 10px 30px -10px rgba(16, 185, 129, 0.08);
+        border: 1px solid rgba(47, 107, 255, 0.15);
+        box-shadow: 0 10px 30px -10px rgba(47, 107, 255, 0.08);
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -109,20 +109,32 @@
         width: 58px;
         height: 58px;
         border-radius: 20px;
-        background: linear-gradient(145deg, #34d399, #059669);
+        background: linear-gradient(145deg, #4F83FF, #2F6BFF);
         color: white;
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 1.6rem;
-        box-shadow: 0 8px 20px -4px rgba(5, 150, 105, 0.35);
+        box-shadow: 0 8px 20px -4px rgba(47, 107, 255, 0.35);
         flex-shrink: 0;
+    }
+
+    .pms-settings-page.org-details-page .branches-header .header-left-box .header-icon-badge svg {
+        width: 28px;
+        height: 28px;
+        color: #fff !important;
+        background: transparent !important;
+        fill: none !important;
+        stroke: #fff !important;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
     }
 
     .header-title h1 {
         font-size: 1.95rem;
         font-weight: 800;
-        background: linear-gradient(135deg, #0a2e1f, #059669, #10b981);
+        background: linear-gradient(135deg, #0F172A, #2F6BFF, #10b981);
         -webkit-background-clip: text;
         background-clip: text;
         color: transparent;
@@ -139,8 +151,8 @@
 
     .btn-back-settings {
         background-color: #ffffff;
-        border: 1px solid rgba(16, 185, 129, 0.25);
-        color: #0f744c !important;
+        border: 1px solid rgba(47, 107, 255, 0.25);
+        color: #2F6BFF !important;
         font-weight: 700;
         font-size: 0.9rem;
         border-radius: 40px;
@@ -154,9 +166,9 @@
     }
 
     .btn-back-settings:hover {
-        background-color: #e6f3ec;
-        color: #059669 !important;
-        border-color: rgba(16, 185, 129, 0.4);
+        background-color: #EEF2FF;
+        color: #2F6BFF !important;
+        border-color: rgba(47, 107, 255, 0.4);
         transform: translateY(-2px);
     }
 
@@ -169,6 +181,43 @@
         display: inline-block;
     }
 
+    /* Dark Mode Support for Back to Settings Button */
+    html[data-pms-theme="dark"] .btn-back-settings,
+    html[data-bs-theme="dark"] .btn-back-settings,
+    body[data-pms-theme="dark"] .btn-back-settings,
+    [data-pms-theme="dark"] .btn-back-settings {
+        background-color: #141B3D !important;
+        border-color: rgba(79, 131, 255, 0.2) !important;
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
+    }
+
+    html[data-pms-theme="dark"] .btn-back-settings .back-arrow-icon,
+    html[data-bs-theme="dark"] .btn-back-settings .back-arrow-icon,
+    body[data-pms-theme="dark"] .btn-back-settings .back-arrow-icon,
+    [data-pms-theme="dark"] .btn-back-settings .back-arrow-icon {
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
+    }
+
+    html[data-pms-theme="dark"] .btn-back-settings:hover,
+    html[data-bs-theme="dark"] .btn-back-settings:hover,
+    body[data-pms-theme="dark"] .btn-back-settings:hover,
+    [data-pms-theme="dark"] .btn-back-settings:hover {
+        background-color: #2F6BFF !important;
+        border-color: #2F6BFF !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
+    html[data-pms-theme="dark"] .btn-back-settings:hover .back-arrow-icon,
+    html[data-bs-theme="dark"] .btn-back-settings:hover .back-arrow-icon,
+    body[data-pms-theme="dark"] .btn-back-settings:hover .back-arrow-icon,
+    [data-pms-theme="dark"] .btn-back-settings:hover .back-arrow-icon {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
     /* ===== STATS GRID ===== */
     .stats-grid {
         display: grid;
@@ -178,38 +227,33 @@
     }
 
     .stat-card,
-    .org-details-page .stat-card,
-    .org-details-page .stat-card:first-of-type {
+    .org-details-page .stat-card {
         background: #ffffff !important;
         backdrop-filter: blur(20px);
         border-radius: 24px;
         padding: 1.5rem;
-        border: 1px solid rgba(16, 185, 129, 0.14) !important;
-        box-shadow: 0 10px 30px -10px rgba(16, 185, 129, 0.08) !important;
+        border: 1px solid rgba(47, 107, 255, 0.14) !important;
+        box-shadow: 0 10px 30px -10px rgba(47, 107, 255, 0.08) !important;
         display: flex;
         align-items: center;
         gap: 1.25rem;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         position: relative;
         overflow: hidden;
-        color: #0a2e1f !important;
+        color: #0F172A !important;
     }
 
-    .org-details-page .stat-card:first-of-type *,
     .org-details-page .stat-card * {
         -webkit-text-fill-color: initial;
     }
 
-    .org-details-page .stat-card h3,
-    .org-details-page .stat-card:first-of-type h3 {
-        color: #0a2e1f !important;
-        -webkit-text-fill-color: #0a2e1f !important;
+    .org-details-page .stat-card h3 {
+        color: #0F172A !important;
+        -webkit-text-fill-color: #0F172A !important;
     }
 
     .org-details-page .stat-card h6,
-    .org-details-page .stat-card span,
-    .org-details-page .stat-card:first-of-type span,
-    .org-details-page .stat-card:first-of-type h6 {
+    .org-details-page .stat-card span {
         color: #64748b !important;
         -webkit-text-fill-color: #64748b !important;
     }
@@ -221,7 +265,7 @@
         left: 0;
         right: 0;
         height: 3px;
-        background: linear-gradient(90deg, #34d399, #059669);
+        background: linear-gradient(90deg, #4F83FF, #2F6BFF);
         transform: scaleX(0);
         transition: transform 0.3s ease;
     }
@@ -232,8 +276,8 @@
 
     .stat-card:hover {
         transform: translateY(-4px);
-        box-shadow: 0 20px 35px -12px rgba(16, 185, 129, 0.15) !important;
-        border-color: rgba(16, 185, 129, 0.25) !important;
+        box-shadow: 0 20px 35px -12px rgba(47, 107, 255, 0.15) !important;
+        border-color: rgba(47, 107, 255, 0.25) !important;
     }
 
     .stat-icon {
@@ -247,16 +291,31 @@
         flex-shrink: 0;
     }
 
+    .stat-icon i,
+    .org-details-page .stat-card .stat-icon i {
+        font-size: 1.5rem;
+        color: inherit !important;
+        -webkit-text-fill-color: currentColor !important;
+    }
+
     .stat-icon.industry,
-    .org-details-page .stat-card:first-of-type .stat-icon.industry {
-        background: linear-gradient(145deg, #d1fae5, #a7f3d0) !important;
-        color: #059669 !important;
-        -webkit-text-fill-color: #059669 !important;
+    .org-details-page .stat-card .stat-icon.industry {
+        background: linear-gradient(145deg, #EEF2FF, #E0E7FF) !important;
+    }
+
+    .stat-icon.industry i,
+    .org-details-page .stat-card .stat-icon.industry i {
+        color: #2F6BFF !important;
+        -webkit-text-fill-color: #2F6BFF !important;
     }
 
     .stat-icon.size,
     .org-details-page .stat-card .stat-icon.size {
         background: linear-gradient(145deg, #e0f2fe, #bae6fd) !important;
+    }
+
+    .stat-icon.size i,
+    .org-details-page .stat-card .stat-icon.size i {
         color: #0284c7 !important;
         -webkit-text-fill-color: #0284c7 !important;
     }
@@ -264,6 +323,10 @@
     .stat-icon.tax,
     .org-details-page .stat-card .stat-icon.tax {
         background: linear-gradient(145deg, #fef3c7, #fde68a) !important;
+    }
+
+    .stat-icon.tax i,
+    .org-details-page .stat-card .stat-icon.tax i {
         color: #d97706 !important;
         -webkit-text-fill-color: #d97706 !important;
     }
@@ -271,9 +334,58 @@
     .stat-icon.year,
     .org-details-page .stat-card .stat-icon.year {
         background: linear-gradient(145deg, #e0e7ff, #c7d2fe) !important;
+    }
+
+    .stat-icon.year i,
+    .org-details-page .stat-card .stat-icon.year i {
         color: #4f46e5 !important;
         -webkit-text-fill-color: #4f46e5 !important;
     }
+
+    /* Dark Mode Support for Executive Summary Stats Cards.
+       Scoped to the page so it outranks the page-scoped light rules above (it previously lost to them,
+       leaving the first card white and every icon tile pastel in dark mode). */
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body[data-pms-theme="dark"], body.dark-mode) .org-details-page .stat-card {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.12) !important;
+        box-shadow: none !important;
+        color: #EEF1FB !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark,
+        body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode)
+        .pms-settings-page.org-details-page .stats-grid .stat-card.org-industry-card {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.12) !important;
+        color: #EEF1FB !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark,
+        body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode)
+        .pms-settings-page.org-details-page .stats-grid .stat-card.org-industry-card h3 {
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body[data-pms-theme="dark"], body.dark-mode) .org-details-page .stat-card h3 {
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body[data-pms-theme="dark"], body.dark-mode) .org-details-page .stat-card :is(h6, span) {
+        color: #94a3b8 !important;
+        -webkit-text-fill-color: #94a3b8 !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body[data-pms-theme="dark"], body.dark-mode) .org-details-page .stat-card .stat-icon.industry { background: rgba(47, 107, 255, 0.2) !important; }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body[data-pms-theme="dark"], body.dark-mode) .org-details-page .stat-card .stat-icon.industry i { color: #60A5FA !important; -webkit-text-fill-color: #60A5FA !important; }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body[data-pms-theme="dark"], body.dark-mode) .org-details-page .stat-card .stat-icon.size { background: rgba(14, 165, 233, 0.2) !important; }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body[data-pms-theme="dark"], body.dark-mode) .org-details-page .stat-card .stat-icon.size i { color: #38bdf8 !important; -webkit-text-fill-color: #38bdf8 !important; }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body[data-pms-theme="dark"], body.dark-mode) .org-details-page .stat-card .stat-icon.tax { background: rgba(245, 158, 11, 0.2) !important; }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body[data-pms-theme="dark"], body.dark-mode) .org-details-page .stat-card .stat-icon.tax i { color: #fbbf24 !important; -webkit-text-fill-color: #fbbf24 !important; }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body[data-pms-theme="dark"], body.dark-mode) .org-details-page .stat-card .stat-icon.year { background: rgba(99, 102, 241, 0.2) !important; }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body[data-pms-theme="dark"], body.dark-mode) .org-details-page .stat-card .stat-icon.year i { color: #818cf8 !important; -webkit-text-fill-color: #818cf8 !important; }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body[data-pms-theme="dark"], body.dark-mode) .org-details-page .stat-card .stat-icon { box-shadow: none !important; border: 1px solid rgba(238, 241, 251, 0.08) !important; }
 
     .stat-info h6 {
         font-size: 0.72rem;
@@ -287,7 +399,7 @@
     .stat-info h3 {
         font-size: 1.25rem;
         font-weight: 800;
-        color: #0a2e1f;
+        color: #0F172A;
         margin: 0;
         line-height: 1.2;
     }
@@ -297,14 +409,14 @@
         background: rgba(255, 255, 255, 0.95);
         backdrop-filter: blur(20px);
         border-radius: 28px;
-        border: 1px solid rgba(16, 185, 129, 0.15);
-        box-shadow: 0 10px 30px -10px rgba(16, 185, 129, 0.08);
+        border: 1px solid rgba(47, 107, 255, 0.15);
+        box-shadow: 0 10px 30px -10px rgba(47, 107, 255, 0.08);
         overflow: hidden;
     }
 
     .card-header-custom {
         padding: 1.5rem 2.25rem;
-        border-bottom: 1px solid rgba(16, 185, 129, 0.12);
+        border-bottom: 1px solid rgba(47, 107, 255, 0.12);
         display: flex;
         align-items: center;
         gap: 1rem;
@@ -315,8 +427,8 @@
         width: 48px;
         height: 48px;
         border-radius: 16px;
-        background: linear-gradient(145deg, #d1fae5, #a7f3d0);
-        color: #059669;
+        background: linear-gradient(145deg, #EEF2FF, #E0E7FF);
+        color: #2F6BFF;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -330,19 +442,19 @@
         gap: 0.5rem;
         padding: 0.4rem 1rem;
         border-radius: 40px;
-        background: #ecfdf5;
-        color: #059669;
+        background: #EEF2FF;
+        color: #2F6BFF;
         font-weight: 800;
         font-size: 0.82rem;
         letter-spacing: 0.03em;
-        border: 1px solid rgba(5, 150, 105, 0.2);
+        border: 1px solid rgba(47, 107, 255, 0.2);
         margin-bottom: 1.25rem;
     }
 
     .form-label-custom {
         font-size: 0.88rem;
         font-weight: 700;
-        color: #0a2e1f;
+        color: #0F172A;
         margin-bottom: 8px;
         display: flex;
         align-items: center;
@@ -351,23 +463,23 @@
 
     .input-group-custom {
         border-radius: 16px;
-        border: 1px solid rgba(16, 185, 129, 0.2);
+        border: 1px solid rgba(47, 107, 255, 0.2);
         background-color: #fafefb;
         transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         overflow: hidden;
     }
 
     .input-group-custom:focus-within {
-        border-color: #34d399;
+        border-color: #60A5FA;
         background-color: #ffffff;
-        box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.15);
+        box-shadow: 0 0 0 4px rgba(79, 131, 255, 0.15);
         transform: translateY(-1px);
     }
 
     .input-group-custom .input-group-text {
         background-color: transparent;
         border: none;
-        color: #059669;
+        color: #2F6BFF;
         padding-left: 18px;
         padding-right: 12px;
         font-size: 1.1rem;
@@ -379,7 +491,7 @@
         background-color: transparent;
         font-size: 0.92rem;
         font-weight: 600;
-        color: #0a2e1f;
+        color: #0F172A;
         padding-right: 18px;
         height: 50px;
     }
@@ -396,22 +508,22 @@
         font-weight: 700;
         font-size: 0.95rem;
         padding: 0 32px;
-        background: linear-gradient(145deg, #34d399, #059669);
+        background: linear-gradient(145deg, #4F83FF, #2F6BFF);
         color: white !important;
         border: none;
-        box-shadow: 0 6px 20px -4px rgba(5, 150, 105, 0.35);
+        box-shadow: 0 6px 20px -4px rgba(47, 107, 255, 0.35);
         transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
         cursor: pointer;
     }
 
     .btn-save-address:hover {
         transform: translateY(-2px) scale(1.02);
-        box-shadow: 0 10px 28px -4px rgba(5, 150, 105, 0.45);
+        box-shadow: 0 10px 28px -4px rgba(47, 107, 255, 0.45);
         color: white !important;
     }
 
     .req-asterisk {
-        color: #059669;
+        color: #2F6BFF;
         font-weight: 800;
     }
 
@@ -434,7 +546,7 @@
 @endpush
 
 @section('content')
-<div class="org-details-page">
+<div class="pms-settings-page org-details-page">
     <div class="org-details-shell">
         <div class="ambient-orb orb-1"></div>
         <div class="ambient-orb orb-2"></div>
@@ -454,7 +566,7 @@
             <div class="branches-header">
                 <div class="header-left-box">
                     <div class="header-icon-badge">
-                        <i class="fas fa-sitemap"></i>
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="2" width="6" height="5" rx="1"/><rect x="2" y="17" width="5" height="5" rx="1"/><rect x="9.5" y="17" width="5" height="5" rx="1"/><rect x="17" y="17" width="5" height="5" rx="1"/><path d="M12 7v10M4.5 17v-5h15v5"/></svg>
                     </div>
                     <div class="header-title">
                         <h1>Organization Details</h1>
@@ -478,7 +590,7 @@
 
             <!-- Executive Summary Stats Grid -->
             <div class="stats-grid">
-                <div class="stat-card">
+                <div class="stat-card org-industry-card">
                     <div class="stat-icon industry">
                         <i class="fas fa-briefcase"></i>
                     </div>
@@ -523,12 +635,22 @@
                         <i class="fas fa-landmark"></i>
                     </div>
                     <div>
-                        <h5 class="mb-0 fw-bold fs-5" style="color: #0a2e1f;">Organization & Tax Profile</h5>
+                        <h5 class="mb-0 fw-bold fs-5" style="color: #0F172A;">Organization & Tax Profile</h5>
                         <small class="text-muted">Set up formal organizational registrations and tax identifiers</small>
                     </div>
                 </div>
 
                 <div class="p-4 p-md-5">
+                    @if($isSettingsReadOnly)
+                        <div class="alert pms-readonly-notice d-flex align-items-center mb-4 rounded-3 border-0 shadow-sm" style="background: linear-gradient(135deg, #eff6ff, #dbeafe); color: #1e40af; border-left: 4px solid #3b82f6 !important; padding: 14px 18px;">
+                            <i class="fas fa-eye me-3 fs-3 text-primary"></i>
+                            <div>
+                                <strong class="d-block text-primary fw-bold" style="font-size: 14px;">View-Only Mode</strong>
+                                <span style="font-size: 13px; color: #1e3a8a;">You are viewing organization details in read-only mode. Only Administrators have permission to modify or update these details.</span>
+                            </div>
+                        </div>
+                    @endif
+
                     <form method="POST" action="{{ route('admin.settings.organization-details.update') }}">
                         @csrf
 
@@ -546,7 +668,8 @@
                                     <span class="input-group-text"><i class="fas fa-briefcase"></i></span>
                                     <input type="text" name="industry" class="form-control @error('industry') is-invalid @enderror"
                                         placeholder="e.g. Information Technology, Healthcare, Finance"
-                                        value="{{ old('industry', $settings['industry'] ?? '') }}" required>
+                                        value="{{ old('industry', $settings['industry'] ?? '') }}"
+                                        {{ $isSettingsReadOnly ? 'readonly' : 'required' }}>
                                 </div>
                                 @error('industry')
                                     <div class="text-danger small mt-1"><i class="fas fa-exclamation-circle me-1"></i>{{ $message }}</div>
@@ -560,7 +683,7 @@
                                 </label>
                                 <div class="input-group input-group-custom">
                                     <span class="input-group-text"><i class="fas fa-users"></i></span>
-                                    <select name="company_size" class="form-select @error('company_size') is-invalid @enderror" required>
+                                    <select name="company_size" class="form-select @error('company_size') is-invalid @enderror" {{ $isSettingsReadOnly ? 'disabled' : 'required' }}>
                                         <option value="1-10" {{ ($settings['company_size'] ?? '') == '1-10' ? 'selected' : '' }}>1-10 Employees</option>
                                         <option value="11-50" {{ ($settings['company_size'] ?? '') == '11-50' ? 'selected' : '' }}>11-50 Employees</option>
                                         <option value="50-100" {{ ($settings['company_size'] ?? '') == '50-100' ? 'selected' : '' }}>50-100 Employees</option>
@@ -582,7 +705,8 @@
                                     <span class="input-group-text"><i class="fas fa-file-contract"></i></span>
                                     <input type="text" name="registration_number" class="form-control @error('registration_number') is-invalid @enderror"
                                         placeholder="e.g. REG-2026-98765"
-                                        value="{{ old('registration_number', $settings['registration_number'] ?? '') }}">
+                                        value="{{ old('registration_number', $settings['registration_number'] ?? '') }}"
+                                        {{ $isSettingsReadOnly ? 'readonly' : '' }}>
                                 </div>
                                 @error('registration_number')
                                     <div class="text-danger small mt-1"><i class="fas fa-exclamation-circle me-1"></i>{{ $message }}</div>
@@ -598,7 +722,8 @@
                                     <span class="input-group-text"><i class="fas fa-file-invoice-dollar"></i></span>
                                     <input type="text" name="tax_id" class="form-control @error('tax_id') is-invalid @enderror"
                                         placeholder="e.g. TAX-99887766"
-                                        value="{{ old('tax_id', $settings['tax_id'] ?? '') }}">
+                                        value="{{ old('tax_id', $settings['tax_id'] ?? '') }}"
+                                        {{ $isSettingsReadOnly ? 'readonly' : '' }}>
                                 </div>
                                 @error('tax_id')
                                     <div class="text-danger small mt-1"><i class="fas fa-exclamation-circle me-1"></i>{{ $message }}</div>
@@ -614,7 +739,8 @@
                                     <span class="input-group-text"><i class="fas fa-credit-card"></i></span>
                                     <input type="text" name="vat_number" class="form-control @error('vat_number') is-invalid @enderror"
                                         placeholder="e.g. VAT-12345678"
-                                        value="{{ old('vat_number', $settings['vat_number'] ?? '') }}">
+                                        value="{{ old('vat_number', $settings['vat_number'] ?? '') }}"
+                                        {{ $isSettingsReadOnly ? 'readonly' : '' }}>
                                 </div>
                                 @error('vat_number')
                                     <div class="text-danger small mt-1"><i class="fas fa-exclamation-circle me-1"></i>{{ $message }}</div>
@@ -628,7 +754,7 @@
                                 </label>
                                 <div class="input-group input-group-custom">
                                     <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
-                                    <select name="financial_year_start" class="form-select @error('financial_year_start') is-invalid @enderror" required>
+                                    <select name="financial_year_start" class="form-select @error('financial_year_start') is-invalid @enderror" {{ $isSettingsReadOnly ? 'disabled' : 'required' }}>
                                         @foreach(['January','February','March','April','May','June','July','August','September','October','November','December'] as $month)
                                             <option value="{{ $month }}" {{ ($settings['financial_year_start'] ?? 'January') == $month ? 'selected' : '' }}>{{ $month }}</option>
                                         @endforeach
@@ -642,9 +768,15 @@
 
                         <!-- Form Action Buttons -->
                         <div class="mt-5 pt-4 border-top d-flex justify-content-end">
-                            <button type="submit" class="btn-save-address">
-                                <i class="fas fa-save me-1.5"></i> Save Organization Details
-                            </button>
+                            @if($isSettingsReadOnly)
+                                <span class="badge rounded-pill px-3.5 py-2 fw-bold" style="background: #f1f5f9; color: #64748b; font-size: 13px; border: 1px solid #cbd5e1;">
+                                    <i class="fas fa-lock me-1.5 text-muted"></i> Read-Only (Admin Managed)
+                                </span>
+                            @else
+                                <button type="submit" class="btn-save-address">
+                                    <i class="fas fa-save me-1.5"></i> Save Organization Details
+                                </button>
+                            @endif
                         </div>
                     </form>
                 </div>

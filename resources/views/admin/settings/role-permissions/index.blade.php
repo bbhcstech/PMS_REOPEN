@@ -7,8 +7,8 @@
     .role-permission-page {
         min-height: calc(100vh - 100px);
         padding: 2rem 1.75rem;
-        background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 50%, #f4fbf7 100%);
-        color: #0a2e1f;
+        background: linear-gradient(135deg, #F8FAFC 0%, #EEF2FF 50%, #F8FAFC 100%);
+        color: #0F172A;
     }
 
     .role-permission-shell {
@@ -32,7 +32,7 @@
         right: -100px;
         width: 500px;
         height: 500px;
-        background: radial-gradient(circle, rgba(52, 211, 153, 0.12) 0%, transparent 70%);
+        background: radial-gradient(circle, rgba(79, 131, 255, 0.12) 0%, transparent 70%);
         animation: orbFloat 20s ease-in-out infinite;
     }
 
@@ -41,7 +41,7 @@
         left: -100px;
         width: 450px;
         height: 450px;
-        background: radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, transparent 70%);
+        background: radial-gradient(circle, rgba(47, 107, 255, 0.1) 0%, transparent 70%);
         animation: orbFloat 25s ease-in-out infinite reverse;
     }
 
@@ -68,13 +68,13 @@
     }
 
     .breadcrumb-custom a {
-        color: #059669;
+        color: #2F6BFF;
         text-decoration: none;
         transition: color 0.2s ease;
     }
 
     .breadcrumb-custom a:hover {
-        color: #047857;
+        color: #1E4FCC;
     }
 
     /* ===== HEADER CARD ===== */
@@ -84,8 +84,8 @@
         border-radius: 28px;
         padding: 1.75rem 2.25rem;
         margin-bottom: 2rem;
-        border: 1px solid rgba(16, 185, 129, 0.15);
-        box-shadow: 0 10px 30px -10px rgba(16, 185, 129, 0.08);
+        border: 1px solid rgba(47, 107, 255, 0.15);
+        box-shadow: 0 10px 30px -10px rgba(47, 107, 255, 0.08);
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -109,20 +109,32 @@
         width: 58px;
         height: 58px;
         border-radius: 20px;
-        background: linear-gradient(145deg, #34d399, #059669);
+        background: linear-gradient(145deg, #4F83FF, #2F6BFF);
         color: white;
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 1.6rem;
-        box-shadow: 0 8px 20px -4px rgba(5, 150, 105, 0.35);
+        box-shadow: 0 8px 20px -4px rgba(47, 107, 255, 0.35);
         flex-shrink: 0;
+    }
+
+    .header-icon-badge i,
+    .header-icon-badge svg,
+    .header-icon-badge [class*="fa"] {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        background: transparent !important;
+        background-color: transparent !important;
+        fill: #ffffff !important;
+        opacity: 1 !important;
+        visibility: visible !important;
     }
 
     .header-title h1 {
         font-size: 1.95rem;
         font-weight: 800;
-        background: linear-gradient(135deg, #0a2e1f, #059669, #10b981);
+        background: linear-gradient(135deg, #0F172A, #2F6BFF, #10b981);
         -webkit-background-clip: text;
         background-clip: text;
         color: transparent;
@@ -139,8 +151,8 @@
 
     .btn-back-settings {
         background-color: #ffffff;
-        border: 1px solid rgba(16, 185, 129, 0.25);
-        color: #0f744c !important;
+        border: 1px solid rgba(47, 107, 255, 0.25);
+        color: #2F6BFF !important;
         font-weight: 700;
         font-size: 0.9rem;
         border-radius: 40px;
@@ -154,9 +166,9 @@
     }
 
     .btn-back-settings:hover {
-        background-color: #e6f3ec;
-        color: #059669 !important;
-        border-color: rgba(16, 185, 129, 0.4);
+        background-color: #EEF2FF;
+        color: #2F6BFF !important;
+        border-color: rgba(47, 107, 255, 0.4);
         transform: translateY(-2px);
     }
 
@@ -171,10 +183,10 @@
 
     /* ===== STATS GRID ===== */
     .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 1.25rem;
-        margin-bottom: 2rem;
+        display: grid !important;
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 1.25rem !important;
+        margin-bottom: 2rem !important;
     }
 
     .stat-card,
@@ -184,15 +196,15 @@
         backdrop-filter: blur(20px);
         border-radius: 24px;
         padding: 1.5rem;
-        border: 1px solid rgba(16, 185, 129, 0.14) !important;
-        box-shadow: 0 10px 30px -10px rgba(16, 185, 129, 0.08) !important;
-        display: flex;
-        align-items: center;
-        gap: 1.25rem;
+        border: 1px solid rgba(47, 107, 255, 0.14) !important;
+        box-shadow: 0 10px 30px -10px rgba(47, 107, 255, 0.08) !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 1.25rem !important;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         position: relative;
         overflow: hidden;
-        color: #0a2e1f !important;
+        color: #0F172A !important;
     }
 
     .role-permission-page .stat-card:first-of-type *,
@@ -202,8 +214,8 @@
 
     .role-permission-page .stat-card h3,
     .role-permission-page .stat-card:first-of-type h3 {
-        color: #0a2e1f !important;
-        -webkit-text-fill-color: #0a2e1f !important;
+        color: #0F172A !important;
+        -webkit-text-fill-color: #0F172A !important;
     }
 
     .role-permission-page .stat-card h6,
@@ -221,7 +233,7 @@
         left: 0;
         right: 0;
         height: 3px;
-        background: linear-gradient(90deg, #34d399, #059669);
+        background: linear-gradient(90deg, #4F83FF, #2F6BFF);
         transform: scaleX(0);
         transition: transform 0.3s ease;
     }
@@ -232,8 +244,8 @@
 
     .stat-card:hover {
         transform: translateY(-4px);
-        box-shadow: 0 20px 35px -12px rgba(16, 185, 129, 0.15) !important;
-        border-color: rgba(16, 185, 129, 0.25) !important;
+        box-shadow: 0 20px 35px -12px rgba(47, 107, 255, 0.15) !important;
+        border-color: rgba(47, 107, 255, 0.25) !important;
     }
 
     .stat-icon {
@@ -249,9 +261,27 @@
 
     .stat-icon.roleactive,
     .role-permission-page .stat-card:first-of-type .stat-icon.roleactive {
-        background: linear-gradient(145deg, #d1fae5, #a7f3d0) !important;
-        color: #059669 !important;
-        -webkit-text-fill-color: #059669 !important;
+        background: linear-gradient(145deg, #EEF2FF, #E0E7FF) !important;
+        color: #2F6BFF !important;
+        -webkit-text-fill-color: #2F6BFF !important;
+    }
+
+    .stat-icon.roleactive i,
+    .stat-icon.roleactive svg,
+    .stat-icon.roleactive [class*="fa"],
+    .role-permission-page .stat-card .stat-icon.roleactive i,
+    .role-permission-page .stat-card .stat-icon.roleactive svg,
+    .role-permission-page .stat-card .stat-icon.roleactive [class*="fa"],
+    .role-permission-page .stat-card:first-of-type .stat-icon.roleactive i,
+    .role-permission-page .stat-card:first-of-type .stat-icon.roleactive svg,
+    .role-permission-page .stat-card:first-of-type .stat-icon.roleactive [class*="fa"] {
+        background: transparent !important;
+        background-color: transparent !important;
+        color: #2F6BFF !important;
+        -webkit-text-fill-color: #2F6BFF !important;
+        fill: #2F6BFF !important;
+        opacity: 1 !important;
+        visibility: visible !important;
     }
 
     .stat-icon.totroles,
@@ -261,6 +291,24 @@
         -webkit-text-fill-color: #0284c7 !important;
     }
 
+    .stat-icon.totroles i,
+    .stat-icon.totroles svg,
+    .stat-icon.totroles [class*="fa"],
+    .role-permission-page .stat-card .stat-icon.totroles i,
+    .role-permission-page .stat-card .stat-icon.totroles svg,
+    .role-permission-page .stat-card .stat-icon.totroles [class*="fa"],
+    .role-permission-page .stat-card:first-of-type .stat-icon.totroles i,
+    .role-permission-page .stat-card:first-of-type .stat-icon.totroles svg,
+    .role-permission-page .stat-card:first-of-type .stat-icon.totroles [class*="fa"] {
+        background: transparent !important;
+        background-color: transparent !important;
+        color: #0284c7 !important;
+        -webkit-text-fill-color: #0284c7 !important;
+        fill: #0284c7 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
     .stat-icon.totmodules,
     .role-permission-page .stat-card .stat-icon.totmodules {
         background: linear-gradient(145deg, #fef3c7, #fde68a) !important;
@@ -268,11 +316,47 @@
         -webkit-text-fill-color: #d97706 !important;
     }
 
+    .stat-icon.totmodules i,
+    .stat-icon.totmodules svg,
+    .stat-icon.totmodules [class*="fa"],
+    .role-permission-page .stat-card .stat-icon.totmodules i,
+    .role-permission-page .stat-card .stat-icon.totmodules svg,
+    .role-permission-page .stat-card .stat-icon.totmodules [class*="fa"],
+    .role-permission-page .stat-card:first-of-type .stat-icon.totmodules i,
+    .role-permission-page .stat-card:first-of-type .stat-icon.totmodules svg,
+    .role-permission-page .stat-card:first-of-type .stat-icon.totmodules [class*="fa"] {
+        background: transparent !important;
+        background-color: transparent !important;
+        color: #d97706 !important;
+        -webkit-text-fill-color: #d97706 !important;
+        fill: #d97706 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
     .stat-icon.actions,
     .role-permission-page .stat-card .stat-icon.actions {
         background: linear-gradient(145deg, #e0e7ff, #c7d2fe) !important;
         color: #4f46e5 !important;
         -webkit-text-fill-color: #4f46e5 !important;
+    }
+
+    .stat-icon.actions i,
+    .stat-icon.actions svg,
+    .stat-icon.actions [class*="fa"],
+    .role-permission-page .stat-card .stat-icon.actions i,
+    .role-permission-page .stat-card .stat-icon.actions svg,
+    .role-permission-page .stat-card .stat-icon.actions [class*="fa"],
+    .role-permission-page .stat-card:first-of-type .stat-icon.actions i,
+    .role-permission-page .stat-card:first-of-type .stat-icon.actions svg,
+    .role-permission-page .stat-card:first-of-type .stat-icon.actions [class*="fa"] {
+        background: transparent !important;
+        background-color: transparent !important;
+        color: #4f46e5 !important;
+        -webkit-text-fill-color: #4f46e5 !important;
+        fill: #4f46e5 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
     }
 
     .stat-info h6 {
@@ -287,7 +371,7 @@
     .stat-info h3 {
         font-size: 1.25rem;
         font-weight: 800;
-        color: #0a2e1f;
+        color: #0F172A;
         margin: 0;
         line-height: 1.2;
     }
@@ -299,32 +383,44 @@
         border-radius: 24px;
         padding: 1.5rem 2.25rem;
         margin-bottom: 2rem;
-        border: 1px solid rgba(16, 185, 129, 0.15);
-        box-shadow: 0 10px 30px -10px rgba(16, 185, 129, 0.08);
+        border: 1px solid rgba(47, 107, 255, 0.15);
+        box-shadow: 0 10px 30px -10px rgba(47, 107, 255, 0.08);
     }
 
     .input-group-custom {
         border-radius: 16px;
-        border: 1px solid rgba(16, 185, 129, 0.2);
+        border: 1px solid rgba(47, 107, 255, 0.2);
         background-color: #fafefb;
         transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         overflow: hidden;
     }
 
     .input-group-custom:focus-within {
-        border-color: #34d399;
+        border-color: #60A5FA;
         background-color: #ffffff;
-        box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.15);
+        box-shadow: 0 0 0 4px rgba(79, 131, 255, 0.15);
         transform: translateY(-1px);
     }
 
     .input-group-custom .input-group-text {
         background-color: transparent;
         border: none;
-        color: #059669;
+        color: #2F6BFF;
         padding-left: 18px;
         padding-right: 12px;
         font-size: 1.1rem;
+    }
+
+    .input-group-custom .input-group-text i,
+    .input-group-custom .input-group-text svg,
+    .input-group-custom .input-group-text [class*="fa"] {
+        color: #2F6BFF !important;
+        -webkit-text-fill-color: #2F6BFF !important;
+        background: transparent !important;
+        background-color: transparent !important;
+        fill: #2F6BFF !important;
+        opacity: 1 !important;
+        visibility: visible !important;
     }
 
     .input-group-custom .form-select {
@@ -332,9 +428,18 @@
         background-color: transparent;
         font-size: 0.95rem;
         font-weight: 700;
-        color: #0a2e1f;
+        color: #0F172A;
         padding-right: 18px;
         height: 50px;
+        cursor: pointer;
+        color-scheme: light;
+    }
+
+    .input-group-custom .form-select option {
+        background-color: #FFFFFF !important;
+        color: #0F172A !important;
+        font-weight: 600;
+        padding: 8px 12px;
     }
 
     .input-group-custom .form-select:focus {
@@ -347,14 +452,14 @@
         background: rgba(255, 255, 255, 0.95);
         backdrop-filter: blur(20px);
         border-radius: 28px;
-        border: 1px solid rgba(16, 185, 129, 0.15);
-        box-shadow: 0 10px 30px -10px rgba(16, 185, 129, 0.08);
+        border: 1px solid rgba(47, 107, 255, 0.15);
+        box-shadow: 0 10px 30px -10px rgba(47, 107, 255, 0.08);
         overflow: hidden;
     }
 
     .card-header-custom {
         padding: 1.5rem 2.25rem;
-        border-bottom: 1px solid rgba(16, 185, 129, 0.12);
+        border-bottom: 1px solid rgba(47, 107, 255, 0.12);
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -373,13 +478,25 @@
         width: 48px;
         height: 48px;
         border-radius: 16px;
-        background: linear-gradient(145deg, #d1fae5, #a7f3d0);
-        color: #059669;
+        background: linear-gradient(145deg, #EEF2FF, #E0E7FF);
+        color: #2F6BFF;
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 1.35rem;
         flex-shrink: 0;
+    }
+
+    .card-header-avatar i,
+    .card-header-avatar svg,
+    .card-header-avatar [class*="fa"] {
+        color: #2F6BFF !important;
+        -webkit-text-fill-color: #2F6BFF !important;
+        background: transparent !important;
+        background-color: transparent !important;
+        fill: #2F6BFF !important;
+        opacity: 1 !important;
+        visibility: visible !important;
     }
 
     .matrix-table {
@@ -390,20 +507,20 @@
     }
 
     .matrix-table th {
-        background: linear-gradient(90deg, #ecfdf5, #f0fdf4);
+        background: linear-gradient(90deg, #EEF2FF, #F8FAFC);
         color: #065f46;
         font-size: 0.78rem;
         font-weight: 800;
         text-transform: uppercase;
         letter-spacing: 0.06em;
         padding: 1.1rem 1.25rem;
-        border-bottom: 1px solid rgba(16, 185, 129, 0.2);
+        border-bottom: 1px solid rgba(47, 107, 255, 0.2);
     }
 
     .matrix-table td {
         padding: 1rem 1.25rem;
         vertical-align: middle;
-        border-bottom: 1px solid rgba(16, 185, 129, 0.08);
+        border-bottom: 1px solid rgba(47, 107, 255, 0.08);
         transition: background-color 0.2s ease;
     }
 
@@ -419,7 +536,7 @@
     .module-title-box strong {
         font-size: 0.95rem;
         font-weight: 700;
-        color: #0a2e1f;
+        color: #0F172A;
     }
 
     .module-title-box small {
@@ -433,15 +550,25 @@
         width: 20px;
         height: 20px;
         border-radius: 6px;
-        border: 2px solid rgba(16, 185, 129, 0.35);
-        accent-color: #059669;
+        border: 2px solid rgba(47, 107, 255, 0.35);
+        accent-color: #2F6BFF;
         cursor: pointer;
         transition: all 0.2s ease;
     }
 
     .perm-checkbox:hover {
         transform: scale(1.15);
-        border-color: #34d399;
+        border-color: #60A5FA;
+    }
+
+    .col-header-label {
+        user-select: none;
+        cursor: pointer;
+        transition: color 0.2s ease;
+    }
+
+    .col-header-label:hover {
+        color: #2F6BFF !important;
     }
 
     .btn-save-address {
@@ -450,23 +577,23 @@
         font-weight: 700;
         font-size: 0.95rem;
         padding: 0 32px;
-        background: linear-gradient(145deg, #34d399, #059669);
+        background: linear-gradient(145deg, #4F83FF, #2F6BFF);
         color: white !important;
         border: none;
-        box-shadow: 0 6px 20px -4px rgba(5, 150, 105, 0.35);
+        box-shadow: 0 6px 20px -4px rgba(47, 107, 255, 0.35);
         transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
         cursor: pointer;
     }
 
     .btn-save-address:hover {
         transform: translateY(-2px) scale(1.02);
-        box-shadow: 0 10px 28px -4px rgba(5, 150, 105, 0.45);
+        box-shadow: 0 10px 28px -4px rgba(47, 107, 255, 0.45);
         color: white !important;
     }
 
     @media (max-width: 1200px) {
         .stats-grid {
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(2, 1fr) !important;
         }
     }
 
@@ -476,14 +603,784 @@
         }
 
         .stats-grid {
-            grid-template-columns: 1fr;
+            grid-template-columns: 1fr !important;
         }
     }
+
+    /* ===== DARK MODE SUPPORT ===== */
+    html[data-pms-theme="dark"] .role-permission-page,
+    html[data-theme="dark"] .role-permission-page,
+    html[data-bs-theme="dark"] .role-permission-page,
+    body[data-pms-theme="dark"] .role-permission-page,
+    body[data-theme="dark"] .role-permission-page,
+    body[data-bs-theme="dark"] .role-permission-page,
+    [data-pms-theme="dark"] .role-permission-page,
+    [data-theme="dark"] .role-permission-page,
+    [data-bs-theme="dark"] .role-permission-page,
+    .dark-mode .role-permission-page {
+        background: #0b0f19 !important;
+        color: #e2e8f0 !important;
+    }
+
+    html[data-pms-theme="dark"] .branches-header,
+    html[data-theme="dark"] .branches-header,
+    html[data-bs-theme="dark"] .branches-header,
+    body[data-pms-theme="dark"] .branches-header,
+    body[data-theme="dark"] .branches-header,
+    body[data-bs-theme="dark"] .branches-header,
+    [data-pms-theme="dark"] .branches-header,
+    [data-theme="dark"] .branches-header,
+    [data-bs-theme="dark"] .branches-header,
+    html[data-pms-theme="dark"] .role-select-card,
+    html[data-theme="dark"] .role-select-card,
+    html[data-bs-theme="dark"] .role-select-card,
+    body[data-pms-theme="dark"] .role-select-card,
+    body[data-theme="dark"] .role-select-card,
+    body[data-bs-theme="dark"] .role-select-card,
+    [data-pms-theme="dark"] .role-select-card,
+    [data-theme="dark"] .role-select-card,
+    [data-bs-theme="dark"] .role-select-card,
+    html[data-pms-theme="dark"] .address-card-elevated,
+    html[data-theme="dark"] .address-card-elevated,
+    html[data-bs-theme="dark"] .address-card-elevated,
+    body[data-pms-theme="dark"] .address-card-elevated,
+    body[data-theme="dark"] .address-card-elevated,
+    body[data-bs-theme="dark"] .address-card-elevated,
+    [data-pms-theme="dark"] .address-card-elevated,
+    [data-theme="dark"] .address-card-elevated,
+    [data-bs-theme="dark"] .address-card-elevated,
+    .dark-mode .branches-header,
+    .dark-mode .role-select-card,
+    .dark-mode .address-card-elevated {
+        background: #111827 !important;
+        border-color: rgba(255, 255, 255, 0.08) !important;
+        box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.4) !important;
+    }
+
+    html[data-pms-theme="dark"] .card-header-custom,
+    html[data-bs-theme="dark"] .card-header-custom,
+    body[data-pms-theme="dark"] .card-header-custom,
+    [data-pms-theme="dark"] .card-header-custom {
+        border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+    }
+
+    html[data-pms-theme="dark"] .card-header-custom h5,
+    html[data-bs-theme="dark"] .card-header-custom h5,
+    body[data-pms-theme="dark"] .card-header-custom h5,
+    [data-pms-theme="dark"] .card-header-custom h5,
+    html[data-pms-theme="dark"] .header-title h1,
+    html[data-bs-theme="dark"] .header-title h1,
+    body[data-pms-theme="dark"] .header-title h1,
+    [data-pms-theme="dark"] .header-title h1 {
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+        background: none !important;
+    }
+
+    html[data-pms-theme="dark"] .header-title p,
+    html[data-bs-theme="dark"] .header-title p,
+    body[data-pms-theme="dark"] .header-title p,
+    [data-pms-theme="dark"] .header-title p,
+    html[data-pms-theme="dark"] .card-header-custom .text-muted,
+    html[data-bs-theme="dark"] .card-header-custom .text-muted,
+    body[data-pms-theme="dark"] .card-header-custom .text-muted,
+    [data-pms-theme="dark"] .card-header-custom .text-muted {
+        color: #94a3b8 !important;
+        -webkit-text-fill-color: #94a3b8 !important;
+    }
+
+    html[data-pms-theme="dark"] .btn-back-settings,
+    html[data-theme="dark"] .btn-back-settings,
+    html[data-bs-theme="dark"] .btn-back-settings,
+    body[data-pms-theme="dark"] .btn-back-settings,
+    body[data-theme="dark"] .btn-back-settings,
+    body[data-bs-theme="dark"] .btn-back-settings,
+    [data-pms-theme="dark"] .btn-back-settings,
+    [data-theme="dark"] .btn-back-settings,
+    [data-bs-theme="dark"] .btn-back-settings,
+    .dark-mode .btn-back-settings {
+        background-color: #1e293b !important;
+        background: #1e293b !important;
+        border-color: rgba(79, 131, 255, 0.35) !important;
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2) !important;
+    }
+
+    html[data-pms-theme="dark"] .btn-back-settings i,
+    html[data-theme="dark"] .btn-back-settings i,
+    [data-pms-theme="dark"] .btn-back-settings i {
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
+    }
+
+    /* Stat Cards in Dark Mode */
+    html[data-pms-theme="dark"] .role-permission-page .stat-card,
+    html[data-theme="dark"] .role-permission-page .stat-card,
+    html[data-bs-theme="dark"] .role-permission-page .stat-card,
+    body[data-pms-theme="dark"] .role-permission-page .stat-card,
+    body[data-theme="dark"] .role-permission-page .stat-card,
+    body[data-bs-theme="dark"] .role-permission-page .stat-card,
+    [data-pms-theme="dark"] .role-permission-page .stat-card,
+    [data-theme="dark"] .role-permission-page .stat-card,
+    [data-bs-theme="dark"] .role-permission-page .stat-card,
+    html[data-pms-theme="dark"] .role-permission-page .stat-card:first-of-type,
+    html[data-theme="dark"] .role-permission-page .stat-card:first-of-type,
+    html[data-bs-theme="dark"] .role-permission-page .stat-card:first-of-type,
+    body[data-pms-theme="dark"] .role-permission-page .stat-card:first-of-type,
+    body[data-theme="dark"] .role-permission-page .stat-card:first-of-type,
+    body[data-bs-theme="dark"] .role-permission-page .stat-card:first-of-type,
+    [data-pms-theme="dark"] .role-permission-page .stat-card:first-of-type,
+    [data-theme="dark"] .role-permission-page .stat-card:first-of-type,
+    [data-bs-theme="dark"] .role-permission-page .stat-card:first-of-type,
+    html[data-pms-theme="dark"] .stat-card,
+    html[data-theme="dark"] .stat-card,
+    html[data-bs-theme="dark"] .stat-card,
+    html[data-pms-theme="dark"] .stat-card:first-of-type,
+    html[data-theme="dark"] .stat-card:first-of-type,
+    html[data-bs-theme="dark"] .stat-card:first-of-type,
+    .dark-mode .stat-card,
+    .dark-mode .stat-card:first-of-type {
+        background: #171e2e !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.3) !important;
+        color: #EEF1FB !important;
+    }
+
+    html[data-pms-theme="dark"] .role-permission-page .stat-card h3,
+    html[data-theme="dark"] .role-permission-page .stat-card h3,
+    html[data-bs-theme="dark"] .role-permission-page .stat-card h3,
+    body[data-pms-theme="dark"] .role-permission-page .stat-card h3,
+    body[data-theme="dark"] .role-permission-page .stat-card h3,
+    body[data-bs-theme="dark"] .role-permission-page .stat-card h3,
+    [data-pms-theme="dark"] .role-permission-page .stat-card h3,
+    [data-theme="dark"] .role-permission-page .stat-card h3,
+    [data-bs-theme="dark"] .role-permission-page .stat-card h3,
+    html[data-pms-theme="dark"] .role-permission-page .stat-card:first-of-type h3,
+    html[data-theme="dark"] .role-permission-page .stat-card:first-of-type h3,
+    html[data-bs-theme="dark"] .role-permission-page .stat-card:first-of-type h3,
+    body[data-pms-theme="dark"] .role-permission-page .stat-card:first-of-type h3,
+    body[data-theme="dark"] .role-permission-page .stat-card:first-of-type h3,
+    body[data-bs-theme="dark"] .role-permission-page .stat-card:first-of-type h3,
+    [data-pms-theme="dark"] .role-permission-page .stat-card:first-of-type h3,
+    [data-theme="dark"] .role-permission-page .stat-card:first-of-type h3,
+    [data-bs-theme="dark"] .role-permission-page .stat-card:first-of-type h3,
+    .dark-mode .stat-card h3 {
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+    }
+
+    html[data-pms-theme="dark"] .role-permission-page .stat-card h6,
+    html[data-theme="dark"] .role-permission-page .stat-card h6,
+    html[data-bs-theme="dark"] .role-permission-page .stat-card h6,
+    body[data-pms-theme="dark"] .role-permission-page .stat-card h6,
+    body[data-theme="dark"] .role-permission-page .stat-card h6,
+    body[data-bs-theme="dark"] .role-permission-page .stat-card h6,
+    [data-pms-theme="dark"] .role-permission-page .stat-card h6,
+    [data-theme="dark"] .role-permission-page .stat-card h6,
+    [data-bs-theme="dark"] .role-permission-page .stat-card h6,
+    html[data-pms-theme="dark"] .role-permission-page .stat-card:first-of-type h6,
+    html[data-theme="dark"] .role-permission-page .stat-card:first-of-type h6,
+    html[data-bs-theme="dark"] .role-permission-page .stat-card:first-of-type h6,
+    body[data-pms-theme="dark"] .role-permission-page .stat-card:first-of-type h6,
+    body[data-theme="dark"] .role-permission-page .stat-card:first-of-type h6,
+    body[data-bs-theme="dark"] .role-permission-page .stat-card:first-of-type h6,
+    [data-pms-theme="dark"] .role-permission-page .stat-card:first-of-type h6,
+    [data-theme="dark"] .role-permission-page .stat-card:first-of-type h6,
+    [data-bs-theme="dark"] .role-permission-page .stat-card:first-of-type h6,
+    .dark-mode .stat-card h6 {
+        color: #94a3b8 !important;
+        -webkit-text-fill-color: #94a3b8 !important;
+    }
+
+    /* Dark Mode Stat Icons */
+    html[data-pms-theme="dark"] .stat-icon.roleactive,
+    html[data-theme="dark"] .stat-icon.roleactive,
+    html[data-bs-theme="dark"] .stat-icon.roleactive,
+    body[data-pms-theme="dark"] .stat-icon.roleactive,
+    body[data-theme="dark"] .stat-icon.roleactive,
+    body[data-bs-theme="dark"] .stat-icon.roleactive,
+    [data-pms-theme="dark"] .stat-icon.roleactive,
+    [data-theme="dark"] .stat-icon.roleactive,
+    [data-bs-theme="dark"] .stat-icon.roleactive,
+    .dark-mode .stat-icon.roleactive,
+    [data-pms-theme="dark"] .role-permission-page .stat-card .stat-icon.roleactive,
+    [data-pms-theme="dark"] .role-permission-page .stat-card:first-of-type .stat-icon.roleactive,
+    [data-theme="dark"] .role-permission-page .stat-card .stat-icon.roleactive,
+    [data-theme="dark"] .role-permission-page .stat-card:first-of-type .stat-icon.roleactive,
+    [data-bs-theme="dark"] .role-permission-page .stat-card .stat-icon.roleactive,
+    [data-bs-theme="dark"] .role-permission-page .stat-card:first-of-type .stat-icon.roleactive,
+    html[data-pms-theme="dark"] .role-permission-page .stat-card .stat-icon.roleactive,
+    html[data-pms-theme="dark"] .role-permission-page .stat-card:first-of-type .stat-icon.roleactive,
+    html[data-theme="dark"] .role-permission-page .stat-card .stat-icon.roleactive,
+    html[data-theme="dark"] .role-permission-page .stat-card:first-of-type .stat-icon.roleactive,
+    html[data-bs-theme="dark"] .role-permission-page .stat-card .stat-icon.roleactive,
+    html[data-bs-theme="dark"] .role-permission-page .stat-card:first-of-type .stat-icon.roleactive {
+        background: rgba(47, 107, 255, 0.25) !important;
+        background-image: none !important;
+        border: 1px solid rgba(79, 131, 255, 0.4) !important;
+    }
+
+    html[data-pms-theme="dark"] .stat-icon.roleactive i,
+    html[data-pms-theme="dark"] .stat-icon.roleactive svg,
+    html[data-pms-theme="dark"] .stat-icon.roleactive [class*="fa"],
+    html[data-theme="dark"] .stat-icon.roleactive i,
+    html[data-theme="dark"] .stat-icon.roleactive svg,
+    html[data-theme="dark"] .stat-icon.roleactive [class*="fa"],
+    html[data-bs-theme="dark"] .stat-icon.roleactive i,
+    html[data-bs-theme="dark"] .stat-icon.roleactive svg,
+    html[data-bs-theme="dark"] .stat-icon.roleactive [class*="fa"],
+    body[data-pms-theme="dark"] .stat-icon.roleactive i,
+    body[data-theme="dark"] .stat-icon.roleactive i,
+    body[data-bs-theme="dark"] .stat-icon.roleactive i,
+    [data-pms-theme="dark"] .stat-icon.roleactive i,
+    [data-theme="dark"] .stat-icon.roleactive i,
+    [data-bs-theme="dark"] .stat-icon.roleactive i,
+    .dark-mode .stat-icon.roleactive i,
+    .dark-mode .stat-icon.roleactive svg,
+    .dark-mode .stat-icon.roleactive [class*="fa"],
+    html[data-pms-theme="dark"] .role-permission-page .stat-card .stat-icon.roleactive i,
+    html[data-pms-theme="dark"] .role-permission-page .stat-card:first-of-type .stat-icon.roleactive i,
+    html[data-theme="dark"] .role-permission-page .stat-card .stat-icon.roleactive i,
+    html[data-theme="dark"] .role-permission-page .stat-card:first-of-type .stat-icon.roleactive i,
+    html[data-bs-theme="dark"] .role-permission-page .stat-card .stat-icon.roleactive i,
+    html[data-bs-theme="dark"] .role-permission-page .stat-card:first-of-type .stat-icon.roleactive i,
+    body[data-pms-theme="dark"] .role-permission-page .stat-card .stat-icon.roleactive i,
+    body[data-pms-theme="dark"] .role-permission-page .stat-card:first-of-type .stat-icon.roleactive i,
+    body[data-theme="dark"] .role-permission-page .stat-card .stat-icon.roleactive i,
+    body[data-theme="dark"] .role-permission-page .stat-card:first-of-type .stat-icon.roleactive i,
+    body[data-bs-theme="dark"] .role-permission-page .stat-card .stat-icon.roleactive i,
+    body[data-bs-theme="dark"] .role-permission-page .stat-card:first-of-type .stat-icon.roleactive i,
+    [data-pms-theme="dark"] .role-permission-page .stat-card .stat-icon.roleactive i,
+    [data-pms-theme="dark"] .role-permission-page .stat-card:first-of-type .stat-icon.roleactive i,
+    [data-theme="dark"] .role-permission-page .stat-card .stat-icon.roleactive i,
+    [data-theme="dark"] .role-permission-page .stat-card:first-of-type .stat-icon.roleactive i,
+    [data-bs-theme="dark"] .role-permission-page .stat-card .stat-icon.roleactive i,
+    [data-bs-theme="dark"] .role-permission-page .stat-card:first-of-type .stat-icon.roleactive i,
+    .dark-mode .role-permission-page .stat-card .stat-icon.roleactive i,
+    .dark-mode .role-permission-page .stat-card:first-of-type .stat-icon.roleactive i {
+        background: transparent !important;
+        background-image: none !important;
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
+        fill: #60A5FA !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    html[data-pms-theme="dark"] .stat-icon.totroles,
+    html[data-theme="dark"] .stat-icon.totroles,
+    html[data-bs-theme="dark"] .stat-icon.totroles,
+    body[data-pms-theme="dark"] .stat-icon.totroles,
+    body[data-theme="dark"] .stat-icon.totroles,
+    body[data-bs-theme="dark"] .stat-icon.totroles,
+    [data-pms-theme="dark"] .stat-icon.totroles,
+    [data-theme="dark"] .stat-icon.totroles,
+    [data-bs-theme="dark"] .stat-icon.totroles,
+    .dark-mode .stat-icon.totroles,
+    [data-pms-theme="dark"] .role-permission-page .stat-card .stat-icon.totroles,
+    [data-theme="dark"] .role-permission-page .stat-card .stat-icon.totroles,
+    [data-bs-theme="dark"] .role-permission-page .stat-card .stat-icon.totroles,
+    html[data-pms-theme="dark"] .role-permission-page .stat-card .stat-icon.totroles,
+    html[data-theme="dark"] .role-permission-page .stat-card .stat-icon.totroles,
+    html[data-bs-theme="dark"] .role-permission-page .stat-card .stat-icon.totroles {
+        background: rgba(56, 189, 248, 0.25) !important;
+        background-image: none !important;
+        border: 1px solid rgba(56, 189, 248, 0.4) !important;
+    }
+
+    html[data-pms-theme="dark"] .stat-icon.totroles i,
+    html[data-pms-theme="dark"] .stat-icon.totroles svg,
+    html[data-pms-theme="dark"] .stat-icon.totroles [class*="fa"],
+    html[data-theme="dark"] .stat-icon.totroles i,
+    html[data-theme="dark"] .stat-icon.totroles svg,
+    html[data-theme="dark"] .stat-icon.totroles [class*="fa"],
+    html[data-bs-theme="dark"] .stat-icon.totroles i,
+    html[data-bs-theme="dark"] .stat-icon.totroles svg,
+    html[data-bs-theme="dark"] .stat-icon.totroles [class*="fa"],
+    body[data-pms-theme="dark"] .stat-icon.totroles i,
+    body[data-theme="dark"] .stat-icon.totroles i,
+    body[data-bs-theme="dark"] .stat-icon.totroles i,
+    [data-pms-theme="dark"] .stat-icon.totroles i,
+    [data-theme="dark"] .stat-icon.totroles i,
+    [data-bs-theme="dark"] .stat-icon.totroles i,
+    .dark-mode .stat-icon.totroles i,
+    .dark-mode .stat-icon.totroles svg,
+    .dark-mode .stat-icon.totroles [class*="fa"],
+    html[data-pms-theme="dark"] .role-permission-page .stat-card .stat-icon.totroles i,
+    html[data-theme="dark"] .role-permission-page .stat-card .stat-icon.totroles i,
+    html[data-bs-theme="dark"] .role-permission-page .stat-card .stat-icon.totroles i,
+    body[data-pms-theme="dark"] .role-permission-page .stat-card .stat-icon.totroles i,
+    body[data-theme="dark"] .role-permission-page .stat-card .stat-icon.totroles i,
+    body[data-bs-theme="dark"] .role-permission-page .stat-card .stat-icon.totroles i,
+    [data-pms-theme="dark"] .role-permission-page .stat-card .stat-icon.totroles i,
+    [data-theme="dark"] .role-permission-page .stat-card .stat-icon.totroles i,
+    [data-bs-theme="dark"] .role-permission-page .stat-card .stat-icon.totroles i,
+    .dark-mode .role-permission-page .stat-card .stat-icon.totroles i {
+        background: transparent !important;
+        background-image: none !important;
+        color: #38bdf8 !important;
+        -webkit-text-fill-color: #38bdf8 !important;
+        fill: #38bdf8 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    html[data-pms-theme="dark"] .stat-icon.totmodules,
+    html[data-theme="dark"] .stat-icon.totmodules,
+    html[data-bs-theme="dark"] .stat-icon.totmodules,
+    body[data-pms-theme="dark"] .stat-icon.totmodules,
+    body[data-theme="dark"] .stat-icon.totmodules,
+    body[data-bs-theme="dark"] .stat-icon.totmodules,
+    [data-pms-theme="dark"] .stat-icon.totmodules,
+    [data-theme="dark"] .stat-icon.totmodules,
+    [data-bs-theme="dark"] .stat-icon.totmodules,
+    .dark-mode .stat-icon.totmodules,
+    [data-pms-theme="dark"] .role-permission-page .stat-card .stat-icon.totmodules,
+    [data-theme="dark"] .role-permission-page .stat-card .stat-icon.totmodules,
+    [data-bs-theme="dark"] .role-permission-page .stat-card .stat-icon.totmodules,
+    html[data-pms-theme="dark"] .role-permission-page .stat-card .stat-icon.totmodules,
+    html[data-theme="dark"] .role-permission-page .stat-card .stat-icon.totmodules,
+    html[data-bs-theme="dark"] .role-permission-page .stat-card .stat-icon.totmodules {
+        background: rgba(251, 191, 36, 0.25) !important;
+        background-image: none !important;
+        border: 1px solid rgba(251, 191, 36, 0.4) !important;
+    }
+
+    html[data-pms-theme="dark"] .stat-icon.totmodules i,
+    html[data-pms-theme="dark"] .stat-icon.totmodules svg,
+    html[data-pms-theme="dark"] .stat-icon.totmodules [class*="fa"],
+    html[data-theme="dark"] .stat-icon.totmodules i,
+    html[data-theme="dark"] .stat-icon.totmodules svg,
+    html[data-theme="dark"] .stat-icon.totmodules [class*="fa"],
+    html[data-bs-theme="dark"] .stat-icon.totmodules i,
+    html[data-bs-theme="dark"] .stat-icon.totmodules svg,
+    html[data-bs-theme="dark"] .stat-icon.totmodules [class*="fa"],
+    body[data-pms-theme="dark"] .stat-icon.totmodules i,
+    body[data-theme="dark"] .stat-icon.totmodules i,
+    body[data-bs-theme="dark"] .stat-icon.totmodules i,
+    [data-pms-theme="dark"] .stat-icon.totmodules i,
+    [data-theme="dark"] .stat-icon.totmodules i,
+    [data-bs-theme="dark"] .stat-icon.totmodules i,
+    .dark-mode .stat-icon.totmodules i,
+    .dark-mode .stat-icon.totmodules svg,
+    .dark-mode .stat-icon.totmodules [class*="fa"],
+    html[data-pms-theme="dark"] .role-permission-page .stat-card .stat-icon.totmodules i,
+    html[data-theme="dark"] .role-permission-page .stat-card .stat-icon.totmodules i,
+    html[data-bs-theme="dark"] .role-permission-page .stat-card .stat-icon.totmodules i,
+    body[data-pms-theme="dark"] .role-permission-page .stat-card .stat-icon.totmodules i,
+    body[data-theme="dark"] .role-permission-page .stat-card .stat-icon.totmodules i,
+    body[data-bs-theme="dark"] .role-permission-page .stat-card .stat-icon.totmodules i,
+    [data-pms-theme="dark"] .role-permission-page .stat-card .stat-icon.totmodules i,
+    [data-theme="dark"] .role-permission-page .stat-card .stat-icon.totmodules i,
+    [data-bs-theme="dark"] .role-permission-page .stat-card .stat-icon.totmodules i,
+    .dark-mode .role-permission-page .stat-card .stat-icon.totmodules i {
+        background: transparent !important;
+        background-image: none !important;
+        color: #fbbf24 !important;
+        -webkit-text-fill-color: #fbbf24 !important;
+        fill: #fbbf24 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    html[data-pms-theme="dark"] .stat-icon.actions,
+    html[data-theme="dark"] .stat-icon.actions,
+    html[data-bs-theme="dark"] .stat-icon.actions,
+    body[data-pms-theme="dark"] .stat-icon.actions,
+    body[data-theme="dark"] .stat-icon.actions,
+    body[data-bs-theme="dark"] .stat-icon.actions,
+    [data-pms-theme="dark"] .stat-icon.actions,
+    [data-theme="dark"] .stat-icon.actions,
+    [data-bs-theme="dark"] .stat-icon.actions,
+    .dark-mode .stat-icon.actions,
+    [data-pms-theme="dark"] .role-permission-page .stat-card .stat-icon.actions,
+    [data-theme="dark"] .role-permission-page .stat-card .stat-icon.actions,
+    [data-bs-theme="dark"] .role-permission-page .stat-card .stat-icon.actions,
+    html[data-pms-theme="dark"] .role-permission-page .stat-card .stat-icon.actions,
+    html[data-theme="dark"] .role-permission-page .stat-card .stat-icon.actions,
+    html[data-bs-theme="dark"] .role-permission-page .stat-card .stat-icon.actions {
+        background: rgba(129, 140, 248, 0.25) !important;
+        background-image: none !important;
+        border: 1px solid rgba(129, 140, 248, 0.4) !important;
+    }
+
+    html[data-pms-theme="dark"] .stat-icon.actions i,
+    html[data-pms-theme="dark"] .stat-icon.actions svg,
+    html[data-pms-theme="dark"] .stat-icon.actions [class*="fa"],
+    html[data-theme="dark"] .stat-icon.actions i,
+    html[data-theme="dark"] .stat-icon.actions svg,
+    html[data-theme="dark"] .stat-icon.actions [class*="fa"],
+    html[data-bs-theme="dark"] .stat-icon.actions i,
+    html[data-bs-theme="dark"] .stat-icon.actions svg,
+    html[data-bs-theme="dark"] .stat-icon.actions [class*="fa"],
+    body[data-pms-theme="dark"] .stat-icon.actions i,
+    body[data-theme="dark"] .stat-icon.actions i,
+    body[data-bs-theme="dark"] .stat-icon.actions i,
+    [data-pms-theme="dark"] .stat-icon.actions i,
+    [data-theme="dark"] .stat-icon.actions i,
+    [data-bs-theme="dark"] .stat-icon.actions i,
+    .dark-mode .stat-icon.actions i,
+    .dark-mode .stat-icon.actions svg,
+    .dark-mode .stat-icon.actions [class*="fa"],
+    html[data-pms-theme="dark"] .role-permission-page .stat-card .stat-icon.actions i,
+    html[data-theme="dark"] .role-permission-page .stat-card .stat-icon.actions i,
+    html[data-bs-theme="dark"] .role-permission-page .stat-card .stat-icon.actions i,
+    body[data-pms-theme="dark"] .role-permission-page .stat-card .stat-icon.actions i,
+    body[data-theme="dark"] .role-permission-page .stat-card .stat-icon.actions i,
+    body[data-bs-theme="dark"] .role-permission-page .stat-card .stat-icon.actions i,
+    [data-pms-theme="dark"] .role-permission-page .stat-card .stat-icon.actions i,
+    [data-theme="dark"] .role-permission-page .stat-card .stat-icon.actions i,
+    [data-bs-theme="dark"] .role-permission-page .stat-card .stat-icon.actions i,
+    .dark-mode .role-permission-page .stat-card .stat-icon.actions i {
+        background: transparent !important;
+        background-image: none !important;
+        color: #a5b4fc !important;
+        -webkit-text-fill-color: #a5b4fc !important;
+        fill: #a5b4fc !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    /* Form Controls & Select Cards in Dark Mode */
+    html[data-pms-theme="dark"] .input-group-custom,
+    html[data-theme="dark"] .input-group-custom,
+    html[data-bs-theme="dark"] .input-group-custom,
+    [data-pms-theme="dark"] .input-group-custom {
+        background-color: #1a2234 !important;
+        border-color: rgba(255, 255, 255, 0.12) !important;
+    }
+
+    html[data-pms-theme="dark"] .input-group-custom .form-select,
+    html[data-theme="dark"] .input-group-custom .form-select,
+    html[data-bs-theme="dark"] .input-group-custom .form-select,
+    body[data-pms-theme="dark"] .input-group-custom .form-select,
+    body[data-theme="dark"] .input-group-custom .form-select,
+    [data-pms-theme="dark"] .input-group-custom .form-select,
+    [data-theme="dark"] .input-group-custom .form-select,
+    [data-bs-theme="dark"] .input-group-custom .form-select,
+    .dark-mode .input-group-custom .form-select {
+        color-scheme: dark !important;
+        background-color: #1a2234 !important;
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+    }
+
+    html[data-pms-theme="dark"] .input-group-custom .form-select option,
+    html[data-theme="dark"] .input-group-custom .form-select option,
+    html[data-bs-theme="dark"] .input-group-custom .form-select option,
+    body[data-pms-theme="dark"] .input-group-custom .form-select option,
+    body[data-theme="dark"] .input-group-custom .form-select option,
+    [data-pms-theme="dark"] .input-group-custom .form-select option,
+    [data-theme="dark"] .input-group-custom .form-select option,
+    [data-bs-theme="dark"] .input-group-custom .form-select option,
+    .dark-mode .input-group-custom .form-select option {
+        color-scheme: dark !important;
+        background-color: #1a2234 !important;
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+        font-weight: 600;
+        padding: 8px 12px;
+    }
+
+    html[data-pms-theme="dark"] .input-group-custom .input-group-text i,
+    html[data-theme="dark"] .input-group-custom .input-group-text i,
+    [data-pms-theme="dark"] .input-group-custom .input-group-text i {
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
+    }
+
+    html[data-pms-theme="dark"] .role-select-card label,
+    html[data-theme="dark"] .role-select-card label,
+    [data-pms-theme="dark"] .role-select-card label,
+    html[data-pms-theme="dark"] .role-select-card span,
+    html[data-theme="dark"] .role-select-card span,
+    [data-pms-theme="dark"] .role-select-card span {
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+    }
+
+    html[data-pms-theme="dark"] .role-select-card small,
+    html[data-theme="dark"] .role-select-card small,
+    [data-pms-theme="dark"] .role-select-card small,
+    html[data-pms-theme="dark"] .role-select-card .text-muted,
+    html[data-theme="dark"] .role-select-card .text-muted,
+    [data-pms-theme="dark"] .role-select-card .text-muted {
+        color: #94a3b8 !important;
+        -webkit-text-fill-color: #94a3b8 !important;
+    }
+
+    /* Matrix Table in Dark Mode */
+    html[data-pms-theme="dark"] .matrix-table th,
+    html[data-theme="dark"] .matrix-table th,
+    [data-pms-theme="dark"] .matrix-table th {
+        background: #1e293b !important;
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
+        border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+    }
+
+    html[data-pms-theme="dark"] .matrix-table td,
+    html[data-theme="dark"] .matrix-table td,
+    [data-pms-theme="dark"] .matrix-table td {
+        border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+        color: #e2e8f0 !important;
+    }
+
+    html[data-pms-theme="dark"] .module-title-box strong,
+    html[data-theme="dark"] .module-title-box strong,
+    [data-pms-theme="dark"] .module-title-box strong {
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+    }
+
+    html[data-pms-theme="dark"] .module-title-box small,
+    html[data-theme="dark"] .module-title-box small,
+    [data-pms-theme="dark"] .module-title-box small {
+        color: #94a3b8 !important;
+        -webkit-text-fill-color: #94a3b8 !important;
+    }
+
+    html[data-pms-theme="dark"] .matrix-table tr:hover td,
+    html[data-theme="dark"] .matrix-table tr:hover td,
+    [data-pms-theme="dark"] .matrix-table tr:hover td {
+        background-color: rgba(255, 255, 255, 0.03) !important;
+    }
+    /* Scoped permission-page typography and matrix layout. */
+    .role-permission-page {
+        --matrix-surface: #ffffff;
+        --matrix-heading: #f3f6fc;
+        --matrix-hover: #f2f7ff;
+        --matrix-border: #e5ebf4;
+        --matrix-text: #24324b;
+        --matrix-muted: #64748b;
+        --matrix-enabled-text: #166534;
+        --matrix-enabled-bg: #dcfce7;
+        --matrix-enabled-border: #86efac;
+        --matrix-disabled-text: #475569;
+        --matrix-disabled-bg: #f1f5f9;
+        --matrix-disabled-border: #cbd5e1;
+        letter-spacing: 0;
+        line-height: 1.55;
+    }
+    :is(html, body)[data-pms-theme="dark"] .role-permission-page,
+    :is(html, body)[data-bs-theme="dark"] .role-permission-page,
+    :is(html, body)[data-theme="dark"] .role-permission-page,
+    :is(html, body).dark .role-permission-page,
+    :is(html, body).dark-mode .role-permission-page {
+        --matrix-surface: #11182e;
+        --matrix-heading: #18223b;
+        --matrix-hover: #1b2b49;
+        --matrix-border: #28334c;
+        --matrix-text: #e8eef9;
+        --matrix-muted: #a5b4ce;
+        --matrix-enabled-text: #86efac;
+        --matrix-enabled-bg: #12392d;
+        --matrix-enabled-border: #26634b;
+        --matrix-disabled-text: #cbd5e1;
+        --matrix-disabled-bg: #243047;
+        --matrix-disabled-border: #475569;
+    }
+    .role-permission-page .ambient-orb { display: none; }
+    .role-permission-page .branches-header,
+    .role-permission-page .role-select-card,
+    .role-permission-page .address-card-elevated {
+        border-radius: 18px;
+        border: 1px solid var(--matrix-border);
+        box-shadow: 0 8px 28px rgba(15, 23, 42, 0.045);
+    }
+    .role-permission-page .header-title h1 {
+        font-size: clamp(1.4rem, 2.2vw, 1.9rem);
+        line-height: 1.25;
+        letter-spacing: -0.025em;
+        font-weight: 700;
+    }
+    .role-permission-page .header-title p { margin-top: 8px; line-height: 1.6; }
+    .role-permission-page .stats-grid { gap: 16px !important; margin-bottom: 24px !important; }
+    .role-permission-page .stat-card { border-radius: 16px; }
+    .role-permission-page .stat-info h6 { letter-spacing: 0.03em; font-weight: 600; }
+    .role-permission-page .role-select-card { padding: 22px 24px; }
+    .role-permission-page .role-select-card label { display: block; margin-bottom: 10px !important; }
+    .role-permission-page .card-header-custom { padding: 24px; gap: 20px; }
+    .role-permission-page .card-header-left { min-width: 0; gap: 14px; }
+    .role-permission-page .card-header-left h5 {
+        font-size: 1.1rem !important;
+        font-weight: 700 !important;
+        letter-spacing: -0.015em;
+        line-height: 1.4;
+        margin-bottom: 6px !important;
+    }
+    .role-permission-page .card-header-left small { display: block; font-size: 0.82rem; line-height: 1.6; }
+    .role-permission-page .matrix-toolbar { display: flex; flex-wrap: wrap; gap: 10px !important; }
+    .role-permission-page .matrix-toolbar .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-height: 40px;
+        padding: 9px 14px !important;
+        border-radius: 10px !important;
+        font-size: 0.8rem;
+        font-weight: 600 !important;
+        line-height: 1.3;
+        letter-spacing: 0;
+        box-shadow: none;
+    }
+    .role-permission-page .matrix-toolbar i { margin: 0 !important; }
+    .role-permission-page .matrix-scroll { overflow: auto; max-height: 70vh; scrollbar-width: thin; }
+    .role-permission-page .matrix-table { min-width: 1040px; table-layout: fixed; }
+    .role-permission-page .matrix-table th {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        background: var(--matrix-heading) !important;
+        color: var(--matrix-muted) !important;
+        -webkit-text-fill-color: var(--matrix-muted) !important;
+        padding: 16px 10px;
+        font-size: 0.72rem;
+        letter-spacing: 0.045em;
+        font-weight: 600;
+        border-bottom: 1px solid var(--matrix-border);
+    }
+    .role-permission-page .matrix-table td {
+        background: var(--matrix-surface);
+        padding: 16px 10px;
+        border-bottom: 1px solid var(--matrix-border);
+    }
+    .role-permission-page .matrix-table tr:hover td { background: var(--matrix-hover) !important; }
+    .role-permission-page .matrix-table :is(th, td):nth-child(2) { width: 250px; padding-left: 18px; }
+    .role-permission-page .matrix-table thead th:first-child,
+    .role-permission-page .matrix-table tr[data-module-id] td:first-child {
+        position: sticky;
+        left: 0;
+        width: 48px;
+        min-width: 48px;
+        max-width: 48px;
+        z-index: 1;
+    }
+    .role-permission-page .matrix-table :is(th, td):nth-child(2) {
+        position: sticky;
+        left: 48px;
+        z-index: 1;
+        box-shadow: 4px 0 8px rgba(15, 23, 42, 0.06);
+    }
+    .role-permission-page .matrix-table thead th:nth-child(-n+2) { z-index: 3; }
+    .role-permission-page .module-title-box { gap: 4px; }
+    .role-permission-page .module-title-box strong {
+        color: var(--matrix-text) !important;
+        -webkit-text-fill-color: var(--matrix-text) !important;
+        font-size: 0.88rem;
+        font-weight: 600;
+        line-height: 1.45;
+        overflow-wrap: anywhere;
+    }
+    .role-permission-page .module-title-box small {
+        color: var(--matrix-muted) !important;
+        -webkit-text-fill-color: var(--matrix-muted) !important;
+        font-size: 0.75rem;
+        line-height: 1.4;
+    }
+    .role-permission-page .col-header-label { gap: 9px !important; min-height: 28px; }
+    .role-permission-page .perm-checkbox {
+        appearance: none;
+        -webkit-appearance: none;
+        display: inline-block;
+        flex-shrink: 0;
+        width: 20px;
+        height: 20px;
+        margin: 0;
+        vertical-align: middle;
+        border: 1.5px solid #9aabc3;
+        border-radius: 5px;
+        background: var(--matrix-surface);
+        background-position: center;
+        background-repeat: no-repeat;
+        transform: none;
+    }
+    .role-permission-page .perm-checkbox:checked {
+        background-color: #2f6bff;
+        border-color: #2f6bff;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath d='m3 8 3 3 7-7' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    }
+    .role-permission-page .perm-checkbox:indeterminate {
+        background-color: #2f6bff;
+        border-color: #2f6bff;
+        background-image: linear-gradient(#fff, #fff);
+        background-size: 10px 2px;
+    }
+    .role-permission-page .perm-checkbox:focus-visible {
+        outline: 3px solid rgba(47, 107, 255, 0.3);
+        outline-offset: 3px;
+    }
+    .role-permission-page .matrix-footer {
+        padding: 20px 24px !important;
+        background: var(--matrix-heading) !important;
+        border-color: var(--matrix-border) !important;
+    }
+    .role-permission-page .btn-save-address { border-radius: 10px; height: 44px; font-size: 0.85rem; }
+    @media (max-width: 768px) {
+        .role-permission-page { padding: 16px 12px; }
+        .role-permission-page .branches-header,
+        .role-permission-page .role-select-card,
+        .role-permission-page .card-header-custom { padding: 18px; }
+        .role-permission-page .matrix-toolbar { width: 100%; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .role-permission-page .matrix-table { min-width: 980px; }
+        .role-permission-page .matrix-table :is(th, td):nth-child(2) {
+            position: sticky;
+            left: 48px;
+            z-index: 1;
+            width: 180px;
+            min-width: 180px !important;
+            box-shadow: 4px 0 8px rgba(15, 23, 42, 0.04);
+        }
+        .role-permission-page .matrix-table th:nth-child(2) { z-index: 3; }
+        .role-permission-page .matrix-footer { gap: 16px; }
+        .role-permission-page .matrix-footer .btn-save-address { width: 100%; }
+    }
+</style>
+<style>
+    .role-permission-page .permission-category td { background: var(--matrix-hover, #f1f5f9); font-size: .75rem; font-weight: 700; letter-spacing: .04em; padding: 12px 18px; }
+    .role-permission-page .permission-filters { display: grid; grid-template-columns: minmax(0, 2fr) minmax(180px, 1fr); gap: 16px; }
+    .role-permission-page .permission-state {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        width: fit-content;
+        max-width: 100%;
+        padding: 4px 8px;
+        border: 1px solid var(--matrix-disabled-border) !important;
+        border-radius: 6px;
+        background: var(--matrix-disabled-bg) !important;
+        color: var(--matrix-disabled-text) !important;
+        -webkit-text-fill-color: var(--matrix-disabled-text) !important;
+        font-size: .72rem;
+        font-weight: 600;
+        line-height: 1.4;
+        white-space: normal;
+        text-shadow: none;
+    }
+    .role-permission-page .permission-state::before {
+        content: '';
+        width: 6px;
+        height: 6px;
+        flex: 0 0 6px;
+        border-radius: 50%;
+        background: currentColor;
+    }
+    .role-permission-page .permission-state--enabled {
+        border-color: var(--matrix-enabled-border) !important;
+        background: var(--matrix-enabled-bg) !important;
+        color: var(--matrix-enabled-text) !important;
+        -webkit-text-fill-color: var(--matrix-enabled-text) !important;
+    }
+    .role-permission-page .matrix-footer { position: sticky; bottom: 0; background: var(--matrix-surface, var(--bs-body-bg, #fff)) !important; z-index: 4; }
+    .role-permission-page .module-title-box { padding-left: var(--module-indent, 0); }
+    @media (max-width: 767px) { .role-permission-page .permission-filters { grid-template-columns: 1fr; } }
 </style>
 @endpush
 
 @section('content')
-<div class="role-permission-page">
+<div class="pms-settings-page role-permission-page">
     <div class="role-permission-shell">
         <div class="ambient-orb orb-1"></div>
         <div class="ambient-orb orb-2"></div>
@@ -507,7 +1404,7 @@
                     </div>
                     <div class="header-title">
                         <h1>Role & Permission Management</h1>
-                        <p>Configure access control levels, granular action permissions, and module capabilities for system roles.</p>
+                        <p>Manage module access and actions for your company's roles. Saved changes take effect immediately.</p>
                     </div>
                 </div>
 
@@ -517,6 +1414,7 @@
             </div>
 
             <!-- Alert Notifications -->
+            @include('admin.settings.partials.access-navigation')
             @if(session('success'))
                 <div class="alert alert-success alert-dismissible fade show d-flex align-items-center mb-4 shadow-sm rounded-4 border-0" style="background: rgba(220, 252, 231, 0.95); color: #065f46; border-left: 5px solid #10b981 !important;" role="alert">
                     <i class="fas fa-check-circle fs-4 me-2"></i>
@@ -533,7 +1431,7 @@
                     </div>
                     <div class="stat-info">
                         <h6>Active Role</h6>
-                        <h3>{{ ucfirst($role) }}</h3>
+                        <h3>{{ ($roleLabels[$role] ?? ucfirst($role)) }}</h3>
                     </div>
                 </div>
                 <div class="stat-card">
@@ -570,74 +1468,146 @@
                 <form method="GET" action="{{ route('admin.role-permissions.index') }}">
                     <div class="row align-items-center g-3">
                         <div class="col-md-5 col-lg-4">
-                            <label class="form-label fw-bold text-dark mb-1.5" style="font-size: 0.9rem;"><i class="fas fa-sliders me-1.5" style="color: #059669;"></i>Select Role to Modify Permissions</label>
+                            <label class="form-label fw-bold text-dark mb-1.5" style="font-size: 0.9rem;"><i class="fas fa-sliders me-1.5" style="color: #2F6BFF;"></i>Select Role to Modify Permissions</label>
                             <div class="input-group input-group-custom">
                                 <span class="input-group-text"><i class="fas fa-user-tag"></i></span>
-                                <select name="role" class="form-select" onchange="this.form.submit()">
-                                    @foreach($roles as $option)
-                                        <option value="{{ $option }}" @selected($role === $option)>{{ ucfirst($option) }}</option>
+                                @php
+                                    // Keep labels unique without changing stored role/permission keys.
+                                    $roleOptions = [];
+                                    foreach ($roles as $option) {
+                                        if (strtolower($option) === 'admin') continue;
+                                        $label = $roleLabels[$option] ?? ucfirst($option);
+                                        $labelKey = mb_strtolower(preg_replace('/\s+/u', ' ', trim($label)));
+                                        if (str_starts_with($option, 'staff:')) $label .= ' · Custom role';
+                                        if (!isset($roleOptions[$labelKey]) || $role === $option) {
+                                            $roleOptions[$labelKey] = ['value' => $option, 'label' => $label];
+                                        }
+                                    }
+                                @endphp
+                                <select name="role" class="form-select" aria-label="Role to configure">
+                                    @foreach($roleOptions as $option)
+                                        <option value="{{ $option['value'] }}" @selected($role === $option['value'])>{{ $option['label'] }}</option>
                                     @endforeach
                                 </select>
+                                <noscript><button type="submit" class="btn btn-primary mt-2">Load role permissions</button></noscript>
                             </div>
                         </div>
                         <div class="col-md-7 col-lg-8">
-                            <small class="text-muted d-block mt-md-4"><i class="fas fa-info-circle me-1" style="color: #059669;"></i>Changing the selected role will dynamically reload module access control capabilities below.</small>
+                            <small class="text-muted d-block mt-md-4"><i class="fas fa-info-circle me-1" style="color: #2F6BFF;"></i>Select the user's assigned role. Saved custom-role permissions take precedence over standard HR or Manager permissions.</small>
                         </div>
                     </div>
                 </form>
             </div>
 
             <!-- Permissions Matrix Table Card -->
-            <form method="POST" action="{{ route('admin.role-permissions.update') }}">
+            <form method="POST" action="{{ route('admin.role-permissions.update') }}" id="rolePermissionsForm">
                 @csrf
                 <input type="hidden" name="role" value="{{ $role }}">
 
                 <div class="address-card-elevated">
-                    <div class="card-header-custom">
+                    <div class="card-header-custom d-flex justify-content-between align-items-center flex-wrap gap-3">
                         <div class="card-header-left">
                             <div class="card-header-avatar shadow-sm">
                                 <i class="fas fa-table-cells"></i>
                             </div>
                             <div>
-                                <h5 class="mb-0 fw-bold fs-5" style="color: #0a2e1f;">Module Access Control Matrix</h5>
-                                <small class="text-muted">Grant or revoke granular action privileges for <strong style="color: #059669;">{{ ucfirst($role) }}</strong></small>
+                                <h5 class="mb-0 fw-bold fs-5" style="color: #0F172A;">Module Access Control Matrix</h5>
+                                <small class="text-muted">Configure the same modules and submodules as Module Management for <strong style="color: #2F6BFF;">{{ ($roleLabels[$role] ?? ucfirst($role)) }}</strong>. View means read access; Create, Edit and Delete control changes. Existing role and record-access rules still apply.</small>
                             </div>
+                        </div>
+                        <div class="matrix-toolbar d-flex align-items-center gap-2 flex-wrap">
+                            <button type="button" class="btn btn-sm btn-outline-primary fw-semibold px-3 py-1.5 rounded-pill shadow-xs" id="btnGrantAll" title="Grant all permissions across all modules">
+                                <i class="fas fa-check-double me-1"></i> Grant Full Access
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-info fw-semibold px-3 py-1.5 rounded-pill shadow-xs" id="btnViewOnly" title="Select only View permission for all modules">
+                                <i class="fas fa-eye me-1"></i> View Only
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary fw-semibold px-3 py-1.5 rounded-pill shadow-xs" id="btnResetDefaults" title="Reset to standard default permissions for this role">
+                                <i class="fas fa-undo me-1"></i> Reset Defaults
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-danger fw-semibold px-3 py-1.5 rounded-pill shadow-xs" id="btnRevokeAll" title="Revoke all selected permissions">
+                                <i class="fas fa-times me-1"></i> Revoke All
+                            </button>
                         </div>
                     </div>
 
-                    <div class="table-responsive">
-                        <table class="matrix-table">
+                    <div class="px-4 pb-3 permission-filters">
+                        <div>
+                        <label for="permissionModuleSearch" class="form-label small fw-semibold">Find a module</label>
+                        <input id="permissionModuleSearch" type="search" class="form-control" placeholder="Search modules or categories" autocomplete="off">
+                        <small id="permissionSearchStatus" class="text-muted" aria-live="polite"></small>
+                        </div>
+                        <div>
+                            <label for="permissionCategoryFilter" class="form-label small fw-semibold">Module category</label>
+                            <select id="permissionCategoryFilter" class="form-select">
+                                <option value="">All categories</option>
+                                @foreach($modules->pluck('category')->unique() as $category)
+                                    <option value="{{ $category }}">{{ $category }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                    <p class="px-4 small text-muted">Selections on disabled modules are saved for when the module is enabled. Bulk controls apply to all listed modules, including filtered rows.</p>
+                    <div class="table-responsive matrix-scroll" tabindex="0" role="region" aria-label="Module permission matrix">
+                        <table class="matrix-table" data-pms-export="off">
                             <thead>
                                 <tr>
-                                    <th style="min-width: 240px;">Module Name</th>
+                                    <th style="width: 48px;" class="text-center">
+                                        <div class="d-flex align-items-center justify-content-center">
+                                            <input type="checkbox" id="masterToggleAll" class="perm-checkbox" title="Toggle all permissions" aria-label="Toggle all permissions">
+                                        </div>
+                                    </th>
+                                    <th style="min-width: 240px;" scope="col">Module Name</th>
                                     @foreach($permissions as $permission)
-                                        <th class="text-center">{{ ucfirst($permission) }}</th>
+                                        <th class="text-center" style="min-width: 100px;" scope="col">
+                                            <label class="col-header-label mb-0 cursor-pointer d-flex align-items-center justify-content-center gap-1.5" title="Toggle all {{ ucfirst($permission) }}">
+                                                <input type="checkbox" class="col-checkbox perm-checkbox" data-perm="{{ $permission }}">
+                                                <span>{{ ucfirst($permission) }}</span>
+                                            </label>
+                                        </th>
                                     @endforeach
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($modules as $module)
-                                    @php $saved = $savedPermissions->get($module->id); @endphp
-                                    <tr>
+                                @foreach($modules->groupBy('category') as $category => $categoryModules)
+                                    <tr class="permission-category" data-category="{{ $category }}"><td colspan="{{ count($permissions) + 2 }}"><span>{{ $category }}</span><small class="ms-2">{{ $categoryModules->count() }} modules</small></td></tr>
+                                @foreach($categoryModules as $module)
+                                    <tr class="{{ !$module->is_active ? 'permission-disabled' : '' }}" data-category="{{ $category }}" data-module-id="{{ $module->id }}" data-module-slug="{{ $module->slug }}" data-payroll-child="{{ ($module->slug !== 'payroll' && (str_starts_with($module->slug, 'payroll-') || in_array($module->slug, ['payslips', 'salary-structures', 'employee-salary', 'formula-builder', 'deduction-rules', 'bonus-rules', 'tax-rules', 'overtime-rules']))) ? 'true' : 'false' }}" data-search="{{ strtolower($category . ' ' . ($module->sidebar_name ?? $module->name) . ' ' . $module->slug . ' ' . (($module->parent?->sidebar_name ?? $module->parent?->name) ?? '')) }}">
+                                        <td class="text-center">
+                                            <input type="checkbox" class="row-checkbox perm-checkbox" data-module-id="{{ $module->id }}" title="Toggle all actions for {{ ($module->sidebar_name ?? $module->name) }}">
+                                        </td>
                                         <td>
-                                            <div class="module-title-box">
-                                                <strong>{{ $module->name }}</strong>
-                                                @if($module->parent)<small><i class="fas fa-angle-right me-1" style="color: #059669;"></i>{{ $module->parent->name }}</small>@endif
+                                            <div class="module-title-box" style="--module-indent: {{ min(4, $module->sidebar_depth ?? 0) * 12 }}px;">
+                                                <strong>{{ ($module->sidebar_name ?? $module->name) }}</strong>
+                                                <span class="permission-state {{ $module->is_active ? 'permission-state--enabled' : 'permission-state--disabled' }}">{{ $module->is_active ? 'Enabled' : 'Disabled in Module Management' }}</span>
+                                                @if($module->slug === 'payroll')<small>Changing Payroll actions also updates its pages. Adjust individual pages before saving if needed.</small>@endif
+                                                @if($module->parent)<small><i class="fas fa-angle-right me-1" style="color: #2F6BFF;"></i>{{ $module->parent->sidebar_name ?? $module->parent->name }}</small>@endif
                                             </div>
                                         </td>
                                         @foreach($permissions as $permission)
+                                            @php
+                                                $isChecked = !empty($effectivePermissions[$module->id][$permission]);
+                                            @endphp
                                             <td class="text-center">
-                                                <input type="checkbox" class="perm-checkbox" name="permissions[{{ $module->id }}][]" value="{{ $permission }}" @checked($role === 'admin' || (bool) optional($saved)->{'can_' . $permission})>
+                                                <input type="checkbox" class="perm-checkbox action-checkbox" aria-label="{{ ucfirst($permission) }} for {{ ($module->sidebar_name ?? $module->name) }}" data-module-id="{{ $module->id }}" data-perm="{{ $permission }}" name="permissions[{{ $module->id }}][]" value="{{ $permission }}" @checked($isChecked)>
                                             </td>
                                         @endforeach
                                     </tr>
                                 @endforeach
+                                @endforeach
+                                <tr id="permissionSearchEmpty" hidden><td colspan="{{ count($permissions) + 2 }}" class="text-center py-5 text-muted">No modules match your filters.</td></tr>
+                                @if($modules->isEmpty())
+                                    <tr><td colspan="{{ count($permissions) + 2 }}" class="text-center py-5 text-muted">No modules have been provided for this company.</td></tr>
+                                @endif
                             </tbody>
                         </table>
                     </div>
 
-                    <div class="p-4 border-top d-flex justify-content-between align-items-center flex-wrap gap-3" style="background: rgba(248, 250, 252, 0.6);">
-                        <small class="text-muted"><i class="fas fa-shield-halved me-1" style="color: #059669;"></i>Changes will immediately affect users assigned to the <strong>{{ ucfirst($role) }}</strong> role.</small>
+                    <div class="matrix-footer p-4 border-top d-flex justify-content-between align-items-center flex-wrap gap-3" style="background: rgba(248, 250, 252, 0.6);">
+                        <div>
+                            <small class="text-muted"><i class="fas fa-shield-halved me-1" style="color: #2F6BFF;"></i>Saved changes apply to users assigned to <strong>{{ ($roleLabels[$role] ?? ucfirst($role)) }}</strong>.</small>
+                            <div id="permissionSaveStatus" class="small mt-1" role="status" aria-live="polite"></div>
+                        </div>
                         <button type="submit" class="btn-save-address">
                             <i class="fas fa-save me-1.5"></i> Save Permissions
                         </button>
@@ -647,4 +1617,230 @@
         </div>
     </div>
 </div>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const table = document.querySelector('.matrix-table');
+    if (!table) return;
+
+    const masterToggle = document.getElementById('masterToggleAll');
+    const colCheckboxes = table.querySelectorAll('.col-checkbox');
+    const rowCheckboxes = table.querySelectorAll('.row-checkbox');
+    const actionCheckboxes = table.querySelectorAll('.action-checkbox');
+    const form = document.getElementById('rolePermissionsForm');
+    const saveStatus = document.getElementById('permissionSaveStatus');
+    const snapshot = () => Array.from(actionCheckboxes, checkbox => checkbox.checked ? '1' : '0').join('');
+    let savedSnapshot = snapshot();
+    let saving = false;
+    function updateSaveStatus() {
+        if (saving) return;
+        saveStatus.textContent = snapshot() === savedSnapshot ? 'All changes saved.' : 'Unsaved changes. Save to apply permissions.';
+    }
+    function notifySave(message, type) {
+        saveStatus.textContent = message;
+        saveStatus.classList.toggle('text-danger', type === 'error');
+        if (typeof window.showToast === 'function') window.showToast(message, type);
+    }
+    window.addEventListener('beforeunload', event => {
+        if (saving || snapshot() !== savedSnapshot) {
+            event.preventDefault();
+            event.returnValue = '';
+        }
+    });
+    document.querySelector('select[name="role"]')?.addEventListener('change', event => {
+        if (saving || (snapshot() !== savedSnapshot && !window.confirm('Discard unsaved permission changes and switch roles?'))) {
+            event.target.value = form.querySelector('[name="role"]').value;
+            return;
+        }
+        savedSnapshot = snapshot();
+        event.target.form.submit();
+    });
+    form.addEventListener('submit', async event => {
+        event.preventDefault();
+        if (saving) return;
+        saving = true;
+        const button = form.querySelector('button[type="submit"]');
+        const original = button.innerHTML;
+        button.disabled = true;
+        button.textContent = 'Saving...';
+        saveStatus.textContent = 'Saving permissions...';
+        saveStatus.classList.remove('text-danger');
+        const submittedSnapshot = snapshot();
+        const permissions = {};
+        actionCheckboxes.forEach(checkbox => {
+            const moduleId = checkbox.dataset.moduleId;
+            permissions[moduleId] ??= [];
+            if (checkbox.checked) permissions[moduleId].push(checkbox.value);
+        });
+        try {
+            const response = await fetch(form.action, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': form.querySelector('[name="_token"]').value,
+                },
+                body: JSON.stringify({ role: form.querySelector('[name="role"]').value, permissions }),
+            });
+            const data = await response.json().catch(() => { throw new Error('Could not save permissions. Refresh your session and try again.'); });
+            if (!response.ok || data.success !== true) throw new Error(data.message || 'Could not save permissions. Please try again.');
+            savedSnapshot = submittedSnapshot;
+            notifySave(data.message, 'success');
+            if (snapshot() !== savedSnapshot) saveStatus.textContent += ' You have additional unsaved changes.';
+        } catch (error) {
+            notifySave(error.message || 'Could not save permissions. Please try again.', 'error');
+        } finally {
+            saving = false;
+            button.disabled = false;
+            button.innerHTML = original;
+        }
+    });
+
+    // Sync state of row, column, and master checkboxes based on individual action checkboxes
+    function syncStates() {
+        // 1. Sync Row checkboxes
+        rowCheckboxes.forEach(rowCb => {
+            const modId = rowCb.getAttribute('data-module-id');
+            const rowActions = table.querySelectorAll(`.action-checkbox[data-module-id="${modId}"]`);
+            if (!rowActions.length) return;
+            const checkedCount = Array.from(rowActions).filter(cb => cb.checked).length;
+            rowCb.checked = (checkedCount === rowActions.length);
+            rowCb.indeterminate = (checkedCount > 0 && checkedCount < rowActions.length);
+        });
+
+        // 2. Sync Column checkboxes
+        colCheckboxes.forEach(colCb => {
+            const perm = colCb.getAttribute('data-perm');
+            const colActions = table.querySelectorAll(`.action-checkbox[data-perm="${perm}"]`);
+            if (!colActions.length) return;
+            const checkedCount = Array.from(colActions).filter(cb => cb.checked).length;
+            colCb.checked = (checkedCount === colActions.length);
+            colCb.indeterminate = (checkedCount > 0 && checkedCount < colActions.length);
+        });
+
+        // 3. Sync Master checkbox
+        if (masterToggle) {
+            const total = actionCheckboxes.length;
+            const checkedTotal = Array.from(actionCheckboxes).filter(cb => cb.checked).length;
+            masterToggle.checked = (total > 0 && checkedTotal === total);
+            masterToggle.indeterminate = (checkedTotal > 0 && checkedTotal < total);
+        }
+        updateSaveStatus();
+    }
+
+    // Master Toggle Event
+    if (masterToggle) {
+        masterToggle.addEventListener('change', function () {
+            const isChecked = this.checked;
+            actionCheckboxes.forEach(cb => cb.checked = isChecked);
+            rowCheckboxes.forEach(cb => { cb.checked = isChecked; cb.indeterminate = false; });
+            colCheckboxes.forEach(cb => { cb.checked = isChecked; cb.indeterminate = false; });
+            syncStates();
+        });
+    }
+
+    // Row Toggle Event
+    function syncPayrollChildren(source) {
+        if (source.closest('tr')?.dataset.moduleSlug !== 'payroll') return;
+        table.querySelectorAll(`tr[data-payroll-child="true"] .action-checkbox[data-perm="${source.dataset.perm}"]`).forEach(child => {
+            child.checked = source.checked;
+        });
+    }
+    rowCheckboxes.forEach(rowCb => {
+        rowCb.addEventListener('change', function () {
+            const modId = this.getAttribute('data-module-id');
+            const isChecked = this.checked;
+            table.querySelectorAll(`.action-checkbox[data-module-id="${modId}"]`).forEach(cb => {
+                cb.checked = isChecked;
+                syncPayrollChildren(cb);
+            });
+            syncStates();
+        });
+    });
+
+    // Column Toggle Event
+    colCheckboxes.forEach(colCb => {
+        colCb.addEventListener('change', function () {
+            const perm = this.getAttribute('data-perm');
+            const isChecked = this.checked;
+            table.querySelectorAll(`.action-checkbox[data-perm="${perm}"]`).forEach(cb => {
+                cb.checked = isChecked;
+            });
+            syncStates();
+        });
+    });
+
+    // Individual Action Checkbox Event
+    actionCheckboxes.forEach(cb => {
+        cb.addEventListener('change', function () {
+            syncPayrollChildren(this);
+            syncStates();
+        });
+    });
+
+    // Toolbar Buttons
+    const btnGrantAll = document.getElementById('btnGrantAll');
+    if (btnGrantAll) {
+        btnGrantAll.addEventListener('click', function () {
+            actionCheckboxes.forEach(cb => cb.checked = true);
+            syncStates();
+        });
+    }
+
+    const btnViewOnly = document.getElementById('btnViewOnly');
+    if (btnViewOnly) {
+        btnViewOnly.addEventListener('click', function () {
+            actionCheckboxes.forEach(cb => {
+                cb.checked = (cb.getAttribute('data-perm') === 'view');
+            });
+            syncStates();
+        });
+    }
+
+    const btnRevokeAll = document.getElementById('btnRevokeAll');
+    if (btnRevokeAll) {
+        btnRevokeAll.addEventListener('click', function () {
+            actionCheckboxes.forEach(cb => cb.checked = false);
+            syncStates();
+        });
+    }
+
+    const btnResetDefaults = document.getElementById('btnResetDefaults');
+    if (btnResetDefaults) {
+        btnResetDefaults.addEventListener('click', function () {
+            const defaults = @json($defaultPermissions);
+            actionCheckboxes.forEach(cb => {
+                cb.checked = (defaults[cb.dataset.moduleId] || []).includes(cb.dataset.perm);
+            });
+            syncStates();
+        });
+    }
+
+    // Initial sync on page load
+    const search = document.getElementById('permissionModuleSearch');
+    const categoryFilter = document.getElementById('permissionCategoryFilter');
+    const rows = Array.from(table.querySelectorAll('tbody tr[data-search]'));
+    function filterModules() {
+        const query = search.value.trim().toLowerCase();
+        let visible = 0;
+        rows.forEach(row => {
+            row.hidden = !row.dataset.search.includes(query) || (categoryFilter.value !== '' && row.dataset.category !== categoryFilter.value);
+            if (!row.hidden) visible++;
+        });
+        document.getElementById('permissionSearchStatus').textContent = `${visible} of ${rows.length} modules shown. Bulk actions apply to all modules.`;
+        table.querySelectorAll('.permission-category').forEach(header => {
+            header.hidden = !rows.some(row => row.dataset.category === header.dataset.category && !row.hidden);
+        });
+        document.getElementById('permissionSearchEmpty').hidden = visible > 0 || rows.length === 0;
+    }
+    search.addEventListener('input', filterModules);
+    categoryFilter.addEventListener('change', filterModules);
+    filterModules();
+    syncStates();
+});
+</script>
+@endpush
 @endsection

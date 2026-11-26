@@ -1,7 +1,73 @@
 @extends('admin.layout.app')
 
 @section('content')
-<div class="container-fluid px-4 py-4" style="max-width: 960px;">
+<style>
+/* Complaint Conversation History Styling for Light & Dark Theme Modes */
+.chat-msg-bubble {
+    max-width: 80%;
+    padding: 0.875rem 1rem;
+    border-radius: 0.75rem;
+    transition: all 0.2s ease;
+}
+
+.chat-msg-self {
+    background-color: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    color: #0f172a;
+}
+.chat-msg-self .chat-msg-meta {
+    color: #475569;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+.chat-msg-self .chat-msg-body {
+    color: #0f172a;
+}
+
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-theme="dark"], body[data-bs-theme="dark"], body.dark, [data-bs-theme="dark"]) .chat-msg-self {
+    background-color: rgba(255, 255, 255, 0.08) !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    color: #f8fafc !important;
+}
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-theme="dark"], body[data-bs-theme="dark"], body.dark, [data-bs-theme="dark"]) .chat-msg-self .chat-msg-meta {
+    color: #cbd5e1 !important;
+}
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-theme="dark"], body[data-bs-theme="dark"], body.dark, [data-bs-theme="dark"]) .chat-msg-self .chat-msg-body {
+    color: #f8fafc !important;
+}
+
+.chat-msg-other {
+    background-color: #EEF2FF;
+    border: 1px solid #C7D2FE;
+    color: #1E293B;
+}
+.chat-msg-other .chat-msg-meta {
+    color: #2F6BFF;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+.chat-msg-other .chat-msg-body {
+    color: #1E293B;
+}
+
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-theme="dark"], body[data-bs-theme="dark"], body.dark, [data-bs-theme="dark"]) .chat-msg-other {
+    background-color: rgba(47, 107, 255, 0.15) !important;
+    border-color: rgba(47, 107, 255, 0.3) !important;
+    color: #60A5FA !important;
+}
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-theme="dark"], body[data-bs-theme="dark"], body.dark, [data-bs-theme="dark"]) .chat-msg-other .chat-msg-meta {
+    color: #93C5FD !important;
+}
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-theme="dark"], body[data-bs-theme="dark"], body.dark, [data-bs-theme="dark"]) .chat-msg-other .chat-msg-body {
+    color: #60A5FA !important;
+}
+
+:is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-theme="dark"], body[data-bs-theme="dark"], body.dark, [data-bs-theme="dark"]) .complaint-desc-body {
+    color: #f8fafc !important;
+}
+</style>
+<div class="container-fluid px-4 py-4" style="max-width: 960px;" data-live-chat>
+@include('partials.subscription-downgrade-request')
 
   <div class="d-flex justify-content-between align-items-center mb-3">
     <a href="{{ route('admin.company-complaints.index') }}" class="btn btn-sm btn-light border fw-bold" style="border-radius: 8px;">
@@ -62,7 +128,7 @@
       <!-- Ticket Original Description -->
       <div class="p-3 rounded-3 bg-light border">
         <div class="fs-8 fw-bold text-uppercase text-muted mb-1">Issue Description</div>
-        <div class="fs-6 text-dark" style="white-space: pre-wrap; line-height: 1.6;">{{ $ticket->description }}</div>
+        <div class="fs-6 complaint-desc-body" style="white-space: pre-wrap; line-height: 1.6;">{{ $ticket->description }}</div>
       </div>
     </div>
   </div>
@@ -70,32 +136,12 @@
   <!-- Timeline Feed -->
   <div class="card border-0 shadow-sm mb-4" style="border-radius: 16px;">
     <div class="card-header bg-white p-3 border-bottom">
-      <h6 class="fw-bold mb-0 text-dark"><i class="bx bx-conversation me-1 text-primary"></i> Conversation History ({{ $ticket->conversations->count() }} messages)</h6>
+      <h6 class="fw-bold mb-0 text-dark"><i class="bx bx-conversation me-1 text-primary"></i> Conversation History (<span data-live-message-count>{{ $ticket->conversations->count() }}</span> messages)</h6>
     </div>
 
     <div class="card-body p-4">
-      <div class="d-flex flex-column gap-3">
-        @foreach($ticket->conversations as $conv)
-          <div class="d-flex {{ $conv->sender_type === 'company_admin' ? 'justify-content-start' : 'justify-content-end' }}">
-            <div class="p-3 rounded-3" style="max-width: 80%; {{ $conv->sender_type === 'company_admin' ? 'background: #f1f5f9; color: #0f172a;' : 'background: #ecfdf5; color: #064e3b; border: 1px solid #a7f3d0;' }}">
-              <div class="fs-8 fw-bold mb-1 text-muted">
-                {{ $conv->sender_name }} • {{ $conv->created_at?->format('d M, h:i A') }} ({{ $conv->sender_type === 'company_admin' ? 'You' : 'Super Admin' }})
-              </div>
-              <div class="fs-6" style="white-space: pre-wrap; line-height: 1.5;">{{ $conv->message }}</div>
-
-              @if($conv->attachments->count() > 0)
-                <div class="mt-2 pt-2 border-top">
-                  <div class="fs-8 fw-bold mb-1">Attachments:</div>
-                  @foreach($conv->attachments as $att)
-                    <a href="{{ asset($att->file_path) }}" target="_blank" class="fs-7 text-primary d-block text-decoration-none">
-                      <i class="bx bx-paperclip"></i> {{ $att->original_name }} ({{ round($att->file_size / 1024, 1) }} KB)
-                    </a>
-                  @endforeach
-                </div>
-              @endif
-            </div>
-          </div>
-        @endforeach
+      <div class="d-flex flex-column gap-3" data-live-feed="{{ route('admin.company-complaints.messages', $ticket->id) }}" data-last-id="{{ $ticket->conversations->max('id') ?? 0 }}">
+        @include('admin.complaints.messages', ['messages' => $ticket->conversations])
       </div>
     </div>
   </div>
@@ -105,7 +151,7 @@
     <div class="card border-0 shadow-sm" style="border-radius: 16px;">
       <div class="card-body p-4">
         <h6 class="fw-bold mb-3 text-dark"><i class="bx bx-reply me-1 text-success"></i> Reply to Super Admin</h6>
-        <form method="POST" action="{{ route('admin.company-complaints.reply', $ticket->id) }}" enctype="multipart/form-data">
+        <form method="POST" action="{{ route('admin.company-complaints.reply', $ticket->id) }}" enctype="multipart/form-data" data-live-reply>
           @csrf
           <div class="mb-3">
             <textarea name="message" rows="4" class="form-control" placeholder="Write your response or upload additional info..." required style="border-radius: 8px;"></textarea>
@@ -127,3 +173,6 @@
 
 </div>
 @endsection
+@push('scripts')
+<script src="{{ asset('admin/assets/js/pms-complaint-live.js') }}?v={{ @filemtime(public_path('admin/assets/js/pms-complaint-live.js')) }}" defer></script>
+@endpush

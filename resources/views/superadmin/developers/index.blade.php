@@ -6,10 +6,10 @@
 <style>
     /* CSS Tokens & Custom Styling */
     :root {
-        --primary: #0f744c;
+        --primary: #2F6BFF;
         --primary-hover: #073a26;
-        --primary-light: #e4f3eb;
-        --primary-border: #a7f3d0;
+        --primary-light: #EEF2FF;
+        --primary-border: #C7D2FE;
         --blue-accent: #2563eb;
         --blue-light: #eff6ff;
         --purple-accent: #7c3aed;
@@ -110,14 +110,14 @@
         gap: 8px;
         transition: all 0.2s;
         text-decoration: none;
-        box-shadow: 0 2px 4px rgba(15, 116, 76, 0.2);
+        box-shadow: 0 2px 4px rgba(47, 107, 255, 0.2);
     }
 
     .btn-action-primary:hover {
         background: var(--primary-hover);
         color: #ffffff;
         transform: translateY(-1px);
-        box-shadow: 0 4px 10px rgba(15, 116, 76, 0.3);
+        box-shadow: 0 4px 10px rgba(47, 107, 255, 0.3);
     }
 
     .btn-action-secondary {
@@ -248,7 +248,7 @@
     .search-group input:focus {
         background: #ffffff;
         border-color: var(--primary);
-        box-shadow: 0 0 0 3px rgba(15, 116, 76, 0.15);
+        box-shadow: 0 0 0 3px rgba(47, 107, 255, 0.15);
     }
 
     .search-group i {
@@ -651,6 +651,516 @@
         from { opacity: 0; transform: translateY(-4px); }
         to { opacity: 1; transform: translateY(0); }
     }
+    /* ==========================================================================
+       DARK MODE ENGINE & COMPONENT OVERRIDES
+       ========================================================================== */
+    html[data-pms-theme="dark"],
+    html[data-theme="dark"],
+    html[data-bs-theme="dark"],
+    html.dark,
+    body.dark-mode,
+    body.dark,
+    .dark {
+        --slate-dark: #f8fafc;
+        --slate-body: #cbd5e1;
+        --slate-muted: #94a3b8;
+        --slate-subtle: #64748b;
+        --bg-surface: #1e293b;
+        --bg-subtle: #0f172a;
+        --border-color: #334155;
+        --primary-light: rgba(47, 107, 255, 0.25);
+        --primary-border: #15803d;
+        --blue-light: rgba(37, 99, 235, 0.25);
+        --purple-light: rgba(124, 58, 237, 0.25);
+        --warning-light: rgba(245, 158, 11, 0.25);
+        --danger-light: rgba(239, 68, 68, 0.25);
+    }
+
+    html[data-pms-theme="dark"] .page-header-box,
+    html[data-theme="dark"] .page-header-box,
+    html[data-bs-theme="dark"] .page-header-box,
+    html.dark .page-header-box,
+    body.dark-mode .page-header-box,
+    html[data-pms-theme="dark"] .kpi-card,
+    html[data-theme="dark"] .kpi-card,
+    html[data-bs-theme="dark"] .kpi-card,
+    html.dark .kpi-card,
+    body.dark-mode .kpi-card,
+    html[data-pms-theme="dark"] .filter-card,
+    html[data-theme="dark"] .filter-card,
+    html[data-bs-theme="dark"] .filter-card,
+    html.dark .filter-card,
+    body.dark-mode .filter-card,
+    html[data-pms-theme="dark"] .table-card,
+    html[data-theme="dark"] .table-card,
+    html[data-bs-theme="dark"] .table-card,
+    html.dark .table-card,
+    body.dark-mode .table-card {
+        background: #1e293b !important;
+        border-color: #334155 !important;
+        color: #f8fafc !important;
+    }
+
+    html[data-pms-theme="dark"] .table-card > div[style*="background"],
+    html[data-theme="dark"] .table-card > div[style*="background"],
+    html[data-bs-theme="dark"] .table-card > div[style*="background"],
+    html.dark .table-card > div[style*="background"],
+    body.dark-mode .table-card > div[style*="background"] {
+        background: #0f172a !important;
+        border-color: #334155 !important;
+    }
+
+    html[data-pms-theme="dark"] .enterprise-table,
+    html[data-theme="dark"] .enterprise-table,
+    html[data-bs-theme="dark"] .enterprise-table,
+    html.dark .enterprise-table,
+    body.dark-mode .enterprise-table {
+        background: #1e293b !important;
+        border-color: #334155 !important;
+    }
+
+    html[data-pms-theme="dark"] .enterprise-table th,
+    html[data-theme="dark"] .enterprise-table th,
+    html[data-bs-theme="dark"] .enterprise-table th,
+    html.dark .enterprise-table th,
+    body.dark-mode .enterprise-table th {
+        background: #0f172a !important;
+        color: #f8fafc !important;
+        border-color: #334155 !important;
+    }
+
+    html[data-pms-theme="dark"] .enterprise-table td,
+    html[data-theme="dark"] .enterprise-table td,
+    html[data-bs-theme="dark"] .enterprise-table td,
+    html.dark .enterprise-table td,
+    body.dark-mode .enterprise-table td {
+        color: #cbd5e1 !important;
+        border-color: #334155 !important;
+    }
+
+    html[data-pms-theme="dark"] .enterprise-table td strong,
+    html[data-theme="dark"] .enterprise-table td strong,
+    html[data-bs-theme="dark"] .enterprise-table td strong,
+    html.dark .enterprise-table td strong,
+    body.dark-mode .enterprise-table td strong {
+        color: #f8fafc !important;
+    }
+
+    html[data-pms-theme="dark"] .enterprise-table tr:hover td,
+    html[data-theme="dark"] .enterprise-table tr:hover td,
+    html[data-bs-theme="dark"] .enterprise-table tr:hover td,
+    html.dark .enterprise-table tr:hover td,
+    body.dark-mode .enterprise-table tr:hover td {
+        background: #334155 !important;
+    }
+
+    html[data-pms-theme="dark"] .enterprise-table select[name="status"],
+    html[data-theme="dark"] .enterprise-table select[name="status"],
+    html[data-bs-theme="dark"] .enterprise-table select[name="status"],
+    html.dark .enterprise-table select[name="status"],
+    body.dark-mode .enterprise-table select[name="status"] {
+        background: #0f172a !important;
+        color: #f8fafc !important;
+        border-color: #334155 !important;
+    }
+
+    html[data-pms-theme="dark"] .btn-action-secondary,
+    html[data-theme="dark"] .btn-action-secondary,
+    html[data-bs-theme="dark"] .btn-action-secondary,
+    html.dark .btn-action-secondary,
+    body.dark-mode .btn-action-secondary {
+        background: #0f172a !important;
+        color: #cbd5e1 !important;
+        border-color: #334155 !important;
+    }
+
+    html[data-pms-theme="dark"] .btn-action-secondary:hover,
+    html[data-theme="dark"] .btn-action-secondary:hover,
+    html[data-bs-theme="dark"] .btn-action-secondary:hover,
+    html.dark .btn-action-secondary:hover,
+    body.dark-mode .btn-action-secondary:hover {
+        background: #334155 !important;
+        color: #ffffff !important;
+        border-color: #475569 !important;
+    }
+
+    html[data-pms-theme="dark"] .search-group input,
+    html[data-theme="dark"] .search-group input,
+    html[data-bs-theme="dark"] .search-group input,
+    html.dark .search-group input,
+    body.dark-mode .search-group input,
+    html[data-pms-theme="dark"] .filter-selects select,
+    html[data-theme="dark"] .filter-selects select,
+    html[data-bs-theme="dark"] .filter-selects select,
+    html.dark .filter-selects select,
+    body.dark-mode .filter-selects select,
+    html[data-pms-theme="dark"] .entries-selector select,
+    html[data-theme="dark"] .entries-selector select,
+    html[data-bs-theme="dark"] .entries-selector select,
+    html.dark .entries-selector select,
+    body.dark-mode .entries-selector select {
+        background: #0f172a !important;
+        color: #f8fafc !important;
+        border-color: #334155 !important;
+    }
+
+    html[data-pms-theme="dark"] .export-dropdown-menu,
+    html[data-theme="dark"] .export-dropdown-menu,
+    html[data-bs-theme="dark"] .export-dropdown-menu,
+    html.dark .export-dropdown-menu,
+    body.dark-mode .export-dropdown-menu {
+        background: #1e293b !important;
+        border-color: #334155 !important;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5) !important;
+    }
+
+    html[data-pms-theme="dark"] .export-dropdown-menu a,
+    html[data-theme="dark"] .export-dropdown-menu a,
+    html[data-bs-theme="dark"] .export-dropdown-menu a,
+    html.dark .export-dropdown-menu a,
+    body.dark-mode .export-dropdown-menu a {
+        color: #cbd5e1 !important;
+    }
+
+    html[data-pms-theme="dark"] .export-dropdown-menu a:hover,
+    html[data-theme="dark"] .export-dropdown-menu a:hover,
+    html[data-bs-theme="dark"] .export-dropdown-menu a:hover,
+    html.dark .export-dropdown-menu a:hover,
+    body.dark-mode .export-dropdown-menu a:hover {
+        background: #0f172a !important;
+        color: #ffffff !important;
+    }
+
+    html[data-pms-theme="dark"] .pagination-wrap nav span.relative,
+    html[data-pms-theme="dark"] .pagination-wrap nav a.relative,
+    html[data-theme="dark"] .pagination-wrap nav span.relative,
+    html[data-theme="dark"] .pagination-wrap nav a.relative,
+    html[data-bs-theme="dark"] .pagination-wrap nav span.relative,
+    html[data-bs-theme="dark"] .pagination-wrap nav a.relative,
+    html.dark .pagination-wrap nav span.relative,
+    html.dark .pagination-wrap nav a.relative,
+    body.dark-mode .pagination-wrap nav span.relative,
+    body.dark-mode .pagination-wrap nav a.relative {
+        background: #0f172a !important;
+        color: #f8fafc !important;
+        border-color: #334155 !important;
+    }
+
+    html[data-pms-theme="dark"] .pagination-wrap nav span[aria-current="page"] span.relative,
+    html[data-theme="dark"] .pagination-wrap nav span[aria-current="page"] span.relative,
+    html[data-bs-theme="dark"] .pagination-wrap nav span[aria-current="page"] span.relative,
+    html.dark .pagination-wrap nav span[aria-current="page"] span.relative,
+    body.dark-mode .pagination-wrap nav span[aria-current="page"] span.relative {
+        background: var(--primary) !important;
+        color: #ffffff !important;
+        border-color: var(--primary) !important;
+    }
+
+    /* Drawer & Modal Dialogs */
+    html[data-pms-theme="dark"] .drawer-panel,
+    html[data-theme="dark"] .drawer-panel,
+    html[data-bs-theme="dark"] .drawer-panel,
+    html.dark .drawer-panel,
+    body.dark-mode .drawer-panel,
+    html[data-pms-theme="dark"] .modal-box,
+    html[data-theme="dark"] .modal-box,
+    html[data-bs-theme="dark"] .modal-box,
+    html.dark .modal-box,
+    body.dark-mode .modal-box {
+        background: #1e293b !important;
+        color: #f8fafc !important;
+        border: 1px solid #334155 !important;
+    }
+
+    html[data-pms-theme="dark"] .drawer-header,
+    html[data-theme="dark"] .drawer-header,
+    html[data-bs-theme="dark"] .drawer-header,
+    html.dark .drawer-header,
+    body.dark-mode .drawer-header,
+    html[data-pms-theme="dark"] .modal-header,
+    html[data-theme="dark"] .modal-header,
+    html[data-bs-theme="dark"] .modal-header,
+    html.dark .modal-header,
+    body.dark-mode .modal-header,
+    html[data-pms-theme="dark"] .modal-footer,
+    html[data-theme="dark"] .modal-footer,
+    html[data-bs-theme="dark"] .modal-footer,
+    html.dark .modal-footer,
+    body.dark-mode .modal-footer {
+        background: #0f172a !important;
+        border-color: #334155 !important;
+    }
+
+    html[data-pms-theme="dark"] .modal-body,
+    html[data-theme="dark"] .modal-body,
+    html[data-bs-theme="dark"] .modal-body,
+    html.dark .modal-body,
+    body.dark-mode .modal-body,
+    html[data-pms-theme="dark"] .drawer-body,
+    html[data-theme="dark"] .drawer-body,
+    html[data-bs-theme="dark"] .drawer-body,
+    html.dark .drawer-body,
+    body.dark-mode .drawer-body {
+        background: #1e293b !important;
+        color: #cbd5e1 !important;
+    }
+
+    html[data-pms-theme="dark"] .modal-body label,
+    html[data-theme="dark"] .modal-body label,
+    html[data-bs-theme="dark"] .modal-body label,
+    html.dark .modal-body label,
+    body.dark-mode .modal-body label,
+    html[data-pms-theme="dark"] .drawer-body label,
+    html[data-theme="dark"] .drawer-body label,
+    html[data-bs-theme="dark"] .drawer-body label,
+    html.dark .drawer-body label,
+    body.dark-mode .drawer-body label {
+        color: #cbd5e1 !important;
+    }
+
+    html[data-pms-theme="dark"] .modal-body input,
+    html[data-theme="dark"] .modal-body input,
+    html[data-bs-theme="dark"] .modal-body input,
+    html.dark .modal-body input,
+    body.dark-mode .modal-body input,
+    html[data-pms-theme="dark"] .modal-body select,
+    html[data-theme="dark"] .modal-body select,
+    html[data-bs-theme="dark"] .modal-body select,
+    html.dark .modal-body select,
+    body.dark-mode .modal-body select,
+    html[data-pms-theme="dark"] .modal-body textarea,
+    html[data-theme="dark"] .modal-body textarea,
+    html[data-bs-theme="dark"] .modal-body textarea,
+    html.dark .modal-body textarea,
+    body.dark-mode .modal-body textarea,
+    html[data-pms-theme="dark"] .drawer-body input,
+    html[data-theme="dark"] .drawer-body input,
+    html[data-bs-theme="dark"] .drawer-body input,
+    html.dark .drawer-body input,
+    body.dark-mode .drawer-body input,
+    html[data-pms-theme="dark"] .drawer-body select,
+    html[data-theme="dark"] .drawer-body select,
+    html[data-bs-theme="dark"] .drawer-body select,
+    html.dark .drawer-body select,
+    body.dark-mode .drawer-body select,
+    html[data-pms-theme="dark"] .drawer-body textarea,
+    html[data-theme="dark"] .drawer-body textarea,
+    html[data-bs-theme="dark"] .drawer-body textarea,
+    html.dark .drawer-body textarea,
+    body.dark-mode .drawer-body textarea {
+        background: #0f172a !important;
+        color: #f8fafc !important;
+        border-color: #334155 !important;
+    }
+
+    /* Assign Task Modal Inner Containers */
+    html[data-pms-theme="dark"] #assignWorkModal div[style*="background: #f0fdf4"],
+    html[data-theme="dark"] #assignWorkModal div[style*="background: #f0fdf4"],
+    html[data-bs-theme="dark"] #assignWorkModal div[style*="background: #f0fdf4"],
+    html.dark #assignWorkModal div[style*="background: #f0fdf4"],
+    body.dark-mode #assignWorkModal div[style*="background: #f0fdf4"] {
+        background: rgba(16, 185, 129, 0.15) !important;
+        border-color: rgba(16, 185, 129, 0.3) !important;
+        color: #6ee7b7 !important;
+    }
+
+    html[data-pms-theme="dark"] #manualDevFields,
+    html[data-theme="dark"] #manualDevFields,
+    html[data-bs-theme="dark"] #manualDevFields,
+    html.dark #manualDevFields,
+    body.dark-mode #manualDevFields,
+    html[data-pms-theme="dark"] #devLookupCard,
+    html[data-theme="dark"] #devLookupCard,
+    html[data-bs-theme="dark"] #devLookupCard,
+    html.dark #devLookupCard,
+    body.dark-mode #devLookupCard {
+        background: #0f172a !important;
+        border-color: #334155 !important;
+    }
+
+    html[data-pms-theme="dark"] #devLookupCard #lookupDevName,
+    html[data-theme="dark"] #devLookupCard #lookupDevName,
+    html[data-bs-theme="dark"] #devLookupCard #lookupDevName,
+    html.dark #devLookupCard #lookupDevName,
+    body.dark-mode #devLookupCard #lookupDevName {
+        color: #f8fafc !important;
+    }
+
+    html[data-pms-theme="dark"] #devLookupCard #lookupDevRole,
+    html[data-theme="dark"] #devLookupCard #lookupDevRole,
+    html[data-bs-theme="dark"] #devLookupCard #lookupDevRole,
+    html.dark #devLookupCard #lookupDevRole,
+    body.dark-mode #devLookupCard #lookupDevRole {
+        color: #94a3b8 !important;
+    }
+
+    html[data-pms-theme="dark"] #workloadAlertBanner,
+    html[data-theme="dark"] #workloadAlertBanner,
+    html[data-bs-theme="dark"] #workloadAlertBanner,
+    html.dark #workloadAlertBanner,
+    body.dark-mode #workloadAlertBanner {
+        background: rgba(245, 158, 11, 0.15) !important;
+        border-color: rgba(245, 158, 11, 0.3) !important;
+        color: #fcd34d !important;
+    }
+
+    /* Developer Credentials Modal */
+    html[data-pms-theme="dark"] #devCredentialsModal div[style*="background: #f8fafc"],
+    html[data-pms-theme="dark"] #devCredentialsModal div[style*="background:#f8fafc"],
+    html[data-theme="dark"] #devCredentialsModal div[style*="background: #f8fafc"],
+    html[data-theme="dark"] #devCredentialsModal div[style*="background:#f8fafc"],
+    html[data-bs-theme="dark"] #devCredentialsModal div[style*="background: #f8fafc"],
+    html[data-bs-theme="dark"] #devCredentialsModal div[style*="background:#f8fafc"],
+    html.dark #devCredentialsModal div[style*="background: #f8fafc"],
+    html.dark #devCredentialsModal div[style*="background:#f8fafc"],
+    body.dark-mode #devCredentialsModal div[style*="background: #f8fafc"],
+    body.dark-mode #devCredentialsModal div[style*="background:#f8fafc"] {
+        background: #0f172a !important;
+        border-color: #334155 !important;
+    }
+
+    html[data-pms-theme="dark"] #credModalLoginEmail,
+    html[data-theme="dark"] #credModalLoginEmail,
+    html[data-bs-theme="dark"] #credModalLoginEmail,
+    html.dark #credModalLoginEmail,
+    body.dark-mode #credModalLoginEmail,
+    html[data-pms-theme="dark"] #credModalPhone,
+    html[data-theme="dark"] #credModalPhone,
+    html[data-bs-theme="dark"] #credModalPhone,
+    html.dark #credModalPhone,
+    body.dark-mode #credModalPhone {
+        color: #f8fafc !important;
+    }
+
+    html[data-pms-theme="dark"] #credModalLoginPasswordInput,
+    html[data-theme="dark"] #credModalLoginPasswordInput,
+    html[data-bs-theme="dark"] #credModalLoginPasswordInput,
+    html.dark #credModalLoginPasswordInput,
+    body.dark-mode #credModalLoginPasswordInput {
+        background: #1e293b !important;
+        color: #34d399 !important;
+        border-color: #334155 !important;
+    }
+
+    html[data-pms-theme="dark"] #devCredentialsModal div[style*="border-top: 1px solid #e2e8f0"],
+    html[data-theme="dark"] #devCredentialsModal div[style*="border-top: 1px solid #e2e8f0"],
+    html[data-bs-theme="dark"] #devCredentialsModal div[style*="border-top: 1px solid #e2e8f0"],
+    html.dark #devCredentialsModal div[style*="border-top: 1px solid #e2e8f0"],
+    body.dark-mode #devCredentialsModal div[style*="border-top: 1px solid #e2e8f0"] {
+        border-top-color: #334155 !important;
+    }
+
+    html[data-pms-theme="dark"] #devCredentialsModal div[style*="background: #eff6ff"],
+    html[data-theme="dark"] #devCredentialsModal div[style*="background: #eff6ff"],
+    html[data-bs-theme="dark"] #devCredentialsModal div[style*="background: #eff6ff"],
+    html.dark #devCredentialsModal div[style*="background: #eff6ff"],
+    body.dark-mode #devCredentialsModal div[style*="background: #eff6ff"] {
+        background: rgba(37, 99, 235, 0.15) !important;
+        border-color: rgba(37, 99, 235, 0.3) !important;
+        color: #93c5fd !important;
+    }
+
+    html[data-pms-theme="dark"] #devCredentialsModal button[onclick*="copyTextToClipboard"],
+    html[data-theme="dark"] #devCredentialsModal button[onclick*="copyTextToClipboard"],
+    html[data-bs-theme="dark"] #devCredentialsModal button[onclick*="copyTextToClipboard"],
+    html.dark #devCredentialsModal button[onclick*="copyTextToClipboard"],
+    body.dark-mode #devCredentialsModal button[onclick*="copyTextToClipboard"],
+    html[data-pms-theme="dark"] #credMailtoBtn,
+    html[data-theme="dark"] #credMailtoBtn,
+    html[data-bs-theme="dark"] #credMailtoBtn,
+    html.dark #credMailtoBtn,
+    body.dark-mode #credMailtoBtn {
+        background: #1e293b !important;
+        border-color: #334155 !important;
+        color: #60a5fa !important;
+    }
+
+    /* Task History Modal Timeline */
+    html[data-pms-theme="dark"] #taskHistoryModal div[style*="background: #f8fafc"],
+    html[data-pms-theme="dark"] #taskHistoryModal div[style*="background:#f8fafc"],
+    html[data-theme="dark"] #taskHistoryModal div[style*="background: #f8fafc"],
+    html[data-theme="dark"] #taskHistoryModal div[style*="background:#f8fafc"],
+    html[data-bs-theme="dark"] #taskHistoryModal div[style*="background: #f8fafc"],
+    html[data-bs-theme="dark"] #taskHistoryModal div[style*="background:#f8fafc"],
+    html.dark #taskHistoryModal div[style*="background: #f8fafc"],
+    html.dark #taskHistoryModal div[style*="background:#f8fafc"],
+    body.dark-mode #taskHistoryModal div[style*="background: #f8fafc"],
+    body.dark-mode #taskHistoryModal div[style*="background:#f8fafc"] {
+        background: #0f172a !important;
+        border-color: #334155 !important;
+    }
+
+    html[data-pms-theme="dark"] #taskHistoryModal strong,
+    html[data-theme="dark"] #taskHistoryModal strong,
+    html[data-bs-theme="dark"] #taskHistoryModal strong,
+    html.dark #taskHistoryModal strong,
+    body.dark-mode #taskHistoryModal strong {
+        color: #f8fafc !important;
+    }
+
+    html[data-pms-theme="dark"] #taskHistoryModal div[style*="background: #ecfdf5"],
+    html[data-theme="dark"] #taskHistoryModal div[style*="background: #ecfdf5"],
+    html[data-bs-theme="dark"] #taskHistoryModal div[style*="background: #ecfdf5"],
+    html.dark #taskHistoryModal div[style*="background: #ecfdf5"],
+    body.dark-mode #taskHistoryModal div[style*="background: #ecfdf5"] {
+        background: rgba(16, 185, 129, 0.15) !important;
+        border-color: rgba(16, 185, 129, 0.3) !important;
+        color: #34d399 !important;
+    }
+
+    /* Developer Drawer Dynamic Tasks */
+    html[data-pms-theme="dark"] #drawerDevAssignmentsList > div,
+    html[data-theme="dark"] #drawerDevAssignmentsList > div,
+    html[data-bs-theme="dark"] #drawerDevAssignmentsList > div,
+    html.dark #drawerDevAssignmentsList > div,
+    body.dark-mode #drawerDevAssignmentsList > div {
+        background: #0f172a !important;
+        border-color: #334155 !important;
+    }
+
+    html[data-pms-theme="dark"] #drawerDevAssignmentsList strong,
+    html[data-theme="dark"] #drawerDevAssignmentsList strong,
+    html[data-bs-theme="dark"] #drawerDevAssignmentsList strong,
+    html.dark #drawerDevAssignmentsList strong,
+    body.dark-mode #drawerDevAssignmentsList strong {
+        color: #f8fafc !important;
+    }
+
+    html[data-pms-theme="dark"] .badge-inactive,
+    html[data-theme="dark"] .badge-inactive,
+    html[data-bs-theme="dark"] .badge-inactive,
+    html.dark .badge-inactive,
+    body.dark-mode .badge-inactive {
+        background: #334155 !important;
+        color: #cbd5e1 !important;
+        border-color: #475569 !important;
+    }
+
+    html[data-pms-theme="dark"] .skill-tag,
+    html[data-theme="dark"] .skill-tag,
+    html[data-bs-theme="dark"] .skill-tag,
+    html.dark .skill-tag,
+    body.dark-mode .skill-tag {
+        background: #0f172a !important;
+        color: #cbd5e1 !important;
+        border-color: #334155 !important;
+    }
+
+    html[data-pms-theme="dark"] .capacity-bar-wrap,
+    html[data-theme="dark"] .capacity-bar-wrap,
+    html[data-bs-theme="dark"] .capacity-bar-wrap,
+    html.dark .capacity-bar-wrap,
+    body.dark-mode .capacity-bar-wrap {
+        background: #334155 !important;
+    }
+
+    html[data-pms-theme="dark"] h1, html[data-pms-theme="dark"] h2, html[data-pms-theme="dark"] h3, html[data-pms-theme="dark"] h4, html[data-pms-theme="dark"] h5, html[data-pms-theme="dark"] h6,
+    html[data-theme="dark"] h1, html[data-theme="dark"] h2, html[data-theme="dark"] h3, html[data-theme="dark"] h4, html[data-theme="dark"] h5, html[data-theme="dark"] h6,
+    html[data-bs-theme="dark"] h1, html[data-bs-theme="dark"] h2, html[data-bs-theme="dark"] h3, html[data-bs-theme="dark"] h4, html[data-bs-theme="dark"] h5, html[data-bs-theme="dark"] h6,
+    html.dark h1, html.dark h2, html.dark h3, html.dark h4, html.dark h5, html.dark h6,
+    body.dark-mode h1, body.dark-mode h2, body.dark-mode h3, body.dark-mode h4, body.dark-mode h5, body.dark-mode h6 {
+        color: #f8fafc !important;
+    }
 </style>
 @endpush
 
@@ -717,12 +1227,12 @@
         <div class="kpi-card" onclick="filterByStatus('available')">
             <div class="kpi-header">
                 <span class="kpi-title">Available</span>
-                <div class="kpi-icon" style="background: #ecfdf5; color: #059669;">
+                <div class="kpi-icon" style="background: #EEF2FF; color: #2F6BFF;">
                     <i class="bx bx-check-circle"></i>
                 </div>
             </div>
             <div class="kpi-val">{{ $kpis['available'] }}</div>
-            <div class="kpi-sub"><i class="bx bx-time" style="color: #059669;"></i> Ready for Tasks</div>
+            <div class="kpi-sub"><i class="bx bx-time" style="color: #2F6BFF;"></i> Ready for Tasks</div>
         </div>
 
         <!-- CURRENTLY WORKING / BUSY -->
@@ -857,7 +1367,7 @@
                         <i class="bx bx-download" style="font-size: 16px; color: var(--primary);"></i> Export <i class="bx bx-chevron-down"></i>
                     </button>
                     <div id="devExportMenu" class="export-dropdown-menu">
-                        <a href="javascript:void(0)" onclick="exportDevelopersCSV()"><i class="bx bx-file-blank" style="color: #059669;"></i> Export as CSV</a>
+                        <a href="javascript:void(0)" onclick="exportDevelopersCSV()"><i class="bx bx-file-blank" style="color: #2F6BFF;"></i> Export as CSV</a>
                         <a href="javascript:void(0)" onclick="exportDevelopersPDF()"><i class="bx bxs-file-pdf" style="color: #dc2626;"></i> Export as PDF</a>
                     </div>
                 </div>
@@ -983,11 +1493,11 @@
                                     <i class="bx bx-send"></i>
                                 </button>
                                 <!-- WHATSAPP SHARE -->
-                                <button class="btn-action-secondary" onclick="shareDevWhatsApp('{{ addslashes($dev->name) }}', '{{ $dev->email }}', '{{ $dev->personal_email ?: $dev->email }}', '{{ $dev->phone_number }}', 'DEV-{{ str_pad($dev->id, 3, '0', STR_PAD_LEFT) }}', '{{ $dev->active_tasks_count }}', '{{ addslashes($dev->raw_password ?: 'Developer@123') }}')" style="padding: 5px 8px; font-size: 14px; color: #059669; border-color: #a7f3d0; background: #ecfdf5;" title="Share Credentials & Tasks via WhatsApp">
+                                <button class="btn-action-secondary" onclick="shareDevWhatsApp('{{ addslashes($dev->name) }}', '{{ $dev->email }}', '{{ $dev->personal_email ?: $dev->email }}', '{{ $dev->phone_number }}', 'DEV-{{ str_pad($dev->id, 3, '0', STR_PAD_LEFT) }}', '{{ $dev->active_tasks_count }}', '{{ addslashes($dev->raw_password ?: '') }}')" style="padding: 5px 8px; font-size: 14px; color: #2F6BFF; border-color: #C7D2FE; background: #EEF2FF;" title="Share Credentials & Tasks via WhatsApp">
                                     <i class="bx bxl-whatsapp"></i>
                                 </button>
                                 <!-- EMAIL CREDENTIALS & NOTIFICATION -->
-                                <button class="btn-action-secondary" onclick="openDevCredentialsModal('{{ $dev->id }}', '{{ addslashes($dev->name) }}', '{{ $dev->email }}', '{{ $dev->personal_email ?: $dev->email }}', '{{ $dev->phone_number }}', 'DEV-{{ str_pad($dev->id, 3, '0', STR_PAD_LEFT) }}', '{{ $dev->active_tasks_count }}', '{{ addslashes($dev->raw_password ?: 'Developer@123') }}')" style="padding: 5px 8px; font-size: 14px; color: #2563eb; border-color: #bfdbfe; background: #eff6ff;" title="Developer Credentials & Email Notification">
+                                <button class="btn-action-secondary" onclick="openDevCredentialsModal('{{ $dev->id }}', '{{ addslashes($dev->name) }}', '{{ $dev->email }}', '{{ $dev->personal_email ?: $dev->email }}', '{{ $dev->phone_number }}', 'DEV-{{ str_pad($dev->id, 3, '0', STR_PAD_LEFT) }}', '{{ $dev->active_tasks_count }}', '{{ addslashes($dev->raw_password ?: '') }}')" style="padding: 5px 8px; font-size: 14px; color: #2563eb; border-color: #bfdbfe; background: #eff6ff;" title="Developer Credentials & Email Notification">
                                     <i class="bx bx-envelope"></i>
                                 </button>
                                 <button class="btn-action-secondary" onclick="openEditDeveloperModal('{{ $dev->id }}')" style="padding: 5px 8px; font-size: 12px;" title="Edit Profile">
@@ -1051,7 +1561,7 @@
                         <i class="bx bx-download" style="font-size: 16px; color: var(--purple-accent);"></i> Export <i class="bx bx-chevron-down"></i>
                     </button>
                     <div id="historyExportMenu" class="export-dropdown-menu">
-                        <a href="javascript:void(0)" onclick="exportHistoryCSV()"><i class="bx bx-file-blank" style="color: #059669;"></i> Export as CSV</a>
+                        <a href="javascript:void(0)" onclick="exportHistoryCSV()"><i class="bx bx-file-blank" style="color: #2F6BFF;"></i> Export as CSV</a>
                         <a href="javascript:void(0)" onclick="exportHistoryPDF()"><i class="bx bxs-file-pdf" style="color: #dc2626;"></i> Export as PDF</a>
                     </div>
                 </div>
@@ -1269,6 +1779,7 @@
                     <div>
                         <label style="display: block; font-size: 12px; font-weight: 700; color: var(--slate-dark); margin-bottom: 6px;">Developer Login Email *</label>
                         <input type="email" name="email" id="devFormEmail" required style="width: 100%; padding: 9px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 13px;" placeholder="e.g. developer@example.com">
+                        <div id="devFormEmail_error" class="field-error-feedback"></div>
                     </div>
                 </div>
 
@@ -1276,10 +1787,22 @@
                     <div>
                         <label style="display: block; font-size: 12px; font-weight: 700; color: var(--slate-dark); margin-bottom: 6px;">Personal Email (for Credentials) *</label>
                         <input type="email" name="personal_email" id="devFormPersonalEmail" required style="width: 100%; padding: 9px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 13px;" placeholder="e.g. siraj.personal@gmail.com">
+                        <div id="devFormPersonalEmail_error" class="field-error-feedback"></div>
                     </div>
                     <div>
                         <label style="display: block; font-size: 12px; font-weight: 700; color: var(--slate-dark); margin-bottom: 6px;">Phone Number</label>
-                        <input type="text" name="mobile" id="devFormMobile" style="width: 100%; padding: 9px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 13px;" placeholder="+91 98765 43210">
+                        <div style="display: flex;">
+                            <select id="devFormCountryCode" class="country-code-select" style="width: 110px; flex-shrink: 0; padding: 9px; border: 1px solid var(--border-color); border-right: 0; border-top-left-radius: var(--radius-md); border-bottom-left-radius: var(--radius-md); font-size: 13px; outline: none;">
+                                @foreach(\App\Models\Country::getAllWithPhoneCodes() as $c)
+                                    <option value="{{ $c->phone_code }}">
+                                        {{ $c->iso_code ? $c->iso_code . ' ' : '' }}({{ $c->phone_code }})
+                                    </option>
+                                @endforeach
+                            </select>
+                            <input type="text" id="devFormMobileDisplay" style="width: 100%; padding: 9px 12px; border: 1px solid var(--border-color); border-top-right-radius: var(--radius-md); border-bottom-right-radius: var(--radius-md); font-size: 13px;" placeholder="98765 43210">
+                            <input type="hidden" name="mobile" id="devFormMobile">
+                        </div>
+                        <div id="devFormMobile_error" class="field-error-feedback"></div>
                     </div>
                 </div>
 
@@ -1336,7 +1859,7 @@
 <!-- MODAL 2: ASSIGN TASK WORK ALLOCATION MODAL -->
 <div class="modal-overlay" id="assignWorkModal">
     <div class="modal-box" style="width: 720px;">
-        <form method="POST" action="{{ route('super-admin.developers.assign-work') }}">
+        <form id="assignWorkForm" method="POST" action="{{ route('super-admin.developers.assign-work') }}">
             @csrf
             <div class="modal-header">
                 <div>
@@ -1352,7 +1875,7 @@
 
                 <!-- RULE EXPLANATION BANNER -->
                 <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: var(--radius-md); padding: 12px 14px; margin-bottom: 16px; color: #166534; font-size: 12px; display: flex; align-items: center; gap: 10px;">
-                    <i class="bx bx-shield-check" style="font-size: 20px; color: #16a34a; flex-shrink: 0;"></i>
+                    <i class="bx bx-check-shield" style="font-size: 20px; color: #16a34a; flex-shrink: 0;"></i>
                     <span><strong>1 Developer = 1 Account Rule:</strong> If the selected developer already exists, the task will be assigned to their existing account. No new account, password, or login credentials email will be generated.</span>
                 </div>
 
@@ -1375,6 +1898,7 @@
                     <div>
                         <label style="display: block; font-size: 11.5px; font-weight: 700; color: var(--slate-dark); margin-bottom: 4px;">Developer Email *</label>
                         <input type="email" name="developer_email" id="assignDevEmailInput" onkeyup="lookupDevEmail(this.value)" style="width: 100%; padding: 8px 10px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 12.5px; font-family: monospace;" placeholder="developer@example.com">
+                        <div id="assignDevEmail_error" class="field-error-feedback"></div>
                     </div>
                     <div>
                         <label style="display: block; font-size: 11.5px; font-weight: 700; color: var(--slate-dark); margin-bottom: 4px;">Full Name</label>
@@ -1464,7 +1988,7 @@
                     </div>
                     <div>
                         <label style="display: block; font-size: 12px; font-weight: 700; color: var(--slate-dark); margin-bottom: 6px;">Deadline *</label>
-                        <input type="date" name="due_date" value="{{ date('Y-m-d', strtotime('+3 days')) }}" required style="width: 100%; padding: 9px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 13px;">
+                        <input type="date" min="{{ date('Y-m-d') }}" name="due_date" value="{{ date('Y-m-d', strtotime('+3 days')) }}" required style="width: 100%; padding: 9px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 13px;">
                     </div>
                 </div>
 
@@ -1530,7 +2054,7 @@
                     <div>
                         <span style="color: var(--slate-muted); font-weight: 700; display: block; font-size: 11px; margin-bottom: 2px;">DEVELOPER LOGIN PASSWORD</span>
                         <div style="display: flex; align-items: center; gap: 6px;">
-                            <input type="password" id="credModalLoginPasswordInput" readonly value="Developer@123" style="font-family: monospace; font-size: 13px; font-weight: 700; color: #059669; border: 1px solid #cbd5e1; border-radius: 6px; padding: 3px 8px; width: 135px; background: #ffffff;">
+                            <input type="password" id="credModalLoginPasswordInput" readonly value="" placeholder="Reset required" style="font-family: monospace; font-size: 13px; font-weight: 700; color: #2F6BFF; border: 1px solid #cbd5e1; border-radius: 6px; padding: 3px 8px; width: 135px; background: #ffffff;">
                             <button type="button" onclick="togglePasswordVisibility('credModalLoginPasswordInput', this)" class="btn-action-secondary" style="padding: 3px 6px; font-size: 13px; border-color: #cbd5e1;" title="Show/Hide Password">
                                 <i class="bx bx-show"></i>
                             </button>
@@ -1556,7 +2080,7 @@
                     </div>
                     <div>
                         <span style="color: var(--slate-muted); font-weight: 700; font-size: 11px;">PASSWORD SYNC:</span>
-                        <span style="background: #ecfdf5; color: #065f46; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; margin-left: 4px;">Live Auto-Updated</span>
+                        <span id="credModalPasswordStatus" style="background: #EEF2FF; color: #065f46; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; margin-left: 4px;">Verified</span>
                     </div>
                 </div>
             </div>
@@ -1578,6 +2102,19 @@
             <div style="display: flex; flex-direction: column; gap: 10px;">
                 <form id="credResetForm" method="POST" action="">
                     @csrf
+                    <div style="margin-bottom: 12px; text-align: left;">
+                        <label style="font-size: 11.5px; font-weight: 700; color: var(--slate-dark); display: block; margin-bottom: 4px;">
+                            New Custom Password <span style="font-weight: normal; color: var(--slate-muted);">(Optional - leave blank to auto-generate 10-char password)</span>
+                        </label>
+                        <div style="position: relative;">
+                            <input type="password" name="password" id="devResetPasswordInput" minlength="8" maxlength="128" placeholder="Enter custom password (min 8 chars)" style="width: 100%; padding: 8px 36px 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; font-family: monospace; outline: none; background: #ffffff;">
+                            <button type="button" onclick="togglePasswordVisibility('devResetPasswordInput', this)" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--slate-muted); font-size: 18px;" title="Show/Hide Password">
+                                <i class="bx bx-show"></i>
+                            </button>
+                        </div>
+                        <div style="font-size: 11px; color: var(--slate-muted); margin-top: 3px;">8–128 characters with at least one uppercase letter, lowercase letter, number, and special character.</div>
+                        <div id="devResetPassword_error" style="display: none; color: #ef4444; font-size: 12px; margin-top: 3px; font-weight: 600;"></div>
+                    </div>
                     <button type="submit" class="btn-action-primary" style="width: 100%; padding: 10px; justify-content: center; font-size: 13px;">
                         <i class="bx bx-paper-plane"></i> Reset Password &amp; Dispatch Credentials Email
                     </button>
@@ -1587,7 +2124,7 @@
                     <button type="button" id="credMailtoBtn" class="btn-action-secondary" style="padding: 9px; justify-content: center; font-size: 12.5px; color: #2563eb; border-color: #bfdbfe; background: #f0f9ff;">
                         <i class="bx bx-envelope"></i> Open Mail Client
                     </button>
-                    <button type="button" id="credWhatsappBtn" class="btn-action-secondary" style="padding: 9px; justify-content: center; font-size: 12.5px; color: #059669; border-color: #a7f3d0; background: #ecfdf5;">
+                    <button type="button" id="credWhatsappBtn" class="btn-action-secondary" style="padding: 9px; justify-content: center; font-size: 12.5px; color: #2F6BFF; border-color: #C7D2FE; background: #EEF2FF;">
                         <i class="bx bxl-whatsapp"></i> Share on WhatsApp
                     </button>
                 </div>
@@ -1601,6 +2138,7 @@
 </div>
 
 @push('scripts')
+<script src="{{ asset('admin/assets/js/pms-assignment-dates.js') }}?v={{ @filemtime(public_path('admin/assets/js/pms-assignment-dates.js')) }}" defer></script>
 <script>
     const devData = @json($paginatedDevs->items());
 
@@ -1818,7 +2356,7 @@
             return;
         }
 
-        const nowStr = new Date().toLocaleString();
+        const nowStr = window.PMSTime.format(window.PMSTime.now(), { year: 'numeric', month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' });
         printWin.document.write(`
             <!DOCTYPE html>
             <html>
@@ -1826,8 +2364,8 @@
                 <title>${title} - ${nowStr}</title>
                 <style>
                     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 24px; color: #0f172a; }
-                    .header-box { border-bottom: 2px solid #0f744c; padding-bottom: 12px; margin-bottom: 20px; }
-                    .title { font-size: 22px; font-weight: 800; color: #0f744c; margin: 0 0 4px 0; }
+                    .header-box { border-bottom: 2px solid #2F6BFF; padding-bottom: 12px; margin-bottom: 20px; }
+                    .title { font-size: 22px; font-weight: 800; color: #2F6BFF; margin: 0 0 4px 0; }
                     .subtitle { font-size: 12px; color: #64748b; margin: 0; }
                     .meta-bar { font-size: 11px; color: #64748b; margin-top: 8px; display: flex; justify-content: space-between; }
                     table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 12px; }
@@ -1843,7 +2381,7 @@
             </head>
             <body>
                 <div class="no-print" style="margin-bottom: 16px; text-align: right;">
-                    <button onclick="window.print()" style="background: #0f744c; color: white; border: none; padding: 8px 18px; font-weight: 700; border-radius: 6px; cursor: pointer;">🖨️ Print / Save as PDF</button>
+                    <button onclick="window.print()" style="background: #2F6BFF; color: white; border: none; padding: 8px 18px; font-weight: 700; border-radius: 6px; cursor: pointer;">🖨️ Print / Save as PDF</button>
                 </div>
                 <div class="header-box">
                     <h1 class="title">${title}</h1>
@@ -2066,6 +2604,8 @@
         document.getElementById('devFormName').value = '';
         document.getElementById('devFormEmail').value = '';
         document.getElementById('devFormPersonalEmail').value = '';
+        document.getElementById('devFormCountryCode').value = '+91';
+        document.getElementById('devFormMobileDisplay').value = '';
         document.getElementById('devFormMobile').value = '';
         document.getElementById('devFormRole').value = 'Full Stack Developer';
         document.getElementById('devFormExperience').value = '';
@@ -2091,7 +2631,22 @@
         document.getElementById('devFormName').value = dev.name || '';
         document.getElementById('devFormEmail').value = dev.email || '';
         document.getElementById('devFormPersonalEmail').value = dev.personal_email || dev.email || '';
-        document.getElementById('devFormMobile').value = dev.phone_number || dev.mobile || '';
+        let phoneVal = dev.phone_number || dev.mobile || '';
+        let cc = '+91';
+        let num = phoneVal;
+        let match = phoneVal.match(/^(\+\d{1,4})\s*[-\s]?(.*)$/);
+        if(match) {
+            cc = match[1];
+            num = match[2];
+        } else if(phoneVal.startsWith('+')) {
+            // fallback if it just starts with +
+            cc = phoneVal.substring(0, phoneVal.indexOf(' '));
+            num = phoneVal.substring(phoneVal.indexOf(' ') + 1);
+            if(!cc) { cc = '+91'; num = phoneVal; }
+        }
+        document.getElementById('devFormCountryCode').value = cc;
+        document.getElementById('devFormMobileDisplay').value = num;
+        document.getElementById('devFormMobile').value = phoneVal;
         document.getElementById('devFormRole').value = dev.role_title || dev.designation || 'Full Stack Developer';
         document.getElementById('devFormExperience').value = dev.experience || '';
         document.getElementById('devFormCompany').value = dev.company_id || (dev.company ? dev.company.id : '');
@@ -2217,7 +2772,7 @@
                     body.innerHTML = `
                         <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 16px; margin-bottom: 16px;">
                             <strong style="font-size: 13.5px; color: var(--slate-dark); display: block; margin-bottom: 4px;">Task Initialized: ${data.task.title}</strong>
-                            <span style="font-size: 12px; color: var(--slate-muted);">Created on ${new Date(data.task.created_at).toLocaleString()} · Initial Status: ${data.task.status.toUpperCase()}</span>
+                            <span style="font-size: 12px; color: var(--slate-muted);">Created on ${window.PMSTime.format(data.task.created_at, { year: 'numeric', month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' })} · Initial Status: ${data.task.status.toUpperCase()}</span>
                         </div>
                         <div style="text-align:center; padding: 20px; color: var(--slate-muted); font-size: 13px;">No further activity logs recorded yet.</div>
                     `;
@@ -2226,10 +2781,10 @@
 
                 let html = '<div style="display: flex; flex-direction: column; gap: 14px;">';
                 data.history.forEach((h, idx) => {
-                    const dateStr = new Date(h.created_at).toLocaleString();
+                    const dateStr = window.PMSTime.format(h.created_at, { year: 'numeric', month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' });
                     html += `
                         <div style="display: flex; gap: 14px; position: relative;">
-                            <div style="width: 34px; height: 34px; border-radius: 50%; background: #ecfdf5; color: #059669; display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; border: 1px solid #a7f3d0;">
+                            <div style="width: 34px; height: 34px; border-radius: 50%; background: #EEF2FF; color: #2F6BFF; display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; border: 1px solid #C7D2FE;">
                                 <i class="bx bx-history"></i>
                             </div>
                             <div style="flex: 1; background: #f8fafc; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 12px 16px;">
@@ -2260,7 +2815,7 @@
             cleanPhone = '919876543210';
         }
 
-        const pwdText = password || 'Developer@123';
+        const pwdText = password || 'Reset required';
         const loginUrl = '{{ url('/login') }}';
         const msgText = `*PMS Developer Portal Credentials & Task Info*\n` +
             `Hello ${name},\n\n` +
@@ -2281,12 +2836,13 @@
     let activeCredDevId = null;
     function openDevCredentialsModal(devId, name, email, personalEmail, phone, devCode, activeTasks, password) {
         activeCredDevId = devId;
-        const pwdText = password || 'Developer@123';
+        const pwdText = password || 'Reset required';
 
         document.getElementById('credModalDevName').innerText = name + ' - Credentials';
         document.getElementById('credModalDevId').innerText = devCode + ' · ' + (personalEmail || email);
         document.getElementById('credModalLoginEmail').innerText = email;
-        document.getElementById('credModalLoginPasswordInput').value = pwdText;
+        document.getElementById('credModalLoginPasswordInput').value = password || '';
+        document.getElementById('credModalPasswordStatus').innerText = password ? 'Verified' : 'Reset required';
         document.getElementById('credModalPersonalEmail').innerText = personalEmail || email;
         document.getElementById('credModalPhone').innerText = phone || 'N/A';
         document.getElementById('credModalActiveTasks').innerText = (activeTasks || 0) + ' Active Tasks';
@@ -2297,9 +2853,21 @@
         const msgText = `PMS Developer Portal Credentials for ${name}:\nLogin Email: ${email}\nLogin Password: ${pwdText}\nLogin Portal: ${loginUrl}\nActive Tasks: ${activeTasks || 0}`;
         const encodedText = encodeURIComponent(msgText);
 
+        // mailto: needs a desktop mail app; without one the browser only opens a blank tab.
+        // Open a pre-filled web compose window instead (recipient, subject and credentials body).
         document.getElementById('credMailtoBtn').onclick = function() {
-            const subject = encodeURIComponent(`Developer Workspace Credentials - ${name}`);
-            window.location.href = `mailto:${personalEmail || email}?subject=${subject}&body=${encodedText}`;
+            const recipient = (personalEmail || email || '').trim();
+            const composeUrl = 'https://mail.google.com/mail/?view=cm&fs=1'
+                + '&to=' + encodeURIComponent(recipient)
+                + '&su=' + encodeURIComponent(`Developer Workspace Credentials - ${name}`)
+                + '&body=' + encodedText;
+            const composeWindow = window.open(composeUrl, '_blank');
+            if (composeWindow) {
+                composeWindow.opener = null;
+            } else {
+                // Popup blocked: fall back to the system mail app.
+                window.location.href = `mailto:${encodeURIComponent(recipient)}?subject=${encodeURIComponent(`Developer Workspace Credentials - ${name}`)}&body=${encodedText}`;
+            }
         };
 
         document.getElementById('credWhatsappBtn').onclick = function() {
@@ -2325,6 +2893,30 @@
         document.getElementById('devCredentialsModal').classList.remove('active');
     }
 
+    const credResetForm = document.getElementById('credResetForm');
+    if (credResetForm) {
+        credResetForm.addEventListener('submit', function(e) {
+            const pwdInput = document.getElementById('devResetPasswordInput');
+            const errorDiv = document.getElementById('devResetPassword_error');
+            if (pwdInput && pwdInput.value) {
+                const val = pwdInput.value;
+                if (val.length < 8 || !/[A-Z]/.test(val) || !/[a-z]/.test(val) || !/[0-9]/.test(val) || !/[^A-Za-z0-9\s]/.test(val)) {
+                    e.preventDefault();
+                    if (errorDiv) { errorDiv.textContent = 'Use at least 8 characters with uppercase, lowercase, a number, and a special character.'; errorDiv.style.display = 'block'; }
+                    pwdInput.focus();
+                    return false;
+                }
+                if (val.length > 128) {
+                    e.preventDefault();
+                    if (errorDiv) { errorDiv.textContent = 'Password cannot exceed 128 characters.'; errorDiv.style.display = 'block'; }
+                    pwdInput.focus();
+                    return false;
+                }
+            }
+            if (errorDiv) { errorDiv.textContent = ''; errorDiv.style.display = 'none'; }
+        });
+    }
+
     function copyTextToClipboard(text, successMsg) {
         if (navigator.clipboard && window.isSecureContext) {
             navigator.clipboard.writeText(text).then(() => {
@@ -2340,6 +2932,227 @@
             alert(successMsg || 'Copied to clipboard!');
         }
     }
+
+    // Developer Form Strict Email & Phone Validation
+    document.addEventListener('DOMContentLoaded', function() {
+        function getDevPhoneRule(countryCode) {
+            switch (countryCode) {
+                case '+91': return { min: 10, max: 10, regex: /^[6-9]\d{9}$/, placeholder: '9876543210', error: 'India phone number must be exactly 10 digits starting with 6, 7, 8, or 9.' };
+                case '+1':  return { min: 10, max: 10, regex: /^[2-9]\d{9}$/, placeholder: '5550192831', error: 'US/Canada phone number must be exactly 10 digits (e.g. 5550192831).' };
+                case '+44': return { min: 10, max: 11, regex: /^[1-9]\d{9,10}$/, placeholder: '7911123456', error: 'UK phone number must be 10 to 11 digits.' };
+                case '+61': return { min: 9,  max: 10, regex: /^[1-9]\d{8,9}$/, placeholder: '412345678', error: 'Australia phone number must be 9 to 10 digits.' };
+                case '+971':return { min: 9,  max: 9,  regex: /^[2-9]\d{8}$/, placeholder: '501234567', error: 'UAE phone number must be 9 digits (e.g. 501234567).' };
+                case '+81': return { min: 10, max: 10, regex: /^[1-9]\d{9}$/, placeholder: '9012345678', error: 'Japan phone number must be 10 digits.' };
+                case '+49': return { min: 10, max: 11, regex: /^[1-9]\d{9,10}$/, placeholder: '15123456789', error: 'Germany phone number must be 10 to 11 digits.' };
+                case '+33': return { min: 9,  max: 9,  regex: /^[1-9]\d{8}$/, placeholder: '612345678', error: 'France phone number must be 9 digits.' };
+                default:    return { min: 7,  max: 15, regex: /^\d{7,15}$/, placeholder: '1234567890', error: 'Phone number must be between 7 and 15 digits.' };
+            }
+        }
+
+        function validateDevEmailFormat(email, isRequired = true) {
+            const val = (email || '').trim();
+            if (!val) {
+                return isRequired ? { valid: false, message: 'Email address is required.' } : { valid: true };
+            }
+            if (/\s/.test(val)) {
+                return { valid: false, message: 'Email address cannot contain spaces.' };
+            }
+            if (!val.includes('@')) {
+                return { valid: false, message: "Email address must include an '@' symbol." };
+            }
+            const parts = val.split('@');
+            if (parts.length !== 2) {
+                return { valid: false, message: "Email address must contain only one '@' symbol." };
+            }
+            const [local, domain] = parts;
+            if (!local) return { valid: false, message: "Missing username before '@'." };
+            if (!domain) return { valid: false, message: "Missing domain after '@'." };
+            if (!domain.includes('.')) return { valid: false, message: "Domain name must include a valid extension (e.g. .com)." };
+            if (domain.startsWith('.') || domain.endsWith('.')) return { valid: false, message: "Domain name cannot start or end with a dot." };
+            if (domain.includes('..')) return { valid: false, message: "Domain name cannot contain consecutive dots." };
+            const strictRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+            if (!strictRegex.test(val)) {
+                return { valid: false, message: 'Please enter a valid email address (e.g. name@company.com).' };
+            }
+            return { valid: true };
+        }
+
+        function setupDevPhoneValidator(countrySelectId, phoneInputId, hiddenInputId, errorDivId) {
+            const countrySelect = document.getElementById(countrySelectId);
+            const phoneInput = document.getElementById(phoneInputId);
+            const hiddenInput = document.getElementById(hiddenInputId);
+            const errorDiv = document.getElementById(errorDivId);
+            if (!countrySelect || !phoneInput) return null;
+
+            function updateRule() {
+                const rule = getDevPhoneRule(countrySelect.value);
+                phoneInput.placeholder = rule.placeholder;
+                phoneInput.maxLength = rule.max;
+            }
+
+            phoneInput.addEventListener('keydown', function(e) {
+                if (['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(e.key) ||
+                    ((e.ctrlKey || e.metaKey) && ['a', 'c', 'v', 'x', 'z'].includes(e.key.toLowerCase()))) {
+                    return;
+                }
+                if (!/^\d$/.test(e.key)) {
+                    e.preventDefault();
+                }
+            });
+
+            function syncValue() {
+                phoneInput.value = phoneInput.value.replace(/\D/g, '');
+                const rule = getDevPhoneRule(countrySelect.value);
+                if (phoneInput.value.length > rule.max) {
+                    phoneInput.value = phoneInput.value.substring(0, rule.max);
+                }
+                if (hiddenInput) {
+                    hiddenInput.value = phoneInput.value ? countrySelect.value + ' ' + phoneInput.value : '';
+                }
+            }
+
+            phoneInput.addEventListener('input', function() {
+                syncValue();
+                validate(false);
+            });
+
+            countrySelect.addEventListener('change', function() {
+                updateRule();
+                syncValue();
+                validate(false);
+            });
+
+            phoneInput.addEventListener('blur', function() {
+                validate(true);
+            });
+
+            function validate(showEmptyError = true) {
+                const val = phoneInput.value.trim();
+                if (!val) {
+                    clearError();
+                    return true;
+                }
+                const rule = getDevPhoneRule(countrySelect.value);
+                if (!rule.regex.test(val)) {
+                    showError(rule.error);
+                    return false;
+                }
+                clearError();
+                return true;
+            }
+
+            function showError(msg) {
+                if (errorDiv) {
+                    errorDiv.textContent = msg;
+                    errorDiv.classList.add('visible');
+                }
+                phoneInput.classList.add('is-invalid');
+            }
+
+            function clearError() {
+                if (errorDiv) {
+                    errorDiv.textContent = '';
+                    errorDiv.classList.remove('visible');
+                }
+                phoneInput.classList.remove('is-invalid');
+            }
+
+            updateRule();
+            syncValue();
+            return { validate, input: phoneInput };
+        }
+
+        function setupDevEmailValidator(inputId, errorDivId, isRequired = true) {
+            const input = document.getElementById(inputId);
+            const errorDiv = document.getElementById(errorDivId);
+            if (!input) return null;
+
+            function validate(showEmptyError = true) {
+                const val = input.value.trim();
+                if (!val && !showEmptyError && !isRequired) {
+                    clearError();
+                    return true;
+                }
+                const res = validateDevEmailFormat(val, isRequired);
+                if (!res.valid) {
+                    if (val || showEmptyError) {
+                        showError(res.message);
+                        return false;
+                    }
+                    return false;
+                }
+                clearError();
+                return true;
+            }
+
+            function showError(msg) {
+                if (errorDiv) {
+                    errorDiv.textContent = msg;
+                    errorDiv.classList.add('visible');
+                }
+                input.classList.add('is-invalid');
+            }
+
+            function clearError() {
+                if (errorDiv) {
+                    errorDiv.textContent = '';
+                    errorDiv.classList.remove('visible');
+                }
+                input.classList.remove('is-invalid');
+            }
+
+            input.addEventListener('input', function() {
+                if (/\s/.test(this.value)) {
+                    this.value = this.value.replace(/\s+/g, '');
+                }
+                validate(false);
+            });
+
+            input.addEventListener('blur', function() {
+                validate(true);
+            });
+
+            return { validate, input };
+        }
+
+        const devPhoneVal = setupDevPhoneValidator('devFormCountryCode', 'devFormMobileDisplay', 'devFormMobile', 'devFormMobile_error');
+        const devLoginEmailVal = setupDevEmailValidator('devFormEmail', 'devFormEmail_error', true);
+        const devPersonalEmailVal = setupDevEmailValidator('devFormPersonalEmail', 'devFormPersonalEmail_error', true);
+        const devAssignEmailVal = setupDevEmailValidator('assignDevEmailInput', 'assignDevEmail_error', false);
+
+        const devForm = document.getElementById('devForm');
+        if (devForm) {
+            devForm.addEventListener('submit', function(e) {
+                const isLoginEmailValid = devLoginEmailVal ? devLoginEmailVal.validate(true) : true;
+                const isPersonalEmailValid = devPersonalEmailVal ? devPersonalEmailVal.validate(true) : true;
+                const isPhoneValid = devPhoneVal ? devPhoneVal.validate(true) : true;
+
+                if (!isLoginEmailValid || !isPersonalEmailValid || !isPhoneValid) {
+                    e.preventDefault();
+                    const firstInvalid = devForm.querySelector('input.is-invalid, select.is-invalid');
+                    if (firstInvalid) {
+                        firstInvalid.focus();
+                    }
+                    return false;
+                }
+            });
+        }
+
+        const assignWorkForm = document.getElementById('assignWorkForm');
+        if (assignWorkForm) {
+            assignWorkForm.addEventListener('submit', function(e) {
+                const select = document.getElementById('assignDevSelect');
+                if (select && select.value === 'new') {
+                    if (devAssignEmailVal && !devAssignEmailVal.validate(true)) {
+                        e.preventDefault();
+                        const input = document.getElementById('assignDevEmailInput');
+                        if (input) input.focus();
+                        return false;
+                    }
+                }
+            });
+        }
+    });
 </script>
 @endpush
 @endsection

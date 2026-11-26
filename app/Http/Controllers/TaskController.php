@@ -29,7 +29,8 @@ class TaskController extends Controller
 
 public function index(Request $request, ?Project $project = null) 
 {
-    $query = Task::with(['project', 'assignees', 'subTasks.assignee', 'timers', 'latestUpdate.user'])
+    \App\Services\TaskPrioritySchema::ensure();
+    $query = Task::with(['project', 'assignees', 'subTasks.assignee', 'timers', 'finishedTimers', 'latestUpdate.user'])
         ->whereNull('parent_id');
     $user = auth()->user();
     $canManageTasks = $this->canCreateWorkItems();
@@ -129,7 +130,6 @@ public function create(Request $request)
     $assignedUserIds = [];
 
     $projects = Project::all();
-    $users = User::where('role', 'employee')->orderBy('name')->get();
     $labels = TaskLabel::with('project')->get();
     $taskCategories = TaskCategory::all();
     $milestones = ProjectMilestone::all();
@@ -163,7 +163,7 @@ public function create(Request $request)
     $departments = Department::with('parent')->latest()->get();
     $designations = Designation::all();
     $users = User::where('role', 'employee')->orderBy('name')->get();
-    $countries = Country::all();
+    $countries = Country::forForms();
     $employee = null;
     $prtdepartments = ParentDepartment::latest()->get();
 
@@ -215,198 +215,27 @@ public function create(Request $request)
  public function store(Request $request)
 {
    abort_unless($this->canCreateWorkItems(), 403);
+   $this->validateTaskDates($request);
+   \App\Services\TaskFormSchema::ensure();
+   \App\Services\TaskPrioritySchema::ensure();
+   \App\Services\TaskLabelsSchema::ensure();
 
-   // return $request->all();
-    $request->validate([
-        'task_short_code'  => 'required|string|max:255',
-        'title'             => 'required|string|max:255',
-        'project_id'        => 'required|exists:projects,id',
-        'start_date'        => 'nullable|date',
-        // 'due_date'          => $request->has('without_due_date') ? 'nullable' : 'nullable|date',
-        'due_date' => $request->has('without_due_date') ? 'nullable' : 'nullable|date|after_or_equal:start_date',
-        'assigned_to' => 'required|array|min:1',
-        'assigned_to.*' => 'required|integer|exists:users,id',
-        'description'       => 'nullable|string',
-        'task_labels'       => 'nullable|array',
-        'task_labels.*'     => 'exists:task_label_list,id',
-        'milestone_id'      => 'nullable|integer',
-        'board_column_id'   => 'nullable|integer',
-        'is_private' => 'nullable',
-        'billable' => 'nullable',
-        'repeat' => 'nullable',
-        'estimate_hours'    => 'nullable|integer|min:0',
-        'estimate_minutes'  => 'nullable|integer|min:0',
-        'repeat_complete'   => 'nullable|boolean',
-        'repeat_count'      => 'nullable|integer',
-        'repeat_type'       => 'nullable|in:day,week,month,year',
-        'repeat_cycles'     => 'nullable|integer',
-        'dependent_task_id' => 'nullable|integer',
-        'priority'          => 'nullable|in:low,medium,high',
-        'progress'          => 'nullable|integer|min:0|max:100',
-        'remarks'           => 'nullable|string|max:2000',
-        'category_id'       => 'nullable|integer',
-        'parent_id'         => 'nullable|integer',
-        'status'            => 'nullable|in:Waiting for Approval,To Do,Doing,Incomplete,Completed',
-        'image_url' => [
-    'nullable',
-    'file',
-    'mimes:jpg,jpeg,png,pdf,docx,xlsx,txt,zip', // allowed file types
-    function ($attribute, $value, $fail) {
-        $extension = strtolower($value->getClientOriginalExtension());
-        if (in_array($extension, ['exe', 'sql'])) {
-            $fail("Files with the .$extension extension are not allowed.");
-        }
-    },
-]
-
-
-    ]);
-    
-    
-    
-    $profileImagePath = null;
-
-    // Handle profile image upload
-    if ($request->hasFile('image_url')) {
-        $image = $request->file('image_url');
-        $imageName = time() . '-' . $image->getClientOriginalName();
-        $image->move(public_path('admin/uploads/task-files'), $imageName);
-
-        $profileImagePath = 'admin/uploads/task-files/' . $imageName;
+    if ($request->has('assigned_to') && !is_array($request->assigned_to)) {
+        $request->merge(['assigned_to' => array_filter(explode(',', (string) $request->assigned_to))]);
     }
 
-    // Convert task labels to comma-separated string if provided
-    $task_labels = $request->has('task_label_list') 
-        ? implode(',', $request->task_label_list) 
-        : null;
-
-    $task = Task::create([
-        'task_short_code'  => $request->task_short_code,
-        'title'             => $request->title,
-        'project_id'        => $request->project_id,
-        'start_date'        => $request->start_date,
-        'due_date' => $request->has('without_due_date') ? null : $request->due_date,
-        'assigned_to' => $request->filled('assigned_to') ? (int) collect($request->assigned_to)->first() : null,
-        'created_by'        => auth()->id(),
-        'description'       => $request->description,
-        'remarks'           => $request->remarks,
-        'task_labels'       => $request->has('task_labels') ? implode(',', $request->task_labels) : null,
-        'milestone_id'      => $request->milestone_id,
-        'board_column_id'   => $request->board_column_id ?? $this->boardColumnForStatus($request->status ?? 'To Do'),
-        'is_private'        => $request->has('is_private'),
-        'billable'          => $request->has('billable'),
-        'estimate_hours'    => $request->estimate_hours,
-        'estimate_minutes'  => $request->estimate_minutes,
-        'repeat'            => $request->has('repeat'),
-        'repeat_complete'   => $request->has('repeat_complete'),
-        'repeat_count'      => $request->repeat_count,
-        'repeat_type'       => $request->repeat_type ?? 'day',
-        'repeat_cycles'     => $request->repeat_cycles,
-        'dependent_task_id' => $request->dependent_task_id,
-        'image_url'         => $profileImagePath,
-        'priority'          => $request->priority ?? 'medium',
-        'progress'          => 0,
-        'category_id'       => $request->category_id,
-        'parent_id'         => $request->parent_id,
-        'status'            => 'To Do',
-        'board_column_id'   => 2,
-        'is_completed'      => 0,
-    ]);
-    
-    UserActivity::create([
-    'company_id' => auth()->user()->company_id,
-    'user_id' => auth()->id(),
-    'activity' => 'Updated task: ' . $task->title,
-]);
-
-    if ($request->has('assigned_to')) {
-    $this->syncTaskAssignees($task, $request->assigned_to);
-
-    // 🔔 Send notification to each assigned user
-    foreach ($request->assigned_to as $userId) {
-        $user = User::find($userId);
-        if ($user) {
-            $user->notify(new TaskAssignedNotification($task, auth()->user(), 'employee'));
-        }
+    if (! $request->filled('task_short_code')) {
+        $row = DB::select("SHOW TABLE STATUS LIKE 'tasks'");
+        $nextId = $row && isset($row[0]->Auto_increment) ? $row[0]->Auto_increment : (Task::max('id') + 1);
+        $request->merge(['task_short_code' => 'TASK_' . str_pad($nextId, 3, '0', STR_PAD_LEFT)]);
     }
-
-    SystemNotificationService::notifyAllRoles(
-        'Task Assigned',
-        auth()->user()->name . ' assigned task "' . $task->title . '".',
-        route('tasks.show', $task->id),
-        ['task_id' => $task->id, 'project_id' => $task->project_id, 'type' => 'task_assigned', 'icon' => 'fa-tasks', 'color' => 'primary']
-    );
-}
-
-
-    // Redirect based on button clicked
-    if ($request->input('action') === 'save_add_more') {
-        return redirect()->back()->with('success', 'Task created. Add another.');
-    }
-
-    // Redirect to project board if coming from board
-    if ($request->has('redirect_to_board') && $request->input('redirect_to_board') == 'yes') {
-        return redirect()->route('projects.tasks.board', $request->project_id)
-                         ->with('success', 'Task created successfully.');
-    }
-
-    return redirect()->route('tasks.index')->with('success', 'Task created successfully.');
-}
-
-  public function edit(Task $task)
-{
-    $task->load(['assignees']); // eager load to avoid null
-
-    $projects = Project::all();
-    $users = User::where('role', 'employee')->orderBy('name')->get();
-    $labels = TaskLabel::with('project')->get();
-    $taskCategories = TaskCategory::all();
-    $milestones = ProjectMilestone::all();
-    $project = $task->project ?? null;
-    
-
-    $tasks = Task::whereNull('parent_id')
-    ->where('id', '!=', $task->id)
-    ->when($project, function ($query) use ($project) {
-        $query->where('project_id', $project->id);
-    })
-    ->get();
-    $assignedUserIds = $task->assignees()->pluck('users.id')->toArray();
-    
-       $departments = Department::all();
-        
-        $designations = Designation::all();
-         $departments = Department::with('parent')->latest()->get();
-        $users = User::where('role', 'employee')->orderBy('name')->get();
-       $countries = Country::all();
-       $employee = null;
-       $prtdepartments = ParentDepartment::latest()->get();
-
-    return view('admin.tasks.edit', compact(
-        'task',
-        'projects',
-        'users',
-        'labels',
-        'taskCategories',
-        'tasks',
-        'project',
-        'milestones', 'assignedUserIds',
-        'departments','designations','countries','employee','prtdepartments'
-    ));
-}
-
-
-public function update(Request $request, Task $task)
-{
-    abort_unless($this->canCreateWorkItems(), 403);
 
     $request->validate([
         'task_short_code'  => 'required|string|max:255',
         'title'             => 'required|string|max:255',
         'project_id'        => 'required|exists:projects,id',
         'start_date'        => 'nullable|date',
-        // 'due_date'          => $request->has('without_due_date') ? 'nullable' : 'nullable|date',
-        'due_date' => $request->has('without_due_date') ? 'nullable' : 'nullable|date|after_or_equal:start_date',
+        'due_date'          => $request->boolean('without_due_date') ? 'nullable' : 'nullable|date',
         'assigned_to'       => 'required|array|min:1',
         'assigned_to.*'     => 'required|integer|exists:users,id',
         'description'       => 'nullable|string',
@@ -430,6 +259,201 @@ public function update(Request $request, Task $task)
         'category_id'       => 'nullable|integer',
         'parent_id'         => 'nullable|integer',
         'status'            => 'nullable|in:Waiting for Approval,To Do,Doing,Incomplete,Completed',
+        'image_url' => [
+            'nullable',
+            'file',
+            'mimes:jpg,jpeg,png,pdf,docx,xlsx,txt,zip',
+            function ($attribute, $value, $fail) {
+                $extension = strtolower($value->getClientOriginalExtension());
+                if (in_array($extension, ['exe', 'sql'])) {
+                    $fail("Files with the .$extension extension are not allowed.");
+                }
+            },
+        ]
+    ]);
+
+    $profileImagePath = null;
+
+    // Handle profile image upload
+    if ($request->hasFile('image_url')) {
+        $image = $request->file('image_url');
+        $imageName = time() . '-' . $image->getClientOriginalName();
+        $targetDir = public_path('admin/uploads/task-files');
+        if (! is_dir($targetDir)) {
+            @mkdir($targetDir, 0755, true);
+        }
+        $image->move($targetDir, $imageName);
+        $profileImagePath = 'admin/uploads/task-files/' . $imageName;
+    }
+
+    $task = Task::create([
+        'task_short_code'   => $request->task_short_code,
+        'company_id'        => auth()->user()?->company_id,
+        'title'             => $request->title,
+        'project_id'        => $request->project_id,
+        'start_date'        => $request->start_date,
+        'due_date'          => $request->boolean('without_due_date') ? null : $request->due_date,
+        'assigned_to'       => $request->filled('assigned_to') ? (int) collect($request->assigned_to)->first() : null,
+        'created_by'        => auth()->id(),
+        'description'       => $request->description,
+        'remarks'           => $request->remarks,
+        'task_labels'       => $request->has('task_labels') ? implode(',', (array)$request->task_labels) : null,
+        'milestone_id'      => $request->milestone_id,
+        'board_column_id'   => $request->board_column_id ?? $this->boardColumnForStatus($request->status ?? 'To Do'),
+        'is_private'        => $request->has('is_private'),
+        'billable'          => $request->has('billable'),
+        'estimate_hours'    => $request->estimate_hours,
+        'estimate_minutes'  => $request->estimate_minutes,
+        'repeat'            => $request->has('repeat'),
+        'repeat_complete'   => $request->has('repeat_complete'),
+        'repeat_count'      => $request->repeat_count,
+        'repeat_type'       => $request->repeat_type ?? 'day',
+        'repeat_cycles'     => $request->repeat_cycles,
+        'dependent_task_id' => $request->dependent_task_id,
+        'image_url'         => $profileImagePath,
+        'priority'          => $request->priority ?? 'medium',
+        'progress'          => 0,
+        'category_id'       => $request->category_id,
+        'parent_id'         => $request->parent_id,
+        'status'            => 'To Do',
+        'is_completed'      => 0,
+    ]);
+
+    try {
+        UserActivity::create([
+            'company_id' => auth()->user()?->company_id,
+            'user_id'    => auth()->id(),
+            'activity'   => 'Updated task: ' . $task->title,
+        ]);
+    } catch (\Throwable $e) {
+        \Log::warning('UserActivity failed: ' . $e->getMessage());
+    }
+
+    if ($request->has('assigned_to')) {
+        try {
+            $this->syncTaskAssignees($task, (array) $request->assigned_to);
+        } catch (\Throwable $e) {
+            \Log::warning('syncTaskAssignees failed: ' . $e->getMessage());
+        }
+
+        // 🔔 Send notification to each assigned user
+        try {
+            foreach ((array) $request->assigned_to as $userId) {
+                $user = User::find($userId);
+                if ($user) {
+                    $user->notify(new TaskAssignedNotification($task, auth()->user(), 'employee'));
+                }
+            }
+
+            SystemNotificationService::notifyAllRoles(
+                'Task Assigned',
+                auth()->user()->name . ' assigned task "' . $task->title . '".',
+                route('tasks.show', $task->id),
+                ['task_id' => $task->id, 'project_id' => $task->project_id, 'type' => 'task_assigned', 'icon' => 'fa-tasks', 'color' => 'primary']
+            );
+        } catch (\Throwable $e) {
+            \Log::warning('Task notification failed: ' . $e->getMessage());
+        }
+    }
+
+    // Redirect based on button clicked
+    if ($request->input('action') === 'save_add_more') {
+        return redirect()->back()->with('success', 'Task created. Add another.');
+    }
+
+    if ($request->boolean('embedded_task_form')) {
+        $request->session()->flash('success', 'Task created successfully.');
+        return response()->view('admin.tasks.partials.created');
+    }
+
+    // Redirect to project board if coming from board
+    if ($request->has('redirect_to_board') && $request->input('redirect_to_board') == 'yes') {
+        return redirect()->route('projects.tasks.board', $request->project_id)
+                         ->with('success', 'Task created successfully.');
+    }
+
+    return redirect()->route('tasks.index')->with('success', 'Task created successfully.');
+}
+
+  public function edit(Task $task)
+{
+    $task->load(['assignees']); // eager load to avoid null
+
+    $projects = Project::all();
+    $labels = TaskLabel::with('project')->get();
+    $taskCategories = TaskCategory::all();
+    $milestones = ProjectMilestone::all();
+    $project = $task->project ?? null;
+    
+
+    $tasks = Task::whereNull('parent_id')
+    ->where('id', '!=', $task->id)
+    ->when($project, function ($query) use ($project) {
+        $query->where('project_id', $project->id);
+    })
+    ->get();
+    $assignedUserIds = $task->assignees()->pluck('users.id')->toArray();
+    
+        $designations = Designation::all();
+         $departments = Department::with('parent')->latest()->get();
+        $users = User::where('role', 'employee')->orderBy('name')->get();
+       $countries = Country::forForms();
+       $employee = null;
+       $prtdepartments = ParentDepartment::latest()->get();
+
+    return view('admin.tasks.edit', compact(
+        'task',
+        'projects',
+        'users',
+        'labels',
+        'taskCategories',
+        'tasks',
+        'project',
+        'milestones', 'assignedUserIds',
+        'departments','designations','countries','employee','prtdepartments'
+    ));
+}
+
+
+public function update(Request $request, Task $task)
+{
+    abort_unless($this->canCreateWorkItems(), 403);
+    $this->validateTaskDates($request);
+    \App\Services\TaskFormSchema::ensure();
+    \App\Services\TaskPrioritySchema::ensure();
+    \App\Services\TaskLabelsSchema::ensure();
+    // Only employees change status here (see $newStatus below); for others it is ignored, so not validated.
+    $statusEditable = strtolower((string) auth()->user()?->role) === 'employee';
+
+    $request->validate([
+        'task_short_code'  => 'required|string|max:255',
+        'title'             => 'required|string|max:255',
+        'project_id'        => 'required|exists:projects,id',
+        'start_date'        => 'nullable|date',
+        'due_date' => $request->boolean('without_due_date') ? 'nullable' : 'nullable|date',
+        'assigned_to'       => 'required|array|min:1',
+        'assigned_to.*'     => 'required|integer|exists:users,id',
+        'description'       => 'nullable|string',
+        'task_labels'       => 'nullable|array',
+        'task_labels.*'     => 'exists:task_label_list,id',
+        'milestone_id'      => 'nullable|integer',
+        'board_column_id'   => 'nullable|integer',
+        'is_private'        => 'nullable',
+        'billable'          => 'nullable',
+        'repeat'            => 'nullable',
+        'estimate_hours'    => 'nullable|integer|min:0',
+        'estimate_minutes'  => 'nullable|integer|min:0',
+        'repeat_complete'   => 'nullable|boolean',
+        'repeat_count'      => 'nullable|integer',
+        'repeat_type'       => 'nullable|in:day,week,month,year',
+        'repeat_cycles'     => 'nullable|integer',
+        'dependent_task_id' => 'nullable|integer',
+        'priority'          => 'nullable|in:low,medium,high',
+        'progress'          => 'nullable|integer|min:0|max:100',
+        'remarks'           => 'nullable|string|max:2000',
+        'category_id'       => 'nullable|integer',
+        'parent_id'         => 'nullable|integer',
+        'status'            => $statusEditable ? 'nullable|in:Waiting for Approval,To Do,Doing,Incomplete,Completed' : 'nullable',
         'image_url' => [
             'nullable',
             'file',
@@ -471,7 +495,7 @@ public function update(Request $request, Task $task)
         'title'             => $request->title,
         'project_id'        => $request->project_id,
         'start_date'        => $request->start_date,
-        'due_date'          => $request->has('without_due_date') ? null : $request->due_date,
+        'due_date'          => $request->boolean('without_due_date') ? null : $request->due_date,
         'assigned_to'       => $request->filled('assigned_to') ? (int) collect($request->assigned_to)->first() : null,
         'description'       => $request->description,
         'remarks'           => $request->remarks,
@@ -509,19 +533,23 @@ public function update(Request $request, Task $task)
     if ($request->has('assigned_to')) {
     $this->syncTaskAssignees($task, $request->assigned_to);
 
-    foreach ($request->assigned_to as $userId) {
-        $user = User::find($userId);
-        if ($user) {
-            $user->notify(new TaskAssignedNotification($task, auth()->user(), 'employee'));
+    try {
+        foreach ($request->assigned_to as $userId) {
+            $user = User::find($userId);
+            if ($user) {
+                $user->notify(new TaskAssignedNotification($task, auth()->user(), 'employee'));
+            }
         }
-    }
 
-    SystemNotificationService::notifyAllRoles(
-        'Task Updated',
-        auth()->user()->name . ' updated task "' . $task->title . '".',
-        route('tasks.show', $task->id),
-        ['task_id' => $task->id, 'project_id' => $task->project_id, 'type' => 'task_updated', 'icon' => 'fa-tasks', 'color' => 'info']
-    );
+        SystemNotificationService::notifyAllRoles(
+            'Task Updated',
+            auth()->user()->name . ' updated task "' . $task->title . '".',
+            route('tasks.show', $task->id),
+            ['task_id' => $task->id, 'project_id' => $task->project_id, 'type' => 'task_updated', 'icon' => 'fa-tasks', 'color' => 'info']
+        );
+    } catch (\Throwable $e) {
+        \Log::warning('Task update notification failed: ' . $e->getMessage());
+    }
 }
 
 
@@ -545,7 +573,7 @@ public function update(Request $request, Task $task)
             if ($parent) {
                 $allSubTasksCompleted = Task::where('parent_id', $parent->id)
                     ->where('is_completed', false)
-                    ->count() === 0;
+                    ->doesntExist();
 
                 if ($allSubTasksCompleted) {
                     $parent->is_completed = true;
@@ -628,15 +656,17 @@ public function updateStatus(Request $request, Task $task)
     ]);
 
     // ❗ Rule: If marking a parent task as 'Completed', check all sub-tasks
-    if ($request->status === 'Completed' && $task->subTasks()->count() > 0) {
-        $pendingSubTasks = $task->subTasks()->where(function ($q) {
-            $q->where('is_completed', false)->orWhereNull('is_completed');
-        })->count();
+    if ($request->status === 'Completed') {
+        // Sub-task completion lives in sub_tasks.status ("incomplete" / "complete"); there is no is_completed column.
+        $pendingSubTasks = $task->subTasks()
+            ->whereRaw("LOWER(COALESCE(status, '')) NOT IN ('complete', 'completed', 'done')")
+            ->count();
 
-        if ($pendingSubTasks > 0) {
+        if ($pendingSubTasks) {
             return response()->json([
                 'success' => false,
-                'message' => 'Cannot mark task as Completed while sub-tasks are pending.',
+                'message' => 'Cannot mark this task as Completed while ' . $pendingSubTasks . ' sub-task' . ($pendingSubTasks === 1 ? ' is' : 's are')
+                    . ' still pending. Mark ' . ($pendingSubTasks === 1 ? 'it' : 'them') . ' complete in the Sub Tasks tab first.',
             ], 422);
         }
     }
@@ -1007,9 +1037,27 @@ public function bulkDelete(Request $request)
     return back()->with('success', 'Selected tasks deleted successfully.');
 }
 
+private function validateTaskDates(Request $request): void
+{
+    if ($request->boolean('without_due_date')) {
+        $request->merge(['due_date' => null]);
+    }
+
+    $request->validate([
+        'start_date' => 'nullable|date',
+        'due_date' => $request->filled('start_date')
+            ? 'nullable|date|after_or_equal:start_date'
+            : 'nullable|date',
+    ], [
+        'due_date.after_or_equal' => 'The due date must be equal to or later than the start date.',
+    ]);
+}
+
 private function canCreateWorkItems(): bool
 {
-    return in_array(strtolower((string) auth()->user()?->role), ['admin', 'hr', 'manager'], true);
+    $role = strtolower((string) auth()->user()?->role);
+    return in_array($role, ['admin', 'hr', 'manager', 'administrator', 'superadmin'], true)
+        || \Illuminate\Support\Facades\Auth::guard('super_admin')->check();
 }
 
 private function boardColumnForStatus(?string $status): int

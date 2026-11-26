@@ -10,7 +10,7 @@
         --primary-hover: #1d4ed8;
         --primary-light: #eff6ff;
         --success: #10b981;
-        --success-light: #ecfdf5;
+        --success-light: #EEF2FF;
         --warning: #f59e0b;
         --warning-light: #fffbeb;
         --danger: #ef4444;
@@ -20,6 +20,7 @@
         --bg-surface: #ffffff;
         --bg-subtle: #f8fafc;
         --border-color: #e2e8f0;
+        --gauge-track: #e2e8f0;
         --text-main: #0f172a;
         --text-muted: #475569;
         --text-subtle: #64748b;
@@ -102,9 +103,9 @@
     }
 
     .status-badge-hero.operational {
-        background: #ecfdf5;
-        color: #059669;
-        border: 1px solid #a7f3d0;
+        background: #EEF2FF;
+        color: #2F6BFF;
+        border: 1px solid #C7D2FE;
     }
 
     .status-badge-hero.outage {
@@ -186,13 +187,13 @@
         width: 80px;
         height: 80px;
         border-radius: 50%;
-        background: conic-gradient(var(--success) 0% 98.7%, #e2e8f0 98.7% 100%);
+        background: conic-gradient(var(--success) 0% 98.7%, var(--gauge-track) 98.7% 100%);
         display: flex;
         align-items: center;
         justify-content: center;
         position: relative;
         flex-shrink: 0;
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+        box-shadow: 0 4px 12px rgba(47, 107, 255, 0.2);
     }
 
     .hero-score-ring::after {
@@ -201,7 +202,7 @@
         width: 64px;
         height: 64px;
         border-radius: 50%;
-        background: #ffffff;
+        background: var(--bg-surface);
     }
 
     .hero-score-value {
@@ -377,7 +378,7 @@
         gap: 4px;
     }
 
-    .status-operational { background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; }
+    .status-operational { background: #EEF2FF; color: #2F6BFF; border: 1px solid #C7D2FE; }
     .status-degraded { background: #fffbeb; color: #d97706; border: 1px solid #fde68a; }
     .status-down { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
 
@@ -387,7 +388,8 @@
         justify-content: space-between;
         font-size: 12px;
         color: var(--text-muted);
-        background: #f8fafc;
+        background: var(--bg-subtle);
+        border: 1px solid var(--border-color);
         padding: 8px 12px;
         border-radius: var(--radius-sm);
         margin-top: 10px;
@@ -588,13 +590,369 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
+        gap: 16px;
         background: #f8fafc;
+        flex-shrink: 0;
     }
 
+    .drawer-panel,
+    .drawer-panel * {
+        box-sizing: border-box;
+    }
+
+    .drawer-panel {
+        overflow: hidden;
+    }
+
+    /* Drawer content: same side spacing as the header, never wider than the panel */
     .drawer-body {
-        padding: 24px;
+        flex: 1 1 auto;
+        min-width: 0;
+        width: 100%;
+        padding: 20px 24px 28px;
         overflow-y: auto;
-        flex: 1;
+        overflow-x: hidden;
+    }
+
+    .drawer-body #drawerServiceDesc {
+        line-height: 1.55;
+        overflow-wrap: anywhere;
+    }
+
+    .drawer-metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+
+    .drawer-metrics-grid > div {
+        min-width: 0;
+    }
+
+    #drawerChecksList > div {
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+    }
+
+    #drawerChecksList > div > span:first-child {
+        min-width: 0;
+        overflow-wrap: anywhere;
+    }
+
+    #drawerChecksList > div > span:last-child {
+        flex-shrink: 0;
+    }
+
+    @media (max-width: 575.98px) {
+        .drawer-panel {
+            max-width: 100vw;
+        }
+
+        .drawer-header,
+        .drawer-body {
+            padding-left: 16px;
+            padding-right: 16px;
+        }
+
+        .drawer-metrics-grid {
+            grid-template-columns: minmax(0, 1fr);
+        }
+    }
+
+    /* ============================================================
+       DARK THEME ARCHITECTURE FOR SYSTEM HEALTH
+       ============================================================ */
+    html[data-pms-theme="dark"],
+    html[data-theme="dark"],
+    html[data-bs-theme="dark"] {
+        --bg-surface: #0F1530;
+        --bg-subtle: #141B3D;
+        --bg-hover: #1A2247;
+        --border-color: rgba(238, 241, 251, 0.09);
+        --text-main: #EEF1FB;
+        --text-muted: #CBD5E1;
+        --text-subtle: #9AA3C7;
+        --primary: #2F6BFF;
+        --primary-light: rgba(47, 107, 255, 0.15);
+        --success-light: rgba(47, 107, 255, 0.15);
+        --warning-light: rgba(245, 158, 11, 0.15);
+        --danger-light: rgba(239, 68, 68, 0.15);
+        --purple-light: rgba(139, 92, 246, 0.15);
+        --gauge-track: rgba(238, 241, 251, 0.08);
+    }
+
+    /* Hero Platform Health Score Ring & Breakdown */
+    html[data-pms-theme="dark"] .hero-score-ring::after,
+    html[data-theme="dark"] .hero-score-ring::after,
+    html[data-bs-theme="dark"] .hero-score-ring::after {
+        background: #0F1530 !important;
+    }
+    html[data-pms-theme="dark"] .hero-score-value,
+    html[data-theme="dark"] .hero-score-value,
+    html[data-bs-theme="dark"] .hero-score-value {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .breakdown-track,
+    html[data-theme="dark"] .breakdown-track,
+    html[data-bs-theme="dark"] .breakdown-track {
+        background: rgba(238, 241, 251, 0.1) !important;
+    }
+
+    html[data-pms-theme="dark"] .kpi-card,
+    html[data-theme="dark"] .kpi-card,
+    html[data-bs-theme="dark"] .kpi-card {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
+    }
+
+    html[data-pms-theme="dark"] .service-card,
+    html[data-theme="dark"] .service-card,
+    html[data-bs-theme="dark"] .service-card {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+    }
+    html[data-pms-theme="dark"] .service-card:hover,
+    html[data-theme="dark"] .service-card:hover,
+    html[data-bs-theme="dark"] .service-card:hover {
+        background: #141B3D !important;
+        border-color: rgba(47, 107, 255, 0.4) !important;
+    }
+    html[data-pms-theme="dark"] .service-metrics-row,
+    html[data-theme="dark"] .service-metrics-row,
+    html[data-bs-theme="dark"] .service-metrics-row {
+        background: #141B3D !important;
+        border: 1px solid rgba(238, 241, 251, 0.08) !important;
+        color: #9AA3C7 !important;
+    }
+    html[data-pms-theme="dark"] .service-card:hover .service-metrics-row,
+    html[data-theme="dark"] .service-card:hover .service-metrics-row,
+    html[data-bs-theme="dark"] .service-card:hover .service-metrics-row {
+        background: #1A2247 !important;
+    }
+
+    html[data-pms-theme="dark"] .analytics-card,
+    html[data-theme="dark"] .analytics-card,
+    html[data-bs-theme="dark"] .analytics-card {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
+    }
+
+    /* Database Cluster Card & Table (Screenshot 3) */
+    html[data-pms-theme="dark"] .db-cluster-card,
+    html[data-theme="dark"] .db-cluster-card,
+    html[data-bs-theme="dark"] .db-cluster-card {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
+    }
+    html[data-pms-theme="dark"] .db-cluster-header,
+    html[data-theme="dark"] .db-cluster-header,
+    html[data-bs-theme="dark"] .db-cluster-header {
+        background: #141B3D !important;
+        border-bottom-color: rgba(238, 241, 251, 0.09) !important;
+    }
+    html[data-pms-theme="dark"] .db-cluster-toolbar,
+    html[data-theme="dark"] .db-cluster-toolbar,
+    html[data-bs-theme="dark"] .db-cluster-toolbar {
+        background: #0F1530 !important;
+        border-bottom-color: rgba(238, 241, 251, 0.09) !important;
+    }
+    html[data-pms-theme="dark"] #healthEntriesSelect,
+    html[data-theme="dark"] #healthEntriesSelect,
+    html[data-bs-theme="dark"] #healthEntriesSelect {
+        background: #141B3D !important;
+        color: #EEF1FB !important;
+        border-color: rgba(238, 241, 251, 0.12) !important;
+    }
+    html[data-pms-theme="dark"] #tenantDbSearchInput,
+    html[data-theme="dark"] #tenantDbSearchInput,
+    html[data-bs-theme="dark"] #tenantDbSearchInput {
+        background: #141B3D !important;
+        color: #EEF1FB !important;
+        border-color: rgba(238, 241, 251, 0.12) !important;
+    }
+    html[data-pms-theme="dark"] #dbExportMenu,
+    html[data-theme="dark"] #dbExportMenu,
+    html[data-bs-theme="dark"] #dbExportMenu {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.12) !important;
+    }
+    html[data-pms-theme="dark"] #dbExportMenu a,
+    html[data-theme="dark"] #dbExportMenu a,
+    html[data-bs-theme="dark"] #dbExportMenu a {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] #dbExportMenu a:hover,
+    html[data-theme="dark"] #dbExportMenu a:hover,
+    html[data-bs-theme="dark"] #dbExportMenu a:hover {
+        background: #1A2247 !important;
+    }
+
+    html[data-pms-theme="dark"] .grid-table thead tr,
+    html[data-theme="dark"] .grid-table thead tr,
+    html[data-bs-theme="dark"] .grid-table thead tr {
+        background: #141B3D !important;
+    }
+    html[data-pms-theme="dark"] .grid-table th,
+    html[data-theme="dark"] .grid-table th,
+    html[data-bs-theme="dark"] .grid-table th {
+        background: #141B3D !important;
+        color: #9AA3C7 !important;
+        border-bottom-color: rgba(238, 241, 251, 0.09) !important;
+        border-right-color: rgba(238, 241, 251, 0.09) !important;
+    }
+    html[data-pms-theme="dark"] .grid-table td,
+    html[data-theme="dark"] .grid-table td,
+    html[data-bs-theme="dark"] .grid-table td {
+        border-bottom-color: rgba(238, 241, 251, 0.09) !important;
+        border-right-color: rgba(238, 241, 251, 0.09) !important;
+        color: #CBD5E1 !important;
+    }
+    html[data-pms-theme="dark"] .grid-table tbody tr:hover,
+    html[data-theme="dark"] .grid-table tbody tr:hover,
+    html[data-bs-theme="dark"] .grid-table tbody tr:hover {
+        background: #1A2247 !important;
+    }
+
+    /* Active Incidents & Alerts (Screenshot 4) */
+    html[data-pms-theme="dark"] .incident-item-row,
+    html[data-theme="dark"] .incident-item-row,
+    html[data-bs-theme="dark"] .incident-item-row {
+        background: #141B3D !important;
+    }
+    html[data-pms-theme="dark"] .incident-id-badge,
+    html[data-theme="dark"] .incident-id-badge,
+    html[data-bs-theme="dark"] .incident-id-badge {
+        color: #9AA3C7 !important;
+    }
+
+    /* Header Auto Refresh Control */
+    html[data-pms-theme="dark"] .auto-refresh-box,
+    html[data-theme="dark"] .auto-refresh-box,
+    html[data-bs-theme="dark"] .auto-refresh-box {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.12) !important;
+        color: #9AA3C7 !important;
+    }
+    html[data-pms-theme="dark"] #autoRefreshSelect,
+    html[data-theme="dark"] #autoRefreshSelect,
+    html[data-bs-theme="dark"] #autoRefreshSelect {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] #autoRefreshSelect option,
+    html[data-theme="dark"] #autoRefreshSelect option,
+    html[data-bs-theme="dark"] #autoRefreshSelect option {
+        background: #0F1530 !important;
+        color: #EEF1FB !important;
+    }
+
+    /* Latency Chart Time Range Pills */
+    html[data-pms-theme="dark"] .time-range-pills,
+    html[data-theme="dark"] .time-range-pills,
+    html[data-bs-theme="dark"] .time-range-pills {
+        background: #141B3D !important;
+        border: 1px solid rgba(238, 241, 251, 0.09) !important;
+    }
+    html[data-pms-theme="dark"] .time-pill,
+    html[data-theme="dark"] .time-pill,
+    html[data-bs-theme="dark"] .time-pill {
+        color: #9AA3C7 !important;
+    }
+    html[data-pms-theme="dark"] .time-pill:hover,
+    html[data-theme="dark"] .time-pill:hover,
+    html[data-bs-theme="dark"] .time-pill:hover {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .time-pill.active,
+    html[data-theme="dark"] .time-pill.active,
+    html[data-bs-theme="dark"] .time-pill.active {
+        background: #2F6BFF !important;
+        color: #ffffff !important;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    /* System Resource Load Gauges (4 Cards) */
+    html[data-pms-theme="dark"] .load-gauge-card,
+    html[data-theme="dark"] .load-gauge-card,
+    html[data-bs-theme="dark"] .load-gauge-card {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+    }
+    html[data-pms-theme="dark"] .gauge-ring::after,
+    html[data-theme="dark"] .gauge-ring::after,
+    html[data-bs-theme="dark"] .gauge-ring::after {
+        background: #141B3D !important;
+    }
+    html[data-pms-theme="dark"] .gauge-val,
+    html[data-theme="dark"] .gauge-val,
+    html[data-bs-theme="dark"] .gauge-val {
+        color: #EEF1FB !important;
+    }
+
+    /* Database Cluster Table Footer */
+    html[data-pms-theme="dark"] .db-table-footer,
+    html[data-theme="dark"] .db-table-footer,
+    html[data-bs-theme="dark"] .db-table-footer {
+        background: #141B3D !important;
+        border-top-color: rgba(238, 241, 251, 0.09) !important;
+        color: #9AA3C7 !important;
+    }
+
+    /* Buttons */
+    html[data-pms-theme="dark"] .btn-action-secondary,
+    html[data-theme="dark"] .btn-action-secondary,
+    html[data-bs-theme="dark"] .btn-action-secondary {
+        background: #141B3D !important;
+        color: #EEF1FB !important;
+        border-color: rgba(238, 241, 251, 0.12) !important;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .btn-action-secondary:hover,
+    html[data-theme="dark"] .btn-action-secondary:hover,
+    html[data-bs-theme="dark"] .btn-action-secondary:hover {
+        background: #1A2247 !important;
+        border-color: rgba(47, 107, 255, 0.4) !important;
+        color: #38bdf8 !important;
+    }
+
+    /* Drawer */
+    html[data-pms-theme="dark"] .drawer-panel,
+    html[data-theme="dark"] .drawer-panel,
+    html[data-bs-theme="dark"] .drawer-panel {
+        background: #0F1530 !important;
+        color: #EEF1FB !important;
+        border-left: 1px solid rgba(238, 241, 251, 0.09);
+    }
+    html[data-pms-theme="dark"] .drawer-header,
+    html[data-theme="dark"] .drawer-header,
+    html[data-bs-theme="dark"] .drawer-header {
+        background: #141B3D !important;
+        border-bottom-color: rgba(238, 241, 251, 0.09) !important;
+    }
+
+    /* Tenant Diagnostics Modal */
+    html[data-pms-theme="dark"] .diag-modal-box,
+    html[data-theme="dark"] .diag-modal-box,
+    html[data-bs-theme="dark"] .diag-modal-box {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.12) !important;
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .diag-modal-header,
+    html[data-theme="dark"] .diag-modal-header,
+    html[data-bs-theme="dark"] .diag-modal-header {
+        background: #141B3D !important;
+        border-bottom-color: rgba(238, 241, 251, 0.09) !important;
+    }
+    html[data-pms-theme="dark"] .diag-modal-footer,
+    html[data-theme="dark"] .diag-modal-footer,
+    html[data-bs-theme="dark"] .diag-modal-footer {
+        background: #141B3D !important;
+        border-top-color: rgba(238, 241, 251, 0.09) !important;
     }
 </style>
 @endpush
@@ -625,7 +983,7 @@
             </span>
 
             <!-- Auto Refresh Selector -->
-            <div style="display: flex; align-items: center; gap: 6px; background: #ffffff; border: 1px solid var(--border-color); padding: 4px 10px; border-radius: var(--radius-md); font-size: 12px; font-weight: 600; color: var(--text-muted);">
+            <div class="auto-refresh-box" style="display: flex; align-items: center; gap: 6px; background: var(--bg-surface); border: 1px solid var(--border-color); padding: 4px 10px; border-radius: var(--radius-md); font-size: 12px; font-weight: 600; color: var(--text-muted);">
                 <i class="fas fa-arrows-rotate" style="color: var(--primary);"></i>
                 <span>Auto Refresh:</span>
                 <select id="autoRefreshSelect" style="border: none; background: transparent; font-weight: 700; color: var(--text-main); outline: none; cursor: pointer;">
@@ -652,7 +1010,7 @@
     <!-- 2. HERO GLOBAL PLATFORM HEALTH SCORE -->
     <div class="hero-score-card">
         <div class="hero-score-left">
-            <div class="hero-score-ring">
+            <div class="hero-score-ring" style="background: conic-gradient(var(--success) 0% {{ $globalScore }}%, var(--gauge-track, rgba(238, 241, 251, 0.08)) {{ $globalScore }}% 100%);">
                 <span class="hero-score-value">{{ $globalScore }}%</span>
             </div>
             <div>
@@ -826,31 +1184,23 @@
                     <i class="fas fa-chart-line" style="color: var(--primary); margin-right: 8px;"></i>
                     Platform Response Time Latency (ms)
                 </div>
-                <div class="time-range-pills">
-                    <button class="time-pill">1H</button>
-                    <button class="time-pill">6H</button>
-                    <button class="time-pill active">24H</button>
-                    <button class="time-pill">7D</button>
-                    <button class="time-pill">30D</button>
-                </div>
+                <form method="GET" action="{{ url()->current() }}" class="time-range-pills">
+                    @foreach(request()->except('latency_range') as $key => $value)
+                        @if(is_scalar($value))
+                        <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+                        @endif
+                    @endforeach
+                    @foreach(array_keys(\App\Services\PlatformLatency::RANGES) as $range)
+                    <button type="submit" name="latency_range" value="{{ $range }}" class="time-pill {{ $latencyChart['range'] === $range ? 'active' : '' }}" aria-pressed="{{ $latencyChart['range'] === $range ? 'true' : 'false' }}">{{ $range }}</button>
+                    @endforeach
+                </form>
             </div>
 
             <div style="height: 180px; display: flex; align-items: flex-end; gap: 12px; padding: 20px 10px; background: var(--bg-subtle); border-radius: var(--radius-md); border: 1px solid var(--border-color);">
-                @php
-                    $points = [
-                        ['time' => '00:00', 'api' => 22, 'db' => 12],
-                        ['time' => '04:00', 'api' => 18, 'db' => 10],
-                        ['time' => '08:00', 'api' => 35, 'db' => 24],
-                        ['time' => '12:00', 'api' => 28, 'db' => 15],
-                        ['time' => '16:00', 'api' => 42, 'db' => 28],
-                        ['time' => '20:00', 'api' => 25, 'db' => 14],
-                        ['time' => 'Now',   'api' => 24, 'db' => 12.4],
-                    ];
-                @endphp
-                @foreach($points as $pt)
+                @foreach($latencyChart['points'] as $pt)
                 <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; height: 100%; justify-content: flex-end;">
-                    <div style="width: 100%; max-width: 28px; background: var(--primary); height: {{ $pt['api'] * 2 }}%; border-radius: 4px 4px 0 0; position: relative;" title="API Latency: {{ $pt['api'] }}ms">
-                        <div style="position: absolute; bottom: 0; left: 0; right: 0; background: var(--purple); height: {{ $pt['db'] * 2 }}%; border-radius: 4px 4px 0 0;" title="DB Latency: {{ $pt['db'] }}ms"></div>
+                    <div style="width: 100%; max-width: 28px; background: var(--primary); height: {{ max($pt['api'] ?? 0, $pt['db'] ?? 0) / $latencyChart['scale'] * 85 }}%; border-radius: 4px 4px 0 0; position: relative;" title="{{ $pt['api'] === null ? 'No samples in this interval' : 'API Latency: '.$pt['api'].'ms' }}">
+                        <div style="position: absolute; bottom: 0; left: 0; right: 0; background: var(--purple); height: {{ ($pt['db'] ?? 0) / max(0.1, $pt['api'] ?? 0, $pt['db'] ?? 0) * 100 }}%; border-radius: 4px 4px 0 0;" title="{{ $pt['db'] === null ? 'No samples in this interval' : 'DB Latency: '.$pt['db'].'ms' }}"></div>
                     </div>
                     <span style="font-size: 11px; font-weight: 700; color: var(--text-subtle);">{{ $pt['time'] }}</span>
                 </div>
@@ -859,10 +1209,10 @@
 
             <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 14px; font-size: 12px;">
                 <div style="display: flex; align-items: center; gap: 16px;">
-                    <span style="display: flex; align-items: center; gap: 6px; color: var(--text-muted); font-weight: 600;"><span style="width: 10px; height: 10px; border-radius: 2px; background: var(--primary);"></span> API Response (24ms)</span>
-                    <span style="display: flex; align-items: center; gap: 6px; color: var(--text-muted); font-weight: 600;"><span style="width: 10px; height: 10px; border-radius: 2px; background: var(--purple);"></span> Database Response (12.4ms)</span>
+                    <span style="display: flex; align-items: center; gap: 6px; color: var(--text-muted); font-weight: 600;"><span style="width: 10px; height: 10px; border-radius: 2px; background: var(--primary);"></span> API Response ({{ $latencyChart['api'] === null ? 'No samples' : $latencyChart['api'].'ms' }})</span>
+                    <span style="display: flex; align-items: center; gap: 6px; color: var(--text-muted); font-weight: 600;"><span style="width: 10px; height: 10px; border-radius: 2px; background: var(--purple);"></span> Database Response ({{ $latencyChart['db'] === null ? 'No samples' : $latencyChart['db'].'ms' }})</span>
                 </div>
-                <span style="color: var(--text-subtle); font-weight: 500;">99.9th percentile: 45ms</span>
+                <span style="color: var(--text-subtle); font-weight: 500;">99.9th percentile: {{ $latencyChart['percentile'] === null ? 'No samples' : $latencyChart['percentile'].'ms' }}</span>
             </div>
         </div>
 
@@ -878,7 +1228,7 @@
             <div class="load-gauges-grid">
                 <!-- CPU -->
                 <div class="load-gauge-card">
-                    <div class="gauge-ring" style="background: conic-gradient(var(--primary) 0% {{ $systemLoad['cpu_pct'] }}%, #e2e8f0 {{ $systemLoad['cpu_pct'] }}% 100%);">
+                    <div class="gauge-ring" style="background: conic-gradient(var(--primary) 0% {{ $systemLoad['cpu_pct'] }}%, var(--gauge-track, rgba(238, 241, 251, 0.08)) {{ $systemLoad['cpu_pct'] }}% 100%);">
                         <span class="gauge-val">{{ $systemLoad['cpu_pct'] }}%</span>
                     </div>
                     <strong style="font-size: 12px; color: var(--text-main);">CPU Utilization</strong>
@@ -887,7 +1237,7 @@
 
                 <!-- Memory -->
                 <div class="load-gauge-card">
-                    <div class="gauge-ring" style="background: conic-gradient(var(--purple) 0% {{ $systemLoad['memory_pct'] }}%, #e2e8f0 {{ $systemLoad['memory_pct'] }}% 100%);">
+                    <div class="gauge-ring" style="background: conic-gradient(var(--purple) 0% {{ $systemLoad['memory_pct'] }}%, var(--gauge-track, rgba(238, 241, 251, 0.08)) {{ $systemLoad['memory_pct'] }}% 100%);">
                         <span class="gauge-val">{{ $systemLoad['memory_pct'] }}%</span>
                     </div>
                     <strong style="font-size: 12px; color: var(--text-main);">RAM Memory</strong>
@@ -896,7 +1246,7 @@
 
                 <!-- Disk Storage -->
                 <div class="load-gauge-card">
-                    <div class="gauge-ring" style="background: conic-gradient(var(--warning) 0% {{ $systemLoad['disk_pct'] }}%, #e2e8f0 {{ $systemLoad['disk_pct'] }}% 100%);">
+                    <div class="gauge-ring" style="background: conic-gradient(var(--warning) 0% {{ $systemLoad['disk_pct'] }}%, var(--gauge-track, rgba(238, 241, 251, 0.08)) {{ $systemLoad['disk_pct'] }}% 100%);">
                         <span class="gauge-val">{{ $systemLoad['disk_pct'] }}%</span>
                     </div>
                     <strong style="font-size: 12px; color: var(--text-main);">Disk Storage</strong>
@@ -905,7 +1255,7 @@
 
                 <!-- Network -->
                 <div class="load-gauge-card">
-                    <div class="gauge-ring" style="background: conic-gradient(var(--success) 0% {{ $systemLoad['network_pct'] }}%, #e2e8f0 {{ $systemLoad['network_pct'] }}% 100%);">
+                    <div class="gauge-ring" style="background: conic-gradient(var(--success) 0% {{ $systemLoad['network_pct'] }}%, var(--gauge-track, rgba(238, 241, 251, 0.08)) {{ $systemLoad['network_pct'] }}% 100%);">
                         <span class="gauge-val">{{ $systemLoad['network_pct'] }}%</span>
                     </div>
                     <strong style="font-size: 12px; color: var(--text-main);">Network Bandwidth</strong>
@@ -916,8 +1266,8 @@
     </div>
 
     <!-- 6. DATABASE HEALTH & TENANT CONNECTIONS GRID TABLE -->
-    <div style="background: var(--bg-surface); border-radius: var(--radius-lg); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); overflow: hidden; margin-bottom: 28px;">
-        <div style="padding: 16px 20px; background: #f8fafc; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+    <div class="db-cluster-card" style="background: var(--bg-surface); border-radius: var(--radius-lg); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); overflow: hidden; margin-bottom: 28px;">
+        <div class="db-cluster-header" style="padding: 16px 20px; background: var(--bg-subtle); border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
             <div>
                 <strong style="font-size: 15px; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
                     <i class="fas fa-database" style="color: var(--primary);"></i>
@@ -926,14 +1276,14 @@
                 <span style="font-size: 12px; color: var(--text-subtle); margin-top: 2px; display: block;">Central Database (`pms_central`) + {{ count($tenantHealthData) }} Multi-Tenant Databases</span>
             </div>
             <div style="display: flex; gap: 16px; font-size: 12px; align-items: center;">
-                <span style="color: var(--text-muted);">Active Connections: <strong style="color: var(--text-main);">42 / 100</strong></span>
-                <span style="color: var(--text-muted);">Pool Load: <strong style="color: var(--text-main);">42%</strong></span>
-                <span style="color: var(--text-muted);">Ping Latency: <strong style="color: var(--success);">{{ $dbLatencyMs ?? 12.4 }} ms</strong></span>
+                <span style="color: var(--text-muted);">Active Connections: <strong style="color: var(--text-main);" id="dbPoolActive">{{ $dbPool['active'] !== null ? $dbPool['active'] . ' / ' . $dbPool['max'] : '—' }}</strong></span>
+                <span style="color: var(--text-muted);">Pool Load: <strong style="color: var(--text-main);" id="dbPoolLoad">{{ $dbPool['load_pct'] !== null ? $dbPool['load_pct'] . '%' : '—' }}</strong></span>
+                <span style="color: var(--text-muted);">Ping Latency: <strong style="color: var(--success);" id="dbPoolPing">{{ $dbPool['ping_ms'] !== null ? $dbPool['ping_ms'] . ' ms' : '—' }}</strong></span>
             </div>
         </div>
 
         <!-- Table Toolbar Controls (Show Entries, Search, Export Dropdown) -->
-        <div style="padding: 12px 20px; background: #ffffff; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+        <div class="db-cluster-toolbar" style="padding: 12px 20px; background: var(--bg-surface); border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
             <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
                 <!-- Show Entries Dropdown -->
                 <div style="display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--text-muted); font-weight: 600;">
@@ -959,11 +1309,11 @@
                 <button class="btn-action-secondary" id="dbExportDropdownBtn" style="padding: 5px 12px; font-size: 12px;">
                     <i class="fas fa-file-export" style="color: var(--primary);"></i> Export <i class="fas fa-chevron-down" style="font-size: 9px; margin-left: 4px;"></i>
                 </button>
-                <div id="dbExportMenu" style="display: none; position: absolute; right: 0; top: 100%; margin-top: 4px; background: #ffffff; border: 1px solid var(--border-color); border-radius: var(--radius-md); box-shadow: var(--shadow-md); z-index: 50; min-width: 140px; overflow: hidden;">
-                    <a href="#" id="exportDbCsvBtn" style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; font-size: 12.5px; font-weight: 600; color: var(--text-main); text-decoration: none;" onmouseover="this.style.background='#f8fafc';" onmouseout="this.style.background='transparent';">
-                        <i class="fas fa-file-csv" style="color: #059669;"></i> Export CSV
+                <div id="dbExportMenu" style="display: none; position: absolute; right: 0; top: 100%; margin-top: 4px; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-md); box-shadow: var(--shadow-md); z-index: 50; min-width: 140px; overflow: hidden;">
+                    <a href="#" id="exportDbCsvBtn" style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; font-size: 12.5px; font-weight: 600; color: var(--text-main); text-decoration: none;" onmouseover="this.style.background='var(--bg-subtle)';" onmouseout="this.style.background='transparent';">
+                        <i class="fas fa-file-csv" style="color: #2F6BFF;"></i> Export CSV
                     </a>
-                    <a href="#" id="exportDbPdfBtn" style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; font-size: 12.5px; font-weight: 600; color: var(--text-main); text-decoration: none;" onmouseover="this.style.background='#f8fafc';" onmouseout="this.style.background='transparent';">
+                    <a href="#" id="exportDbPdfBtn" style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; font-size: 12.5px; font-weight: 600; color: var(--text-main); text-decoration: none;" onmouseover="this.style.background='var(--bg-subtle)';" onmouseout="this.style.background='transparent';">
                         <i class="fas fa-file-pdf" style="color: #dc2626;"></i> Export PDF
                     </a>
                 </div>
@@ -990,7 +1340,7 @@
                 </thead>
                 <tbody>
                     @foreach($tenantHealthData as $th)
-                    <tr class="tenant-health-row" data-status="{{ $th['status'] }}" data-company="{{ strtolower($th['name']) }}" data-code="{{ strtolower($th['code']) }}" data-db="{{ strtolower($th['db_name']) }}">
+                    <tr class="tenant-health-row" data-tenant-id="{{ $th['company_id'] }}" data-status="{{ $th['status'] }}" data-company="{{ strtolower($th['name']) }}" data-code="{{ strtolower($th['code']) }}" data-db="{{ strtolower($th['db_name']) }}">
                         <!-- Checkbox -->
                         <td style="text-align: center;">
                             <input type="checkbox" class="tenant-db-checkbox" value="{{ $th['company_id'] }}" style="cursor: pointer;" />
@@ -999,7 +1349,7 @@
                         <!-- Company with Logo Image -->
                         <td>
                             <div style="display: flex; align-items: center; gap: 10px;">
-                                <div style="width: 32px; height: 32px; border-radius: 8px; background: #f1f5f9; color: #334155; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 12px; overflow: hidden; flex-shrink: 0; border: 1px solid var(--border-color);">
+                                <div style="width: 32px; height: 32px; border-radius: 8px; background: var(--bg-subtle); color: var(--text-main); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 12px; overflow: hidden; flex-shrink: 0; border: 1px solid var(--border-color);">
                                     @if(!empty($th['logo_url']))
                                         <img src="{{ $th['logo_url'] }}" alt="{{ $th['name'] }}" style="width: 100%; height: 100%; object-fit: cover;" />
                                     @else
@@ -1014,7 +1364,7 @@
 
                         <!-- Tenant ID -->
                         <td>
-                            <span style="font-family: monospace; font-size: 11.5px; font-weight: 700; background: #f1f5f9; color: #475569; padding: 2px 8px; border-radius: 4px;">
+                            <span style="font-family: monospace; font-size: 11.5px; font-weight: 700; background: var(--bg-subtle); color: var(--text-muted); padding: 2px 8px; border-radius: 4px; border: 1px solid var(--border-color);">
                                 {{ $th['code'] }}
                             </span>
                         </td>
@@ -1028,31 +1378,33 @@
 
                         <!-- Connection -->
                         <td style="text-align: center;">
-                            <span style="color: var(--success); font-weight: 700; font-size: 12px;"><i class="fas fa-link"></i> {{ $th['connection'] }}</span>
+                            <span data-health-cell="connection" title="{{ $th['error'] ?? '' }}" style="color: {{ $th['connected'] ? 'var(--success)' : '#dc2626' }}; font-weight: 700; font-size: 12px;"><i class="fas {{ $th['connected'] ? 'fa-link' : 'fa-link-slash' }}"></i> {{ $th['connection'] }}</span>
                         </td>
 
                         <!-- Latency -->
-                        <td style="text-align: center; font-family: monospace; font-weight: 700; color: var(--text-main);">
+                        <td data-health-cell="latency" style="text-align: center; font-family: monospace; font-weight: 700; color: var(--text-main);">
                             {{ $th['latency_ms'] }}
                         </td>
 
                         <!-- Storage Usage -->
-                        <td style="text-align: center; font-family: monospace; font-weight: 700; color: {{ $th['status'] === 'warning' ? '#d97706' : 'var(--text-main)' }};">
+                        <td data-health-cell="storage" title="{{ $th['storage_detail'] ?? '' }}" style="text-align: center; font-family: monospace; font-weight: 700; color: {{ $th['status'] === 'warning' ? '#d97706' : 'var(--text-main)' }};">
                             {{ $th['storage_pct'] }}
                         </td>
 
                         <!-- Health Status -->
-                        <td style="text-align: center;">
+                        <td data-health-cell="status" style="text-align: center;">
                             @if($th['status'] === 'healthy')
                                 <span class="service-status-pill status-operational"><i class="fas fa-check-circle"></i> Healthy</span>
-                            @else
+                            @elseif($th['status'] === 'warning')
                                 <span class="service-status-pill status-degraded"><i class="fas fa-exclamation-triangle"></i> Warning</span>
+                            @else
+                                <span class="service-status-pill status-down"><i class="fas fa-circle-xmark"></i> Down</span>
                             @endif
                         </td>
 
                         <!-- Last Check -->
-                        <td style="font-size: 11.5px; color: var(--text-subtle);">
-                            {{ $th['last_check'] }}
+                        <td style="font-size: 11.5px; color: var(--text-subtle); white-space: nowrap;">
+                            <span data-health-cell="last-check" data-relative-time="{{ $th['last_check_iso'] }}" title="{{ $th['last_check_at'] }}">{{ $th['last_check'] }}</span>
                         </td>
 
                         <!-- Actions -->
@@ -1064,6 +1416,10 @@
                                     data-db="{{ $th['db_name'] }}"
                                     data-latency="{{ $th['latency_ms'] }}"
                                     data-storage="{{ $th['storage_pct'] }}"
+                                    data-storage-detail="{{ $th['storage_detail'] ?? '' }}"
+                                    data-tables="{{ $th['tables'] ?? '' }}"
+                                    data-error="{{ $th['error'] ?? '' }}"
+                                    data-checked="{{ $th['last_check_at'] }}"
                                     data-status="{{ $th['status'] }}"
                                     data-logo="{{ $th['logo_url'] ?? '' }}"
                                     style="padding: 5px 10px; font-size: 12px;">
@@ -1077,7 +1433,7 @@
         </div>
 
         <!-- Table Footer / Pagination -->
-        <div style="padding: 12px 20px; background: #f8fafc; border-top: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; font-size: 12.5px;">
+        <div class="db-table-footer" style="padding: 12px 20px; background: var(--bg-subtle); border-top: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; font-size: 12.5px;">
             <div style="color: var(--text-muted); font-weight: 500;" id="healthTableInfo">
                 Showing 1 to {{ count($tenantHealthData) }} of {{ count($tenantHealthData) }} database environments
             </div>
@@ -1175,24 +1531,26 @@
                     Active Incidents &amp; Alerts
                 </div>
             </div>
-            <div style="display: flex; flex-direction: column; gap: 12px;">
-                @forelse($incidents as $inc)
-                <div style="display: flex; align-items: flex-start; gap: 12px; padding: 12px; background: var(--bg-subtle); border-radius: 8px; border-left: 3px solid {{ $inc['severity'] === 'warning' ? 'var(--warning)' : 'var(--primary)' }};">
+            <div style="display: flex; flex-direction: column; gap: 12px;" id="activeIncidentsList">
+                @foreach($incidents as $inc)
+                <div class="incident-item-row" data-incident-id="{{ $inc['id'] }}" style="display: flex; align-items: flex-start; gap: 12px; padding: 12px; background: var(--bg-subtle); border-radius: 8px; border-left: 3px solid {{ $inc['severity'] === 'warning' ? 'var(--warning)' : 'var(--primary)' }};">
                     <div style="flex: 1;">
                         <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 2px;">
-                            <span style="font-family: monospace; font-size: 11px; font-weight: 800; color: #475569;">{{ $inc['id'] }}</span>
+                            <span class="incident-id-badge" style="font-family: monospace; font-size: 11px; font-weight: 800; color: #475569;">{{ $inc['id'] }}</span>
                             <strong style="font-size: 12.5px; color: var(--text-main);">{{ $inc['title'] }}</strong>
                         </div>
                         <div style="font-size: 11px; color: var(--text-subtle);">Target: {{ $inc['company'] }} • {{ $inc['service'] }} • {{ $inc['detected'] }}</div>
                     </div>
-                    <button class="btn-action-secondary" style="padding: 3px 8px; font-size: 11px;">Dismiss</button>
+                    <button type="button"
+                            class="btn-action-secondary dismiss-incident-btn"
+                            data-dismiss-url="{{ route('super-admin.system-health.incidents.dismiss', $inc['id']) }}"
+                            style="padding: 3px 8px; font-size: 11px; flex-shrink: 0;">Dismiss</button>
                 </div>
-                @empty
-                <div style="text-align: center; color: var(--success); font-weight: 700; padding: 20px; font-size: 13px;">
+                @endforeach
+                <div id="noActiveIncidents" style="text-align: center; color: var(--success); font-weight: 700; padding: 20px; font-size: 13px; {{ count($incidents) ? 'display: none;' : '' }}">
                     <i class="fas fa-circle-check" style="font-size: 24px; margin-bottom: 6px; display: block;"></i>
                     No active system incidents reported. All monitored services operating normally.
                 </div>
-                @endforelse
             </div>
         </div>
 
@@ -1241,7 +1599,7 @@
             </p>
 
             <!-- Metrics grid -->
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px;">
+            <div class="drawer-metrics-grid">
                 <div style="background: var(--bg-subtle); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
                     <span style="font-size: 11px; color: var(--text-subtle); font-weight: 700; text-transform: uppercase;">Response Latency</span>
                     <div style="font-size: 20px; font-weight: 800; color: var(--primary);" id="drawerServiceLatency">24 ms</div>
@@ -1257,12 +1615,19 @@
             <div style="display: flex; flex-direction: column; gap: 8px; font-size: 12px;" id="drawerChecksList">
                 <div style="display: flex; justify-content: space-between; padding: 8px 10px; background: var(--bg-subtle); border-radius: 6px; border: 1px solid var(--border-color);">
                     <span><strong style="color: var(--text-main);">Connection check passed</strong></span>
+                    <span style="color: var(--success); font-weight: 700;">OK</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- 10. TENANT DATABASE DIAGNOSTICS MODAL -->
 <div class="drawer-overlay" id="tenantDiagnosticsModal" style="align-items: center; justify-content: center; z-index: 1050;">
-    <div style="background: #ffffff; border-radius: var(--radius-lg); width: 620px; max-width: 92vw; max-height: 90vh; overflow: hidden; display: flex; flex-direction: column; box-shadow: var(--shadow-lg); border: 1px solid var(--border-color);">
-        <div style="padding: 18px 24px; background: #f8fafc; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between;">
+    <div class="diag-modal-box" style="background: var(--bg-surface); border-radius: var(--radius-lg); width: 620px; max-width: 92vw; max-height: 90vh; overflow: hidden; display: flex; flex-direction: column; box-shadow: var(--shadow-lg); border: 1px solid var(--border-color);">
+        <div class="diag-modal-header" style="padding: 18px 24px; background: var(--bg-subtle); border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between;">
             <div style="display: flex; align-items: center; gap: 12px;">
-                <div id="diagLogoBox" style="width: 40px; height: 40px; border-radius: 10px; background: #f1f5f9; color: #334155; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 14px; overflow: hidden; border: 1px solid var(--border-color); flex-shrink: 0;">
+                <div id="diagLogoBox" style="width: 40px; height: 40px; border-radius: 10px; background: var(--bg-subtle); color: var(--text-main); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 14px; overflow: hidden; border: 1px solid var(--border-color); flex-shrink: 0;">
                     SB
                 </div>
                 <div>
@@ -1298,7 +1663,7 @@
 
             <!-- Diagnostics Execution Console -->
             <h4 style="font-size: 12px; font-weight: 800; color: var(--text-subtle); text-transform: uppercase; margin: 0 0 10px 0;">Diagnostic Suite Execution Log</h4>
-            <div style="background: #0f172a; color: #f8fafc; border-radius: 8px; padding: 14px; font-family: monospace; font-size: 12px; line-height: 1.6; max-height: 220px; overflow-y: auto;" id="diagConsoleLog">
+            <div style="background: #070B1A; color: #f8fafc; border-radius: 8px; padding: 14px; font-family: monospace; font-size: 12px; line-height: 1.6; max-height: 220px; overflow-y: auto; border: 1px solid var(--border-color);" id="diagConsoleLog">
                 <div><span style="color: #64748b;">[00:00.01]</span> <span style="color: #38bdf8;">PING</span> Connecting to tenant database host... <strong style="color: #4ade80;">[ PASSED ]</strong></div>
                 <div><span style="color: #64748b;">[00:00.04]</span> <span style="color: #38bdf8;">POOL</span> Verifying PDO connection pool load... <strong style="color: #4ade80;">[ PASSED - 42% Load ]</strong></div>
                 <div><span style="color: #64748b;">[00:00.08]</span> <span style="color: #38bdf8;">SCHEMA</span> Validating 48 tenant table schemas... <strong style="color: #4ade80;">[ PASSED - Valid ]</strong></div>
@@ -1307,7 +1672,7 @@
             </div>
         </div>
 
-        <div style="padding: 14px 24px; background: #f8fafc; border-top: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between;">
+        <div class="diag-modal-footer" style="padding: 14px 24px; background: var(--bg-subtle); border-top: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between;">
             <button class="btn-action-secondary" id="retestDiagBtn" style="font-size: 12px;">
                 <i class="fas fa-arrows-rotate"></i> Re-Run Diagnostics
             </button>
@@ -1322,6 +1687,86 @@
 
 @push('scripts')
 <script>
+// "x sec ago" that keeps ticking between checks; the exact check time stays in the tooltip.
+function healthRelativeTime(iso) {
+    const seconds = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 1000));
+    if (!Number.isFinite(seconds)) return '';
+    if (seconds < 5) return 'Just now';
+    if (seconds < 60) return `${seconds} sec ago`;
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes} min${minutes > 1 ? 's' : ''} ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+    const days = Math.floor(hours / 24);
+    return `${days} day${days > 1 ? 's' : ''} ago`;
+}
+
+function refreshHealthTimes() {
+    document.querySelectorAll('[data-relative-time]').forEach(el => {
+        const text = healthRelativeTime(el.dataset.relativeTime);
+        if (text) el.textContent = text;
+    });
+}
+
+const healthStatusPills = {
+    healthy: '<span class="service-status-pill status-operational"><i class="fas fa-check-circle"></i> Healthy</span>',
+    warning: '<span class="service-status-pill status-degraded"><i class="fas fa-exclamation-triangle"></i> Warning</span>',
+    down: '<span class="service-status-pill status-down"><i class="fas fa-circle-xmark"></i> Down</span>',
+};
+
+// Apply a live check result (POST system-health/check) to the pool header and tenant rows.
+function applyTenantHealth(data) {
+    if (data.pool) {
+        const pool = data.pool;
+        const set = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
+        set('dbPoolActive', pool.active !== null ? `${pool.active} / ${pool.max}` : '—');
+        set('dbPoolLoad', pool.load_pct !== null ? `${pool.load_pct}%` : '—');
+        set('dbPoolPing', pool.ping_ms !== null ? `${pool.ping_ms} ms` : '—');
+    }
+    (data.tenants || []).forEach(t => {
+        const row = document.querySelector(`.tenant-health-row[data-tenant-id="${t.company_id}"]`);
+        if (!row) return;
+        row.dataset.status = t.status;
+        const cell = name => row.querySelector(`[data-health-cell="${name}"]`);
+        const connection = cell('connection');
+        if (connection) {
+            connection.style.color = t.connected ? 'var(--success)' : '#dc2626';
+            connection.title = t.error || '';
+            connection.innerHTML = `<i class="fas ${t.connected ? 'fa-link' : 'fa-link-slash'}"></i> ${t.connection}`;
+        }
+        if (cell('latency')) cell('latency').textContent = t.latency_ms;
+        const storage = cell('storage');
+        if (storage) {
+            storage.textContent = t.storage_pct;
+            storage.title = t.storage_detail || '';
+            storage.style.color = t.status === 'warning' ? '#d97706' : 'var(--text-main)';
+        }
+        if (cell('status')) cell('status').innerHTML = healthStatusPills[t.status] || healthStatusPills.down;
+        const lastCheck = cell('last-check');
+        if (lastCheck) {
+            lastCheck.dataset.relativeTime = t.last_check_iso;
+            lastCheck.title = t.last_check_at;
+            lastCheck.textContent = healthRelativeTime(t.last_check_iso);
+        }
+        const diag = row.querySelector('.run-db-diagnostics-btn');
+        if (diag) {
+            diag.dataset.latency = t.latency_ms;
+            diag.dataset.storage = t.storage_pct;
+            diag.dataset.storageDetail = t.storage_detail || '';
+            diag.dataset.tables = t.tables ?? '';
+            diag.dataset.error = t.error || '';
+            diag.dataset.checked = t.last_check_at;
+            diag.dataset.status = t.status;
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    refreshHealthTimes();
+    setInterval(refreshHealthTimes, 5000);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshHealthTimes(); });
+});
+
 document.addEventListener('DOMContentLoaded', function() {
     // 1. Auto Refresh Engine
     const autoRefreshSelect = document.getElementById('autoRefreshSelect');
@@ -1348,6 +1793,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (data.timestamp) {
                 lastCheckedText.textContent = 'Last checked: ' + data.timestamp;
             }
+            applyTenantHealth(data);
         })
         .catch(err => {
             manualRefreshBtn.disabled = false;
@@ -1366,6 +1812,52 @@ document.addEventListener('DOMContentLoaded', function() {
     autoRefreshSelect.addEventListener('change', setupAutoRefresh);
     manualRefreshBtn.addEventListener('click', triggerCheck);
     setupAutoRefresh();
+
+    // Dismiss Active Incidents (persisted server-side)
+    document.querySelectorAll('.dismiss-incident-btn').forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const row = btn.closest('.incident-item-row');
+            const originalLabel = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = 'Dismissing...';
+
+            fetch(btn.dataset.dismissUrl, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                }
+            })
+            .then(function (response) {
+                if (!response.ok) {
+                    throw new Error('Request failed (' + response.status + ')');
+                }
+                return response.json();
+            })
+            .then(function () {
+                row.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
+                row.style.opacity = '0';
+                row.style.transform = 'translateX(12px)';
+                setTimeout(function () {
+                    row.remove();
+                    if (!document.querySelector('#activeIncidentsList .incident-item-row')) {
+                        const empty = document.getElementById('noActiveIncidents');
+                        if (empty) empty.style.display = '';
+                    }
+                }, 250);
+            })
+            .catch(function () {
+                btn.disabled = false;
+                btn.textContent = originalLabel;
+                alert('Could not dismiss this incident. Please try again.');
+            });
+        });
+    });
 
     // 2. Slide-Over Service Details Drawer
     const drawerOverlay = document.getElementById('serviceDetailsDrawer');
@@ -1523,48 +2015,55 @@ document.addEventListener('DOMContentLoaded', function() {
     const retestDiagBtn = document.getElementById('retestDiagBtn');
     const diagBtns = document.querySelectorAll('.run-db-diagnostics-btn');
 
+    let currentDiagBtn = null;
+    const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+
+    // Real results of the last live check for this tenant (no simulated steps).
+    function renderDiagnostics(btn) {
+        const d = btn.dataset;
+        const statusVal = document.getElementById('diagStatusVal');
+        const statusMap = { healthy: ['var(--success)', '● Healthy'], warning: ['#d97706', '● Warning'], down: ['#dc2626', '● Down'] };
+        const [color, label] = statusMap[d.status] || statusMap.down;
+        statusVal.style.color = color;
+        statusVal.textContent = label;
+        document.getElementById('diagLatencyVal').textContent = d.latency;
+        document.getElementById('diagStorageVal').textContent = d.storage;
+
+        const pass = text => `<strong style="color: #4ade80;">[ ${escapeHtml(text)} ]</strong>`;
+        const fail = text => `<strong style="color: #f87171;">[ ${escapeHtml(text)} ]</strong>`;
+        const warn = text => `<strong style="color: #fbbf24;">[ ${escapeHtml(text)} ]</strong>`;
+        const line = (tag, text, result) => `<div><span style="color: #38bdf8;">${tag}</span> ${escapeHtml(text)} ${result}</div>`;
+        const connected = d.status !== 'down';
+        let html = `<div><span style="color: #64748b;">Checked at ${escapeHtml(d.checked)}</span></div>`;
+        html += line('PING', `Connecting to tenant database (${d.db})...`, connected ? pass(`PASSED - ${d.latency}`) : fail('FAILED'));
+        if (connected) {
+            html += line('SCHEMA', 'Counting tenant tables...', pass(`${d.tables} tables`));
+            html += line('STORAGE', 'Measuring database size...', d.status === 'warning' && d.storage.endsWith('%') && parseInt(d.storage, 10) >= 80
+                ? warn(`HIGH - ${d.storageDetail || d.storage}`) : pass(d.storageDetail || d.storage));
+        } else if (d.error) {
+            html += `<div style="color: #f87171;">${escapeHtml(d.error)}</div>`;
+        }
+        document.getElementById('diagConsoleLog').innerHTML = html;
+    }
+
     diagBtns.forEach(btn => {
         btn.addEventListener('click', function() {
             const name = this.getAttribute('data-name');
-            const code = this.getAttribute('data-code');
-            const db = this.getAttribute('data-db');
-            const latency = this.getAttribute('data-latency');
-            const storage = this.getAttribute('data-storage');
-            const status = this.getAttribute('data-status');
             const logo = this.getAttribute('data-logo');
+            currentDiagBtn = this;
 
             document.getElementById('diagCompanyName').textContent = name;
-            document.getElementById('diagTenantCode').textContent = code;
-            document.getElementById('diagDbName').textContent = db;
-            document.getElementById('diagLatencyVal').textContent = latency;
-            document.getElementById('diagStorageVal').textContent = storage;
+            document.getElementById('diagTenantCode').textContent = this.getAttribute('data-code');
+            document.getElementById('diagDbName').textContent = this.getAttribute('data-db');
 
             const logoBox = document.getElementById('diagLogoBox');
             if (logo && logo.trim() !== '') {
-                logoBox.innerHTML = `<img src="${logo}" alt="${name}" style="width: 100%; height: 100%; object-fit: cover;" />`;
+                logoBox.innerHTML = `<img src="${escapeHtml(logo)}" alt="${escapeHtml(name)}" style="width: 100%; height: 100%; object-fit: cover;" />`;
             } else {
-                logoBox.innerHTML = name.substring(0, 2).toUpperCase();
+                logoBox.textContent = name.substring(0, 2).toUpperCase();
             }
 
-            const statusVal = document.getElementById('diagStatusVal');
-            if (status === 'healthy') {
-                statusVal.style.color = 'var(--success)';
-                statusVal.textContent = '● Healthy';
-            } else {
-                statusVal.style.color = '#d97706';
-                statusVal.textContent = '● Warning';
-            }
-
-            // Simulate diagnostic execution console output
-            const consoleLog = document.getElementById('diagConsoleLog');
-            consoleLog.innerHTML = `
-                <div><span style="color: #64748b;">[00:00.01]</span> <span style="color: #38bdf8;">PING</span> Connecting to tenant host (${db})... <strong style="color: #4ade80;">[ PASSED - ${latency} ]</strong></div>
-                <div><span style="color: #64748b;">[00:00.04]</span> <span style="color: #38bdf8;">POOL</span> Checking PDO connection pool... <strong style="color: #4ade80;">[ PASSED - Pool OK ]</strong></div>
-                <div><span style="color: #64748b;">[00:00.08]</span> <span style="color: #38bdf8;">SCHEMA</span> Validating tenant table schemas... <strong style="color: #4ade80;">[ PASSED - 48 Tables Validated ]</strong></div>
-                <div><span style="color: #64748b;">[00:00.12]</span> <span style="color: #38bdf8;">INDEX</span> Checking index & query performance... <strong style="color: #4ade80;">[ PASSED - 0 Deadlocks ]</strong></div>
-                <div><span style="color: #64748b;">[00:00.15]</span> <span style="color: #38bdf8;">STORAGE</span> Verifying storage quota (${storage})... <strong style="color: #4ade80;">[ PASSED - Normal ]</strong></div>
-            `;
-
+            renderDiagnostics(this);
             tenantDiagModal.classList.add('open');
         });
     });
@@ -1592,16 +2091,21 @@ document.addEventListener('DOMContentLoaded', function() {
     if (retestDiagBtn) {
         retestDiagBtn.addEventListener('click', function() {
             const consoleLog = document.getElementById('diagConsoleLog');
-            consoleLog.innerHTML = `<div><span style="color: #eab308;"><i class="fas fa-spinner fa-spin"></i> Running diagnostic test suite...</span></div>`;
-            setTimeout(() => {
-                consoleLog.innerHTML = `
-                    <div><span style="color: #64748b;">[00:00.01]</span> <span style="color: #38bdf8;">PING</span> Re-pinging tenant database host... <strong style="color: #4ade80;">[ PASSED ]</strong></div>
-                    <div><span style="color: #64748b;">[00:00.04]</span> <span style="color: #38bdf8;">POOL</span> Re-checking connection pool load... <strong style="color: #4ade80;">[ PASSED - Pool OK ]</strong></div>
-                    <div><span style="color: #64748b;">[00:00.08]</span> <span style="color: #38bdf8;">SCHEMA</span> Re-checking table schemas... <strong style="color: #4ade80;">[ PASSED - 48 Tables Validated ]</strong></div>
-                    <div><span style="color: #64748b;">[00:00.12]</span> <span style="color: #38bdf8;">INDEX</span> Re-verifying indexes & query plan... <strong style="color: #4ade80;">[ PASSED - 0 Deadlocks ]</strong></div>
-                    <div><span style="color: #64748b;">[00:00.15]</span> <span style="color: #38bdf8;">STORAGE</span> Re-verifying storage logs... <strong style="color: #4ade80;">[ PASSED - Capacity OK ]</strong></div>
-                `;
-            }, 600);
+            consoleLog.innerHTML = `<div><span style="color: #eab308;"><i class="fas fa-spinner fa-spin"></i> Running live database check...</span></div>`;
+            retestDiagBtn.disabled = true;
+            fetch("{{ route('super-admin.system-health.check') }}", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' }
+            })
+            .then(res => res.json())
+            .then(data => {
+                applyTenantHealth(data);
+                if (currentDiagBtn) renderDiagnostics(currentDiagBtn);
+            })
+            .catch(err => {
+                consoleLog.innerHTML = `<div style="color: #f87171;">Check failed: ${escapeHtml(err.message)}</div>`;
+            })
+            .finally(() => { retestDiagBtn.disabled = false; });
         });
     }
 });

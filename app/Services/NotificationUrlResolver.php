@@ -32,10 +32,40 @@ class NotificationUrlResolver
 
         return self::fromPrimaryIdentifiers($data)
             ?? self::fromEntity($data)
+            ?? self::fromSettingModule($data)
+            ?? self::fromStoredUrl($data)
             ?? self::fromWorkflowType($data)
             ?? self::fromPeopleIdentifiers($data)
-            ?? self::fromStoredUrl($data)
             ?? route('notifications.all');
+    }
+
+    private static function fromSettingModule(array $data): ?string
+    {
+        $settingModule = data_get($data, 'setting_module');
+        $moduleRouteMap = [
+            'company-profile' => 'settings.company',
+            'company_profile' => 'settings.company',
+            'organization-details' => 'admin.settings.organization-details',
+            'business-address' => 'admin.settings.business-address.index',
+            'work-schedule' => 'admin.settings.work-schedule',
+            'leave-settings' => 'admin.settings.leave',
+            'terms-policy' => 'admin.settings.terms-policy',
+            'notification-settings' => 'admin.settings.notification',
+            'security-settings' => 'admin.settings.security',
+            'email-settings' => 'admin.settings.email',
+            'document-settings' => 'admin.settings.document',
+            'employee-id' => 'admin.settings.employee-id',
+            'recruitment' => 'admin.settings.recruitment',
+            'performance' => 'admin.settings.performance',
+            'app-settings' => 'admin.settings.app',
+            'localization' => 'admin.settings.localization',
+        ];
+
+        if ($settingModule && isset($moduleRouteMap[$settingModule]) && Route::has($moduleRouteMap[$settingModule])) {
+            return route($moduleRouteMap[$settingModule]);
+        }
+
+        return null;
     }
 
     private static function fromPrimaryIdentifiers(array $data): ?string

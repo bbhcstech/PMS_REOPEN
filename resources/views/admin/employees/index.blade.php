@@ -5,27 +5,26 @@
 @endsection
 
 @section('content')
-<div class="employee-dashboard !min-h-screen !overflow-x-hidden !px-3 !py-4 sm:!px-5 sm:!py-5 lg:!px-8 lg:!py-7">
+<div id="employeeDirectoryPage" class="employee-dashboard employee-directory-modern">
 
-    {{-- Breadcrumb with Animation --}}
-    <div class="breadcrumb-wrapper animate-slideDown !mb-4 !overflow-x-auto !rounded-[18px]">
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item">
-                    <a href="{{ route('dashboard') }}">
-                        <i class="fas fa-home me-1"></i> Dashboard
-                    </a>
-                </li>
-                <li class="breadcrumb-item active">
-                    <i class="fas fa-users me-1"></i> Employees
-                </li>
-            </ol>
-        </nav>
+    <div class="emp-breadcrumb-row">
+        <div class="breadcrumb-wrapper">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="{{ route('dashboard') }}">
+                            <i class="fas fa-house" aria-hidden="true"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">Employees</li>
+                </ol>
+            </nav>
+        </div>
     </div>
 
     @php
         // Calculate employee counts for statistics - FUNCTIONALITY UNCHANGED
-        $totalEmployees = $employees->count();
+        $totalEmployees = $companyEmployeeTotal ?? $employees->count();
         $activeEmployees = $employees->where('employeeDetail.status', 'Active')->count();
         $inactiveEmployees = $employees->where('employeeDetail.status', 'Inactive')->count();
         $noticeEmployees = $employees->filter(function($emp) {
@@ -47,113 +46,86 @@
             if ($hasNotice || $hasProbation) return false;
             return true;
         });
+
+        // Reporting flow (top manager -> direct manager) shown under "Reports To"; same links as the Org Tree.
+        $reportingLinks = collect($employeeDetails ?? [])->mapWithKeys(fn ($d) => [(int) $d->user_id => ['to' => (int) $d->reporting_to, 'name' => $d->user?->name]]);
+        $reportingFlow = function ($employee) use ($reportingLinks) {
+            $chain = [];
+            $seen = [(int) $employee->id => true];
+            $managerId = (int) ($employee->employeeDetail?->reporting_to ?? 0);
+            while ($managerId && ! isset($seen[$managerId]) && count($chain) < 8) {
+                $seen[$managerId] = true;
+                $name = $reportingLinks[$managerId]['name'] ?? null;
+                if (! $name) break;
+                array_unshift($chain, $name);
+                $managerId = $reportingLinks[$managerId]['to'] ?? 0;
+            }
+            return $chain;
+        };
+
+        $emptyCompanyName = ($selectedCompanyId ? $companies->firstWhere('id', $selectedCompanyId)?->name : null)
+            ?: (session('current_company_name') ?: (auth()->user()?->company?->name ?? config('app.name')));
     @endphp
 
-    {{-- Header Section --}}
-    <div class="header-section animate-fadeIn !rounded-[22px] !p-4 sm:!p-5 lg:!p-6">
-        <div class="header-content !flex !flex-col !gap-4 lg:!flex-row lg:!items-center lg:!justify-between">
-            <div class="title-wrapper !flex !items-center !gap-3 sm:!gap-4">
-                <div class="icon-circle animate-float !shrink-0">
-                    <i class="fas fa-users"></i>
-                </div>
-                <div>
-                    <h1 class="!text-xl !font-black !leading-tight sm:!text-2xl lg:!text-3xl">Employee Management</h1>
-                    <p class="subtitle !mt-1 !text-sm sm:!text-base">Manage all employees, their details, and permissions</p>
-                </div>
+    <header class="directory-hero">
+        <div class="directory-hero-intro">
+            <div class="directory-hero-icon" aria-hidden="true">
+                <i class="fas fa-address-book"></i>
             </div>
-            <div class="action-buttons !flex !w-full !flex-wrap !items-center !gap-2 sm:!gap-3 lg:!w-auto lg:!justify-end">
-                <!-- Quick Actions Dropdown -->
-                <div class="quick-actions">
-                    <div class="dropdown">
-                        <button class="btn btn-outline-light dropdown-toggle !w-full !justify-center sm:!w-auto" type="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-bolt me-2"></i>Quick Actions
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="{{ route('employees.archive') }}"><i class="fas fa-box-archive me-2 text-success"></i>Archived Employees</a></li>
-                            <li><a class="dropdown-item" href="#" id="bulkDeleteTrigger"><i class="fas fa-box-archive me-2 text-danger"></i>Archive Inactive</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                        </ul>
-                    </div>
-                </div>
-
-                <!-- Archived Employees Button -->
-                <a href="{{ route('employees.archive') }}" class="btn btn-archive-employees !min-w-[150px] !justify-center">
-                    <i class="fas fa-box-archive me-2"></i>
-                    <span>Archived</span>
-                </a>
-
-                <!-- Add Employee Button -->
-                <a href="{{ route('employees.create') }}" class="btn btn-add animate-pulse !min-w-[140px] !justify-center" style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important;">
-                    <i class="fas fa-user-plus me-2" style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important;"></i>
-                    <span style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important;">Add Employee</span>
-                </a>
-
-                <!-- Invite Button -->
-                <button type="button" class="btn btn-invite animate-pulse !min-w-[110px] !justify-center" data-bs-toggle="modal" data-bs-target="#inviteModal" style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important;">
-                    <i class="fas fa-envelope me-2" style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important;"></i>
-                    <span style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important;">Invite</span>
+            <div>
+                <h1>Employee Management</h1>
+                <p>Manage employee records and permissions.</p>
+            </div>
+        </div>
+        <div class="directory-hero-actions">
+            <div class="dropdown">
+                <button class="btn directory-button dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false">
+                    <i class="fas fa-bolt" aria-hidden="true"></i>Quick Actions
                 </button>
+                <ul class="dropdown-menu directory-quick-menu">
+                    <li><a class="dropdown-item" href="{{ route('employees.archive') }}"><i class="fas fa-box-archive me-2" aria-hidden="true"></i>Archived Employees</a></li>
+                    <li><a class="dropdown-item" href="#" id="bulkDeleteTrigger"><i class="fas fa-user-slash me-2 text-danger" aria-hidden="true"></i>Archive Inactive</a></li>
+                </ul>
             </div>
+            <a href="{{ route('employees.archive') }}" class="btn directory-button">
+                <i class="fas fa-box-archive" aria-hidden="true"></i>Archived
+            </a>
+            <a href="{{ route('employees.create') }}" class="btn directory-button directory-button-primary">
+                <i class="fas fa-user-plus" aria-hidden="true"></i>Add Employee
+            </a>
+            <button type="button" class="btn directory-button" data-bs-toggle="modal" data-bs-target="#inviteModal">
+                <i class="fas fa-envelope" aria-hidden="true"></i>Invite
+            </button>
         </div>
-    </div>
+    </header>
 
-    {{-- Stats Cards - 5 Cards Perfect Alignment with Animation --}}
-    <div class="stats-grid !grid !grid-cols-1 !gap-3 sm:!grid-cols-2 sm:!gap-4 xl:!grid-cols-4 xl:!gap-5">
-        <!-- Total Employees Card -->
-        <div class="stat-card total animate-slideUp" style="animation-delay: 0.1s;">
-            <div class="stat-icon">
-                <i class="fas fa-users"></i>
-            </div>
-            <div class="stat-content">
-                <span class="stat-label">Total Employees</span>
-                <span class="stat-value">{{ $totalEmployees }}</span>
-            </div>
-            <div class="stat-glow"></div>
+    <dl class="directory-metrics" aria-label="Employee totals">
+        <div class="directory-metric">
+            <dt>Total Employees</dt>
+            <dd>{{ $totalEmployees }} <span class="directory-metric-icon" aria-hidden="true"><i class="fas fa-users"></i></span></dd>
         </div>
-
-        <!-- Active Employees Card -->
-        <div class="stat-card active animate-slideUp" style="animation-delay: 0.2s;">
-            <div class="stat-icon">
-                <i class="fas fa-user-check"></i>
-            </div>
-            <div class="stat-content">
-                <span class="stat-label">Active</span>
-                <span class="stat-value">{{ $activeEmployees }}</span>
-            </div>
-            <div class="stat-glow"></div>
+        <div class="directory-metric directory-metric-active">
+            <dt>Active</dt>
+            <dd>{{ $activeEmployees }} <span class="directory-metric-icon" aria-hidden="true"><i class="fas fa-user-check"></i></span></dd>
         </div>
-
-        <!-- Inactive Employees Card -->
-        <div class="stat-card inactive animate-slideUp" style="animation-delay: 0.3s;">
-            <div class="stat-icon">
-                <i class="fas fa-user-slash"></i>
-            </div>
-            <div class="stat-content">
-                <span class="stat-label">Inactive</span>
-                <span class="stat-value">{{ $inactiveEmployees }}</span>
-            </div>
-            <div class="stat-glow"></div>
+        <div class="directory-metric directory-metric-inactive">
+            <dt>Inactive</dt>
+            <dd>{{ $inactiveEmployees }} <span class="directory-metric-icon" aria-hidden="true"><i class="fas fa-user-slash"></i></span></dd>
         </div>
-
-        <!-- On Notice Card -->
-        <div class="stat-card notice animate-slideUp" style="animation-delay: 0.4s;">
-            <div class="stat-icon">
-                <i class="fas fa-clock"></i>
-            </div>
-            <div class="stat-content">
-                <span class="stat-label">On Notice</span>
-                <span class="stat-value">{{ $noticeEmployees }}</span>
-            </div>
-            <div class="stat-glow"></div>
+        <div class="directory-metric directory-metric-notice">
+            <dt>On Notice</dt>
+            <dd>{{ $noticeEmployees }} <span class="directory-metric-icon" aria-hidden="true"><i class="fas fa-clock"></i></span></dd>
         </div>
-    </div>
+    </dl>
 
-    @if(auth()->user()?->normalizedRole() === 'admin')
-    {{-- Company Selector - SaaS company workspace filter --}}
-    <div class="company-switcher-grid !grid !grid-cols-1 !gap-3 sm:!grid-cols-2 lg:!grid-cols-3 2xl:!grid-cols-6 !mb-5">
+    @if(\App\Services\TenantScope::isPlatformAdmin())
+    {{-- Company Selector - SaaS company workspace filter (platform Super Admin only; company users see only their own company) --}}
+    <div class="company-switcher-grid !grid !grid-cols-1 !gap-3 sm:!grid-cols-2 lg:!grid-cols-3 2xl:!grid-cols-6 !mb-5" style="position: relative !important; z-index: 1 !important;">
         <a href="{{ route('employees.index', request()->except(['company_id', 'page'])) }}"
            class="company-switch-card {{ empty($selectedCompanyId) ? 'active' : '' }}">
-            <span class="company-switch-icon"><i class="fas fa-layer-group"></i></span>
+            <span class="company-switch-icon" style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important;">
+                <i class="fas fa-layer-group" style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important;"></i>
+            </span>
             <span class="company-switch-meta">
                 <strong>All Companies</strong>
                 <small>{{ $companyStats->sum('employees') }} employees</small>
@@ -166,11 +138,11 @@
             @endphp
             <a href="{{ route('employees.index', $companyQuery) }}"
                class="company-switch-card {{ (string) $selectedCompanyId === (string) $company->id ? 'active' : '' }}">
-                <span class="company-switch-icon">
+                <span class="company-switch-icon" style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important;">
                     @if($company->logo)
                         <img src="{{ asset($company->logo) }}" alt="{{ $company->name }}">
                     @else
-                        {{ strtoupper(substr($company->short_name ?: $company->company_code ?: $company->name, 0, 2)) }}
+                        <span style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important;">{{ strtoupper(substr($company->short_name ?: $company->company_code ?: $company->name, 0, 2)) }}</span>
                     @endif
                 </span>
                 <span class="company-switch-meta">
@@ -185,8 +157,6 @@
             <span>Company workspace</span>
             <a href="{{ route('attendance.index', ['company_id' => $selectedCompanyId]) }}"><i class="fas fa-calendar-check"></i> Attendance</a>
             <a href="{{ route('leaves.index', ['company_id' => $selectedCompanyId]) }}"><i class="fas fa-calendar-days"></i> Leaves</a>
-            <a href="{{ route('payroll.index', ['company_id' => $selectedCompanyId]) }}"><i class="fas fa-wallet"></i> Payroll</a>
-            <a href="{{ route('payroll.payslips.index', ['company_id' => $selectedCompanyId]) }}"><i class="fas fa-file-invoice-dollar"></i> Payslips</a>
         </div>
     @endif
     @endif
@@ -198,7 +168,7 @@
                 <div class="modal-header">
                     <h5 class="modal-title">
                         <i class="fas fa-paper-plane me-2"></i>
-                        Invite to Xinksoft Technologies
+                        Invite to {{ session('current_company_name') ?: (auth()->user()?->company?->name ?? config('app.name')) }}
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
@@ -231,7 +201,7 @@
                                     <label class="form-label fw-bold">Email Address <span class="text-danger">*</span></label>
                                     <div class="input-group">
                                         <span class="input-group-text"><i class="fas fa-at"></i></span>
-                                        <input type="email" name="email" id="inviteEmail" class="form-control" placeholder="e.g. johndoe@xinksoft.com" required>
+                                        <input type="email" name="email" id="inviteEmail" class="form-control" placeholder="e.g. name@example.com" autocomplete="email" required>
                                     </div>
                                 </div>
                                 <div class="mb-4">
@@ -245,23 +215,12 @@
                         <div class="tab-pane fade" id="invite-link" role="tabpanel">
                             <div class="alert alert-light border">
                                 <i class="fas fa-link text-primary me-2"></i>
-                                Create an invitation link that can be shared with multiple people.
+                                Create a signed link for one employee. It expires in 7 days and can be used once. Email delivery is not required.
                             </div>
 
                             <div class="mb-4">
-                                <label class="form-label fw-bold mb-3">Link Restrictions:</label>
-                                <div class="list-group">
-                                    <label class="list-group-item border-0 bg-light">
-                                        <input class="form-check-input me-2" type="radio" name="linkOption" id="anyEmail" checked>
-                                        <span class="fw-medium">Allow any email address</span>
-                                        <small class="text-muted d-block mt-1">Anyone with the link can join</small>
-                                    </label>
-                                    <label class="list-group-item border-0 bg-light mt-2">
-                                        <input class="form-check-input me-2" type="radio" name="linkOption" id="domainEmail">
-                                        <span class="fw-medium">Restrict to company domain</span>
-                                        <small class="text-muted d-block mt-1">Only @xinksoft.com emails allowed</small>
-                                    </label>
-                                </div>
+                                <label class="form-label fw-bold" for="inviteLinkEmail">Employee Email Address *</label>
+                                <input type="email" class="form-control" id="inviteLinkEmail" placeholder="name@example.com" autocomplete="email" required>
                             </div>
 
                             <div class="d-flex justify-content-end">
@@ -280,7 +239,7 @@
                                 <div class="input-group">
                                     <input type="text" class="form-control border-end-0" id="inviteLink" readonly>
                                     <button class="btn btn-outline-primary" type="button" id="copyLinkBtn">
-                                        <i class="fas fa-copy"></i>
+                                        <i class="fas fa-copy" aria-hidden="true"></i><span class="visually-hidden">Copy invitation link</span>
                                     </button>
                                     <button class="btn btn-outline-success" type="button" id="shareLinkBtn" title="Share via Email">
                                         <i class="fas fa-share-alt"></i>
@@ -328,6 +287,164 @@
         </div>
     </div>
 
+    {{-- Delete Employee: locked (needs inactive / no team) or typed confirmation for a permanent delete --}}
+    <div class="modal fade emp-lifecycle-modal" id="employeeDeleteModal" tabindex="-1" aria-labelledby="employeeDeleteTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="elm-head">
+                    <span class="elm-icon" id="employeeDeleteIcon" aria-hidden="true"><i class="fas fa-trash-can"></i></span>
+                    <div class="elm-head-text">
+                        <h5 class="modal-title" id="employeeDeleteTitle">Delete employee</h5>
+                        <p id="employeeDeleteSubtitle">This permanently removes the employee.</p>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="elm-body">
+                    <div class="elm-person">
+                        <span class="elm-avatar" id="employeeDeleteInitials" aria-hidden="true">E</span>
+                        <div>
+                            <strong id="employeeDeleteName">Employee</strong>
+                            <small id="employeeDeleteMeta"></small>
+                        </div>
+                        <span class="elm-pill" id="employeeDeleteStatus">Inactive</span>
+                    </div>
+
+                    <ol class="elm-steps" aria-label="Delete requirements">
+                        <li id="employeeDeleteStepInactive"><span class="elm-step-mark" aria-hidden="true"></span><span>Employee is marked <strong>Inactive</strong></span></li>
+                        <li id="employeeDeleteStepTeam"><span class="elm-step-mark" aria-hidden="true"></span><span>No team members report to this employee</span></li>
+                    </ol>
+
+                    <div class="elm-locked" id="employeeDeleteLocked">
+                        <p id="employeeDeleteLockedText"></p>
+                    </div>
+
+                    <form id="employeeDeleteForm" method="POST" action="#" class="elm-confirm">
+                        @csrf
+                        @method('DELETE')
+                        <div class="elm-warning">
+                            <i class="fas fa-triangle-exclamation" aria-hidden="true"></i>
+                            <div>
+                                <strong>This cannot be undone.</strong>
+                                The employee's login, profile and their personal records (attendance, leave and similar history) are removed for good.
+                                To keep history instead, use <em>Archive Employee</em> — it can be restored later.
+                            </div>
+                        </div>
+                        <label for="employeeDeleteConfirm" class="elm-label">Type <code id="employeeDeleteCode"></code> to confirm</label>
+                        <input type="text" id="employeeDeleteConfirm" name="confirm_code" class="elm-input" autocomplete="off" spellcheck="false" required>
+                    </form>
+                </div>
+                <div class="elm-foot">
+                    <button type="button" class="elm-btn is-ghost" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="elm-btn is-warning" id="employeeDeleteMakeInactive"><i class="fas fa-user-clock" aria-hidden="true"></i> Mark Inactive</button>
+                    <button type="submit" form="employeeDeleteForm" class="elm-btn is-danger" id="employeeDeleteSubmit" disabled><i class="fas fa-trash-can" aria-hidden="true"></i> Delete permanently</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Mark Inactive: step 1 before an employee can be deleted --}}
+    <div class="modal fade emp-lifecycle-modal" id="employeeInactiveModal" tabindex="-1" aria-labelledby="employeeInactiveTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <form class="modal-content" id="employeeInactiveForm" method="POST" action="#">
+                @csrf
+                <div class="elm-head">
+                    <span class="elm-icon is-warning" aria-hidden="true"><i class="fas fa-user-clock"></i></span>
+                    <div class="elm-head-text">
+                        <h5 class="modal-title" id="employeeInactiveTitle">Mark employee inactive</h5>
+                        <p>Inactive employees can then be archived or deleted.</p>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="elm-body">
+                    <div class="elm-person">
+                        <span class="elm-avatar" id="employeeInactiveInitials" aria-hidden="true">E</span>
+                        <div>
+                            <strong id="employeeInactiveName">Employee</strong>
+                            <small id="employeeInactiveMeta"></small>
+                        </div>
+                        <span class="elm-pill is-active">Active</span>
+                    </div>
+                    <label for="employeeInactiveDate" class="elm-label">Exit date</label>
+                    <input type="date" id="employeeInactiveDate" name="exit_date" class="elm-input" max="{{ now()->toDateString() }}" value="{{ now()->toDateString() }}" required>
+                    <p class="elm-hint">The employee's status changes to Inactive with this exit date. You can reactivate them later by editing their profile.</p>
+                </div>
+                <div class="elm-foot">
+                    <button type="button" class="elm-btn is-ghost" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="elm-btn is-warning" id="employeeInactiveSubmit"><i class="fas fa-user-clock" aria-hidden="true"></i> Mark Inactive</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <style>
+        .emp-lifecycle-modal {
+            --elm-surface: #ffffff; --elm-soft: #f3f5fc; --elm-ink: #10142c; --elm-muted: #545d82; --elm-border: rgba(16, 20, 44, .1);
+            --elm-danger: #dc2626; --elm-danger-soft: #fef2f2; --elm-danger-ink: #991b1b; --elm-warn: #d97706; --elm-warn-soft: #fffbeb;
+            --elm-ok: #059669; --elm-ok-soft: #ecfdf5; --elm-primary: #2f6bff;
+        }
+        :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body.dark, body.dark-mode) .emp-lifecycle-modal {
+            --elm-surface: #0f1530; --elm-soft: #141b3d; --elm-ink: #eef1fb; --elm-muted: #9aa3c7; --elm-border: rgba(238, 241, 251, .12);
+            --elm-danger: #f87171; --elm-danger-soft: rgba(239, 68, 68, .12); --elm-danger-ink: #fecaca; --elm-warn: #fbbf24; --elm-warn-soft: rgba(245, 158, 11, .12);
+            --elm-ok: #34d399; --elm-ok-soft: rgba(16, 185, 129, .12);
+        }
+        .emp-lifecycle-modal .modal-dialog { max-width: 500px; }
+        .emp-lifecycle-modal .modal-content { border: 1px solid var(--elm-border) !important; border-radius: 20px !important; background: var(--elm-surface) !important; color: var(--elm-ink) !important; box-shadow: 0 24px 60px rgba(15, 23, 42, .25) !important; overflow: hidden; }
+        .emp-lifecycle-modal .elm-head { display: flex; align-items: flex-start; gap: 14px; padding: 20px 22px 12px; }
+        .emp-lifecycle-modal .elm-icon { width: 46px; height: 46px; flex-shrink: 0; border-radius: 14px; display: grid; place-items: center; background: var(--elm-danger-soft); }
+        .emp-lifecycle-modal .elm-icon i { font-size: 19px; color: var(--elm-danger) !important; -webkit-text-fill-color: var(--elm-danger) !important; }
+        .emp-lifecycle-modal .elm-icon.is-locked, .emp-lifecycle-modal .elm-icon.is-warning { background: var(--elm-warn-soft); }
+        .emp-lifecycle-modal .elm-icon.is-locked i, .emp-lifecycle-modal .elm-icon.is-warning i { color: var(--elm-warn) !important; -webkit-text-fill-color: var(--elm-warn) !important; }
+        .emp-lifecycle-modal .elm-head-text { flex: 1; min-width: 0; }
+        .emp-lifecycle-modal .modal-title { margin: 2px 0 0; font-size: 1.08rem; font-weight: 700; color: var(--elm-ink) !important; -webkit-text-fill-color: var(--elm-ink) !important; }
+        .emp-lifecycle-modal .elm-head-text p { margin: 3px 0 0; font-size: .84rem; color: var(--elm-muted) !important; -webkit-text-fill-color: var(--elm-muted) !important; }
+        :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body.dark, body.dark-mode) .emp-lifecycle-modal .btn-close { filter: invert(1) grayscale(1) brightness(1.6); }
+        .emp-lifecycle-modal .elm-body { padding: 6px 22px 8px; }
+        .emp-lifecycle-modal .elm-person { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1px solid var(--elm-border); border-radius: 14px; background: var(--elm-soft); }
+        .emp-lifecycle-modal .elm-avatar { width: 40px; height: 40px; flex-shrink: 0; border-radius: 50%; display: grid; place-items: center; background: linear-gradient(135deg, #2f6bff, #8b5cf6); color: #fff !important; -webkit-text-fill-color: #fff !important; font-weight: 700; font-size: .9rem; }
+        .emp-lifecycle-modal .elm-person > div { flex: 1; min-width: 0; }
+        .emp-lifecycle-modal .elm-person strong { display: block; font-size: .95rem; color: var(--elm-ink) !important; -webkit-text-fill-color: var(--elm-ink) !important; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .emp-lifecycle-modal .elm-person small { display: block; font-size: .78rem; color: var(--elm-muted) !important; -webkit-text-fill-color: var(--elm-muted) !important; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .emp-lifecycle-modal .elm-pill { flex-shrink: 0; padding: 3px 10px; border-radius: 999px; font-size: .72rem; font-weight: 700; background: var(--elm-danger-soft); color: var(--elm-danger) !important; -webkit-text-fill-color: var(--elm-danger) !important; }
+        .emp-lifecycle-modal .elm-pill.is-active { background: var(--elm-ok-soft); color: var(--elm-ok) !important; -webkit-text-fill-color: var(--elm-ok) !important; }
+        .emp-lifecycle-modal .elm-steps { list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 8px; }
+        .emp-lifecycle-modal .elm-steps li { display: flex; align-items: center; gap: 10px; font-size: .86rem; color: var(--elm-ink) !important; -webkit-text-fill-color: var(--elm-ink) !important; }
+        .emp-lifecycle-modal .elm-steps li span, .emp-lifecycle-modal .elm-steps li strong { color: inherit !important; -webkit-text-fill-color: currentColor !important; }
+        .emp-lifecycle-modal .elm-step-mark { width: 22px; height: 22px; flex-shrink: 0; border-radius: 50%; display: grid; place-items: center; border: 2px solid var(--elm-border); font-size: 11px; font-weight: 800; }
+        .emp-lifecycle-modal .elm-steps li.is-done .elm-step-mark { border-color: var(--elm-ok); background: var(--elm-ok); }
+        .emp-lifecycle-modal .elm-steps li.is-done .elm-step-mark::after { content: '✓'; color: #fff; -webkit-text-fill-color: #fff; }
+        .emp-lifecycle-modal .elm-steps li.is-todo .elm-step-mark { border-color: var(--elm-warn); }
+        .emp-lifecycle-modal .elm-steps li.is-todo .elm-step-mark::after { content: '!'; color: var(--elm-warn); -webkit-text-fill-color: var(--elm-warn); }
+        .emp-lifecycle-modal .elm-steps li.is-todo { color: var(--elm-warn) !important; -webkit-text-fill-color: var(--elm-warn) !important; font-weight: 600; }
+        .emp-lifecycle-modal .elm-locked p { margin: 14px 0 0; padding: 12px 14px; border-radius: 12px; background: var(--elm-warn-soft); font-size: .86rem; line-height: 1.55; color: var(--elm-ink) !important; -webkit-text-fill-color: var(--elm-ink) !important; }
+        .emp-lifecycle-modal .elm-warning { display: flex; gap: 10px; margin: 14px 0 0; padding: 12px 14px; border-radius: 12px; background: var(--elm-danger-soft); font-size: .84rem; line-height: 1.55; color: var(--elm-danger-ink) !important; -webkit-text-fill-color: var(--elm-danger-ink) !important; }
+        .emp-lifecycle-modal .elm-warning :is(strong, em, div) { color: inherit !important; -webkit-text-fill-color: currentColor !important; }
+        .emp-lifecycle-modal .elm-warning strong { display: block; margin-bottom: 2px; }
+        .emp-lifecycle-modal .elm-warning i { margin-top: 3px; color: var(--elm-danger) !important; -webkit-text-fill-color: var(--elm-danger) !important; }
+        .emp-lifecycle-modal .elm-label { display: block; margin: 16px 0 6px; font-size: .84rem; font-weight: 600; color: var(--elm-ink) !important; -webkit-text-fill-color: var(--elm-ink) !important; }
+        .emp-lifecycle-modal .elm-label code { padding: 1px 7px; border-radius: 6px; background: var(--elm-soft); border: 1px solid var(--elm-border); font-size: .82rem; color: var(--elm-danger) !important; -webkit-text-fill-color: var(--elm-danger) !important; }
+        .emp-lifecycle-modal .elm-input { display: block; width: 100%; height: 44px; padding: 0 14px !important; border: 1px solid var(--elm-border) !important; border-radius: 12px !important; background: var(--elm-surface) !important; color: var(--elm-ink) !important; -webkit-text-fill-color: var(--elm-ink) !important; font: inherit; outline: none; box-shadow: none !important; color-scheme: light dark; }
+        .emp-lifecycle-modal .elm-input:focus { border-color: var(--elm-primary) !important; box-shadow: 0 0 0 4px rgba(47, 107, 255, .18) !important; }
+        .emp-lifecycle-modal .elm-input.is-match { border-color: var(--elm-danger) !important; }
+        .emp-lifecycle-modal .elm-input::placeholder { color: var(--elm-muted) !important; -webkit-text-fill-color: var(--elm-muted) !important; opacity: .6; }
+        .emp-lifecycle-modal .elm-hint { margin: 8px 0 0; font-size: .8rem; line-height: 1.5; color: var(--elm-muted) !important; -webkit-text-fill-color: var(--elm-muted) !important; }
+        .emp-lifecycle-modal .elm-foot { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; padding: 16px 22px 20px; }
+        .emp-lifecycle-modal .elm-btn { display: inline-flex !important; align-items: center; justify-content: center; gap: 7px; height: 42px; padding: 0 18px !important; border-radius: 12px !important; border: 1px solid transparent !important; font: inherit; font-size: .88rem; font-weight: 600; cursor: pointer; width: auto !important; box-shadow: none !important; transition: filter .15s, opacity .15s; }
+        .emp-lifecycle-modal .elm-btn i { color: inherit !important; -webkit-text-fill-color: currentColor !important; }
+        .emp-lifecycle-modal .elm-btn.is-ghost { background: transparent !important; border-color: var(--elm-border) !important; color: var(--elm-ink) !important; -webkit-text-fill-color: var(--elm-ink) !important; }
+        .emp-lifecycle-modal .elm-btn.is-danger { background: #dc2626 !important; color: #fff !important; -webkit-text-fill-color: #fff !important; }
+        .emp-lifecycle-modal .elm-btn.is-warning { background: #d97706 !important; color: #fff !important; -webkit-text-fill-color: #fff !important; }
+        .emp-lifecycle-modal .elm-btn:hover:not(:disabled) { filter: brightness(1.08); }
+        .emp-lifecycle-modal .elm-btn:disabled { opacity: .45; cursor: not-allowed; }
+        .emp-lifecycle-modal .elm-btn:focus-visible { outline: 3px solid rgba(47, 107, 255, .4); outline-offset: 2px; }
+        .employee-dashboard .dropdown-menu .employee-delete-trigger.is-locked,
+        .employee-dashboard .dropdown-menu .employee-delete-trigger.is-locked i { color: #94a3b8 !important; -webkit-text-fill-color: #94a3b8 !important; }
+        .employee-dashboard .dropdown-menu .employee-delete-trigger.text-danger i { color: #dc2626 !important; -webkit-text-fill-color: #dc2626 !important; }
+        @media (max-width: 575.98px) {
+            .emp-lifecycle-modal .elm-foot { flex-direction: column-reverse; }
+            .emp-lifecycle-modal .elm-btn { width: 100% !important; }
+        }
+    </style>
+
     {{-- Alerts Section - FUNCTIONALITY UNCHANGED --}}
     @if($errors->any())
     <div class="alert alert-danger alert-dismissible fade show mb-4 animate-shake" role="alert">
@@ -345,54 +462,48 @@
     </div>
     @endif
 
-    {{-- Filter & Export Section - PERFECT ALIGNMENT --}}
-    <div class="filter-export-card employee-filter-polish animate-fadeIn !overflow-visible !rounded-[22px]">
-        <div class="filter-header !flex !flex-col !gap-4 !p-4 sm:!p-5 lg:!flex-row lg:!items-center lg:!justify-between">
-            <div class="header-left !flex !items-start !gap-3 sm:!items-center">
-                <div class="header-icon-wrapper !shrink-0">
-                    <i class="fas fa-sliders-h"></i>
-                </div>
-                <div class="header-text">
-                    <h3>Filter Employees</h3>
-                    <p>Narrow down your employee list</p>
-                </div>
+    <div class="filter-export-card">
+        <div class="directory-panel-header">
+            <div class="directory-panel-title">
+                <span class="directory-panel-icon" aria-hidden="true"><i class="fas fa-sliders"></i></span>
+                <h2>Filter Employees</h2>
             </div>
-            <div class="header-right !flex !w-full !flex-col !gap-2 sm:!w-auto sm:!flex-row sm:!flex-wrap sm:!items-center sm:!justify-end">
-                <span id="export-selected-count" class="selected-badge !inline-flex !justify-center">0 selected</span>
-                <button type="button" class="btn btn-export-all !justify-center" id="export-all">
-                    <i class="fas fa-download me-2"></i>Export All
+            <div class="directory-export">
+                <span id="export-selected-count" class="directory-count">0 selected</span>
+                <button type="button" class="btn directory-button" id="export-all">
+                    <i class="fas fa-download" aria-hidden="true"></i>Export All
                 </button>
-                <div class="btn-group !flex !flex-wrap !gap-2">
-                    <button type="button" class="btn btn-outline-secondary" id="export-copy" disabled title="Copy">
-                        <i class="fas fa-copy"></i>
+                <div class="directory-export-formats" role="group" aria-label="Export selected employees">
+                    <button type="button" class="btn directory-button" id="export-copy" disabled title="Copy" aria-label="Copy selected employees">
+                        <i class="fas fa-copy" aria-hidden="true"></i>
                     </button>
-                    <button type="button" class="btn btn-outline-success" id="export-csv" disabled title="CSV">
-                        <i class="fas fa-file-csv"></i>
+                    <button type="button" class="btn directory-button" id="export-csv" disabled title="CSV" aria-label="Export selected employees as CSV">
+                        <i class="fas fa-file-csv" aria-hidden="true"></i>
                     </button>
-                    <button type="button" class="btn btn-outline-info" id="export-excel" disabled title="Excel">
-                        <i class="fas fa-file-excel"></i>
+                    <button type="button" class="btn directory-button" id="export-excel" disabled title="Excel" aria-label="Export selected employees as Excel">
+                        <i class="fas fa-file-excel" aria-hidden="true"></i>
                     </button>
-                    <button type="button" class="btn btn-outline-danger" id="export-pdf" disabled title="PDF">
-                        <i class="fas fa-file-pdf"></i>
+                    <button type="button" class="btn directory-button" id="export-pdf" disabled title="PDF" aria-label="Export selected employees as PDF">
+                        <i class="fas fa-file-pdf" aria-hidden="true"></i>
                     </button>
-                    <button type="button" class="btn btn-outline-secondary" id="export-print" disabled title="Print">
-                        <i class="fas fa-print"></i>
+                    <button type="button" class="btn directory-button" id="export-print" disabled title="Print" aria-label="Print selected employees">
+                        <i class="fas fa-print" aria-hidden="true"></i>
                     </button>
                 </div>
             </div>
         </div>
-        <div class="filter-body employee-filter-body !p-4 sm:!p-5">
+        <div class="directory-filter-body">
             <form method="GET" action="{{ route('employees.index') }}" class="filter-form">
-                <div class="filter-grid employee-filter-grid !grid !grid-cols-1 !gap-4 sm:!grid-cols-2 xl:!grid-cols-4">
+                <div class="directory-filter-fields">
                     @if($selectedCompanyId)
                         <input type="hidden" name="company_id" value="{{ $selectedCompanyId }}">
                     @endif
                     <!-- Employee ID -->
-                    <div class="filter-item employee-filter-field">
-                        <label class="filter-label">
-                            <i class="fas fa-id-card me-1"></i>Employee ID
+                    <div class="directory-filter-field">
+                        <label for="directory-employee-id">
+                            <i class="fas fa-id-card" aria-hidden="true"></i>Employee ID
                         </label>
-                        <select name="employee_id" class="form-select select2">
+                        <select name="employee_id" id="directory-employee-id" class="form-select select2">
                             <option value="">All Employees</option>
                             @php
                                 $edOptions = $employeeDetails->filter(function($d){
@@ -413,11 +524,11 @@
                     </div>
 
                     <!-- Designation -->
-                    <div class="filter-item employee-filter-field">
-                        <label class="filter-label">
-                            <i class="fas fa-briefcase me-1"></i>Designation
+                    <div class="directory-filter-field">
+                        <label for="directory-designation">
+                            <i class="fas fa-briefcase" aria-hidden="true"></i>Designation
                         </label>
-                        <select name="designation_id" class="form-select select2">
+                        <select name="designation_id" id="directory-designation" class="form-select select2">
                             <option value="">All Designations</option>
                             @foreach($designations as $designation)
                                 <option value="{{ $designation->id }}" {{ request('designation_id') == $designation->id ? 'selected' : '' }}>
@@ -428,11 +539,11 @@
                     </div>
 
                     <!-- Search Name/Email -->
-                    <div class="filter-item employee-filter-field">
-                        <label class="filter-label">
-                            <i class="fas fa-user me-1"></i>Search Name/Email
+                    <div class="directory-filter-field">
+                        <label for="directory-user">
+                            <i class="fas fa-magnifying-glass" aria-hidden="true"></i>Name or email
                         </label>
-                        <select name="user_id" class="form-select select2">
+                        <select name="user_id" id="directory-user" class="form-select select2">
                             <option value="">Search Employee...</option>
                             @foreach($edOptions as $detail)
                                 <option value="{{ $detail->user_id }}" {{ request('user_id') == $detail->user_id ? 'selected' : '' }}>
@@ -443,12 +554,12 @@
                     </div>
 
                     <!-- Buttons -->
-                    <div class="filter-actions employee-filter-actions !flex !flex-col !gap-2 sm:!flex-row sm:!items-end xl:!justify-end">
-                        <button type="submit" class="btn btn-apply !justify-center">
-                            <i class="fas fa-search me-2"></i>Apply Filters
+                    <div class="directory-filter-actions">
+                        <button type="submit" class="btn directory-button directory-button-primary">
+                            <i class="fas fa-magnifying-glass" aria-hidden="true"></i>Apply Filters
                         </button>
-                        <a href="{{ route('employees.index') }}" class="btn btn-reset !justify-center">
-                            <i class="fas fa-redo me-2"></i>Reset
+                        <a href="{{ route('employees.index') }}" class="btn directory-button">
+                            <i class="fas fa-rotate-right" aria-hidden="true"></i>Reset
                         </a>
                     </div>
                 </div>
@@ -456,28 +567,35 @@
         </div>
     </div>
 
-    {{-- Main Table Card - PERFECT ALIGNMENT --}}
-    <div class="table-card animate-slideUp !overflow-hidden !rounded-[22px]">
-        <div class="table-header !flex !flex-col !gap-4 !p-4 sm:!p-5 lg:!flex-row lg:!items-center lg:!justify-between">
-            <div class="table-title !flex !items-start !gap-3 sm:!items-center">
-                <div class="title-icon-wrapper !shrink-0">
-                    <i class="fas fa-list"></i>
-                </div>
-                <div class="title-text">
-                    <h3>Employee List</h3>
-                    <span class="employee-count">{{ $visibleEmployees->count() }} employees</span>
-                </div>
+    <div class="table-card">
+        <div class="directory-panel-header">
+            <div class="directory-panel-title">
+                <span class="directory-panel-icon" aria-hidden="true"><i class="fas fa-list-ul"></i></span>
+                <h2>Employee List</h2>
+                <span class="directory-count">{{ $visibleEmployees->count() }} employees</span>
             </div>
-            <div class="table-actions !flex !w-full !flex-wrap !items-center !gap-2 sm:!w-auto sm:!justify-end">
-                <button id="btn-bulk-delete" class="btn btn-bulk-delete !justify-center" disabled>
-                    <i class="fas fa-box-archive me-2"></i>Archive Inactive
-                </button>
-                <span id="bulk-selected-count" class="selected-badge !inline-flex !justify-center">0 selected</span>
-            </div>
+            <button id="btn-bulk-delete" class="btn directory-button btn-bulk-delete is-awaiting-selection" aria-disabled="true" title="Select inactive employees to archive">
+                <i class="fas fa-box-archive" aria-hidden="true"></i>Archive Inactive
+            </button>
         </div>
 
+        @if($visibleEmployees->isEmpty())
+            <div class="empty-state">
+                <span class="directory-panel-icon" aria-hidden="true"><i class="fas fa-users"></i></span>
+                <h3>No employees found</h3>
+                <p>Adjust your filters, add an employee to {{ $emptyCompanyName }}, or send invitations.</p>
+                <div class="empty-state-actions">
+                    <a href="{{ route('employees.create') }}" class="btn directory-button directory-button-primary">
+                        <i class="fas fa-user-plus" aria-hidden="true"></i>Add First Employee
+                    </a>
+                    <button type="button" class="btn directory-button" data-bs-toggle="modal" data-bs-target="#inviteModal">
+                        <i class="fas fa-envelope" aria-hidden="true"></i>Send Invitations
+                    </button>
+                </div>
+            </div>
+        @else
         <div class="table-responsive !w-full !overflow-x-auto">
-            <table id="employeeTable" class="table table-hover align-middle mb-0 employee-list-table !min-w-[1200px] md:!min-w-full">
+            <table id="employeeTable" data-pms-export="off" class="table table-hover align-middle mb-0 employee-list-table">
                 <thead>
                     <tr>
                         <th width="58" class="no-export" data-pms-selection-column aria-label="Select rows">
@@ -485,7 +603,7 @@
                                 <input class="form-check-input" type="checkbox" id="selectAll">
                             </div>
                         </th>
-                        <th width="140">Emp ID</th>
+                        <th width="170">Emp ID</th>
                         <th>Employee Name</th>
                         <th width="190">Company</th>
                         <th width="200">Email</th>
@@ -495,20 +613,6 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @if($visibleEmployees->isEmpty())
-                        <tr>
-                            <td colspan="8" class="text-center py-5">
-                                <div class="empty-state">
-                                    <i class="fas fa-users fa-4x text-muted mb-3"></i>
-                                    <h5 class="text-muted">No Employees Found</h5>
-                                    <p class="text-muted mb-3">Try adjusting your filters or add new employees</p>
-                                    <a href="{{ route('employees.create') }}" class="btn btn-primary">
-                                        <i class="fas fa-user-plus me-2"></i>Add First Employee
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
-                    @else
                         @foreach($visibleEmployees as $employee)
                         <tr id="employee-row-{{ $employee->id }}"
                             class="@if(isset($employee->subordinate_count) && $employee->subordinate_count > 0) table-warning @endif">
@@ -537,12 +641,12 @@
                                         <img src="{{ asset($employee->profile_image) }}" alt="Profile" class="profile-image">
                                     @else
                                         <div class="profile-placeholder">
-                                            <i class="fas fa-user"></i>
+                                            <span class="profile-initials">{{ strtoupper(substr($employee->name ?? 'E', 0, 2)) }}</span>
                                         </div>
                                     @endif
                                     <div class="employee-details">
                                         <h6 class="employee-name">{{ $employee->name }}</h6>
-                                        <span class="employee-designation">{{ $employee->employeeDetail?->designation?->name ?? '-' }}</span>
+                                        <span class="employee-designation" style="color: var(--emp-designation-color, #64748b) !important; -webkit-text-fill-color: var(--emp-designation-color, #64748b) !important;">{{ $employee->employeeDetail?->designation?->name ?? '-' }}</span>
                                         <div class="employee-badges">
                                             @php
                                                 $detail = $employee->employeeDetail;
@@ -575,14 +679,14 @@
                             </td>
                             <td>
                                 <span class="employee-company-chip">
-                                    <span class="employee-company-logo">
+                                    <span class="employee-company-logo" style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important;">
                                         @if($employee->company?->logo)
-                                            <img src="{{ asset($employee->company->logo) }}" alt="{{ $employee->company->name }}">
+                                             <img src="{{ asset($employee->company->logo) }}" alt="{{ $employee->company->name }}">
                                         @else
                                             {{ strtoupper(substr($employee->company?->short_name ?: $employee->company?->company_code ?: $employee->company?->name ?: 'NA', 0, 2)) }}
                                         @endif
                                     </span>
-                                    <span>{{ $employee->company?->name ?? 'Unassigned' }}</span>
+                                    <span class="employee-company-name">{{ $employee->company?->name ?? 'Unassigned' }}</span>
                                 </span>
                             </td>
                             <td>
@@ -595,31 +699,42 @@
                             </td>
                             <td>
                                 <div class="role-info">
-                                    <span class="role-name">{{ $employee->employeeDetail?->designation?->name ?? '-' }}</span>
-                                    <span class="reports-to">
-                                        <i class="fas fa-user-friends"></i>
+                                    <span class="role-name" style="color: var(--emp-role-color, #1f2937) !important; -webkit-text-fill-color: var(--emp-role-color, #1f2937) !important;">{{ $employee->employeeDetail?->designation?->name ?? '-' }}</span>
+                                    <span class="reports-to" style="color: var(--emp-reports-color, #64748b) !important; -webkit-text-fill-color: var(--emp-reports-color, #64748b) !important;">
+                                        <i class="fa-solid fa-users fas" style="color: #22D3EE !important; -webkit-text-fill-color: #22D3EE !important; font-family: 'Font Awesome 6 Free', 'Font Awesome 5 Free' !important; font-weight: 900 !important; font-style: normal !important; display: inline-block !important;"></i>
                                         {{ $employee->employeeDetail?->reportingTo?->name ?? 'N/A' }}
                                     </span>
+                                    @php $flow = $reportingFlow($employee); @endphp
+                                    @if(count($flow) > 1)
+                                        <span class="reports-flow" title="Reporting flow: {{ implode(' › ', $flow) }} › {{ $employee->name }}">
+                                            <i class="fas fa-sitemap" aria-hidden="true"></i>
+                                            <span>{{ implode(' › ', $flow) }}</span>
+                                        </span>
+                                    @endif
                                 </div>
                             </td>
                             <td>
-                                @if($employee->employeeDetail?->status === 'Active')
-                                    <span class="status-badge status-active">
-                                        <span class="status-dot"></span>
-                                        Active
-                                    </span>
-                                @elseif($employee->employeeDetail?->status === 'Inactive')
-                                    <span class="status-badge status-inactive">
-                                        <span class="status-dot"></span>
-                                        Inactive
-                                    </span>
-                                @else
-                                    <span class="status-badge status-unknown">N/A</span>
-                                @endif
+                                @php
+                                    $rowStatus = $employee->employeeDetail?->status;
+                                    $isStatusActive = $rowStatus === 'Active';
+                                    $isStatusInactive = $rowStatus === 'Inactive';
+                                    $nextStatus = $isStatusActive ? 'Inactive' : 'Active';
+                                @endphp
+                                <button
+                                    type="button"
+                                    class="status-badge {{ $isStatusActive ? 'status-active' : ($isStatusInactive ? 'status-inactive' : 'status-unknown') }} js-employee-status-toggle"
+                                    data-employee-id="{{ $employee->id }}"
+                                    data-status="{{ $isStatusActive ? 'Active' : ($isStatusInactive ? 'Inactive' : 'N/A') }}"
+                                    title="Click to switch status to {{ $nextStatus }}"
+                                    aria-label="Switch {{ $employee->name }} status to {{ $nextStatus }}"
+                                >
+                                    <span class="status-dot"></span>
+                                    <span class="status-text">{{ $isStatusActive ? 'Active' : ($isStatusInactive ? 'Inactive' : 'N/A') }}</span>
+                                </button>
                             </td>
                             <td>
                                 <div class="dropdown">
-                                    <button class="btn btn-sm btn-icon" type="button" data-bs-toggle="dropdown">
+                                    <button class="btn-action-dots" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Actions">
                                         <i class="fas fa-ellipsis-v"></i>
                                     </button>
                                     <ul class="dropdown-menu dropdown-menu-end">
@@ -639,15 +754,18 @@
                                             </button>
                                         </li>
                                         <li><hr class="dropdown-divider"></li>
+                                        @if(isset($employee->subordinate_count) && $employee->subordinate_count > 0)
                                         <li>
-                                            @if(isset($employee->subordinate_count) && $employee->subordinate_count > 0)
-                                                <button class="dropdown-item text-warning blocked-delete-btn" type="button"
-                                                    data-employee-name="{{ $employee->name }}"
-                                                    data-subordinate-count="{{ $employee->subordinate_count }}"
-                                                    data-employee-id="{{ $employee->id }}">
-                                                    <i class="fas fa-ban me-2"></i> Archive Restricted
-                                                </button>
-                                            @elseif($employee->employeeDetail?->status !== 'Inactive')
+                                            <button class="dropdown-item text-warning blocked-delete-btn" type="button"
+                                                data-employee-name="{{ $employee->name }}"
+                                                data-subordinate-count="{{ $employee->subordinate_count }}"
+                                                data-employee-id="{{ $employee->id }}">
+                                                <i class="fas fa-ban me-2"></i> Archive Restricted
+                                            </button>
+                                        </li>
+                                        @else
+                                        <li class="js-employee-archive-item" data-destroy-url="{{ route('employees.destroy', $employee->id) }}">
+                                            @if($employee->employeeDetail?->status !== 'Inactive')
                                                 <button class="dropdown-item text-muted" type="button" disabled>
                                                     <i class="fas fa-lock me-2"></i> Archive only inactive
                                                 </button>
@@ -662,36 +780,67 @@
                                                 </form>
                                             @endif
                                         </li>
+                                        @endif
+                                        @php
+                                            $isInactiveEmployee = strcasecmp((string) ($employee->employeeDetail?->status ?? ''), 'Inactive') === 0;
+                                            $deleteState = match (true) {
+                                                ($employee->role ?? '') !== 'employee' => 'privileged',
+                                                isset($employee->subordinate_count) && $employee->subordinate_count > 0 => 'has-team',
+                                                ! $isInactiveEmployee => 'active',
+                                                default => 'ready',
+                                            };
+                                        @endphp
+                                        @if(! $isInactiveEmployee && $employee->employeeDetail && ($employee->role ?? '') === 'employee')
+                                            <li>
+                                                <button type="button" class="dropdown-item text-warning employee-inactive-trigger"
+                                                        data-employee-name="{{ $employee->name }}"
+                                                        data-employee-code="{{ $employee->employeeDetail?->employee_id }}"
+                                                        data-inactive-url="{{ route('employees.inactive.update', $employee->id) }}">
+                                                    <i class="fas fa-user-clock me-2"></i> Mark Inactive
+                                                </button>
+                                            </li>
+                                        @endif
+                                        <li>
+                                            <button type="button" class="dropdown-item employee-delete-trigger {{ $deleteState === 'ready' ? 'text-danger' : 'is-locked' }}"
+                                                    data-delete-state="{{ $deleteState }}"
+                                                    data-employee-name="{{ $employee->name }}"
+                                                    data-employee-code="{{ $employee->employeeDetail?->employee_id }}"
+                                                    data-employee-role="{{ $employee->employeeDetail?->designation?->name ?? 'No designation' }}"
+                                                    data-employee-department="{{ $employee->employeeDetail?->department?->name ?? 'No department' }}"
+                                                    data-employee-team="{{ (int) ($employee->subordinate_count ?? 0) }}"
+                                                    data-delete-url="{{ route('employees.delete-permanent', $employee->id) }}"
+                                                    data-inactive-url="{{ route('employees.inactive.update', $employee->id) }}">
+                                                <i class="fas {{ $deleteState === 'ready' ? 'fa-trash-can' : 'fa-lock' }} me-2"></i> Delete Employee
+                                            </button>
+                                        </li>
                                     </ul>
                                 </div>
                             </td>
                         </tr>
                         @endforeach
-                    @endif
                 </tbody>
             </table>
         </div>
 
-        {{-- Pagination & Show Entries - PERFECT ALIGNMENT --}}
-        @if(!$visibleEmployees->isEmpty())
+        {{-- Pagination & Show Entries --}}
         <div class="table-footer !flex !flex-col !gap-4 !p-4 sm:!p-5 lg:!flex-row lg:!items-center lg:!justify-between">
             <div class="footer-left !flex !w-full !justify-center lg:!w-auto lg:!justify-start">
                 <div class="show-entries !flex !flex-wrap !items-center !justify-center !gap-2">
-                    <span>Show</span>
-                    <select class="form-select form-select-sm" id="showEntries">
+                    <span style="color: var(--emp-footer-text, #4b5563) !important; -webkit-text-fill-color: var(--emp-footer-text, #4b5563) !important; font-weight: 600;">Show</span>
+                    <select class="form-select form-select-sm" id="showEntries" style="background-color: var(--emp-footer-select-bg, #ffffff) !important; color: var(--emp-footer-select-color, #1f2937) !important; -webkit-text-fill-color: var(--emp-footer-select-color, #1f2937) !important; border-color: var(--emp-footer-select-border, #e0d7ff) !important;">
                         <option value="10" {{ request('per_page', 10) == 10 ? 'selected' : '' }}>10</option>
-                        <option value="20" {{ request('per_page') == 20 ? 'selected' : '' }}>20</option>
-                        <option value="30" {{ request('per_page') == 30 ? 'selected' : '' }}>30</option>
-                        <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50</option>
-                        <option value="100" {{ request('per_page') == 100 ? 'selected' : '' }}>100</option>
+                        <option value="20" {{ request('per_page', 20) == 20 ? 'selected' : '' }}>20</option>
+                        <option value="30" {{ request('per_page', 30) == 30 ? 'selected' : '' }}>30</option>
+                        <option value="50" {{ request('per_page', 50) == 50 ? 'selected' : '' }}>50</option>
+                        <option value="100" {{ request('per_page', 100) == 100 ? 'selected' : '' }}>100</option>
                     </select>
-                    <span>entries</span>
+                    <span style="color: var(--emp-footer-text, #4b5563) !important; -webkit-text-fill-color: var(--emp-footer-text, #4b5563) !important; font-weight: 600;">entries</span>
                 </div>
             </div>
 
             @if(method_exists($employees, 'total'))
             <div class="footer-center !flex !w-full !justify-center !text-center lg:!w-auto">
-                <span class="pagination-info">
+                <span class="pagination-info" style="color: var(--emp-footer-text, #4b5563) !important; -webkit-text-fill-color: var(--emp-footer-text, #4b5563) !important; font-weight: 600;">
                     Showing {{ ($employees->currentPage() - 1) * $employees->perPage() + 1 }}
                     - {{ min($employees->currentPage() * $employees->perPage(), $employees->total()) }}
                     of {{ $employees->total() }}
@@ -703,7 +852,7 @@
             <div class="footer-right !flex !w-full !justify-center lg:!w-auto lg:!justify-end">
                 <div class="pagination !flex !flex-wrap !justify-center !gap-2">
                     @if($employees->onFirstPage())
-                        <button class="page-btn disabled">
+                        <button class="page-btn disabled" type="button" disabled>
                             <i class="fas fa-chevron-left"></i>
                         </button>
                     @else
@@ -741,7 +890,7 @@
                             <i class="fas fa-chevron-right"></i>
                         </a>
                     @else
-                        <button class="page-btn disabled">
+                        <button class="page-btn disabled" type="button" disabled>
                             <i class="fas fa-chevron-right"></i>
                         </button>
                     @endif
@@ -753,2269 +902,8 @@
     </div>
 </div>
 
-{{-- LIGHT PURPLE THEME - SOFT & ANIMATED --}}
-<style>
-    /* ===== LIGHT PURPLE THEME - SOFT, ANIMATED & EYE-FRIENDLY ===== */
-
-    /* Main Background - Light Purple Gradient */
-    .employee-dashboard {
-        padding: 30px 35px;
-        background: linear-gradient(145deg, #f9f5ff 0%, #f3ebff 50%, #f1e7ff 100%);
-        min-height: 100vh;
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-        position: relative;
-        overflow-x: hidden;
-    }
-
-    /* Soft Purple Overlay Effect */
-    .employee-dashboard::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: radial-gradient(circle at 10% 20%, rgba(170, 140, 250, 0.08) 0%, transparent 40%),
-                    radial-gradient(circle at 90% 70%, rgba(150, 120, 250, 0.08) 0%, transparent 40%),
-                    radial-gradient(circle at 30% 80%, rgba(180, 150, 255, 0.06) 0%, transparent 45%);
-        pointer-events: none;
-    }
-
-    /* ===== ANIMATIONS ===== */
-    @keyframes slideDown {
-        0% { opacity: 0; transform: translateY(-20px); }
-        100% { opacity: 1; transform: translateY(0); }
-    }
-
-    @keyframes slideUp {
-        0% { opacity: 0; transform: translateY(30px); }
-        100% { opacity: 1; transform: translateY(0); }
-    }
-
-    @keyframes fadeIn {
-        0% { opacity: 0; }
-        100% { opacity: 1; }
-    }
-
-    @keyframes float {
-        0% { transform: translateY(0px); }
-        50% { transform: translateY(-5px); }
-        100% { transform: translateY(0px); }
-    }
-
-    @keyframes pulse {
-        0% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.4); }
-        70% { box-shadow: 0 0 0 10px rgba(139, 92, 246, 0); }
-        100% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0); }
-    }
-
-    @keyframes shake {
-        0%, 100% { transform: translateX(0); }
-        10%, 30%, 50%, 70%, 90% { transform: translateX(-2px); }
-        20%, 40%, 60%, 80% { transform: translateX(2px); }
-    }
-
-    .animate-slideDown { animation: slideDown 0.6s ease forwards; }
-    .animate-slideUp { animation: slideUp 0.6s ease forwards; }
-    .animate-fadeIn { animation: fadeIn 0.8s ease forwards; }
-    .animate-float { animation: float 4s ease-in-out infinite; }
-    .animate-pulse { animation: pulse 2s infinite; }
-    .animate-shake { animation: shake 0.5s ease forwards; }
-
-    /* Breadcrumb - Light Glassmorphism */
-    .breadcrumb-wrapper {
-        background: rgba(255, 255, 255, 0.7);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        border: 1px solid rgba(139, 92, 246, 0.15);
-        border-radius: 16px;
-        padding: 16px 24px;
-        margin-bottom: 30px;
-        box-shadow: 0 4px 15px rgba(139, 92, 246, 0.05);
-    }
-
-    .breadcrumb {
-        display: flex;
-        flex-wrap: wrap;
-        padding: 0;
-        margin-bottom: 0;
-        list-style: none;
-        background: transparent;
-    }
-
-    .breadcrumb-item {
-        font-size: 0.95rem;
-        font-weight: 500;
-    }
-
-    .breadcrumb-item a {
-        color: #6d28d9;
-        text-decoration: none;
-        display: flex;
-        align-items: center;
-        transition: all 0.3s ease;
-    }
-
-    .breadcrumb-item a:hover {
-        color: #5b21b6;
-    }
-
-    .breadcrumb-item.active {
-        color: #4c1d95;
-        font-weight: 600;
-    }
-
-    .breadcrumb-item + .breadcrumb-item::before {
-        content: "›";
-        color: #a78bfa;
-        font-size: 1.2rem;
-        line-height: 1;
-        margin: 0 10px;
-    }
-
-    /* Header Section - Light Glassmorphism */
-    .header-section {
-        background: rgba(255, 255, 255, 0.8);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        border: 1px solid rgba(139, 92, 246, 0.2);
-        border-radius: 20px;
-        padding: 25px 30px;
-        margin-bottom: 35px;
-        box-shadow: 0 8px 25px rgba(139, 92, 246, 0.08);
-    }
-
-    .header-content {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 20px;
-    }
-
-    .title-wrapper {
-        display: flex;
-        align-items: center;
-        gap: 18px;
-    }
-
-    .icon-circle {
-        width: 65px;
-        height: 65px;
-        background: linear-gradient(145deg, #c4b5fd, #a78bfa);
-        border-radius: 18px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 1.8rem;
-        box-shadow: 0 10px 20px rgba(167, 139, 250, 0.25);
-    }
-
-    .title-wrapper h1 {
-        font-size: 1.9rem;
-        font-weight: 700;
-        color: #2d1b4e;
-        letter-spacing: -0.02em;
-        margin: 0;
-    }
-
-    .subtitle {
-        color: #6b4e9e;
-        font-size: 0.95rem;
-        margin-top: 5px;
-    }
-
-    /* Action Buttons */
-    .action-buttons {
-        display: flex;
-        gap: 12px;
-        align-items: center;
-    }
-
-    .btn {
-        padding: 12px 24px;
-        border-radius: 12px;
-        font-weight: 600;
-        font-size: 0.95rem;
-        display: flex;
-        align-items: center;
-        border: none;
-        transition: all 0.3s ease;
-        cursor: pointer;
-    }
-
-    .btn-outline-light {
-        background: white;
-        border: 1px solid #e0d7ff;
-        color: #5b4b7a;
-    }
-
-    .btn-outline-light:hover {
-        background: #f5f0ff;
-        border-color: #a78bfa;
-        color: #6d28d9;
-        transform: translateY(-2px);
-        box-shadow: 0 8px 15px rgba(167, 139, 250, 0.15);
-    }
-
-    .btn-add {
-        background: linear-gradient(145deg, #34d399, #10b981);
-        color: white;
-        box-shadow: 0 8px 18px rgba(16, 185, 129, 0.2);
-    }
-
-    .btn-add:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 12px 25px rgba(16, 185, 129, 0.3);
-    }
-
-    .btn-invite {
-        background: linear-gradient(145deg, #c084fc, #a78bfa);
-        color: white;
-        box-shadow: 0 8px 18px rgba(167, 139, 250, 0.25);
-    }
-
-    .btn-invite:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 12px 25px rgba(167, 139, 250, 0.35);
-    }
-
-    /* Stats Grid - PERFECT 5 COLUMN ALIGNMENT */
-    .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(5, 1fr);
-        gap: 22px;
-        margin-bottom: 35px;
-    }
-
-    .stat-card {
-        background: white;
-        border: 1px solid rgba(167, 139, 250, 0.2);
-        border-radius: 20px;
-        padding: 22px 18px;
-        display: flex;
-        align-items: center;
-        gap: 16px;
-        box-shadow: 0 8px 20px rgba(139, 92, 246, 0.06);
-        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        position: relative;
-        overflow: hidden;
-    }
-
-    .stat-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 5px;
-        height: 100%;
-        background: linear-gradient(to bottom, #c084fc, #a78bfa);
-    }
-
-    .stat-card.total::before { background: linear-gradient(to bottom, #818cf8, #6366f1); }
-    .stat-card.active::before { background: linear-gradient(to bottom, #34d399, #10b981); }
-    .stat-card.inactive::before { background: linear-gradient(to bottom, #f87171, #ef4444); }
-    .stat-card.notice::before { background: linear-gradient(to bottom, #fbbf24, #f59e0b); }
-    .stat-card.interns::before { background: linear-gradient(to bottom, #60a5fa, #3b82f6); }
-
-    .stat-card:hover {
-        transform: translateY(-6px) scale(1.02);
-        box-shadow: 0 15px 35px rgba(139, 92, 246, 0.12);
-        border-color: rgba(167, 139, 250, 0.4);
-    }
-
-    .stat-icon {
-        width: 55px;
-        height: 55px;
-        border-radius: 16px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.6rem;
-        flex-shrink: 0;
-    }
-
-    .stat-card.total .stat-icon {
-        background: #e0e7ff;
-        color: #4f46e5;
-    }
-
-    .stat-card.active .stat-icon {
-        background: #d1fae5;
-        color: #059669;
-    }
-
-    .stat-card.inactive .stat-icon {
-        background: #fee2e2;
-        color: #b91c1c;
-    }
-
-    .stat-card.notice .stat-icon {
-        background: #fef3c7;
-        color: #d97706;
-    }
-
-    .stat-card.interns .stat-icon {
-        background: #dbeafe;
-        color: #2563eb;
-    }
-
-    .stat-content {
-        display: flex;
-        flex-direction: column;
-        flex: 1;
-    }
-
-    .stat-label {
-        font-size: 0.8rem;
-        font-weight: 600;
-        color: #6b7280;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-bottom: 4px;
-    }
-
-    .stat-value {
-        font-size: 2rem;
-        font-weight: 700;
-        color: #1f2937;
-        line-height: 1;
-    }
-
-    .stat-glow {
-        position: absolute;
-        top: -20px;
-        right: -20px;
-        width: 100px;
-        height: 100px;
-        border-radius: 50%;
-        filter: blur(30px);
-        opacity: 0.1;
-        pointer-events: none;
-    }
-
-    .stat-card.total .stat-glow { background: #6366f1; }
-    .stat-card.active .stat-glow { background: #10b981; }
-    .stat-card.inactive .stat-glow { background: #ef4444; }
-    .stat-card.notice .stat-glow { background: #f59e0b; }
-    .stat-card.interns .stat-glow { background: #3b82f6; }
-
-    /* Filter & Export Card - PERFECT ALIGNMENT */
-    .filter-export-card {
-        background: white;
-        border: 1px solid rgba(167, 139, 250, 0.2);
-        border-radius: 20px;
-        margin-bottom: 30px;
-        overflow: hidden;
-        box-shadow: 0 8px 25px rgba(139, 92, 246, 0.06);
-        transition: all 0.3s ease;
-    }
-
-    .filter-export-card:hover {
-        box-shadow: 0 12px 35px rgba(139, 92, 246, 0.1);
-        border-color: rgba(167, 139, 250, 0.3);
-    }
-
-    .filter-header {
-        padding: 18px 25px;
-        background: #faf7ff;
-        border-bottom: 1px solid rgba(167, 139, 250, 0.15);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 15px;
-    }
-
-    .header-left {
-        display: flex;
-        align-items: center;
-        gap: 15px;
-    }
-
-    .header-icon-wrapper {
-        width: 44px;
-        height: 44px;
-        background: #ede9fe;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #8b5cf6;
-        font-size: 1.2rem;
-    }
-
-    .header-text h3 {
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: #2d1b4e;
-        margin: 0;
-    }
-
-    .header-text p {
-        font-size: 0.8rem;
-        color: #6b4e9e;
-        margin: 2px 0 0;
-    }
-
-    .header-right {
-        display: flex;
-        align-items: center;
-        gap: 15px;
-        flex-wrap: wrap;
-    }
-
-    .selected-badge {
-        padding: 6px 14px;
-        background: #ede9fe;
-        color: #6d28d9;
-        border-radius: 100px;
-        font-size: 0.85rem;
-        font-weight: 600;
-    }
-
-    .btn-export-all {
-        background: linear-gradient(145deg, #c084fc, #a78bfa);
-        color: white;
-        padding: 8px 20px;
-        border-radius: 10px;
-        font-size: 0.9rem;
-        border: none;
-        box-shadow: 0 4px 12px rgba(167, 139, 250, 0.2);
-    }
-
-    .btn-export-all:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(167, 139, 250, 0.3);
-    }
-
-    .btn-group {
-        display: flex;
-        gap: 5px;
-        background: white;
-        padding: 5px;
-        border-radius: 12px;
-        border: 1px solid rgba(167, 139, 250, 0.2);
-    }
-
-    .btn-group .btn {
-        width: 36px;
-        height: 36px;
-        padding: 0;
-        border-radius: 8px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: transparent;
-        border: none;
-        color: #6b7280;
-    }
-
-    .btn-group .btn:hover:not(:disabled) {
-        background: #f5f0ff;
-        color: #8b5cf6;
-        transform: scale(1.1);
-    }
-
-    .btn-group .btn:disabled {
-        opacity: 0.4;
-        cursor: not-allowed;
-    }
-
-    .filter-body {
-        padding: 25px;
-    }
-
-    .filter-grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 20px;
-        align-items: flex-end;
-    }
-
-    .filter-item {
-        display: flex;
-        flex-direction: column;
-    }
-
-    .filter-label {
-        font-size: 0.9rem;
-        font-weight: 600;
-        color: #4b5563;
-        margin-bottom: 8px;
-        display: flex;
-        align-items: center;
-    }
-
-    .filter-select {
-        width: 100%;
-        height: 44px;
-        background: white;
-        border: 1px solid #e0d7ff;
-        border-radius: 10px;
-        padding: 0 16px;
-        font-size: 0.9rem;
-        color: #1f2937;
-        transition: all 0.2s ease;
-    }
-
-    .filter-select:focus {
-        border-color: #a78bfa;
-        box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.1);
-        outline: none;
-    }
-
-    .filter-actions {
-        display: flex;
-        gap: 10px;
-        align-items: center;
-    }
-
-    .btn-apply {
-        background: linear-gradient(145deg, #8b5cf6, #7c3aed);
-        color: white;
-        padding: 12px 20px;
-        border-radius: 10px;
-        font-weight: 600;
-        flex: 1;
-        border: none;
-    }
-
-    .btn-apply:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(124, 58, 237, 0.25);
-    }
-
-    .btn-reset {
-        background: white;
-        color: #6b7280;
-        padding: 12px 20px;
-        border-radius: 10px;
-        font-weight: 600;
-        border: 1px solid #e0d7ff;
-        flex: 1;
-        text-decoration: none;
-        text-align: center;
-    }
-
-    .btn-reset:hover {
-        background: #f9fafb;
-        color: #1f2937;
-        border-color: #a78bfa;
-    }
-
-    /* Table Card - PERFECT ALIGNMENT */
-    .table-card {
-        background: white;
-        border: 1px solid rgba(167, 139, 250, 0.2);
-        border-radius: 20px;
-        overflow: hidden;
-        box-shadow: 0 8px 25px rgba(139, 92, 246, 0.06);
-        transition: all 0.3s ease;
-    }
-
-    .table-card:hover {
-        box-shadow: 0 12px 35px rgba(139, 92, 246, 0.1);
-        border-color: rgba(167, 139, 250, 0.3);
-    }
-
-    .table-header {
-        padding: 18px 25px;
-        background: #faf7ff;
-        border-bottom: 1px solid rgba(167, 139, 250, 0.15);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 15px;
-    }
-
-    .table-title {
-        display: flex;
-        align-items: center;
-        gap: 15px;
-    }
-
-    .title-icon-wrapper {
-        width: 44px;
-        height: 44px;
-        background: #f3e8ff;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #9b5de5;
-        font-size: 1.2rem;
-    }
-
-    .title-text h3 {
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: #2d1b4e;
-        margin: 0;
-    }
-
-    .employee-count {
-        font-size: 0.8rem;
-        color: #6b4e9e;
-    }
-
-    .table-actions {
-        display: flex;
-        align-items: center;
-        gap: 15px;
-    }
-
-    .btn-bulk-delete {
-        background: #fee2e2;
-        color: #b91c1c;
-        padding: 8px 20px;
-        border-radius: 10px;
-        font-size: 0.9rem;
-        border: 1px solid #fecaca;
-    }
-
-    .btn-bulk-delete:hover:not(:disabled) {
-        background: #fecaca;
-        color: #991b1b;
-        transform: translateY(-2px);
-    }
-
-    .btn-bulk-delete:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-    }
-
-    /* Table Styles */
-    .table-responsive {
-        overflow-x: auto;
-    }
-
-    .table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-bottom: 0;
-    }
-
-    .employee-list-table {
-        border-collapse: collapse;
-        table-layout: fixed;
-    }
-
-    .employee-list-table th,
-    .employee-list-table td {
-        box-sizing: border-box;
-    }
-
-    .table thead th {
-        background: #faf7ff;
-        color: #5b4b7a;
-        font-weight: 600;
-        font-size: 0.8rem;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        padding: 18px 16px;
-        border-bottom: 2px solid rgba(167, 139, 250, 0.2);
-        text-align: left;
-        white-space: nowrap;
-    }
-
-    .employee-list-table thead th,
-    .employee-list-table tbody td {
-        padding: 15px 16px;
-    }
-
-    .employee-list-table tbody td {
-        border-bottom: 1px solid rgba(167, 139, 250, 0.1);
-        color: #374151;
-        vertical-align: middle;
-        line-height: 1.35;
-    }
-
-    .employee-list-table tbody tr {
-        height: 82px;
-    }
-
-    .employee-list-table thead th:first-child,
-    .employee-list-table tbody td:first-child {
-        padding-left: 18px;
-        padding-right: 10px;
-        text-align: center;
-    }
-
-    .employee-list-table thead th:last-child,
-    .employee-list-table tbody td:last-child {
-        padding-left: 10px;
-        padding-right: 18px;
-        text-align: center;
-    }
-
-    .employee-list-table .form-check {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        min-height: 36px;
-        margin: 0;
-    }
-
-    .employee-list-table .dropdown {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .table tbody tr {
-        transition: all 0.3s ease;
-    }
-
-    .table tbody tr:hover {
-        background: #fcf9ff;
-    }
-
-    .table tbody tr.selected {
-        background: #f5f0ff;
-        border-left: 3px solid #8b5cf6;
-    }
-
-    .table-warning {
-        background-color: #fffbeb !important;
-    }
-
-    .table-warning:hover {
-        background-color: #fef3c7 !important;
-    }
-
-    /* Employee ID Badge */
-    .employee-id-badge {
-        display: inline-block;
-        padding: 6px 12px;
-        background: #f3f4f6;
-        border: 1px solid #e5e7eb;
-        border-radius: 8px;
-        font-size: 0.8rem;
-        font-weight: 600;
-        color: #4b5563;
-    }
-
-    /* Employee Info */
-    .employee-info {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        min-width: 0;
-    }
-
-    .profile-image {
-        width: 44px;
-        height: 44px;
-        border-radius: 12px;
-        object-fit: cover;
-        border: 2px solid white;
-        box-shadow: 0 4px 10px rgba(139, 92, 246, 0.1);
-    }
-
-    .profile-placeholder {
-        width: 44px;
-        height: 44px;
-        border-radius: 12px;
-        background: #ede9fe;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #8b5cf6;
-        font-size: 1.1rem;
-        border: 2px solid white;
-        box-shadow: 0 4px 10px rgba(139, 92, 246, 0.1);
-    }
-
-    .employee-details {
-        flex: 1;
-        min-width: 0;
-    }
-
-    .employee-name {
-        font-size: 0.95rem;
-        font-weight: 600;
-        color: #1f2937;
-        margin: 0 0 4px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
-    .employee-designation {
-        font-size: 0.8rem;
-        color: #6b7280;
-        display: block;
-        margin-bottom: 6px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
-    .employee-badges {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 5px;
-    }
-
-    .badge {
-        display: inline-flex;
-        align-items: center;
-        padding: 4px 10px;
-        border-radius: 100px;
-        font-size: 0.7rem;
-        font-weight: 600;
-    }
-
-    .company-switcher-grid {
-        margin-top: 18px;
-    }
-
-    .company-switch-card {
-        align-items: center;
-        background: rgba(255, 255, 255, 0.96);
-        border: 1px solid rgba(15, 116, 76, 0.12);
-        border-radius: 18px;
-        box-shadow: 0 14px 34px rgba(15, 116, 76, 0.08);
-        color: #07130d;
-        display: flex;
-        gap: 12px;
-        min-height: 86px;
-        padding: 14px;
-        text-decoration: none;
-        transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease;
-    }
-
-    .company-switch-card:hover {
-        border-color: rgba(15, 116, 76, 0.28);
-        box-shadow: 0 20px 42px rgba(15, 116, 76, 0.14);
-        color: #07130d;
-        transform: translateY(-2px);
-    }
-
-    .company-switch-card.active {
-        background: linear-gradient(135deg, #ecfdf5, #ffffff);
-        border-color: rgba(15, 116, 76, 0.42);
-        box-shadow: 0 22px 46px rgba(15, 116, 76, 0.16);
-    }
-
-    .company-switch-icon,
-    .employee-company-logo {
-        align-items: center;
-        background: linear-gradient(135deg, #0f744c, #22c55e);
-        border-radius: 14px;
-        color: #ffffff;
-        display: inline-flex;
-        flex: 0 0 auto;
-        font-weight: 900;
-        justify-content: center;
-        overflow: hidden;
-    }
-
-    .company-switch-icon {
-        height: 48px;
-        width: 48px;
-    }
-
-    .company-switch-icon img,
-    .employee-company-logo img {
-        height: 100%;
-        object-fit: cover;
-        width: 100%;
-    }
-
-    .company-switch-meta {
-        display: flex;
-        flex-direction: column;
-        min-width: 0;
-    }
-
-    .company-switch-meta strong {
-        color: #07130d;
-        font-size: .9rem;
-        line-height: 1.2;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
-    .company-switch-meta small {
-        color: #52645a;
-        font-size: .76rem;
-        font-weight: 700;
-        margin-top: 4px;
-    }
-
-    .employee-company-chip {
-        align-items: center;
-        display: inline-flex;
-        gap: 8px;
-        max-width: 180px;
-        min-width: 0;
-    }
-
-    .employee-company-chip > span:last-child {
-        color: #07130d;
-        font-size: .82rem;
-        font-weight: 800;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
-    .employee-company-logo {
-        height: 32px;
-        width: 32px;
-        font-size: .72rem;
-    }
-
-    .company-module-rail {
-        align-items: center;
-        background: rgba(255, 255, 255, 0.96);
-        border: 1px solid rgba(15, 116, 76, 0.12);
-        border-radius: 16px;
-        box-shadow: 0 14px 34px rgba(15, 116, 76, 0.08);
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        padding: 12px 14px;
-    }
-
-    .company-module-rail span {
-        color: #52645a;
-        font-size: .82rem;
-        font-weight: 900;
-        margin-right: 4px;
-        text-transform: uppercase;
-    }
-
-    .company-module-rail a {
-        align-items: center;
-        background: #f4faf6;
-        border: 1px solid rgba(15, 116, 76, 0.12);
-        border-radius: 12px;
-        color: #0f744c;
-        display: inline-flex;
-        font-size: .84rem;
-        font-weight: 900;
-        gap: 7px;
-        min-height: 38px;
-        padding: 8px 12px;
-        text-decoration: none;
-    }
-
-    .company-module-rail a:hover {
-        background: #ecfdf5;
-        color: #0f744c;
-    }
-
-    .badge.bg-primary {
-        background: #ede9fe !important;
-        color: #6d28d9;
-    }
-
-    .badge.bg-info {
-        background: #dbeafe !important;
-        color: #2563eb;
-    }
-
-    .badge.bg-warning {
-        background: #fef3c7 !important;
-        color: #b45309;
-    }
-
-    /* Email */
-    .email-wrapper {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        min-width: 0;
-    }
-
-    .email-icon {
-        color: #8b5cf6;
-        font-size: 0.9rem;
-    }
-
-    .email-link {
-        color: #6b7280;
-        display: inline-block;
-        max-width: 100%;
-        overflow: hidden;
-        text-decoration: none;
-        font-size: 0.9rem;
-        text-overflow: ellipsis;
-        transition: all 0.2s ease;
-        white-space: nowrap;
-    }
-
-    .email-link:hover {
-        color: #6d28d9;
-        text-decoration: underline;
-    }
-
-    /* Role Info */
-    .role-info {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-        min-width: 0;
-    }
-
-    .role-name {
-        font-weight: 600;
-        color: #1f2937;
-        font-size: 0.9rem;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
-    .reports-to {
-        font-size: 0.8rem;
-        color: #6b7280;
-        display: flex;
-        align-items: center;
-        gap: 5px;
-        min-width: 0;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
-    /* Status Badge */
-    .status-badge {
-        display: inline-flex;
-        align-items: center;
-        padding: 6px 14px;
-        border-radius: 100px;
-        font-size: 0.8rem;
-        font-weight: 600;
-    }
-
-    .status-active {
-        background: #d1fae5;
-        color: #065f46;
-        border: 1px solid #a7f3d0;
-    }
-
-    .status-inactive {
-        background: #fee2e2;
-        color: #991b1b;
-        border: 1px solid #fecaca;
-    }
-
-    .status-unknown {
-        background: #f3f4f6;
-        color: #4b5563;
-        border: 1px solid #e5e7eb;
-    }
-
-    .status-dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        margin-right: 8px;
-    }
-
-    .status-active .status-dot {
-        background: #10b981;
-        box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
-    }
-
-    .status-inactive .status-dot {
-        background: #ef4444;
-        box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
-    }
-
-    /* Action Dropdown */
-    .btn-icon {
-        width: 36px;
-        height: 36px;
-        padding: 0;
-        border-radius: 10px;
-        background: #f3f4f6;
-        border: 1px solid #e5e7eb;
-        color: #6b7280;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.3s ease;
-    }
-
-    .btn-icon:hover {
-        background: #ede9fe;
-        border-color: #a78bfa;
-        color: #6d28d9;
-        transform: scale(1.1);
-    }
-
-    .dropdown-menu {
-        background: white;
-        border: 1px solid rgba(167, 139, 250, 0.3);
-        border-radius: 14px;
-        padding: 8px;
-        box-shadow: 0 20px 40px rgba(139, 92, 246, 0.1);
-    }
-
-    .dropdown-item {
-        padding: 10px 16px;
-        color: #374151;
-        font-size: 0.9rem;
-        border-radius: 8px;
-        transition: all 0.2s ease;
-    }
-
-    .dropdown-item i {
-        width: 20px;
-        margin-right: 10px;
-    }
-
-    .dropdown-item:hover {
-        background: #f5f0ff;
-        color: #6d28d9;
-    }
-
-    .dropdown-divider {
-        border-top: 1px solid #f0e7ff;
-        margin: 8px 0;
-    }
-
-    /* Empty State */
-    .empty-state {
-        padding: 60px 20px;
-        text-align: center;
-    }
-
-    .empty-state i {
-        color: #d4c2ff;
-    }
-
-    .empty-state h5 {
-        color: #6b4e9e;
-        font-weight: 600;
-    }
-
-    .empty-state p {
-        color: #9ca3af;
-    }
-
-    /* Table Footer - PERFECT ALIGNMENT */
-    .table-footer {
-        padding: 18px 25px;
-        background: #faf7ff;
-        border-top: 1px solid rgba(167, 139, 250, 0.15);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 15px;
-    }
-
-    .footer-left, .footer-center, .footer-right {
-        display: flex;
-        align-items: center;
-    }
-
-    .show-entries {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        color: #6b7280;
-        font-size: 0.9rem;
-    }
-
-    .show-entries select {
-        background: white;
-        border: 1px solid #e0d7ff;
-        border-radius: 8px;
-        color: #1f2937;
-        padding: 6px 12px;
-        width: 70px;
-    }
-
-    .show-entries select:focus {
-        border-color: #a78bfa;
-        box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.1);
-    }
-
-    .pagination-info {
-        color: #6b7280;
-        font-size: 0.9rem;
-    }
-
-    .pagination {
-        display: flex;
-        gap: 5px;
-        align-items: center;
-    }
-
-    .page-btn {
-        min-width: 36px;
-        height: 36px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 8px;
-        background: white;
-        border: 1px solid #e0d7ff;
-        color: #6b7280;
-        font-size: 0.9rem;
-        font-weight: 500;
-        text-decoration: none;
-        transition: all 0.3s ease;
-        cursor: pointer;
-    }
-
-    .page-btn:hover:not(.disabled) {
-        background: #ede9fe;
-        border-color: #a78bfa;
-        color: #6d28d9;
-        transform: scale(1.05);
-    }
-
-    .page-btn.active {
-        background: #8b5cf6;
-        border-color: #8b5cf6;
-        color: white;
-    }
-
-    .page-btn.disabled {
-        background: #f3f4f6;
-        color: #9ca3af;
-        border-color: #e5e7eb;
-        cursor: not-allowed;
-    }
-
-    .page-dots {
-        color: #9ca3af;
-        padding: 0 5px;
-    }
-
-    /* Modal Styles */
-    .modal-content {
-        background: white;
-        border: 1px solid rgba(167, 139, 250, 0.3);
-        border-radius: 20px;
-    }
-
-    .modal-header {
-        background: #faf7ff;
-        border-bottom: 1px solid rgba(167, 139, 250, 0.2);
-        padding: 20px 25px;
-    }
-
-    .modal-header.bg-warning {
-        background: #fffbeb !important;
-    }
-
-    .modal-title {
-        color: #2d1b4e;
-        font-weight: 600;
-    }
-
-    .modal-body {
-        padding: 25px;
-    }
-
-    .modal-footer {
-        border-top: 1px solid rgba(167, 139, 250, 0.2);
-        padding: 20px 25px;
-    }
-
-    .form-control, .input-group-text {
-        background: white;
-        border: 1px solid #e0d7ff;
-        color: #1f2937;
-    }
-
-    .form-control:focus {
-        border-color: #a78bfa;
-        box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.1);
-    }
-
-    .input-group-text {
-        background: #f5f0ff;
-        color: #8b5cf6;
-    }
-
-    .nav-tabs {
-        border-bottom: 1px solid #e0d7ff;
-    }
-
-    .nav-tabs .nav-link {
-        color: #6b7280;
-        border: none;
-        padding: 12px 20px;
-    }
-
-    .nav-tabs .nav-link.active {
-        background: transparent;
-        color: #6d28d9;
-        border-bottom: 2px solid #8b5cf6;
-    }
-
-    .list-group-item {
-        background: white;
-        border: 1px solid #e0d7ff;
-        color: #374151;
-    }
-
-    /* Form Check */
-    .form-check-input {
-        background: white;
-        border: 2px solid #d4c2ff;
-    }
-
-    .form-check-input:checked {
-        background-color: #8b5cf6;
-        border-color: #8b5cf6;
-    }
-
-    .form-check-input:focus {
-        box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
-        border-color: #8b5cf6;
-    }
-
-    .form-check-input:disabled {
-        background: #f3f4f6;
-        border-color: #e5e7eb;
-    }
-
-    /* Select2 Customization */
-    .select2-container--default .select2-selection--single {
-        background: white;
-        border: 1px solid #e0d7ff;
-        border-radius: 10px;
-        height: 44px;
-    }
-
-    .select2-container--default .select2-selection--single .select2-selection__rendered {
-        color: #1f2937;
-        line-height: 44px;
-        padding-left: 16px;
-    }
-
-    .select2-container--default .select2-selection--single .select2-selection__arrow {
-        height: 42px;
-    }
-
-    .select2-dropdown {
-        background: white;
-        border: 1px solid #e0d7ff;
-    }
-
-    .select2-results__option {
-        color: #1f2937;
-    }
-
-    .select2-results__option--highlighted {
-        background: #f5f0ff !important;
-        color: #6d28d9 !important;
-    }
-
-    /* Responsive - PERFECT ALIGNMENT */
-    @media (max-width: 1400px) {
-        .stats-grid {
-            grid-template-columns: repeat(3, 1fr);
-        }
-
-        .filter-grid {
-            grid-template-columns: repeat(2, 1fr);
-        }
-    }
-
-    @media (max-width: 1200px) {
-        .employee-dashboard {
-            padding: 25px 30px;
-        }
-    }
-
-    @media (max-width: 992px) {
-        .employee-dashboard {
-            padding: 20px 25px;
-        }
-
-        .stats-grid {
-            grid-template-columns: repeat(2, 1fr);
-        }
-
-        .filter-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .header-content {
-            flex-direction: column;
-            align-items: flex-start;
-        }
-
-        .action-buttons {
-            width: 100%;
-            justify-content: flex-start;
-        }
-    }
-
-    @media (max-width: 768px) {
-        .employee-dashboard {
-            padding: 15px 20px;
-        }
-
-        .stats-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .table thead {
-            display: none;
-        }
-
-        .employee-list-table tbody tr {
-            display: block;
-            height: auto;
-            margin-bottom: 14px;
-            border: 1px solid rgba(167, 139, 250, 0.2);
-            border-radius: 16px;
-            padding: 14px 16px;
-        }
-
-        .employee-list-table tbody td {
-            display: block;
-            padding: 9px 0 9px 45%;
-            border: none;
-            position: relative;
-        }
-
-        .employee-list-table tbody td:before {
-            content: attr(data-label);
-            position: absolute;
-            left: 0;
-            width: 40%;
-            font-weight: 600;
-            color: #5b4b7a;
-        }
-
-        .table-footer {
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .footer-left, .footer-center, .footer-right {
-            width: 100%;
-            justify-content: center;
-        }
-    }
-
-    /* Custom Scrollbar */
-    ::-webkit-scrollbar {
-        width: 8px;
-        height: 8px;
-    }
-
-    ::-webkit-scrollbar-track {
-        background: #f5f0ff;
-    }
-
-    ::-webkit-scrollbar-thumb {
-        background: #d4c2ff;
-        border-radius: 10px;
-    }
-
-    ::-webkit-scrollbar-thumb:hover {
-        background: #b79aff;
-    }
-
-    /* Final employee action polish */
-    .employee-dashboard .action-buttons {
-        align-items: center !important;
-        display: flex !important;
-        flex-wrap: wrap !important;
-        gap: 10px !important;
-        justify-content: flex-end !important;
-        margin-left: auto !important;
-        overflow: visible !important;
-    }
-
-    .employee-dashboard .quick-actions {
-        display: inline-flex !important;
-        position: relative !important;
-        top: auto !important;
-        z-index: 25 !important;
-    }
-
-    .employee-dashboard .quick-actions .dropdown {
-        display: inline-flex !important;
-        position: relative !important;
-        z-index: 30 !important;
-    }
-
-    .employee-dashboard .quick-actions .dropdown-menu {
-        left: auto !important;
-        margin-top: 0.45rem !important;
-        min-width: 210px !important;
-        right: 0 !important;
-        transform: none !important;
-        z-index: 4000 !important;
-    }
-
-    .employee-dashboard a.btn.btn-add,
-    .employee-dashboard button.btn.btn-invite {
-        background: linear-gradient(135deg, #0f744c, #15885a) !important;
-        border-color: #0f744c !important;
-        color: #ffffff !important;
-        -webkit-text-fill-color: #ffffff !important;
-    }
-
-    .employee-dashboard a.btn.btn-add i,
-    .employee-dashboard a.btn.btn-add span,
-    .employee-dashboard button.btn.btn-invite i,
-    .employee-dashboard button.btn.btn-invite span {
-        color: #ffffff !important;
-        -webkit-text-fill-color: #ffffff !important;
-        opacity: 1 !important;
-    }
-
-    .employee-dashboard .btn-archive-employees {
-        border: 1px solid rgba(15, 116, 76, 0.18) !important;
-        background: #ffffff !important;
-        color: #0f744c !important;
-        -webkit-text-fill-color: #0f744c !important;
-        box-shadow: 0 10px 20px rgba(22, 39, 30, 0.07) !important;
-    }
-
-    .employee-dashboard .btn-archive-employees i,
-    .employee-dashboard .btn-archive-employees span {
-        color: #0f744c !important;
-        -webkit-text-fill-color: #0f744c !important;
-        font-weight: 900 !important;
-    }
-
-    .employee-dashboard .btn-archive-employees:hover {
-        border-color: #0f744c !important;
-        background: #edf8f2 !important;
-        transform: translateY(-2px) !important;
-    }
-
-    .employee-dashboard .quick-actions .dropdown-toggle {
-        align-items: center !important;
-        display: inline-flex !important;
-        justify-content: center !important;
-        min-height: 42px !important;
-        min-width: 150px !important;
-        padding: 0.54rem 0.9rem !important;
-        font-size: 0.84rem !important;
-        border-radius: 999px !important;
-        white-space: nowrap !important;
-    }
-
-    .employee-dashboard .btn-archive-employees,
-    .employee-dashboard a.btn.btn-add,
-    .employee-dashboard button.btn.btn-invite {
-        align-items: center !important;
-        display: inline-flex !important;
-        justify-content: center !important;
-        min-height: 42px !important;
-        white-space: nowrap !important;
-    }
-
-    @media (max-width: 991.98px) {
-        .employee-dashboard .action-buttons {
-            display: grid !important;
-            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-            justify-content: stretch !important;
-            margin-left: 0 !important;
-            width: 100% !important;
-        }
-
-        .employee-dashboard .quick-actions,
-        .employee-dashboard .quick-actions .dropdown,
-        .employee-dashboard .quick-actions .dropdown-toggle,
-        .employee-dashboard .btn-archive-employees,
-        .employee-dashboard a.btn.btn-add,
-        .employee-dashboard button.btn.btn-invite {
-            min-width: 0 !important;
-            width: 100% !important;
-        }
-    }
-
-    @media (max-width: 575.98px) {
-        .employee-dashboard .action-buttons {
-            grid-template-columns: 1fr !important;
-        }
-    }
-
-    .employee-dashboard #bulkDeleteTrigger {
-        min-height: 32px !important;
-        padding: 0.42rem 0.65rem !important;
-        font-size: 0.82rem !important;
-        border-radius: 10px !important;
-    }
-
-    /* Filter Employees card polish */
-    .employee-dashboard .employee-filter-polish {
-        border: 1px solid rgba(15, 116, 76, 0.12) !important;
-        background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(247, 250, 248, 0.96)) !important;
-        box-shadow: 0 18px 42px rgba(22, 39, 30, 0.09) !important;
-        overflow: visible !important;
-    }
-
-    .employee-dashboard .employee-filter-polish .filter-header {
-        border-bottom: 1px solid rgba(15, 116, 76, 0.1) !important;
-        background: linear-gradient(135deg, rgba(15, 116, 76, 0.09), rgba(255, 255, 255, 0.82)) !important;
-    }
-
-    .employee-dashboard .employee-filter-polish .header-icon-wrapper {
-        width: 48px !important;
-        height: 48px !important;
-        border-radius: 15px !important;
-        background: linear-gradient(135deg, #0f744c, #1a9a68) !important;
-        color: #ffffff !important;
-        box-shadow: 0 12px 22px rgba(15, 116, 76, 0.22) !important;
-    }
-
-    .employee-dashboard .employee-filter-polish .header-icon-wrapper i {
-        color: #ffffff !important;
-        -webkit-text-fill-color: #ffffff !important;
-        font-size: 1.08rem !important;
-    }
-
-    .employee-dashboard .employee-filter-polish .header-text h3 {
-        color: #0a1f16 !important;
-        -webkit-text-fill-color: #0a1f16 !important;
-        font-size: 1.18rem !important;
-        font-weight: 900 !important;
-        letter-spacing: 0 !important;
-        margin-bottom: 0.16rem !important;
-    }
-
-    .employee-dashboard .employee-filter-polish .header-text p {
-        color: #53645b !important;
-        -webkit-text-fill-color: #53645b !important;
-        font-size: 0.9rem !important;
-        font-weight: 700 !important;
-    }
-
-    .employee-dashboard .employee-filter-polish .header-right {
-        align-items: stretch !important;
-    }
-
-    .employee-dashboard .employee-filter-polish .selected-badge {
-        min-height: 38px !important;
-        align-items: center !important;
-        border: 1px solid rgba(15, 116, 76, 0.16) !important;
-        background: #edf8f2 !important;
-        color: #0f744c !important;
-        -webkit-text-fill-color: #0f744c !important;
-        font-weight: 900 !important;
-        padding: 0.48rem 0.78rem !important;
-        white-space: nowrap !important;
-    }
-
-    .employee-dashboard .employee-filter-polish .btn-export-all,
-    .employee-dashboard .employee-filter-polish .btn-apply {
-        min-height: 42px !important;
-        border: 1px solid #0f744c !important;
-        background: linear-gradient(135deg, #0f744c, #188b5e) !important;
-        color: #ffffff !important;
-        -webkit-text-fill-color: #ffffff !important;
-        font-weight: 900 !important;
-        padding: 0.58rem 1rem !important;
-        box-shadow: 0 12px 22px rgba(15, 116, 76, 0.16) !important;
-    }
-
-    .employee-dashboard .employee-filter-polish .btn-export-all *,
-    .employee-dashboard .employee-filter-polish .btn-apply * {
-        color: #ffffff !important;
-        -webkit-text-fill-color: #ffffff !important;
-    }
-
-    .employee-dashboard .employee-filter-polish .btn-group .btn {
-        width: 40px !important;
-        height: 40px !important;
-        min-width: 40px !important;
-        padding: 0 !important;
-        border-radius: 12px !important;
-        align-items: center !important;
-        justify-content: center !important;
-        border: 1px solid rgba(15, 116, 76, 0.14) !important;
-        background: #ffffff !important;
-        color: #0f744c !important;
-        -webkit-text-fill-color: #0f744c !important;
-        box-shadow: 0 8px 16px rgba(22, 39, 30, 0.06) !important;
-    }
-
-    .employee-dashboard .employee-filter-polish .btn-group .btn:disabled {
-        opacity: 0.65 !important;
-        color: #7f8d85 !important;
-        -webkit-text-fill-color: #7f8d85 !important;
-    }
-
-    .employee-dashboard .employee-filter-polish .filter-body {
-        background: rgba(255, 255, 255, 0.78) !important;
-    }
-
-    .employee-dashboard .employee-filter-polish .filter-grid {
-        align-items: end !important;
-    }
-
-    .employee-dashboard .employee-filter-polish .filter-item {
-        min-width: 0 !important;
-    }
-
-    .employee-dashboard .employee-filter-polish .filter-label {
-        display: flex !important;
-        align-items: center !important;
-        gap: 0.35rem !important;
-        color: #13241b !important;
-        -webkit-text-fill-color: #13241b !important;
-        font-size: 0.86rem !important;
-        font-weight: 900 !important;
-        margin-bottom: 0.5rem !important;
-    }
-
-    .employee-dashboard .employee-filter-polish .filter-label i {
-        color: #0f744c !important;
-        -webkit-text-fill-color: #0f744c !important;
-    }
-
-    .employee-dashboard .employee-filter-polish .form-select,
-    .employee-dashboard .employee-filter-polish .select2-container--default .select2-selection--single {
-        min-height: 46px !important;
-        border: 1px solid rgba(15, 116, 76, 0.18) !important;
-        border-radius: 14px !important;
-        background: #ffffff !important;
-        color: #111c16 !important;
-        -webkit-text-fill-color: #111c16 !important;
-        box-shadow: 0 8px 18px rgba(22, 39, 30, 0.05) !important;
-    }
-
-    .employee-dashboard .employee-filter-polish .select2-container--default .select2-selection--single .select2-selection__rendered {
-        color: #111c16 !important;
-        -webkit-text-fill-color: #111c16 !important;
-        font-weight: 800 !important;
-        line-height: 44px !important;
-        padding-left: 14px !important;
-        padding-right: 34px !important;
-    }
-
-    .employee-dashboard .employee-filter-polish .select2-container--default .select2-selection--single .select2-selection__arrow {
-        height: 44px !important;
-        right: 8px !important;
-    }
-
-    .employee-dashboard .employee-filter-polish .btn-reset {
-        min-height: 42px !important;
-        border: 1px solid rgba(15, 116, 76, 0.16) !important;
-        background: #ffffff !important;
-        color: #0f744c !important;
-        -webkit-text-fill-color: #0f744c !important;
-        font-weight: 900 !important;
-        padding: 0.58rem 0.95rem !important;
-    }
-
-    html[data-pms-theme="dark"] .employee-dashboard .employee-filter-polish {
-        border-color: rgba(122, 240, 181, 0.22) !important;
-        background: linear-gradient(180deg, #102119, #0c1913) !important;
-    }
-
-    html[data-pms-theme="dark"] .employee-dashboard .employee-filter-polish .filter-header {
-        border-color: rgba(122, 240, 181, 0.18) !important;
-        background: linear-gradient(135deg, rgba(64, 212, 140, 0.14), rgba(16, 33, 25, 0.96)) !important;
-    }
-
-    html[data-pms-theme="dark"] .employee-dashboard .employee-filter-polish .header-text h3,
-    html[data-pms-theme="dark"] .employee-dashboard .employee-filter-polish .filter-label {
-        color: #ffffff !important;
-        -webkit-text-fill-color: #ffffff !important;
-    }
-
-    html[data-pms-theme="dark"] .employee-dashboard .employee-filter-polish .header-text p {
-        color: #d9f1e4 !important;
-        -webkit-text-fill-color: #d9f1e4 !important;
-    }
-
-    html[data-pms-theme="dark"] .employee-dashboard .employee-filter-polish .filter-body {
-        background: rgba(16, 33, 25, 0.82) !important;
-    }
-
-    html[data-pms-theme="dark"] .employee-dashboard .employee-filter-polish .form-select,
-    html[data-pms-theme="dark"] .employee-dashboard .employee-filter-polish .select2-container--default .select2-selection--single {
-        border-color: rgba(122, 240, 181, 0.2) !important;
-        background: #183026 !important;
-        color: #ffffff !important;
-        -webkit-text-fill-color: #ffffff !important;
-    }
-
-    html[data-pms-theme="dark"] .employee-dashboard .employee-filter-polish .select2-container--default .select2-selection--single .select2-selection__rendered {
-        color: #ffffff !important;
-        -webkit-text-fill-color: #ffffff !important;
-    }
-
-    @media (max-width: 640px) {
-        .employee-dashboard .employee-filter-polish .header-right,
-        .employee-dashboard .employee-filter-polish .btn-export-all,
-        .employee-dashboard .employee-filter-polish .btn-apply,
-        .employee-dashboard .employee-filter-polish .btn-reset {
-            width: 100% !important;
-        }
-
-        .employee-dashboard .employee-filter-polish .btn-group {
-            width: 100% !important;
-            justify-content: space-between !important;
-        }
-
-        .employee-dashboard .employee-filter-polish .btn-group .btn {
-            flex: 1 1 40px !important;
-        }
-    }
-
-    /* Exact filter body section polish */
-    .employee-dashboard .employee-filter-body {
-        border-top: 1px solid rgba(15, 116, 76, 0.08) !important;
-        background:
-            linear-gradient(135deg, rgba(15, 116, 76, 0.035), rgba(255, 255, 255, 0.86)),
-            #ffffff !important;
-    }
-
-    .employee-dashboard .employee-filter-grid {
-        align-items: stretch !important;
-    }
-
-    .employee-dashboard .employee-filter-field {
-        display: flex !important;
-        min-width: 0 !important;
-        min-height: 112px !important;
-        flex-direction: column !important;
-        justify-content: flex-end !important;
-        border: 1px solid rgba(15, 116, 76, 0.12) !important;
-        border-radius: 18px !important;
-        background: rgba(255, 255, 255, 0.92) !important;
-        padding: 0.9rem !important;
-        box-shadow: 0 10px 24px rgba(22, 39, 30, 0.055) !important;
-    }
-
-    .employee-dashboard .employee-filter-field .filter-label {
-        display: inline-flex !important;
-        width: 100% !important;
-        align-items: center !important;
-        gap: 0.48rem !important;
-        color: #0a1f16 !important;
-        -webkit-text-fill-color: #0a1f16 !important;
-        font-size: 0.9rem !important;
-        font-weight: 950 !important;
-        line-height: 1.2 !important;
-        margin: 0 0 0.68rem !important;
-        white-space: normal !important;
-    }
-
-    .employee-dashboard .employee-filter-field .filter-label i {
-        display: inline-flex !important;
-        width: 28px !important;
-        height: 28px !important;
-        flex: 0 0 28px !important;
-        align-items: center !important;
-        justify-content: center !important;
-        border-radius: 10px !important;
-        background: #e7f5ee !important;
-        color: #0f744c !important;
-        -webkit-text-fill-color: #0f744c !important;
-        font-size: 0.82rem !important;
-        margin-right: 0 !important;
-    }
-
-    .employee-dashboard .employee-filter-field .form-select,
-    .employee-dashboard .employee-filter-field .select2-container {
-        width: 100% !important;
-        max-width: 100% !important;
-    }
-
-    .employee-dashboard .employee-filter-field .form-select,
-    .employee-dashboard .employee-filter-field .select2-container--default .select2-selection--single {
-        height: 48px !important;
-        min-height: 48px !important;
-        border: 1px solid rgba(15, 116, 76, 0.18) !important;
-        border-radius: 14px !important;
-        background: #f9fcfa !important;
-        color: #08150f !important;
-        -webkit-text-fill-color: #08150f !important;
-        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 8px 18px rgba(22, 39, 30, 0.045) !important;
-    }
-
-    .employee-dashboard .employee-filter-field .select2-container--default .select2-selection--single .select2-selection__rendered {
-        overflow: hidden !important;
-        color: #08150f !important;
-        -webkit-text-fill-color: #08150f !important;
-        font-size: 0.92rem !important;
-        font-weight: 850 !important;
-        line-height: 46px !important;
-        padding-left: 14px !important;
-        padding-right: 38px !important;
-        text-overflow: ellipsis !important;
-        white-space: nowrap !important;
-    }
-
-    .employee-dashboard .employee-filter-field .select2-container--default .select2-selection--single .select2-selection__placeholder {
-        color: #637268 !important;
-        -webkit-text-fill-color: #637268 !important;
-    }
-
-    .employee-dashboard .employee-filter-field .select2-container--default .select2-selection--single .select2-selection__arrow {
-        height: 46px !important;
-        right: 9px !important;
-    }
-
-    .employee-dashboard .employee-filter-field:focus-within {
-        border-color: rgba(15, 116, 76, 0.34) !important;
-        box-shadow: 0 14px 30px rgba(15, 116, 76, 0.1) !important;
-    }
-
-    .employee-dashboard .employee-filter-actions {
-        min-height: 112px !important;
-        align-self: stretch !important;
-        border: 1px solid rgba(15, 116, 76, 0.12) !important;
-        border-radius: 18px !important;
-        background: linear-gradient(135deg, #f3faf6, #ffffff) !important;
-        padding: 0.9rem !important;
-        box-shadow: 0 10px 24px rgba(22, 39, 30, 0.055) !important;
-    }
-
-    .employee-dashboard .employee-filter-actions .btn {
-        min-height: 48px !important;
-        flex: 1 1 auto !important;
-        border-radius: 14px !important;
-        font-size: 0.9rem !important;
-        font-weight: 950 !important;
-        line-height: 1.1 !important;
-        white-space: nowrap !important;
-    }
-
-    .employee-dashboard .employee-filter-actions .btn-apply {
-        color: #ffffff !important;
-        -webkit-text-fill-color: #ffffff !important;
-    }
-
-    .employee-dashboard .employee-filter-actions .btn-apply i {
-        color: #ffffff !important;
-        -webkit-text-fill-color: #ffffff !important;
-    }
-
-    .employee-dashboard .employee-filter-actions .btn-reset i {
-        color: #0f744c !important;
-        -webkit-text-fill-color: #0f744c !important;
-    }
-
-    html[data-pms-theme="dark"] .employee-dashboard .employee-filter-body {
-        border-top-color: rgba(122, 240, 181, 0.14) !important;
-        background: linear-gradient(135deg, rgba(64, 212, 140, 0.06), rgba(16, 33, 25, 0.92)) !important;
-    }
-
-    html[data-pms-theme="dark"] .employee-dashboard .employee-filter-field,
-    html[data-pms-theme="dark"] .employee-dashboard .employee-filter-actions {
-        border-color: rgba(122, 240, 181, 0.16) !important;
-        background: #102119 !important;
-    }
-
-    html[data-pms-theme="dark"] .employee-dashboard .employee-filter-field .filter-label {
-        color: #ffffff !important;
-        -webkit-text-fill-color: #ffffff !important;
-    }
-
-    html[data-pms-theme="dark"] .employee-dashboard .employee-filter-field .filter-label i {
-        background: rgba(64, 212, 140, 0.16) !important;
-        color: #7af0b5 !important;
-        -webkit-text-fill-color: #7af0b5 !important;
-    }
-
-    html[data-pms-theme="dark"] .employee-dashboard .employee-filter-field .form-select,
-    html[data-pms-theme="dark"] .employee-dashboard .employee-filter-field .select2-container--default .select2-selection--single {
-        border-color: rgba(122, 240, 181, 0.2) !important;
-        background: #183026 !important;
-        color: #ffffff !important;
-        -webkit-text-fill-color: #ffffff !important;
-    }
-
-    html[data-pms-theme="dark"] .employee-dashboard .employee-filter-field .select2-container--default .select2-selection--single .select2-selection__rendered {
-        color: #ffffff !important;
-        -webkit-text-fill-color: #ffffff !important;
-    }
-
-    html[data-pms-theme="dark"] .employee-dashboard .btn-archive-employees {
-        border-color: rgba(122, 240, 181, 0.24) !important;
-        background: #183026 !important;
-        color: #7af0b5 !important;
-        -webkit-text-fill-color: #7af0b5 !important;
-    }
-
-    html[data-pms-theme="dark"] .employee-dashboard .btn-archive-employees i,
-    html[data-pms-theme="dark"] .employee-dashboard .btn-archive-employees span {
-        color: #7af0b5 !important;
-        -webkit-text-fill-color: #7af0b5 !important;
-    }
-
-    @media (max-width: 640px) {
-        .employee-dashboard .employee-filter-field,
-        .employee-dashboard .employee-filter-actions {
-            min-height: auto !important;
-            padding: 0.82rem !important;
-        }
-
-        .employee-dashboard .employee-filter-actions .btn {
-            width: 100% !important;
-        }
-    }
-
-    /* Final employee index card polish */
-    .employee-dashboard {
-        background: linear-gradient(145deg, #f7fbf9 0%, #eef7f2 52%, #fafdfb 100%) !important;
-    }
-
-    .employee-dashboard .breadcrumb-wrapper,
-    .employee-dashboard .header-section,
-    .employee-dashboard .stat-card,
-    .employee-dashboard .filter-export-card,
-    .employee-dashboard .table-card,
-    .employee-dashboard .employee-filter-polish {
-        border: 1px solid rgba(15, 116, 76, 0.12) !important;
-        box-shadow: 0 18px 44px rgba(22, 39, 30, 0.08) !important;
-        backdrop-filter: blur(14px);
-        -webkit-backdrop-filter: blur(14px);
-    }
-
-    .employee-dashboard .header-section {
-        background:
-            linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(241, 250, 245, 0.94)) !important;
-        overflow: visible !important;
-    }
-
-    .employee-dashboard .icon-circle,
-    .employee-dashboard .stat-icon {
-        background: linear-gradient(135deg, #0f744c, #188b5e) !important;
-        color: #ffffff !important;
-        -webkit-text-fill-color: #ffffff !important;
-        box-shadow: 0 12px 24px rgba(15, 116, 76, 0.2) !important;
-    }
-
-    .employee-dashboard .icon-circle i,
-    .employee-dashboard .stat-icon i {
-        color: #ffffff !important;
-        -webkit-text-fill-color: #ffffff !important;
-    }
-
-    .employee-dashboard .header-section h1,
-    .employee-dashboard .stat-value,
-    .employee-dashboard .table-card h3,
-    .employee-dashboard .employee-name,
-    .employee-dashboard .table strong {
-        color: #07130d !important;
-        -webkit-text-fill-color: #07130d !important;
-        letter-spacing: 0 !important;
-    }
-
-    .employee-dashboard .subtitle,
-    .employee-dashboard .stat-label,
-    .employee-dashboard .employee-email,
-    .employee-dashboard .table td {
-        color: #52645a !important;
-        -webkit-text-fill-color: #52645a !important;
-    }
-
-    .employee-dashboard .stat-card {
-        border-radius: 20px !important;
-        background: linear-gradient(135deg, #ffffff, #f8fcfa) !important;
-        overflow: hidden;
-    }
-
-    .employee-dashboard .stat-card:hover,
-    .employee-dashboard .table-card:hover,
-    .employee-dashboard .employee-filter-polish:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 22px 52px rgba(22, 39, 30, 0.11) !important;
-    }
-
-    .employee-dashboard .table-card {
-        border-radius: 24px !important;
-        background: rgba(255, 255, 255, 0.98) !important;
-        overflow: hidden;
-    }
-
-    .employee-dashboard .table thead th {
-        background: #f4faf6 !important;
-        color: #07130d !important;
-        -webkit-text-fill-color: #07130d !important;
-        border-bottom: 1px solid rgba(15, 116, 76, 0.12) !important;
-        letter-spacing: 0 !important;
-    }
-
-    .employee-dashboard .table tbody tr {
-        transition: background 0.18s ease, transform 0.18s ease;
-    }
-
-    .employee-dashboard .table tbody tr:hover {
-        background: #f5fbf7 !important;
-    }
-
-    .employee-dashboard .employee-list-table {
-        border-collapse: collapse !important;
-        border-spacing: 0 !important;
-    }
-
-    .employee-dashboard .employee-list-table tbody tr {
-        height: auto !important;
-        margin: 0 !important;
-        border-radius: 0 !important;
-        box-shadow: none !important;
-        transform: none !important;
-    }
-
-    .employee-dashboard .employee-list-table thead th {
-        padding: 14px 16px !important;
-        vertical-align: middle !important;
-    }
-
-    .employee-dashboard .employee-list-table tbody td {
-        padding: 10px 16px !important;
-        vertical-align: middle !important;
-        border-bottom: 1px solid rgba(15, 116, 76, 0.08) !important;
-    }
-
-    .employee-dashboard .employee-list-table tbody td:first-child,
-    .employee-dashboard .employee-list-table tbody td:last-child {
-        padding-left: 12px !important;
-        padding-right: 12px !important;
-    }
-
-    .employee-dashboard .employee-list-table .employee-info {
-        min-height: 52px !important;
-    }
-
-    .employee-dashboard .employee-avatar,
-    .employee-dashboard .avatar,
-    .employee-dashboard img.rounded-circle {
-        border: 2px solid #ffffff !important;
-        box-shadow: 0 8px 16px rgba(22, 39, 30, 0.12) !important;
-    }
-
-    .employee-dashboard .btn,
-    .employee-dashboard .action-btn {
-        border-radius: 12px !important;
-        font-weight: 850 !important;
-    }
-
-    html[data-pms-theme="dark"] .employee-dashboard {
-        background: linear-gradient(145deg, #07130d, #102119) !important;
-    }
-
-    html[data-pms-theme="dark"] .employee-dashboard .header-section,
-    html[data-pms-theme="dark"] .employee-dashboard .stat-card,
-    html[data-pms-theme="dark"] .employee-dashboard .table-card {
-        background: #102119 !important;
-        border-color: rgba(122, 240, 181, 0.18) !important;
-    }
-
-    html[data-pms-theme="dark"] .employee-dashboard .header-section h1,
-    html[data-pms-theme="dark"] .employee-dashboard .stat-value,
-    html[data-pms-theme="dark"] .employee-dashboard .table-card h3,
-    html[data-pms-theme="dark"] .employee-dashboard .table strong {
-        color: #ffffff !important;
-        -webkit-text-fill-color: #ffffff !important;
-    }
-
-    html[data-pms-theme="dark"] .employee-dashboard .subtitle,
-    html[data-pms-theme="dark"] .employee-dashboard .stat-label,
-    html[data-pms-theme="dark"] .employee-dashboard .table td {
-        color: #d9f1e4 !important;
-        -webkit-text-fill-color: #d9f1e4 !important;
-    }
-
-    /* ===== Employee list row gap: same distance for every row ===== */
-    @media (min-width: 769px) {
-        .employee-dashboard .employee-list-table {
-            border-collapse: separate !important;
-            border-spacing: 0 8px !important;
-            width: max-content !important;
-            min-width: 1200px !important;
-        }
-
-        .employee-dashboard .employee-list-table thead tr,
-        .employee-dashboard .employee-list-table tbody tr {
-            display: table-row !important;
-        }
-
-        .employee-dashboard .employee-list-table thead th {
-            padding: 13px 16px !important;
-            border-bottom: 1px solid rgba(15, 116, 76, 0.1) !important;
-        }
-
-        .employee-dashboard .employee-list-table tbody td {
-            height: 72px !important;
-            padding: 10px 16px !important;
-            background: #ffffff !important;
-            border-top: 1px solid rgba(15, 116, 76, 0.06) !important;
-            border-bottom: 1px solid rgba(15, 116, 76, 0.06) !important;
-            vertical-align: middle !important;
-        }
-
-        .employee-dashboard .employee-list-table thead th:nth-child(2),
-        .employee-dashboard .employee-list-table tbody td:nth-child(2) {
-            width: 140px !important;
-            min-width: 140px !important;
-            max-width: 140px !important;
-            padding-left: 14px !important;
-            padding-right: 14px !important;
-            text-align: left !important;
-        }
-
-        .employee-dashboard .employee-list-table .employee-id-badge {
-            max-width: 100% !important;
-            overflow: visible !important;
-            text-overflow: clip !important;
-            white-space: nowrap !important;
-        }
-
-        .employee-dashboard .employee-list-table thead th:nth-child(3),
-        .employee-dashboard .employee-list-table tbody td:nth-child(3) {
-            width: 300px !important;
-            min-width: 300px !important;
-            max-width: 300px !important;
-            padding-right: 10px !important;
-        }
-
-        .employee-dashboard .employee-list-table thead th:nth-child(4),
-        .employee-dashboard .employee-list-table tbody td:nth-child(4) {
-            width: 190px !important;
-            min-width: 190px !important;
-            max-width: 190px !important;
-            padding-left: 10px !important;
-            padding-right: 10px !important;
-        }
-
-        .employee-dashboard .employee-list-table thead th:nth-child(5),
-        .employee-dashboard .employee-list-table tbody td:nth-child(5) {
-            width: 210px !important;
-            min-width: 210px !important;
-            max-width: 210px !important;
-            padding-left: 10px !important;
-        }
-
-        .employee-dashboard .employee-list-table tbody td:first-child {
-            border-left: 1px solid rgba(15, 116, 76, 0.06) !important;
-            border-radius: 14px 0 0 14px !important;
-            padding-left: 18px !important;
-            padding-right: 10px !important;
-        }
-
-        .employee-dashboard .employee-list-table tbody td:last-child {
-            border-right: 1px solid rgba(15, 116, 76, 0.06) !important;
-            border-radius: 0 14px 14px 0 !important;
-            padding-left: 10px !important;
-            padding-right: 18px !important;
-        }
-
-        .employee-dashboard .employee-list-table .employee-info {
-            min-height: 48px !important;
-        }
-    }
-</style>
+@include('admin.employees.partials.directory-styles')
+@include('admin.employees.partials.directory-presentation')
 
 {{-- JavaScript - COMPLETELY UNCHANGED FUNCTIONALITY --}}
 @push('js')
@@ -3111,7 +999,8 @@ $(document).ready(function () {
             $(btn).prop('disabled', selectedCount === 0);
         });
 
-        $('#btn-bulk-delete').prop('disabled', selectedCount === 0);
+        // Stays tappable with no selection so the button explains what to do (a disabled button gave no feedback on mobile).
+        $('#btn-bulk-delete').toggleClass('is-awaiting-selection', selectedCount === 0).attr('aria-disabled', selectedCount === 0 ? 'true' : 'false');
         $('tbody tr').removeClass('selected');
         $('.employee-checkbox:checked:not(:disabled)').closest('tr').addClass('selected');
     }
@@ -3208,17 +1097,14 @@ $(document).ready(function () {
             return;
         }
         const data = getDataForExport(false);
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF('landscape');
-        doc.text('Employee List', 14, 15);
-        doc.autoTable({
-            head: [data[0]],
-            body: data.slice(1),
-            startY: 30,
-            theme: 'grid',
-            headStyles: { fillColor: [124, 58, 237] }
-        });
-        doc.save(`employees_${new Date().toISOString().split('T')[0]}.pdf`);
+        const pdfDocument = {
+            pageSize: 'A4', pageOrientation: 'landscape',
+            content: [{ text: 'Employee List', style: 'title' }, {
+                table: { headerRows: 1, body: [data[0].map(text => ({ text, style: 'tableHeader' })), ...data.slice(1)] }
+            }]
+        };
+        window.PmsPdfExports.styleDocument(pdfDocument);
+        window.pdfMake.createPdf(pdfDocument).download(`employees_${new Date().toISOString().split('T')[0]}.pdf`);
     });
 
     // Print
@@ -3245,6 +1131,91 @@ $(document).ready(function () {
         XLSX.writeFile(wb, `all_employees_${new Date().toISOString().split('T')[0]}.xlsx`);
     });
 
+    // Inline Status toggle (Active <-> Inactive)
+    $(document).on('click', '.js-employee-status-toggle', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const $btn = $(this);
+        if ($btn.prop('disabled')) return;
+
+        const employeeId = $btn.attr('data-employee-id');
+        const currentStatus = $btn.attr('data-status');
+        const nextStatus = currentStatus === 'Active' ? 'Inactive' : 'Active';
+        const followingStatus = nextStatus === 'Active' ? 'Inactive' : 'Active';
+
+        $btn.prop('disabled', true);
+
+        $.ajax({
+            url: '{{ route("employees.bulkUpdateStatus") }}',
+            type: 'POST',
+            data: {
+                _token: '{{ csrf_token() }}',
+                employee_ids: [employeeId],
+                status: nextStatus,
+                auto_exit_date: 1
+            },
+            success: function() {
+                $btn
+                    .removeClass('status-active status-inactive status-unknown')
+                    .addClass(nextStatus === 'Active' ? 'status-active' : 'status-inactive')
+                    .attr('data-status', nextStatus)
+                    .attr('title', `Click to switch status to ${followingStatus}`)
+                    .find('.status-text').text(nextStatus);
+
+                const $row = $btn.closest('tr');
+                const $rowCheckbox = $row.find('.employee-checkbox');
+                if ($rowCheckbox.length) {
+                    $rowCheckbox.attr('data-status', nextStatus).data('status', nextStatus);
+                    updateSelectedEmployees();
+                }
+
+                const archiveSlot = $row.find('.js-employee-archive-item')[0];
+                if (archiveSlot) {
+                    if (nextStatus === 'Inactive') {
+                        const form = document.createElement('form');
+                        form.action = archiveSlot.getAttribute('data-destroy-url') || '#';
+                        form.method = 'POST';
+                        form.onsubmit = function() {
+                            return confirm('Archive this inactive employee? The data will move to Archived Employees and can be restored.');
+                        };
+                        const csrf = document.createElement('input');
+                        csrf.type = 'hidden';
+                        csrf.name = '_token';
+                        csrf.value = '{{ csrf_token() }}';
+                        const methodInput = document.createElement('input');
+                        methodInput.type = 'hidden';
+                        methodInput.name = '_method';
+                        methodInput.value = 'DELETE';
+                        const submitBtn = document.createElement('button');
+                        submitBtn.type = 'submit';
+                        submitBtn.className = 'dropdown-item text-danger';
+                        const archiveIcon = document.createElement('i');
+                        archiveIcon.className = 'fas fa-box-archive me-2';
+                        submitBtn.append(archiveIcon, document.createTextNode(' Archive Employee'));
+                        form.append(csrf, methodInput, submitBtn);
+                        archiveSlot.replaceChildren(form);
+                    } else {
+                        const lockedBtn = document.createElement('button');
+                        lockedBtn.type = 'button';
+                        lockedBtn.className = 'dropdown-item text-muted';
+                        lockedBtn.disabled = true;
+                        const lockIcon = document.createElement('i');
+                        lockIcon.className = 'fas fa-lock me-2';
+                        lockedBtn.append(lockIcon, document.createTextNode(' Archive only inactive'));
+                        archiveSlot.replaceChildren(lockedBtn);
+                    }
+                }
+            },
+            error: function(xhr) {
+                alert(xhr?.responseJSON?.message || 'Unable to update employee status.');
+            },
+            complete: function() {
+                $btn.prop('disabled', false);
+            }
+        });
+    });
+
     // Bulk archive inactive employees
     $('#btn-bulk-delete, #bulkDeleteTrigger').on('click', function() {
         let inactiveSelection = selectedEmployees.filter(emp => emp.data.status === 'Inactive');
@@ -3252,7 +1223,7 @@ $(document).ready(function () {
         let skippedCount = selectedEmployees.length - selectedIds.length;
 
         if (!selectedEmployees.length) {
-            alert('Please select at least one employee.');
+            alert('Select the inactive employees to archive first: tick their checkboxes (or tap their rows), then press Archive Inactive.');
             return;
         }
 
@@ -3281,49 +1252,97 @@ $(document).ready(function () {
         });
     });
 
+    // Keep Bootstrap's modal above its backdrop, outside transformed page cards.
+    document.body.appendChild(document.getElementById('inviteModal'));
+    function inviteNotice(message, success = false) {
+        $('#inviteEmailAlert').attr('class', 'alert mx-3 mb-3 ' + (success ? 'alert-success' : 'alert-danger'))
+            .attr('role', 'status').text(message).show();
+    }
+    $('#invite-link-tab, #invite-email-tab').on('shown.bs.tab', function() {
+        $('#sendInviteBtn').toggle(this.id === 'invite-email-tab');
+        $('#inviteEmailAlert').hide();
+    });
+
     // Invite by email
     $('#inviteEmailForm').on('submit', function(e) {
         e.preventDefault();
         const email = $('#inviteEmail').val().trim();
         const message = $('#inviteMessage').val().trim();
+        if (!this.reportValidity() || $('#sendInviteBtn').prop('disabled')) return;
+        $('#inviteEmailAlert').hide();
+        $('#sendInviteBtn').prop('disabled', true);
+        $('#sendInviteSpinner').removeClass('d-none');
 
         $.ajax({
             url: '{{ route("employees.sendInvite") }}',
             type: 'POST',
+            timeout: 30000,
             data: {
                 _token: '{{ csrf_token() }}',
                 email: email,
                 message: message
             },
             success: function(res) {
-                alert('Invitation sent successfully!');
-                $('#inviteModal').modal('hide');
+                inviteNotice(res.message, true);
                 $('#inviteEmailForm')[0].reset();
             },
             error: function(xhr) {
-                alert(xhr?.responseJSON?.message || 'Failed to send invite.');
+                const errors = xhr.responseJSON?.errors;
+                inviteNotice(errors ? Object.values(errors).flat().join(' ') : (xhr.responseJSON?.message || 'Could not send the invitation. Check your connection and try again.'));
+            },
+            complete: function() {
+                $('#sendInviteBtn').prop('disabled', false);
+                $('#sendInviteSpinner').addClass('d-none');
             }
         });
     });
 
     // Generate invite link
     $('#createLinkBtn').on('click', function() {
+        const input = document.getElementById('inviteLinkEmail');
+        if (!input.reportValidity() || $(this).prop('disabled')) return;
         $('#linkContainer').hide();
         $('#inviteLink').val('');
-        alert('Public registration is disabled. Please create employee accounts from the employee management form.');
+        $('#inviteEmailAlert').hide();
+        $(this).prop('disabled', true);
+        $.ajax({
+            url: '{{ route("employees.inviteLink") }}',
+            type: 'POST',
+            timeout: 30000,
+            data: { _token: '{{ csrf_token() }}', email: input.value.trim() },
+            success: function(res) {
+                $('#inviteLink').val(res.url);
+                $('#linkContainer').show();
+                inviteNotice(res.message, true);
+            },
+            error: function(xhr) {
+                const errors = xhr.responseJSON?.errors;
+                inviteNotice(errors ? Object.values(errors).flat().join(' ') : (xhr.responseJSON?.message || 'Could not create the invitation link. Please try again.'));
+            },
+            complete: function() { $('#createLinkBtn').prop('disabled', false); }
+        });
     });
 
     // Copy link
-    $('#copyLinkBtn').on('click', function() {
-        $('#inviteLink').select();
-        document.execCommand('copy');
-        alert('Link copied to clipboard!');
+    $('#copyLinkBtn').on('click', async function() {
+        const link = $('#inviteLink').val();
+        if (!link) return;
+        try {
+            if (navigator.clipboard && window.isSecureContext) await navigator.clipboard.writeText(link);
+            else {
+                $('#inviteLink').select();
+                if (!document.execCommand('copy')) throw new Error('Copy failed');
+            }
+            inviteNotice('Invitation link copied.', true);
+        } catch (error) {
+            inviteNotice('Select and copy the invitation link manually.');
+        }
     });
 
     // Share link
     $('#shareLinkBtn').on('click', function() {
         const link = $('#inviteLink').val();
-        window.location.href = `mailto:?subject=Join Xinksoft Technologies&body=${encodeURIComponent(link)}`;
+        window.location.href = `mailto:?subject=${encodeURIComponent(@json('Join ' . (session('current_company_name') ?: config('app.name'))))}&body=${encodeURIComponent(link)}`;
     });
 
     // Blocked delete
@@ -3338,19 +1357,91 @@ $(document).ready(function () {
         new bootstrap.Modal(document.getElementById('blockedDeleteModal')).show();
     });
 
+    // ===== Delete employee (permanent) — only after the employee is inactive =====
+    const deleteModalEl = document.getElementById('employeeDeleteModal');
+    const inactiveModalEl = document.getElementById('employeeInactiveModal');
+    const initialsOf = name => String(name || 'E').trim().split(/\s+/).slice(0, 2).map(part => part.charAt(0)).join('').toUpperCase() || 'E';
+    let deleteContext = null;
+
+    function openInactiveModal(data) {
+        $('#employeeInactiveName').text(data.name);
+        $('#employeeInactiveMeta').text(data.code ? 'Employee ID ' + data.code : '');
+        $('#employeeInactiveInitials').text(initialsOf(data.name));
+        $('#employeeInactiveForm').attr('action', data.inactiveUrl);
+        bootstrap.Modal.getOrCreateInstance(inactiveModalEl).show();
+    }
+
+    $(document).on('click', '.employee-inactive-trigger', function (e) {
+        e.preventDefault();
+        openInactiveModal({ name: $(this).data('employee-name'), code: $(this).data('employee-code'), inactiveUrl: $(this).data('inactive-url') });
+    });
+
+    $(document).on('click', '.employee-delete-trigger', function (e) {
+        e.preventDefault();
+        const $btn = $(this);
+        const state = String($btn.data('delete-state'));
+        const team = parseInt($btn.data('employee-team'), 10) || 0;
+        const code = String($btn.data('employee-code') || '').trim();
+        deleteContext = { name: String($btn.data('employee-name')), code, inactiveUrl: $btn.data('inactive-url') };
+        const expected = code || deleteContext.name;
+        const ready = state === 'ready';
+
+        $('#employeeDeleteName').text(deleteContext.name);
+        $('#employeeDeleteMeta').text([code ? 'ID ' + code : null, $btn.data('employee-role'), $btn.data('employee-department')].filter(Boolean).join(' · '));
+        $('#employeeDeleteInitials').text(initialsOf(deleteContext.name));
+        $('#employeeDeleteStatus').text(state === 'active' ? 'Active' : (state === 'privileged' ? 'HR / Manager' : 'Inactive')).toggleClass('is-active', state === 'active');
+        $('#employeeDeleteStepInactive').toggleClass('is-done', state !== 'active' && state !== 'privileged').toggleClass('is-todo', state === 'active');
+        $('#employeeDeleteStepTeam').toggleClass('is-done', team === 0).toggleClass('is-todo', team > 0)
+            .find('span:last').text(team > 0 ? team + ' team member(s) still report to this employee' : 'No team members report to this employee');
+
+        const reasons = {
+            active: deleteContext.name + ' is still active. Mark the employee inactive first — then the Delete option unlocks.',
+            'has-team': team + ' team member(s) report to ' + deleteContext.name + '. Assign them a new reporting manager first, then delete.',
+            privileged: deleteContext.name + ' has HR or manager access. Only employee accounts can be deleted from the Employees section.',
+        };
+        $('#employeeDeleteTitle').text(ready ? 'Delete employee permanently?' : 'Delete is locked');
+        $('#employeeDeleteSubtitle').text(ready ? 'Review the details below before you continue.' : 'Complete the steps below to unlock it.');
+        $('#employeeDeleteIcon').toggleClass('is-locked', !ready).find('i').attr('class', 'fas ' + (ready ? 'fa-trash-can' : 'fa-lock'));
+        $('#employeeDeleteLocked').toggle(!ready).find('p').text(reasons[state] || '');
+        $('#employeeDeleteForm').toggle(ready).attr('action', ready ? $btn.data('delete-url') : '#');
+        $('#employeeDeleteCode').text(expected);
+        $('#employeeDeleteConfirm').val('').attr('placeholder', expected).data('expected', expected);
+        $('#employeeDeleteSubmit').toggle(ready).prop('disabled', true);
+        $('#employeeDeleteMakeInactive').toggle(state === 'active');
+        bootstrap.Modal.getOrCreateInstance(deleteModalEl).show();
+    });
+
+    $('#employeeDeleteConfirm').on('input', function () {
+        const matches = this.value.trim().toLowerCase() === String($(this).data('expected') || '').trim().toLowerCase();
+        $('#employeeDeleteSubmit').prop('disabled', !matches);
+        this.classList.toggle('is-match', matches);
+    });
+    deleteModalEl?.addEventListener('shown.bs.modal', () => { if ($('#employeeDeleteForm').is(':visible')) $('#employeeDeleteConfirm').trigger('focus'); });
+    $('#employeeDeleteForm').on('submit', function (e) {
+        if ($('#employeeDeleteSubmit').prop('disabled')) { e.preventDefault(); return; }
+        $('#employeeDeleteSubmit').prop('disabled', true).html('<i class="fas fa-spinner fa-spin" aria-hidden="true"></i> Deleting…');
+    });
+    $('#employeeDeleteMakeInactive').on('click', function () {
+        const context = deleteContext;
+        if (!context) return;
+        deleteModalEl.addEventListener('hidden.bs.modal', () => openInactiveModal(context), { once: true });
+        bootstrap.Modal.getOrCreateInstance(deleteModalEl).hide();
+    });
+    $('#employeeInactiveForm').on('submit', function () {
+        $('#employeeInactiveSubmit').prop('disabled', true).html('<i class="fas fa-spinner fa-spin" aria-hidden="true"></i> Saving…');
+    });
+
     // Initialize
     updateSelectedEmployees();
     updateSelectAllCheckbox();
 
     // Mobile labels
-    if ($(window).width() < 768) {
-        $('#employeeTable thead th').each(function(index) {
+    $('#employeeTable thead th').each(function(index) {
             const headerText = $(this).text().trim();
             $('#employeeTable tbody tr').each(function() {
-                $(this).find('td').eq(index).attr('data-label', headerText);
+                $(this).find('td:not([colspan])').eq(index).attr('data-label', headerText);
             });
-        });
-    }
+    });
 });
 </script>
 
@@ -3396,8 +1487,6 @@ function openResetPasswordModal(id, name) {
 </script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 @endpush
 
 @endsection

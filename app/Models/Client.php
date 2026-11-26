@@ -4,15 +4,20 @@ namespace App\Models;
 
 use App\Models\TenantModel;
 
+use App\Traits\BelongsToCompany;
 use Illuminate\Database\Eloquent\Model;
 
 class Client extends TenantModel
 {
+    use BelongsToCompany;
+
     protected $fillable = [
+        'company_id',
         'salutation',
         'name',
         'email',
         'company_name',
+        'company_country',
         'password',
         'country',
         'mobile',
@@ -49,10 +54,21 @@ class Client extends TenantModel
         parent::boot();
 
         static::creating(function ($client) {
-            $latest = static::orderBy('id', 'desc')->first();
-            $number = $latest ? $latest->id + 1 : 1;
+            $schema = $client->getConnection()->getSchemaBuilder();
+            if ($schema->hasTable('clients')) {
+                if ($schema->hasColumn('clients', 'client_uid')) {
+                    $latest = static::orderBy('id', 'desc')->first();
+                    $number = $latest ? $latest->id + 1 : 1;
 
-            $client->client_uid = 'XINK-CL-' . str_pad($number, 4, '0', STR_PAD_LEFT);
+                    $client->client_uid = 'XINK-CL-' . str_pad($number, 4, '0', STR_PAD_LEFT);
+                } else {
+                    unset($client->attributes['client_uid']);
+                }
+
+                if (! $schema->hasColumn('clients', 'status')) {
+                    unset($client->attributes['status']);
+                }
+            }
         });
     }
 
@@ -71,9 +87,24 @@ class Client extends TenantModel
         return $this->belongsTo(ClientCategory::class, 'client_category_id');
     }
 
-    public function subCategory()
+    public function subcategory()
     {
         return $this->belongsTo(ClientSubCategory::class, 'client_sub_category_id');
+    }
+
+    public function addedBy()
+    {
+        return $this->belongsTo(User::class, 'added_by');
+    }
+
+    public function countryRel()
+    {
+        return $this->belongsTo(Country::class, 'country');
+    }
+
+    public function getProfileImageAttribute()
+    {
+        return $this->profile_picture;
     }
 }
 

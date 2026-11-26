@@ -16,12 +16,24 @@ class ParentDepartmentController extends Controller
      */
     public function index(Request $request)
     {
-        $departments = ParentDepartment::withCount(['departments', 'employees'])
-            ->whereNull('archived_at')
-            ->orderBy('id', 'desc')
-            ->get();
-        $archivedCount = ParentDepartment::whereNotNull('archived_at')->count();
-        $subDepartmentsCount = \App\Models\Department::whereNull('archived_at')->count();
+        $withCounts = ['departments'];
+        if (\Illuminate\Support\Facades\Schema::hasColumn('employee_details', 'parent_dpt_id')) {
+            $withCounts[] = 'employees';
+        }
+
+        $query = ParentDepartment::withCount($withCounts);
+        if (\Illuminate\Support\Facades\Schema::hasColumn('parent_departments', 'archived_at')) {
+            $query->whereNull('archived_at');
+        }
+        $departments = $query->orderBy('id', 'desc')->get();
+
+        $archivedCount = \Illuminate\Support\Facades\Schema::hasColumn('parent_departments', 'archived_at')
+            ? ParentDepartment::whereNotNull('archived_at')->count()
+            : 0;
+
+        $subDepartmentsCount = \Illuminate\Support\Facades\Schema::hasColumn('departments', 'archived_at')
+            ? \App\Models\Department::whereNull('archived_at')->count()
+            : \App\Models\Department::count();
 
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json(['data' => $departments]);
@@ -113,7 +125,7 @@ class ParentDepartmentController extends Controller
                 return response()->json(['status' => 'success', 'dpt' => $dpt]);
             }
 
-            return redirect()->route('parent-departments.index')->with('success', 'Parent department created successfully.');
+            return redirect()->route(\App\Support\WorkforceSettings::name('parent-departments.index'))->with('success', 'Parent department created successfully.');
         } catch (\Throwable $e) {
             DB::rollBack();
             logger()->error('ParentDepartment store error: ' . $e->getMessage(), ['exception' => $e]);
@@ -166,7 +178,7 @@ class ParentDepartmentController extends Controller
                 return response()->json(['status' => 'success', 'dpt' => $parentDepartment->fresh()]);
             }
 
-            return redirect()->route('parent-departments.index')->with('success', 'Updated successfully.');
+            return redirect()->route(\App\Support\WorkforceSettings::name('parent-departments.index'))->with('success', 'Updated successfully.');
         } catch (\Throwable $e) {
             logger()->error('ParentDepartment update error: ' . $e->getMessage(), ['exception' => $e]);
 
@@ -213,7 +225,7 @@ class ParentDepartmentController extends Controller
     //             return response()->json(['status' => 'success', 'message' => 'Department deleted successfully.']);
     //         }
 
-    //         return redirect()->route('parent-departments.index')->with('success', 'Department deleted successfully.');
+    //         return redirect()->route(\App\Support\WorkforceSettings::name('parent-departments.index'))->with('success', 'Department deleted successfully.');
     //     } catch (\Throwable $e) {
     //         logger()->error('ParentDepartment delete error: ' . $e->getMessage(), ['exception' => $e]);
 
@@ -244,7 +256,7 @@ class ParentDepartmentController extends Controller
             ]);
         }
 
-        return redirect()->route('parent-departments.index')
+        return redirect()->route(\App\Support\WorkforceSettings::name('parent-departments.index'))
             ->with('success', 'Department archived successfully.');
     } catch (\Throwable $e) {
         logger()->error('ParentDepartment archive error: ' . $e->getMessage());
@@ -259,6 +271,41 @@ class ParentDepartmentController extends Controller
         return back()->with('error', 'Archive failed: ' . $e->getMessage());
     }
 }
+
+    /**
+     * Permanently delete a parent department ("Archive" above keeps it restorable). Refused while
+     * sub-departments or employees are linked, so no record is left pointing at a missing department.
+     */
+    public function deletePermanently(Request $request, $id)
+    {
+        abort_unless(auth()->user()?->hasModulePermission('department-parent', 'delete'), 403);
+        $respond = function (string $type, string $message, int $status = 200) use ($request) {
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json(['status' => $type, 'message' => $message], $status);
+            }
+            return back()->with($type === 'success' ? 'success' : 'error', $message);
+        };
+
+        try {
+            return DB::transaction(function () use ($id, $respond) {
+                $department = ParentDepartment::lockForUpdate()->findOrFail($id);
+                if ($department->departments()->exists()) {
+                    return $respond('error', '"' . $department->dpt_name . '" cannot be deleted because sub-departments are linked to it. Move or delete them first.', 422);
+                }
+                if ($department->employees()->exists()) {
+                    return $respond('error', '"' . $department->dpt_name . '" cannot be deleted because it is tagged with employees. Reassign them first.', 422);
+                }
+                $name = $department->dpt_name;
+                $department->delete();
+                return $respond('success', 'Department "' . $name . '" deleted permanently.');
+            });
+        } catch (\Illuminate\Database\QueryException $e) {
+            if (($e->errorInfo[0] ?? null) !== '23000') {
+                throw $e;
+            }
+            return $respond('error', 'This department cannot be deleted because other records still reference it.', 422);
+        }
+    }
 
     public function archive(Request $request)
     {
@@ -290,7 +337,7 @@ class ParentDepartmentController extends Controller
             'last_updated_by' => Auth::id(),
         ])->save();
 
-        return redirect()->route('parent-departments.archive')
+        return redirect()->route(\App\Support\WorkforceSettings::name('parent-departments.archive'))
             ->with('success', 'Parent department restored successfully.');
     }
 
@@ -392,7 +439,7 @@ class ParentDepartmentController extends Controller
                     'deleted_ids' => $deletableIds,
                     'message' => $finalMessage,
                 ])
-                : redirect()->route('parent-departments.index')->with($status, $finalMessage);
+                : redirect()->route(\App\Support\WorkforceSettings::name('parent-departments.index'))->with($status, $finalMessage);
         } catch (\Throwable $e) {
             DB::rollBack();
             logger()->error('ParentDepartment bulk archive error: ' . $e->getMessage(), ['exception' => $e]);

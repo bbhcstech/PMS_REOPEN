@@ -16,40 +16,68 @@ class CompanyContext
             return $this->company;
         }
 
-        // 1. Respect active impersonated company ID from session
-        if (session('current_company_id')) {
-            $comp = Company::find(session('current_company_id'))
-                ?? \App\Models\Central\Company::on('central')->find(session('current_company_id'));
-            if ($comp) {
-                return $this->company = $comp;
+        $isSuperAdmin = TenantScope::isPlatformAdmin();
+
+        // 1. If Super Admin is actively impersonating a company via session
+        if ($isSuperAdmin) {
+            if (session('current_company_id')) {
+                try {
+                    $comp = \App\Models\Central\Company::on('central')->find(session('current_company_id'))
+                        ?? Company::find(session('current_company_id'));
+                    if ($comp) {
+                        return $this->company = $comp;
+                    }
+                } catch (\Throwable $e) {}
+            }
+
+            if (session('current_company_db')) {
+                try {
+                    $comp = \App\Models\Central\Company::on('central')->where('db_name', session('current_company_db'))->first()
+                        ?? Company::where('db_name', session('current_company_db'))->first();
+                    if ($comp) {
+                        return $this->company = $comp;
+                    }
+                } catch (\Throwable $e) {}
             }
         }
 
-        // 2. Respect active impersonated company DB from session
-        if (session('current_company_db')) {
-            $comp = Company::where('db_name', session('current_company_db'))->first()
-                ?? \App\Models\Central\Company::on('central')->where('db_name', session('current_company_db'))->first();
-            if ($comp) {
-                return $this->company = $comp;
+        // 2. Non-Super Admin: resolve company using session (primary) then company_id (secondary).
+        //    Do NOT use email or active-DB fallbacks — those can silently resolve the wrong company
+        //    when multiple companies share similar admin emails or when the tenant DB hasn't been
+        //    switched yet at the time this method is called.
+        $user = Auth::guard('web')->user() ?? Auth::user();
+
+        if ($user instanceof User) {
+            $ownId = \App\Services\TenantScope::companyId();
+            if ($user->relationLoaded('company') && $user->company) {
+                abort_unless((int) $user->company->id === (int) $ownId, 403);
+                return $this->company = $user->company;
+            }
+
+            // Trust the session written at login time — it is always correct.
+            if (session('current_company_id')) {
+                try {
+                    $comp = \App\Models\Central\Company::on('central')->find(session('current_company_id'));
+                    if ($comp) {
+                        return $this->company = $comp;
+                    }
+                } catch (\Throwable $e) {}
+            }
+
+            // Fallback: company_id on the user (reliable only after SetTenantConnection
+            // has pointed the connection at the right DB and the user has been reloaded)
+            if (!empty($user->company_id)) {
+                try {
+                    $comp = \App\Models\Central\Company::on('central')->find($user->company_id);
+                    if ($comp) {
+                        return $this->company = $comp;
+                    }
+                } catch (\Throwable $e) {}
             }
         }
 
-        $user = Auth::user();
-
-        if ($user instanceof User && $user->relationLoaded('company') && $user->company) {
-            return $this->company = $user->company;
-        }
-
-        if ($user instanceof User && $user->company_id) {
-            $comp = Company::find($user->company_id);
-            if ($comp) {
-                return $this->company = $comp;
-            }
-        }
-
-        return $this->company = Company::where('status', 'active')
-            ->orderBy('id')
-            ->first();
+        // 3. For guest/unauthenticated requests: never default to Company 1.
+        return null;
     }
 
     public function id(): ?int

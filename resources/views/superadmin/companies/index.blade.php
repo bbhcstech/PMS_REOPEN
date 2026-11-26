@@ -10,25 +10,25 @@
        DESIGN TOKENS — Luxury Emerald & Slate Theme
        ============================================================ */
     :root {
-        --emerald-primary: #0f744c;
-        --emerald-dark: #073a26;
-        --emerald-deep: #05291b;
-        --emerald-light: #10b981;
-        --emerald-soft: #e4f3eb;
-        --emerald-glow: rgba(16, 185, 129, 0.25);
-        --purple-accent: #7c3aed;
-        --blue-accent: #2563eb;
-        --amber-accent: #f59e0b;
-        --rose-accent: #ef4444;
+        --emerald-primary: #2F6BFF;
+        --emerald-dark: #1E4FCC;
+        --emerald-deep: #070B1A;
+        --emerald-light: #22D3EE;
+        --emerald-soft: rgba(47, 107, 255, 0.08);
+        --emerald-glow: rgba(47, 107, 255, 0.25);
+        --purple-accent: #8B5CF6;
+        --blue-accent: #2F6BFF;
+        --amber-accent: #F59E0B;
+        --rose-accent: #EF4444;
 
-        --slate-dark: #0f172a;
+        --slate-dark: #10142C;
         --slate-body: #334155;
-        --slate-muted: #64748b;
-        --slate-light: #f8fafc;
+        --slate-muted: #545D82;
+        --slate-light: #F6F7FC;
 
-        --card-shadow-sm: 0 10px 25px -5px rgba(0, 0, 0, 0.04), 0 4px 10px rgba(0, 0, 0, 0.02);
-        --card-shadow-md: 0 20px 45px -10px rgba(15, 116, 76, 0.08), 0 6px 18px rgba(0, 0, 0, 0.03);
-        --card-shadow-lg: 0 30px 70px -15px rgba(15, 116, 76, 0.16), 0 12px 30px rgba(0, 0, 0, 0.05);
+        --card-shadow-sm: 0 10px 25px -5px rgba(16, 24, 60, 0.04), 0 4px 10px rgba(16, 24, 60, 0.02);
+        --card-shadow-md: 0 20px 45px -10px rgba(47, 107, 255, 0.08), 0 6px 18px rgba(16, 24, 60, 0.03);
+        --card-shadow-lg: 0 30px 70px -15px rgba(47, 107, 255, 0.16), 0 12px 30px rgba(16, 24, 60, 0.05);
 
         --radius: 24px;
         --radius-sm: 14px;
@@ -50,6 +50,25 @@
         --plan-diamond-bg: #f5f3ff;
         --plan-diamond-text: #6d28d9;
         --plan-diamond-border: #ddd6fe;
+    }
+
+    html[data-pms-theme="dark"],
+    html[data-theme="dark"] {
+        --emerald-primary: #2F6BFF;
+        --emerald-dark: #1E4FCC;
+        --emerald-deep: #070B1A;
+        --emerald-light: #22D3EE;
+        --emerald-soft: rgba(47, 107, 255, 0.18);
+        --emerald-glow: rgba(47, 107, 255, 0.35);
+
+        --slate-dark: #EEF1FB;
+        --slate-body: #CBD5E1;
+        --slate-muted: #9AA3C7;
+        --slate-light: #141B3D;
+
+        --card-shadow-sm: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        --card-shadow-md: 0 20px 45px -10px rgba(0, 0, 0, 0.45);
+        --card-shadow-lg: 0 30px 70px -15px rgba(0, 0, 0, 0.6);
     }
 
     /* ===== PAGE HEADER (Breadcrumb + Title + Actions) ===== */
@@ -132,12 +151,37 @@
     .btn-primary-custom {
         background: linear-gradient(135deg, var(--emerald-dark), var(--emerald-primary), var(--emerald-light));
         color: #fff !important;
-        box-shadow: 0 8px 24px rgba(15, 116, 76, 0.3);
+        box-shadow: 0 8px 24px rgba(47, 107, 255, 0.3);
+    }
+
+    .btn-workspace-custom {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 14px;
+        height: 30px;
+        font-size: 12px;
+        font-weight: 700;
+        border-radius: 8px;
+        color: #ffffff !important;
+        background: linear-gradient(135deg, #0284c7 0%, #0284c7 20%, #0ea5e9 60%, #38bdf8 100%) !important;
+        box-shadow: 0 4px 14px rgba(14, 165, 233, 0.45);
+        border: none;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        white-space: nowrap;
+    }
+
+    .btn-workspace-custom:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(14, 165, 233, 0.6);
+        color: #ffffff !important;
     }
 
     .btn-primary-custom:hover {
         transform: translateY(-2px);
-        box-shadow: 0 14px 32px rgba(15, 116, 76, 0.4);
+        box-shadow: 0 14px 32px rgba(47, 107, 255, 0.4);
         color: #fff !important;
     }
 
@@ -236,7 +280,7 @@
     }
 
     .kpi-card:hover {
-        border-color: rgba(15, 116, 76, 0.25);
+        border-color: rgba(47, 107, 255, 0.25);
         box-shadow: var(--card-shadow-lg);
         transform: translateY(-4px);
     }
@@ -354,7 +398,7 @@
     }
 
     .analytics-card:hover {
-        border-color: rgba(15, 116, 76, 0.2);
+        border-color: rgba(47, 107, 255, 0.2);
         box-shadow: var(--card-shadow-md);
     }
 
@@ -630,7 +674,7 @@
     }
 
     table.company-table tbody tr:hover {
-        background: rgba(15, 116, 76, 0.05);
+        background: rgba(47, 107, 255, 0.05);
     }
 
     table.company-table tbody td {
@@ -772,14 +816,14 @@
     }
 
     .status-pill .dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
-    .status-pill.status-active { background: var(--emerald-soft); color: var(--emerald-primary); border-color: rgba(15, 116, 76, 0.2); }
+    .status-pill.status-active { background: var(--emerald-soft); color: var(--emerald-primary); border-color: rgba(47, 107, 255, 0.2); }
     .status-pill.status-active .dot { background: var(--emerald-light); }
     .status-pill.status-trial { background: rgba(245, 158, 11, 0.1); color: var(--amber-accent); border-color: rgba(245, 158, 11, 0.2); }
     .status-pill.status-trial .dot { background: var(--amber-accent); }
     .status-pill.status-suspended { background: rgba(239, 68, 68, 0.1); color: var(--rose-accent); border-color: rgba(239, 68, 68, 0.2); }
     .status-pill.status-suspended .dot { background: var(--rose-accent); }
-    .status-pill.status-expired { background: var(--slate-light); color: var(--slate-muted); border-color: rgba(226, 232, 240, 0.8); }
-    .status-pill.status-expired .dot { background: var(--slate-muted); }
+    .status-pill.status-expired { background: rgba(239, 68, 68, 0.1); color: var(--rose-accent); border-color: rgba(239, 68, 68, 0.2); }
+    .status-pill.status-expired .dot { background: var(--rose-accent); }
 
     .storage-track-bar {
         width: 76px;
@@ -811,18 +855,15 @@
     }
 
     .dropdown-menu-custom {
-        position: absolute;
-        right: 0;
-        top: 100%;
-        margin-top: 4px;
+        position: fixed;
         background: rgba(255, 255, 255, 0.98);
         border-radius: 12px;
-        border: 1px solid rgba(226, 232, 240, 0.8);
-        box-shadow: var(--card-shadow-lg);
+        border: 1px solid rgba(226, 232, 240, 0.85);
+        box-shadow: 0 14px 40px rgba(15, 23, 42, 0.18), 0 4px 12px rgba(15, 23, 42, 0.08);
         min-width: 220px;
-        padding: 4px 0;
+        padding: 6px 0;
         display: none;
-        z-index: 60;
+        z-index: 999999;
         animation: fadeSlide 0.15s ease;
         backdrop-filter: blur(16px);
     }
@@ -905,6 +946,7 @@
 
     .plan-card-option:hover { border-color: var(--emerald-primary); }
     .plan-card-option.selected { border-color: var(--emerald-primary); background: var(--emerald-soft); }
+    .plan-card-option.disabled { opacity: 0.45; cursor: not-allowed; }
 
     /* Company Detail Drawer */
     .detail-overlay {
@@ -937,7 +979,350 @@
         from { transform: translateX(30px); opacity: 0; }
         to { transform: translateX(0); opacity: 1; }
     }
-</style>
+
+    /* Companies View Dark Mode Overrides */
+    html[data-pms-theme="dark"] .kpi-card,
+    html[data-theme="dark"] .kpi-card,
+    html[data-pms-theme="dark"] .analytics-card,
+    html[data-theme="dark"] .analytics-card,
+    html[data-pms-theme="dark"] .toolbar,
+    html[data-theme="dark"] .toolbar,
+    html[data-pms-theme="dark"] .table-wrap,
+    html[data-theme="dark"] .table-wrap {
+        background: var(--bg-surface);
+        border-color: var(--border-subtle);
+    }
+    html[data-pms-theme="dark"] .toolbar .search-wrap,
+    html[data-theme="dark"] .toolbar .search-wrap {
+        background: var(--bg-surface-subtle);
+    }
+    html[data-pms-theme="dark"] .toolbar .search-wrap input,
+    html[data-theme="dark"] .toolbar .search-wrap input {
+        color: var(--slate-dark);
+    }
+    html[data-pms-theme="dark"] .toolbar .filter-group select,
+    html[data-theme="dark"] .toolbar .filter-group select {
+        background-color: var(--bg-surface-subtle);
+        border-color: var(--border-subtle);
+        color: var(--slate-dark);
+    }
+    html[data-pms-theme="dark"] table.company-table thead,
+    html[data-theme="dark"] table.company-table thead {
+        background: var(--bg-surface-subtle);
+    }
+    html[data-pms-theme="dark"] table.company-table thead th,
+    html[data-theme="dark"] table.company-table thead th {
+        color: var(--slate-muted);
+        border-bottom-color: var(--border-subtle);
+        border-right-color: var(--border-subtle);
+    }
+    html[data-pms-theme="dark"] table.company-table tbody tr:nth-child(even),
+    html[data-theme="dark"] table.company-table tbody tr:nth-child(even) {
+        background: rgba(255, 255, 255, 0.02);
+    }
+    html[data-pms-theme="dark"] table.company-table tbody tr:hover,
+    html[data-theme="dark"] table.company-table tbody tr:hover {
+        background: rgba(47, 107, 255, 0.1);
+    }
+    html[data-pms-theme="dark"] table.company-table tbody td,
+    html[data-theme="dark"] table.company-table tbody td {
+        border-bottom-color: var(--border-subtle);
+        border-right-color: var(--border-subtle);
+        color: var(--slate-body);
+    }
+    html[data-pms-theme="dark"] .dropdown-menu-custom,
+    html[data-theme="dark"] .dropdown-menu-custom {
+        background: var(--bg-surface);
+        border-color: var(--border-strong);
+    }
+    html[data-pms-theme="dark"] .dropdown-menu-custom a,
+    html[data-pms-theme="dark"] .dropdown-menu-custom button,
+    html[data-theme="dark"] .dropdown-menu-custom a,
+    html[data-theme="dark"] .dropdown-menu-custom button {
+        color: var(--slate-body);
+    }
+    html[data-pms-theme="dark"] .modal-dialog-custom,
+    html[data-theme="dark"] .modal-dialog-custom,
+    html[data-pms-theme="dark"] .detail-drawer,
+    html[data-theme="dark"] .detail-drawer {
+        background: var(--bg-surface);
+        color: var(--slate-dark);
+        border-color: var(--border-strong);
+    }
+
+    /* Dark Mode: Buttons & Controls */
+    html[data-pms-theme="dark"] .btn-outline-custom,
+    html[data-theme="dark"] .btn-outline-custom,
+    html[data-bs-theme="dark"] .btn-outline-custom {
+        background: var(--bg-surface-subtle, #141B3D) !important;
+        border-color: var(--border-strong, rgba(238, 241, 251, 0.14)) !important;
+        color: var(--text-main, #EEF1FB) !important;
+    }
+    html[data-pms-theme="dark"] .btn-outline-custom:hover,
+    html[data-theme="dark"] .btn-outline-custom:hover,
+    html[data-bs-theme="dark"] .btn-outline-custom:hover,
+    html[data-pms-theme="dark"] .btn-outline-custom:focus,
+    html[data-theme="dark"] .btn-outline-custom:focus,
+    html[data-bs-theme="dark"] .btn-outline-custom:focus {
+        background: var(--bg-surface-hover, #1A2247) !important;
+        border-color: var(--primary, #2F6BFF) !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 14px rgba(47, 107, 255, 0.22);
+    }
+    html[data-pms-theme="dark"] .btn-outline-custom:disabled,
+    html[data-theme="dark"] .btn-outline-custom:disabled,
+    html[data-bs-theme="dark"] .btn-outline-custom:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+        background: var(--bg-surface-subtle, #141B3D) !important;
+        border-color: var(--border-subtle, rgba(238, 241, 251, 0.08)) !important;
+        color: var(--text-muted, #9AA3C7) !important;
+        box-shadow: none !important;
+        transform: none !important;
+    }
+
+    /* Dark Mode: Impersonation Banner Components */
+    html[data-pms-theme="dark"] .impersonation-db-code,
+    html[data-theme="dark"] .impersonation-db-code,
+    html[data-bs-theme="dark"] .impersonation-db-code {
+        background: rgba(245, 158, 11, 0.18) !important;
+        color: #fde68a !important;
+        border: 1px solid rgba(245, 158, 11, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .impersonation-leave-btn,
+    html[data-theme="dark"] .impersonation-leave-btn,
+    html[data-bs-theme="dark"] .impersonation-leave-btn {
+        background: rgba(245, 158, 11, 0.12) !important;
+        color: var(--amber-accent, #fbbf24) !important;
+        border-color: rgba(245, 158, 11, 0.35) !important;
+    }
+    html[data-pms-theme="dark"] .impersonation-leave-btn:hover,
+    html[data-theme="dark"] .impersonation-leave-btn:hover,
+    html[data-bs-theme="dark"] .impersonation-leave-btn:hover {
+        background: rgba(245, 158, 11, 0.25) !important;
+        border-color: #f59e0b !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 14px rgba(245, 158, 11, 0.25) !important;
+    }
+
+    /* Dark Mode: Show Entries Dropdown */
+    html[data-pms-theme="dark"] .entries-select-box,
+    html[data-theme="dark"] .entries-select-box,
+    html[data-bs-theme="dark"] .entries-select-box,
+    html[data-pms-theme="dark"] #entriesPerPageSelect,
+    html[data-theme="dark"] #entriesPerPageSelect,
+    html[data-bs-theme="dark"] #entriesPerPageSelect {
+        background: var(--bg-surface-subtle, #141B3D) !important;
+        border-color: var(--border-subtle, rgba(238, 241, 251, 0.14)) !important;
+        color: var(--text-main, #EEF1FB) !important;
+    }
+    html[data-pms-theme="dark"] .entries-select-box option,
+    html[data-theme="dark"] .entries-select-box option,
+    html[data-bs-theme="dark"] .entries-select-box option {
+        background: var(--bg-surface, #0F1530);
+        color: var(--text-main, #EEF1FB);
+    }
+
+    /* Dark Mode: Table Pagination Footer */
+    html[data-pms-theme="dark"] .table-pagination-footer,
+    html[data-theme="dark"] .table-pagination-footer,
+    html[data-bs-theme="dark"] .table-pagination-footer {
+        background: var(--bg-surface, #0F1530) !important;
+        border-color: var(--border-subtle, rgba(238, 241, 251, 0.12)) !important;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35) !important;
+    }
+    html[data-pms-theme="dark"] .table-pagination-footer .pagination-info,
+    html[data-theme="dark"] .table-pagination-footer .pagination-info,
+    html[data-bs-theme="dark"] .table-pagination-footer .pagination-info {
+        color: var(--text-muted, #9AA3C7) !important;
+    }
+    html[data-pms-theme="dark"] .table-pagination-footer .pagination-info span,
+    html[data-theme="dark"] .table-pagination-footer .pagination-info span,
+    html[data-bs-theme="dark"] .table-pagination-footer .pagination-info span {
+        color: var(--text-main, #EEF1FB) !important;
+    }
+
+    /* Dark Mode: Change Subscription Plan Modal & Option Cards */
+    html[data-pms-theme="dark"] .modal-backdrop-custom,
+    html[data-theme="dark"] .modal-backdrop-custom,
+    html[data-bs-theme="dark"] .modal-backdrop-custom {
+        background: rgba(7, 11, 26, 0.75);
+    }
+    html[data-pms-theme="dark"] .modal-dialog-custom,
+    html[data-theme="dark"] .modal-dialog-custom,
+    html[data-bs-theme="dark"] .modal-dialog-custom {
+        background: var(--bg-surface, #0F1530) !important;
+        color: var(--text-main, #EEF1FB) !important;
+        border: 1px solid var(--border-strong, rgba(238, 241, 251, 0.14)) !important;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7) !important;
+    }
+    html[data-pms-theme="dark"] .modal-dialog-custom > div:last-child,
+    html[data-theme="dark"] .modal-dialog-custom > div:last-child,
+    html[data-bs-theme="dark"] .modal-dialog-custom > div:last-child {
+        border-top-color: var(--border-subtle, rgba(238, 241, 251, 0.12)) !important;
+    }
+    html[data-pms-theme="dark"] .plan-card-option,
+    html[data-theme="dark"] .plan-card-option,
+    html[data-bs-theme="dark"] .plan-card-option {
+        background: var(--bg-surface-subtle, #141B3D) !important;
+        border: 2px solid var(--border-strong, rgba(238, 241, 251, 0.14)) !important;
+        color: var(--slate-dark, #EEF1FB) !important;
+    }
+    html[data-pms-theme="dark"] .plan-card-option:hover,
+    html[data-theme="dark"] .plan-card-option:hover,
+    html[data-bs-theme="dark"] .plan-card-option:hover {
+        border-color: var(--emerald-primary, #2F6BFF) !important;
+        background: var(--bg-surface-hover, #1A2247) !important;
+    }
+    html[data-pms-theme="dark"] .plan-card-option.selected,
+    html[data-theme="dark"] .plan-card-option.selected,
+    html[data-bs-theme="dark"] .plan-card-option.selected {
+        border-color: var(--emerald-primary, #2F6BFF) !important;
+        background: rgba(47, 107, 255, 0.22) !important;
+        box-shadow: 0 0 0 1px var(--emerald-primary, #2F6BFF) !important;
+    }
+    html[data-pms-theme="dark"] .plan-card-option strong,
+    html[data-theme="dark"] .plan-card-option strong,
+    html[data-bs-theme="dark"] .plan-card-option strong {
+        color: #ffffff !important;
+    }
+    html[data-pms-theme="dark"] .plan-card-option div,
+    html[data-theme="dark"] .plan-card-option div,
+    html[data-bs-theme="dark"] .plan-card-option div {
+        color: var(--slate-muted, #9AA3C7) !important;
+    }
+
+    /* Dark Mode: Plan Badge Pills */
+    html[data-pms-theme="dark"] .plan-badge-cell.plan-free,
+    html[data-theme="dark"] .plan-badge-cell.plan-free,
+    html[data-bs-theme="dark"] .plan-badge-cell.plan-free {
+        background: rgba(241, 245, 249, 0.12) !important;
+        color: #cbd5e1 !important;
+        border: 1px solid rgba(203, 213, 225, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .plan-badge-cell.plan-gold,
+    html[data-theme="dark"] .plan-badge-cell.plan-gold,
+    html[data-bs-theme="dark"] .plan-badge-cell.plan-gold {
+        background: rgba(245, 158, 11, 0.18) !important;
+        color: #fde68a !important;
+        border: 1px solid rgba(245, 158, 11, 0.35) !important;
+    }
+    html[data-pms-theme="dark"] .plan-badge-cell.plan-platinum,
+    html[data-theme="dark"] .plan-badge-cell.plan-platinum,
+    html[data-bs-theme="dark"] .plan-badge-cell.plan-platinum {
+        background: rgba(2, 132, 199, 0.18) !important;
+        color: #bae6fd !important;
+        border: 1px solid rgba(2, 132, 199, 0.35) !important;
+    }
+    html[data-pms-theme="dark"] .plan-badge-cell.plan-diamond,
+    html[data-theme="dark"] .plan-badge-cell.plan-diamond,
+    html[data-bs-theme="dark"] .plan-badge-cell.plan-diamond {
+        background: rgba(109, 40, 217, 0.22) !important;
+        color: #ddd6fe !important;
+        border: 1px solid rgba(139, 92, 246, 0.35) !important;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .btn-outline-custom {
+            background: var(--bg-surface-subtle, #141B3D) !important;
+            border-color: var(--border-strong, rgba(238, 241, 251, 0.14)) !important;
+            color: var(--text-main, #EEF1FB) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .btn-outline-custom:hover {
+            background: var(--bg-surface-hover, #1A2247) !important;
+            border-color: var(--primary, #2F6BFF) !important;
+            color: #ffffff !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .btn-outline-custom:disabled {
+            opacity: 0.45;
+            background: var(--bg-surface-subtle, #141B3D) !important;
+            color: var(--text-muted, #9AA3C7) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .impersonation-db-code {
+            background: rgba(245, 158, 11, 0.18) !important;
+            color: #fde68a !important;
+            border: 1px solid rgba(245, 158, 11, 0.3) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .impersonation-leave-btn {
+            background: rgba(245, 158, 11, 0.12) !important;
+            color: var(--amber-accent, #fbbf24) !important;
+            border-color: rgba(245, 158, 11, 0.35) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .impersonation-leave-btn:hover {
+            background: rgba(245, 158, 11, 0.25) !important;
+            border-color: #f59e0b !important;
+            color: #ffffff !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .entries-select-box,
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) #entriesPerPageSelect {
+            background: var(--bg-surface-subtle, #141B3D) !important;
+            border-color: var(--border-subtle, rgba(238, 241, 251, 0.14)) !important;
+            color: var(--text-main, #EEF1FB) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .entries-select-box option {
+            background: var(--bg-surface, #0F1530);
+            color: var(--text-main, #EEF1FB);
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .table-pagination-footer {
+            background: var(--bg-surface, #0F1530) !important;
+            border-color: var(--border-subtle, rgba(238, 241, 251, 0.12)) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .table-pagination-footer .pagination-info {
+            color: var(--text-muted, #9AA3C7) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .table-pagination-footer .pagination-info span {
+            color: var(--text-main, #EEF1FB) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .modal-backdrop-custom {
+            background: rgba(7, 11, 26, 0.75);
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .modal-dialog-custom {
+            background: var(--bg-surface, #0F1530) !important;
+            color: var(--text-main, #EEF1FB) !important;
+            border: 1px solid var(--border-strong, rgba(238, 241, 251, 0.14)) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .plan-card-option {
+            background: var(--bg-surface-subtle, #141B3D) !important;
+            border: 2px solid var(--border-strong, rgba(238, 241, 251, 0.14)) !important;
+            color: var(--slate-dark, #EEF1FB) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .plan-card-option:hover {
+            border-color: var(--emerald-primary, #2F6BFF) !important;
+            background: var(--bg-surface-hover, #1A2247) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .plan-card-option.selected {
+            border-color: var(--emerald-primary, #2F6BFF) !important;
+            background: rgba(47, 107, 255, 0.22) !important;
+            box-shadow: 0 0 0 1px var(--emerald-primary, #2F6BFF) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .plan-card-option strong {
+            color: #ffffff !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .plan-card-option div {
+            color: var(--slate-muted, #9AA3C7) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .plan-badge-cell.plan-free {
+            background: rgba(241, 245, 249, 0.12) !important;
+            color: #cbd5e1 !important;
+            border: 1px solid rgba(203, 213, 225, 0.3) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .plan-badge-cell.plan-gold {
+            background: rgba(245, 158, 11, 0.18) !important;
+            color: #fde68a !important;
+            border: 1px solid rgba(245, 158, 11, 0.35) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .plan-badge-cell.plan-platinum {
+            background: rgba(2, 132, 199, 0.18) !important;
+            color: #bae6fd !important;
+            border: 1px solid rgba(2, 132, 199, 0.35) !important;
+        }
+        html:not([data-pms-theme="light"]):not([data-theme="light"]) .plan-badge-cell.plan-diamond {
+            background: rgba(109, 40, 217, 0.22) !important;
+            color: #ddd6fe !important;
+            border: 1px solid rgba(139, 92, 246, 0.35) !important;
+        }
+    }
+  </style>
 
 <!-- PAGE CONTROL TOOLBAR -->
 <div class="page-header" style="justify-content: flex-end; margin-bottom: 20px;">
@@ -956,7 +1341,7 @@
                 </a>
             </div>
         </div>
-        <a href="{{ route('super-admin.companies.create') }}" class="btn-custom btn-primary-custom">
+        <a href="{{ Route::has('super-admin.companies.create') ? route('super-admin.companies.create') : (Route::has('superadmin.companies.create') ? route('superadmin.companies.create') : url('/super-admin/companies/create')) }}" class="btn-custom btn-primary-custom">
             <i class="bx bx-plus-circle"></i> Provision New Company
         </a>
     </div>
@@ -970,13 +1355,13 @@
         <div>
             <strong style="color: var(--amber-accent); font-size: 14px;">Active Tenant Impersonation Session</strong>
             <div style="font-size: 12px; color: var(--slate-muted); margin-top: 2px;">
-                Session Database: <code style="background: #fff; padding: 2px 6px; border-radius: 4px; font-family: monospace;">{{ $currentCompanyDb }}</code>
+                Session Database: <code class="impersonation-db-code" style="background: #fff; padding: 2px 6px; border-radius: 4px; font-family: monospace;">{{ $currentCompanyDb }}</code>
             </div>
         </div>
     </div>
     <form method="POST" action="{{ route('super-admin.leave-impersonation') }}" style="margin: 0;">
         @csrf
-        <button type="submit" class="btn-custom btn-outline-custom btn-sm-custom" style="color: var(--amber-accent); border-color: rgba(245, 158, 11, 0.3);">
+        <button type="submit" class="btn-custom btn-outline-custom btn-sm-custom impersonation-leave-btn" style="color: var(--amber-accent); border-color: rgba(245, 158, 11, 0.3);">
             <i class="bx bx-log-out-circle"></i> Leave Impersonation
         </button>
     </form>
@@ -1091,39 +1476,58 @@
             </div>
             <span class="badge badge-success">Live Catalog</span>
         </div>
+        @php
+            // One source of truth for both the legend and the doughnut: each company's current plan is its
+            // active subscription, otherwise its latest running trial/active subscription; else "No Plan".
+            if ($companies instanceof \Illuminate\Database\Eloquent\Collection) {
+                try { $companies->loadMissing(['activeSubscription.plan', 'subscriptions.plan']); } catch (\Throwable $e) {}
+            }
+            $currentPlanSlug = function ($company) {
+                $plan = $company->activeSubscription?->plan;
+                if (! $plan) {
+                    $running = collect($company->subscriptions ?? [])
+                        ->filter(fn ($s) => in_array(strtolower((string) $s->status), ['active', 'trial'], true)
+                            && (! $s->ends_at || \Carbon\Carbon::parse($s->ends_at)->endOfDay()->gte(now())))
+                        ->sortByDesc('id')
+                        ->first();
+                    $plan = $running?->plan;
+                }
+                $slug = strtolower(trim((string) ($plan?->slug ?: $plan?->name)));
+                return in_array($slug, ['free', 'gold', 'platinum', 'diamond'], true) ? $slug : ($plan ? 'other' : 'none');
+            };
+            $planBuckets = [
+                'free'     => ['label' => 'FREE',     'color' => '#cbd5e1', 'count' => 0],
+                'gold'     => ['label' => 'GOLD',     'color' => '#f59e0b', 'count' => 0],
+                'platinum' => ['label' => 'PLATINUM', 'color' => '#2563eb', 'count' => 0],
+                'diamond'  => ['label' => 'DIAMOND',  'color' => '#7c3aed', 'count' => 0],
+                'other'    => ['label' => 'OTHER PLAN', 'color' => '#14b8a6', 'count' => 0],
+                'none'     => ['label' => 'NO PLAN',  'color' => '#64748b', 'count' => 0],
+            ];
+            foreach ($companies as $planCompany) {
+                $planBuckets[$currentPlanSlug($planCompany)]['count']++;
+            }
+            // The four catalog tiers always show; "Other" / "No Plan" only when they contain companies.
+            $planBuckets = array_filter($planBuckets, fn ($bucket, $slug) => in_array($slug, ['free', 'gold', 'platinum', 'diamond'], true) || $bucket['count'] > 0, ARRAY_FILTER_USE_BOTH);
+            $planChartData = [
+                'labels' => array_values(array_column($planBuckets, 'label')),
+                'counts' => array_values(array_column($planBuckets, 'count')),
+                'colors' => array_values(array_column($planBuckets, 'color')),
+            ];
+        @endphp
         <div class="donut-container">
-            <div class="chart-wrap">
+            <div class="chart-wrap" id="planDonutData" data-plan-chart='@json($planChartData)'>
                 <canvas id="planDonutChart"></canvas>
             </div>
             <div class="legend">
+                @foreach($planBuckets as $bucket)
                 <div class="item">
                     <div class="left-info">
-                        <span class="dot" style="background: #cbd5e1;"></span>
-                        <span class="name">FREE</span>
+                        <span class="dot" style="background: {{ $bucket['color'] }};"></span>
+                        <span class="name">{{ $bucket['label'] }}</span>
                     </div>
-                    <span class="count">{{ $companies->filter(fn($c) => strtolower($c->activeSubscription?->plan?->name ?? '') === 'free')->count() }}</span>
+                    <span class="count">{{ $bucket['count'] }}</span>
                 </div>
-                <div class="item">
-                    <div class="left-info">
-                        <span class="dot" style="background: var(--amber-accent);"></span>
-                        <span class="name">GOLD</span>
-                    </div>
-                    <span class="count">{{ $companies->filter(fn($c) => strtolower($c->activeSubscription?->plan?->name ?? '') === 'gold')->count() }}</span>
-                </div>
-                <div class="item">
-                    <div class="left-info">
-                        <span class="dot" style="background: var(--blue-accent);"></span>
-                        <span class="name">PLATINUM</span>
-                    </div>
-                    <span class="count">{{ $companies->filter(fn($c) => strtolower($c->activeSubscription?->plan?->name ?? '') === 'platinum')->count() }}</span>
-                </div>
-                <div class="item">
-                    <div class="left-info">
-                        <span class="dot" style="background: var(--purple-accent);"></span>
-                        <span class="name">DIAMOND</span>
-                    </div>
-                    <span class="count">{{ $companies->filter(fn($c) => strtolower($c->activeSubscription?->plan?->name ?? '') === 'diamond')->count() }}</span>
-                </div>
+                @endforeach
                 <div class="total">
                     <span>Total Subscriptions</span>
                     <span>{{ $companies->count() }}</span>
@@ -1219,7 +1623,7 @@
     <!-- Show Entries Dropdown (10, 20, 30, 40, 50) -->
     <div class="entries-selector-wrap" style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--slate-muted); margin-left: auto;">
         <span>Show</span>
-        <select id="entriesPerPageSelect" style="padding: 5px 12px; border-radius: 8px; border: 1px solid rgba(226, 232, 240, 0.9); font-weight: 700; color: var(--slate-dark); background: #f8fafc; cursor: pointer; outline: none;">
+        <select id="entriesPerPageSelect" class="entries-select-box" style="padding: 5px 12px; border-radius: 8px; border: 1px solid rgba(226, 232, 240, 0.9); font-weight: 700; color: var(--slate-dark); background: #f8fafc; cursor: pointer; outline: none;">
             <option value="10" selected>10</option>
             <option value="20">20</option>
             <option value="30">30</option>
@@ -1254,9 +1658,10 @@
                 @forelse($companies as $index => $company)
                 @php
                     $planNames = ['FREE', 'GOLD', 'PLATINUM', 'DIAMOND'];
-                    $rawPlan = strtoupper($company->activeSubscription?->plan?->name ?? $planNames[$index % 4]);
+                    $currentSubscription = $company->activeSubscription ?? $company->subscriptions()->latest()->first();
+                    $rawPlan = strtoupper($currentSubscription?->plan?->name ?? 'FREE');
                     if (!in_array($rawPlan, $planNames)) {
-                        $rawPlan = $planNames[$index % 4];
+                        $rawPlan = 'FREE';
                     }
                     $planClass = strtolower($rawPlan);
                     $storagePercent = 65 + ($index * 7) % 30;
@@ -1318,6 +1723,7 @@
                                 'active' => 'status-active',
                                 'trial' => 'status-trial',
                                 'suspended' => 'status-suspended',
+                                'expired' => 'status-expired',
                                 default => 'status-expired',
                             };
                         @endphp
@@ -1340,12 +1746,13 @@
                         </span>
                     </td>
                     <td style="color: var(--slate-muted); font-size: 12px; font-weight: 500;">
-                        {{ rand(2, 45) }} mins ago
+                        @php $companyLastActivity = ($lastActivity ?? [])[$company->id] ?? null; @endphp
+                        <span title="{{ $companyLastActivity ? 'Last request by a signed-in company user' : 'No signed-in activity recorded yet' }}">{{ \App\Services\CompanyActivity::format($companyLastActivity) }}</span>
                     </td>
                     <td style="text-align: right;">
                         <div class="actions-cell-wrap">
-                            <a href="{{ Route::has('super-admin.companies.show') ? route('super-admin.companies.show', $company->id) : (Route::has('superadmin.companies.show') ? route('superadmin.companies.show', $company->id) : url('/super-admin/companies/'.$company->id)) }}" 
-                               class="btn-custom btn-primary-custom btn-xs-custom" title="Open Dedicated Workspace">
+                            <a href="{{ Route::has('super-admin.companies.show') ? route('super-admin.companies.show', $company->id) : (Route::has('superadmin.companies.show') ? route('superadmin.companies.show', $company->id) : url('/superadmin/companies/'.$company->id)) }}" 
+                               class="btn-workspace-custom" title="Open Dedicated Workspace">
                                 Workspace
                             </a>
                             <div class="dropdown-container">
@@ -1353,23 +1760,30 @@
                                     <i class="bx bx-dots-vertical-rounded" style="font-size: 18px;"></i>
                                 </button>
                                 <div class="dropdown-menu-custom">
-                                    <a href="{{ Route::has('super-admin.companies.show') ? route('super-admin.companies.show', $company->id) : (Route::has('superadmin.companies.show') ? route('superadmin.companies.show', $company->id) : url('/super-admin/companies/'.$company->id)) }}">
+                                    <a href="{{ Route::has('super-admin.companies.show') ? route('super-admin.companies.show', $company->id) : (Route::has('superadmin.companies.show') ? route('superadmin.companies.show', $company->id) : url('/superadmin/companies/'.$company->id)) }}">
                                         <i class="bx bx-show" style="color: var(--blue-accent);"></i> Open Workspace
                                     </a>
                                     <a href="#" class="trigger-detail-drawer" data-company-id="{{ $company->id }}" data-company-name="{{ $company->name }}" data-company-email="{{ $company->email }}" data-company-db="{{ $company->db_name }}" data-company-logo="{{ $company->logo ? asset($company->logo) : '' }}">
                                         <i class="bx bx-info-circle" style="color: var(--emerald-primary);"></i> Quick Details
                                     </a>
-                                    <a href="#" class="trigger-plan-modal" data-company-id="{{ $company->id }}">
+                                    <a href="#" class="trigger-plan-modal" data-company-id="{{ $company->id }}"
+                                       data-current-planid="{{ $currentSubscription?->plan_id }}"
+                                       data-billing-cycle="{{ $currentSubscription?->billing_cycle ?? 'monthly' }}"
+                                       data-allowed-planids="{{ json_encode(app(\App\Services\PlanEligibilityService::class)->getAllowedPlans($company)->pluck('id')->all()) }}">
                                         <i class="bx bx-layer" style="color: var(--purple-accent);"></i> Change Subscription
                                     </a>
                                     <div class="divider"></div>
-                                    <form method="POST" action="{{ route('super-admin.companies.enter', $company) }}" style="margin: 0;">
+                                    <form method="POST" action="{{ Route::has('superadmin.companies.enter') ? route('superadmin.companies.enter', $company) : (Route::has('super-admin.companies.enter') ? route('super-admin.companies.enter', $company) : url('/superadmin/companies/'.$company->id.'/enter')) }}" style="margin: 0;">
                                         @csrf
                                         <button type="submit" style="width:100%; text-align:left;"><i class="bx bx-log-in-circle" style="color: var(--amber-accent);"></i> Impersonate Context</button>
                                     </form>
                                     <div class="divider"></div>
-                                    <a href="#" class="danger-item"><i class="bx bx-block"></i> Suspend Company</a>
-                                    <a href="#" class="danger-item"><i class="bx bx-trash"></i> Delete Company</a>
+                                    @if(($company->status ?? '') === 'suspended')
+                                        <a href="javascript:void(0)" onclick="confirmActivateCompany({{ $company->id }}, '{{ addslashes($company->name) }}')" style="color: var(--emerald-primary);"><i class="bx bx-check-circle"></i> Lift Suspension (Activate)</a>
+                                    @else
+                                        <a href="javascript:void(0)" onclick="confirmSuspendCompany({{ $company->id }}, '{{ addslashes($company->name) }}')" class="danger-item"><i class="bx bx-block"></i> Suspend Company</a>
+                                    @endif
+                                    <a href="javascript:void(0)" onclick="confirmDeleteCompany({{ $company->id }}, '{{ addslashes($company->name) }}')" class="danger-item"><i class="bx bx-trash"></i> Delete Company</a>
                                 </div>
                             </div>
                         </div>
@@ -1408,49 +1822,35 @@
 <!-- CHANGE SUBSCRIPTION MODAL -->
 <div class="modal-backdrop-custom" id="planChangeModal">
     <div class="modal-dialog-custom">
+        <form method="POST" action="{{ route('super-admin.subscriptions.assign') }}" id="companyPlanChangeForm">
+            @csrf
+            <input type="hidden" name="company_id" id="planChangeCompanyId">
+            <input type="hidden" name="billing_cycle" id="planChangeBillingCycle" value="monthly">
         <h3 style="font-size: 20px; font-weight: 800; margin-top: 0; margin-bottom: 6px; color: var(--slate-dark);">Change Subscription Plan</h3>
         <p style="font-size: 13.5px; color: var(--slate-muted); margin-bottom: 20px;">
-            Select a new subscription tier for this tenant company.
+            Select the current tier or a higher tier for this tenant company. Lower tiers cannot be selected.
         </p>
 
         <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px;">
-            <div class="plan-card-option" data-plan="free">
+            @foreach($plans as $plan)
+            <label class="plan-card-option" data-plan="{{ $plan->slug }}" data-planid="{{ $plan->id }}">
+                <input type="radio" name="plan_id" value="{{ $plan->id }}" required class="visually-hidden">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span class="plan-badge-cell plan-free">FREE</span>
-                    <strong style="font-size: 14px; color: var(--slate-dark);">₹0 / mo</strong>
+                    <span class="plan-badge-cell plan-{{ $plan->slug }}">{{ strtoupper($plan->name) }}</span>
+                    <strong style="font-size: 14px; color: var(--slate-dark);">₹{{ number_format($plan->monthly_price) }} / mo</strong>
                 </div>
-                <div style="font-size: 12px; color: var(--slate-muted); margin-top: 4px;">Up to 5 Users • 5GB Storage</div>
-            </div>
-
-            <div class="plan-card-option" data-plan="gold">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span class="plan-badge-cell plan-gold">GOLD</span>
-                    <strong style="font-size: 14px; color: var(--slate-dark);">₹4,999 / mo</strong>
+                <div style="font-size: 12px; color: var(--slate-muted); margin-top: 4px;">
+                    {{ $plan->max_users > 0 ? 'Up to ' . $plan->max_users . ' Users' : 'Unlimited Users' }} · {{ $plan->max_storage_mb / 1024 }}GB Storage
                 </div>
-                <div style="font-size: 12px; color: var(--slate-muted); margin-top: 4px;">Up to 25 Users • 25GB Storage</div>
-            </div>
-
-            <div class="plan-card-option" data-plan="platinum">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span class="plan-badge-cell plan-platinum">PLATINUM</span>
-                    <strong style="font-size: 14px; color: var(--slate-dark);">₹9,999 / mo</strong>
-                </div>
-                <div style="font-size: 12px; color: var(--slate-muted); margin-top: 4px;">Up to 100 Users • 100GB Storage</div>
-            </div>
-
-            <div class="plan-card-option selected" data-plan="diamond">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span class="plan-badge-cell plan-diamond">DIAMOND</span>
-                    <strong style="font-size: 14px; color: var(--slate-dark);">₹19,999 / mo</strong>
-                </div>
-                <div style="font-size: 12px; color: var(--slate-muted); margin-top: 4px;">Unlimited Users • Priority Support</div>
-            </div>
+            </label>
+            @endforeach
         </div>
 
         <div style="display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid rgba(226, 232, 240, 0.8); padding-top: 16px;">
-            <button class="btn-custom btn-outline-custom btn-sm-custom" id="closePlanModalBtn">Cancel</button>
-            <button class="btn-custom btn-primary-custom btn-sm-custom" id="confirmPlanChangeBtn">Confirm Change</button>
+            <button type="button" class="btn-custom btn-outline-custom btn-sm-custom" id="closePlanModalBtn">Cancel</button>
+            <button type="submit" class="btn-custom btn-primary-custom btn-sm-custom" id="confirmPlanChangeBtn" disabled>Confirm Change</button>
         </div>
+        </form>
     </div>
 </div>
 
@@ -1503,31 +1903,87 @@
     </div>
 </div>
 
+<!-- HIDDEN FORMS FOR SUSPEND & DELETE -->
+<form id="companiesIndexSuspendForm" method="POST" action="" style="display:none;">
+    @csrf
+</form>
+<form id="companiesIndexDeleteForm" method="POST" action="" style="display:none;">
+    @csrf
+    @method('DELETE')
+</form>
+
 @endsection
 
 @push('scripts')
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+@include('partials.pdf-export-scripts')
 <script>
+function confirmSuspendCompany(id, name) {
+    window.location.href = "{{ url('/superadmin/companies') }}/" + id + "/suspension";
+}
+function confirmActivateCompany(id, name) {
+    if (confirm("Are you sure you want to lift suspension and activate access for company '" + name + "'?")) {
+        const form = document.getElementById('companiesIndexSuspendForm');
+        form.action = "{{ url('/superadmin/companies') }}/" + id + "/activate";
+        form.submit();
+    }
+}
+function confirmDeleteCompany(id, name) {
+    if (confirm("CRITICAL WARNING: Are you sure you want to completely delete company '" + name + "'? This operation will remove the tenant database link and cannot be undone.")) {
+        const form = document.getElementById('companiesIndexDeleteForm');
+        form.action = "{{ url('/superadmin/companies') }}/" + id;
+        form.submit();
+    }
+}
 document.addEventListener('DOMContentLoaded', function() {
     // 1. Chart.js Donut Chart
     const ctx = document.getElementById('planDonutChart');
     if (ctx && typeof Chart !== 'undefined') {
+        // Real per-plan company counts, computed server-side together with the legend.
+        let planChart = { labels: [], counts: [], colors: [] };
+        try { planChart = JSON.parse((document.getElementById('planDonutData')?.getAttribute('data-plan-chart')) || '{}'); } catch (e) {}
+        const hasData = (planChart.counts || []).some(count => Number(count) > 0);
+
+        // Keep the doughnut in step with the legend when the live-records refresh brings new counts.
+        let lastPlanChartJson = (document.getElementById('planDonutData')?.getAttribute('data-plan-chart'));
+        document.addEventListener('pms:records-updated', function () {
+            const json = (document.getElementById('planDonutData')?.getAttribute('data-plan-chart'));
+            if (!json || json === lastPlanChartJson) return;
+            lastPlanChartJson = json;
+            try {
+                const next = JSON.parse(json);
+                const chart = Chart.getChart(ctx);
+                if (!chart) return;
+                const nextHasData = (next.counts || []).some(count => Number(count) > 0);
+                chart.data.labels = nextHasData ? next.labels : ['No subscriptions'];
+                chart.data.datasets[0].data = nextHasData ? next.counts : [1];
+                chart.data.datasets[0].backgroundColor = nextHasData ? next.colors : ['rgba(148, 163, 184, 0.25)'];
+                chart.options.plugins.tooltip.enabled = nextHasData;
+                chart.update();
+            } catch (e) {}
+        });
+
         new Chart(ctx, {
             type: 'doughnut',
             data: {
-                labels: ['FREE', 'GOLD', 'PLATINUM', 'DIAMOND'],
+                labels: hasData ? planChart.labels : ['No subscriptions'],
                 datasets: [{
-                    data: [12, 18, 24, 15],
-                    backgroundColor: ['#cbd5e1', '#f59e0b', '#2563eb', '#7c3aed'],
+                    data: hasData ? planChart.counts : [1],
+                    backgroundColor: hasData ? planChart.colors : ['rgba(148, 163, 184, 0.25)'],
                     borderWidth: 0,
-                    hoverOffset: 4
+                    hoverOffset: hasData ? 4 : 0
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: { display: false }
+                    legend: { display: false },
+                    tooltip: {
+                        enabled: hasData,
+                        callbacks: {
+                            label: (item) => ` ${item.raw} ${Number(item.raw) === 1 ? 'company' : 'companies'}`
+                        }
+                    }
                 },
                 cutout: '72%'
             }
@@ -1676,21 +2132,175 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // 5. Action Dropdown Toggle
-    document.querySelectorAll('.dropdown-toggle-trigger').forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            const menu = this.nextElementSibling;
-            document.querySelectorAll('.dropdown-menu-custom').forEach(m => {
-                if (m !== menu) m.classList.remove('open');
-            });
-            menu.classList.toggle('open');
+    // 5. Action & Export Dropdown Toggle with Smart Viewport Positioning
+    let activeDropdownMenu = null;
+    let activeDropdownParent = null;
+    let activeDropdownNextSibling = null;
+
+    function closeAllDropdowns() {
+        if (activeDropdownMenu) {
+            activeDropdownMenu.classList.remove('open');
+            activeDropdownMenu.style.display = 'none';
+            activeDropdownMenu.style.visibility = '';
+            activeDropdownMenu.style.top = '';
+            activeDropdownMenu.style.left = '';
+            activeDropdownMenu.style.right = '';
+            activeDropdownMenu.style.bottom = '';
+            activeDropdownMenu.style.maxHeight = '';
+            activeDropdownMenu.style.overflowY = '';
+
+            // Restore menu back to its original DOM container in the row
+            if (activeDropdownParent) {
+                if (activeDropdownNextSibling && activeDropdownNextSibling.parentNode === activeDropdownParent) {
+                    activeDropdownParent.insertBefore(activeDropdownMenu, activeDropdownNextSibling);
+                } else {
+                    activeDropdownParent.appendChild(activeDropdownMenu);
+                }
+            }
+            activeDropdownMenu._triggerBtn = null;
+            activeDropdownMenu = null;
+            activeDropdownParent = null;
+            activeDropdownNextSibling = null;
+        }
+
+        // Safety fallback for any lingering open menus
+        document.querySelectorAll('.dropdown-menu-custom.open').forEach(menu => {
+            menu.classList.remove('open');
+            menu.style.display = 'none';
         });
+    }
+
+    function positionDropdownMenu(btn, menu) {
+        if (!btn || !menu) return;
+
+        // Reset temporary positioning to get true dimensions
+        menu.style.position = 'fixed';
+        menu.style.zIndex = '999999';
+        menu.style.display = 'block';
+        menu.style.visibility = 'hidden';
+        menu.style.top = '0px';
+        menu.style.left = '0px';
+        menu.style.right = 'auto';
+        menu.style.bottom = 'auto';
+        menu.style.margin = '0';
+
+        const btnRect = btn.getBoundingClientRect();
+        const menuWidth = menu.offsetWidth || 220;
+        const menuHeight = menu.offsetHeight || 260;
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+
+        const gap = 6; // Small consistent gap between button and dropdown
+        const padding = 12; // Safety margin from viewport edges
+
+        // Vertical positioning:
+        // Requirement: Prefer opening above the button when there is not enough space below
+        const spaceBelow = viewportHeight - btnRect.bottom - gap - padding;
+        const spaceAbove = btnRect.top - gap - padding;
+
+        let top;
+        if (spaceBelow < menuHeight && spaceAbove >= menuHeight) {
+            // Open ABOVE the button
+            top = btnRect.top - menuHeight - gap;
+        } else if (spaceBelow >= menuHeight) {
+            // Open BELOW the button
+            top = btnRect.bottom + gap;
+        } else {
+            // Space is tight on both sides: pick whichever side has more room
+            if (spaceAbove > spaceBelow) {
+                top = Math.max(padding, btnRect.top - menuHeight - gap);
+            } else {
+                top = btnRect.bottom + gap;
+            }
+        }
+
+        // Clamp top within viewport boundaries
+        top = Math.max(padding, Math.min(top, viewportHeight - menuHeight - padding));
+
+        // Horizontal positioning:
+        // Align dropdown right edge with the button's right edge so it sits directly beside it
+        let left = btnRect.right - menuWidth;
+
+        // Prevent overflowing left edge
+        if (left < padding) {
+            left = padding;
+        }
+
+        // Prevent overflowing right edge
+        if (left + menuWidth > viewportWidth - padding) {
+            left = Math.max(padding, viewportWidth - menuWidth - padding);
+        }
+
+        menu.style.top = Math.round(top) + 'px';
+        menu.style.left = Math.round(left) + 'px';
+        menu.style.right = 'auto';
+        menu.style.bottom = 'auto';
+        menu.style.maxHeight = `calc(100vh - ${padding * 2}px)`;
+        menu.style.overflowY = 'auto';
+        menu.classList.add('open');
+        menu.style.visibility = 'visible';
+    }
+
+    // Toggle dropdowns with dynamic viewport alignment
+    document.addEventListener('click', function(e) {
+        const toggleBtn = e.target.closest('.dropdown-toggle-trigger') || e.target.closest('#exportDropdownBtn');
+
+        if (toggleBtn) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            // Toggle off if clicking the currently open trigger
+            if (activeDropdownMenu && activeDropdownMenu._triggerBtn === toggleBtn) {
+                closeAllDropdowns();
+                return;
+            }
+
+            // Find target menu
+            let menu = null;
+            if (toggleBtn.id === 'exportDropdownBtn') {
+                menu = document.getElementById('exportDropdownMenu');
+            } else {
+                const container = toggleBtn.closest('.dropdown-container');
+                menu = container ? container.querySelector('.dropdown-menu-custom') : toggleBtn.nextElementSibling;
+            }
+
+            if (menu) {
+                closeAllDropdowns();
+
+                // Store references before moving to body
+                activeDropdownMenu = menu;
+                activeDropdownParent = menu.parentElement;
+                activeDropdownNextSibling = menu.nextSibling;
+                activeDropdownMenu._triggerBtn = toggleBtn;
+
+                // Move directly to body to bypass any ancestor backdrop-filter/overflow constraints
+                document.body.appendChild(menu);
+
+                positionDropdownMenu(toggleBtn, menu);
+            }
+            return;
+        }
+
+        // Close dropdown when item inside is clicked
+        const actionItem = e.target.closest('.dropdown-menu-custom a, .dropdown-menu-custom button');
+        if (actionItem) {
+            const form = actionItem.closest('form');
+            if (form && actionItem.type === 'submit') {
+                form.submit();
+            }
+            setTimeout(closeAllDropdowns, 10);
+            return;
+        }
+
+        // Close dropdown when clicking outside
+        if (!e.target.closest('.dropdown-menu-custom')) {
+            closeAllDropdowns();
+        }
     });
 
-    document.addEventListener('click', function() {
-        document.querySelectorAll('.dropdown-menu-custom').forEach(m => m.classList.remove('open'));
-    });
+    // Close open dropdowns on scroll or resize to prevent detached floating UI
+    window.addEventListener('scroll', closeAllDropdowns, true);
+    window.addEventListener('resize', closeAllDropdowns);
 
     // 6. Plan Change Modal
     const planModal = document.getElementById('planChangeModal');
@@ -1700,6 +2310,19 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.trigger-plan-modal').forEach(trigger => {
         trigger.addEventListener('click', function(e) {
             e.preventDefault();
+            const allowedIds = JSON.parse(this.getAttribute('data-allowed-planids') || '[]').map(String);
+            const currentId = this.getAttribute('data-current-planid');
+            document.getElementById('planChangeCompanyId').value = this.getAttribute('data-company-id');
+            document.getElementById('planChangeBillingCycle').value = this.getAttribute('data-billing-cycle') || 'monthly';
+            planModal.querySelectorAll('.plan-card-option').forEach(card => {
+                const radio = card.querySelector('input[name="plan_id"]');
+                radio.disabled = !allowedIds.includes(radio.value);
+                radio.checked = !radio.disabled && radio.value === currentId;
+                card.classList.toggle('disabled', radio.disabled);
+                card.classList.toggle('selected', radio.checked);
+                card.title = radio.disabled ? 'This tier is unavailable. Lower plans cannot be selected.' : '';
+            });
+            confirmPlanBtn.disabled = !planModal.querySelector('input[name="plan_id"]:checked');
             if (planModal) planModal.classList.add('open');
         });
     });
@@ -1710,18 +2333,23 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    if (confirmPlanBtn && planModal) {
-        confirmPlanBtn.addEventListener('click', function() {
-            planModal.classList.remove('open');
-        });
-    }
-
     // Plan selection toggle inside modal
-    document.querySelectorAll('.plan-card-option').forEach(card => {
-        card.addEventListener('click', function() {
-            document.querySelectorAll('.plan-card-option').forEach(c => c.classList.remove('selected'));
-            this.classList.add('selected');
+    planModal.querySelectorAll('input[name="plan_id"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            planModal.querySelectorAll('.plan-card-option').forEach(card => {
+                card.classList.toggle('selected', card.querySelector('input').checked);
+            });
+            confirmPlanBtn.disabled = false;
         });
+    });
+    document.getElementById('companyPlanChangeForm').addEventListener('submit', function(event) {
+        const selected = planModal.querySelector('input[name="plan_id"]:checked:not(:disabled)');
+        if (!selected || !document.getElementById('planChangeCompanyId').value) {
+            event.preventDefault();
+            return;
+        }
+        confirmPlanBtn.disabled = true;
+        confirmPlanBtn.textContent = 'Updating Plan...';
     });
 
     // 7. Company Detail Drawer
@@ -1765,22 +2393,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // 8. Export Dropdown & File Handlers (CSV & PDF)
-    const exportDropdownBtn = document.getElementById('exportDropdownBtn');
-    const exportDropdownMenu = document.getElementById('exportDropdownMenu');
     const exportCsvOption = document.getElementById('exportCsvOption');
     const exportPdfOption = document.getElementById('exportPdfOption');
-
-    if (exportDropdownBtn && exportDropdownMenu) {
-        exportDropdownBtn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            exportDropdownMenu.classList.toggle('open');
-        });
-
-        document.addEventListener('click', function() {
-            exportDropdownMenu.classList.remove('open');
-        });
-    }
 
     // Export CSV Handler
     if (exportCsvOption) {
@@ -1823,7 +2437,7 @@ document.addEventListener('DOMContentLoaded', function() {
             element.style.fontFamily = "'Inter', Arial, sans-serif";
             element.style.color = '#1e293b';
 
-            const now = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+            const now = new Date().toLocaleDateString('en-US', { timeZone: 'Asia/Kolkata',  year: 'numeric', month: 'long', day: 'numeric' });
 
             // 2. Clone table & filter out hidden rows & action/checkbox columns
             const originalTable = document.getElementById('companiesCommandTable');
@@ -1844,7 +2458,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // 3. Format header and enforce strict clean logo image sizing (32px x 32px)
             element.innerHTML = `
                 <style>
-                    .pdf-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #0f744c; padding-bottom: 12px; margin-bottom: 16px; }
+                    .pdf-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #2F6BFF; padding-bottom: 12px; margin-bottom: 16px; }
                     .pdf-title { font-size: 18px; font-weight: 800; color: #0f172a; margin: 0; }
                     .pdf-sub { font-size: 11px; color: #64748b; margin: 4px 0 0 0; }
                     .pdf-meta { font-size: 11px; color: #64748b; text-align: right; }
@@ -1861,7 +2475,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     .plan-badge-cell { font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 999px; text-transform: uppercase; display: inline-block; }
                     .status-pill { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 999px; display: inline-block; }
                     .storage-track-bar { width: 80px; height: 6px; background: #e2e8f0; border-radius: 999px; overflow: hidden; margin-bottom: 2px; }
-                    .storage-fill-bar { height: 100%; background: #0f744c; }
+                    .storage-fill-bar { height: 100%; background: #2F6BFF; }
                 </style>
                 <div class="pdf-header">
                     <div>
@@ -1877,15 +2491,9 @@ document.addEventListener('DOMContentLoaded', function() {
             `;
 
             // 4. Trigger auto-download PDF
-            if (typeof html2pdf !== 'undefined') {
-                const opt = {
-                    margin:       [10, 10, 10, 10],
-                    filename:     'tenant_companies_report.pdf',
-                    image:        { type: 'jpeg', quality: 0.98 },
-                    html2canvas:  { scale: 2, useCORS: true, logging: false },
-                    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
-                };
-                html2pdf().set(opt).from(element).save();
+            if (window.pdfMake && window.PmsPdfExports) {
+                const pdfDocument = window.PmsPdfExports.fromTable(tableClone, 'Tenant Companies Directory Report', 'Platform Super Admin Infrastructure & Subscription Export', 'Export Date: ' + now + ' | Total Records: ' + tableClone.querySelectorAll('tbody tr').length, 'landscape');
+                window.pdfMake.createPdf(pdfDocument).download('tenant_companies_report.pdf');
             } else {
                 const printWin = window.open('', '_blank');
                 printWin.document.write(`<!DOCTYPE html><html><head><title>Tenant Companies Report</title></head><body>${element.innerHTML}<script>window.onload=function(){window.print();};<\\/script></body></html>`);

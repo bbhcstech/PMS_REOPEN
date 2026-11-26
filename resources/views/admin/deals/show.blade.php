@@ -38,39 +38,158 @@
     background: #ef4444;
     color: #ffffff;
 }
+
+/* Dark Mode Support for Visual Pipeline Stepper */
+html[data-pms-theme="dark"] .pipeline-progress,
+html[data-bs-theme="dark"] .pipeline-progress,
+html[data-theme="dark"] .pipeline-progress,
+body[data-pms-theme="dark"] .pipeline-progress,
+[data-pms-theme="dark"] .pipeline-progress {
+    background: #0F1530 !important;
+    border-color: rgba(238, 241, 251, 0.15) !important;
+}
+
+html[data-pms-theme="dark"] .pipeline-step,
+html[data-bs-theme="dark"] .pipeline-step,
+html[data-theme="dark"] .pipeline-step,
+body[data-pms-theme="dark"] .pipeline-step,
+[data-pms-theme="dark"] .pipeline-step {
+    background: #141B3D !important;
+    border-right-color: rgba(238, 241, 251, 0.12) !important;
+    color: #94a3b8 !important;
+    -webkit-text-fill-color: #94a3b8 !important;
+}
+
+html[data-pms-theme="dark"] .pipeline-step span,
+html[data-bs-theme="dark"] .pipeline-step span,
+html[data-theme="dark"] .pipeline-step span,
+body[data-pms-theme="dark"] .pipeline-step span,
+[data-pms-theme="dark"] .pipeline-step span {
+    color: #cbd5e1 !important;
+    -webkit-text-fill-color: #cbd5e1 !important;
+}
+
+html[data-pms-theme="dark"] .pipeline-step small,
+html[data-bs-theme="dark"] .pipeline-step small,
+html[data-theme="dark"] .pipeline-step small,
+body[data-pms-theme="dark"] .pipeline-step small,
+[data-pms-theme="dark"] .pipeline-step small {
+    color: #64748b !important;
+    -webkit-text-fill-color: #64748b !important;
+}
+
+html[data-pms-theme="dark"] .pipeline-step.active,
+html[data-bs-theme="dark"] .pipeline-step.active,
+html[data-theme="dark"] .pipeline-step.active,
+body[data-pms-theme="dark"] .pipeline-step.active,
+[data-pms-theme="dark"] .pipeline-step.active {
+    background: #2563eb !important;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+html[data-pms-theme="dark"] .pipeline-step.active span,
+html[data-pms-theme="dark"] .pipeline-step.active small,
+html[data-bs-theme="dark"] .pipeline-step.active span,
+html[data-bs-theme="dark"] .pipeline-step.active small,
+body[data-pms-theme="dark"] .pipeline-step.active span,
+body[data-pms-theme="dark"] .pipeline-step.active small,
+[data-pms-theme="dark"] .pipeline-step.active span,
+[data-pms-theme="dark"] .pipeline-step.active small {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+html[data-pms-theme="dark"] .pipeline-step.completed,
+html[data-bs-theme="dark"] .pipeline-step.completed,
+html[data-theme="dark"] .pipeline-step.completed,
+body[data-pms-theme="dark"] .pipeline-step.completed,
+[data-pms-theme="dark"] .pipeline-step.completed {
+    background: #2F6BFF !important;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+html[data-pms-theme="dark"] .pipeline-step.completed span,
+html[data-pms-theme="dark"] .pipeline-step.completed small,
+html[data-bs-theme="dark"] .pipeline-step.completed span,
+html[data-bs-theme="dark"] .pipeline-step.completed small,
+body[data-pms-theme="dark"] .pipeline-step.completed span,
+body[data-pms-theme="dark"] .pipeline-step.completed small,
+[data-pms-theme="dark"] .pipeline-step.completed span,
+[data-pms-theme="dark"] .pipeline-step.completed small {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+html[data-pms-theme="dark"] .pipeline-step.lost,
+html[data-bs-theme="dark"] .pipeline-step.lost,
+html[data-theme="dark"] .pipeline-step.lost,
+body[data-pms-theme="dark"] .pipeline-step.lost,
+[data-pms-theme="dark"] .pipeline-step.lost {
+    background: #dc2626 !important;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+html[data-pms-theme="dark"] .pipeline-step.lost span,
+html[data-pms-theme="dark"] .pipeline-step.lost small,
+html[data-bs-theme="dark"] .pipeline-step.lost span,
+html[data-bs-theme="dark"] .pipeline-step.lost small,
+body[data-pms-theme="dark"] .pipeline-step.lost span,
+body[data-pms-theme="dark"] .pipeline-step.lost small,
+[data-pms-theme="dark"] .pipeline-step.lost span,
+[data-pms-theme="dark"] .pipeline-step.lost small {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
 </style>
 
-<div class="container-fluid py-3">
+@include('admin.partials.crm-workspace-styles')
+
+<div class="container-fluid" id="pms-crm-workspace">
 
     {{-- HEADER --}}
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <div class="d-flex align-items-center gap-2 mb-1">
-                <a href="{{ route('admin.deals.index') }}" class="text-muted text-decoration-none"><i class="fas fa-arrow-left me-1"></i> Deals</a>
-                <span class="text-muted">/</span>
-                <span class="fw-bold text-dark">{{ $deal->deal_name }}</span>
+    <div class="pms-crm-topbar">
+        <div class="pms-crm-heading-group">
+            <div class="pms-crm-title-icon">
+                <i class="fas fa-handshake"></i>
             </div>
-            <h4 class="fw-bold mb-0 text-dark">
-                {{ $deal->deal_name }}
-                @if($deal->company_name)
-                    <span class="text-muted fs-6 fw-normal">for {{ $deal->company_name }}</span>
-                @endif
-            </h4>
+            <div>
+                <h1 class="pms-crm-title">
+                    {{ $deal->deal_name }}
+                </h1>
+                <p class="pms-crm-subtitle">
+                    @if($deal->company_name)
+                        Opportunity for {{ $deal->company_name }}
+                    @else
+                        Deal Opportunity Details
+                    @endif
+                </p>
+            </div>
         </div>
-        <div class="d-flex gap-2">
-            <button class="btn btn-primary btn-sm fw-semibold" data-bs-toggle="modal" data-bs-target="#addDealActivityModal">
-                <i class="fas fa-plus me-1"></i> Add Activity
+        <div class="pms-crm-actions">
+            <button class="pms-crm-btn-primary" data-bs-toggle="modal" data-bs-target="#addDealActivityModal">
+                <i class="fas fa-plus"></i>
+                <span>Add Activity</span>
             </button>
-            <button class="btn btn-warning btn-sm text-dark fw-semibold" data-bs-toggle="modal" data-bs-target="#scheduleDealFollowUpModal">
-                <i class="fas fa-calendar-plus me-1"></i> Schedule Follow-up
+            <button class="pms-crm-btn-warning" data-bs-toggle="modal" data-bs-target="#scheduleDealFollowUpModal">
+                <i class="fas fa-calendar-plus"></i>
+                <span>Schedule Follow-up</span>
             </button>
             @if(str_contains(strtolower($deal->stage->name ?? ''), 'won') || str_contains(strtolower($deal->stage->name ?? ''), 'concreted'))
-                <button class="btn btn-success btn-sm fw-semibold" id="btnConvertDealClient">
-                    <i class="fas fa-user-check me-1"></i> Convert to Client
+                <button class="pms-crm-btn-success" id="btnConvertDealClient">
+                    <i class="fas fa-user-check"></i>
+                    <span>Convert to Client</span>
                 </button>
             @endif
-            <a href="{{ route('admin.deals.edit', $deal->id) }}" class="btn btn-outline-secondary btn-sm">
-                <i class="fas fa-edit me-1"></i> Edit Deal
+            <a href="{{ route('admin.deals.edit', $deal->id) }}" class="pms-crm-btn-outline-primary">
+                <i class="fas fa-edit"></i>
+                <span>Edit Deal</span>
+            </a>
+            <a href="{{ route('admin.deals.index') }}" class="pms-crm-btn-secondary">
+                <i class="fas fa-arrow-left"></i>
+                <span>Back to Deals</span>
             </a>
         </div>
     </div>
@@ -150,18 +269,18 @@
     </div>
 
     {{-- TABS --}}
-    <ul class="nav nav-tabs border-bottom-0 mb-3" id="dealTabs" role="tablist">
+    <ul class="nav pms-crm-tabs mb-4" id="dealTabs" role="tablist">
         <li class="nav-item">
-            <button class="nav-link active fw-bold text-dark" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview-pane"><i class="fas fa-info-circle me-2 text-primary"></i>Overview</button>
+            <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview-pane"><i class="fas fa-info-circle me-2"></i>Overview</button>
         </li>
         <li class="nav-item">
-            <button class="nav-link fw-bold text-dark" id="activities-tab" data-bs-toggle="tab" data-bs-target="#activities-pane"><i class="fas fa-stream me-2 text-warning"></i>Activities ({{ $deal->activities->count() }})</button>
+            <button class="nav-link" id="activities-tab" data-bs-toggle="tab" data-bs-target="#activities-pane"><i class="fas fa-stream me-2"></i>Activities ({{ $deal->activities->count() }})</button>
         </li>
         <li class="nav-item">
-            <button class="nav-link fw-bold text-dark" id="followups-tab" data-bs-toggle="tab" data-bs-target="#followups-pane"><i class="fas fa-calendar-check me-2 text-info"></i>Follow-ups ({{ $deal->followUps->count() }})</button>
+            <button class="nav-link" id="followups-tab" data-bs-toggle="tab" data-bs-target="#followups-pane"><i class="fas fa-calendar-check me-2"></i>Follow-ups ({{ $deal->followUps->count() }})</button>
         </li>
         <li class="nav-item">
-            <button class="nav-link fw-bold text-dark" id="notes-tab" data-bs-toggle="tab" data-bs-target="#notes-pane"><i class="fas fa-sticky-note me-2 text-secondary"></i>Notes</button>
+            <button class="nav-link" id="notes-tab" data-bs-toggle="tab" data-bs-target="#notes-pane"><i class="fas fa-sticky-note me-2"></i>Notes</button>
         </li>
     </ul>
 
@@ -360,8 +479,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary btn-sm px-4">Save Activity</button>
+                    <button type="button" class="pms-crm-btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="pms-crm-btn-primary">Save Activity</button>
                 </div>
             </form>
         </div>
@@ -412,8 +531,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-warning btn-sm text-dark px-4 fw-semibold">Schedule Follow-up</button>
+                    <button type="button" class="pms-crm-btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="pms-crm-btn-warning">Schedule Follow-up</button>
                 </div>
             </form>
         </div>

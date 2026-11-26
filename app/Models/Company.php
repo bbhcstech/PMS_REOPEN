@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Company extends Model
 {
     protected $connection = 'central';
-    use SoftDeletes;
+    use SoftDeletes, \App\Models\Concerns\HasCompanyAiAgent, \App\Models\Concerns\ResolvesCompanyFeatures;
 
     protected $fillable = [
         'company_code',
@@ -23,6 +23,7 @@ class Company extends Model
         'favicon',
         'domain',
         'subdomain',
+        'db_name',
         'address',
         'gst_number',
         'pan_number',
@@ -40,12 +41,39 @@ class Company extends Model
         'max_clients',
         'max_storage_mb',
         'settings',
+        'letterhead_file',
+        'letterhead_original_name',
+        'letterhead_file_type',
+        'letterhead_uploaded_at',
     ];
+
+    protected static function booted(): void
+    {
+        static::creating(function ($company) {
+            if (empty($company->db_name)) {
+                $base = $company->company_code ?: ($company->subdomain ?: $company->name);
+                $slug = \Illuminate\Support\Str::slug((string) $base, '_');
+                if (empty($slug)) {
+                    $slug = 'tenant_' . strtolower(\Illuminate\Support\Str::random(6));
+                }
+                $prefix = env('TENANT_DB_PREFIX', 'pms_');
+                $candidate = str_starts_with($slug, $prefix) ? $slug : $prefix . $slug;
+
+                $count = 1;
+                $original = $candidate;
+                while (static::where('db_name', $candidate)->exists()) {
+                    $candidate = $original . '_' . $count++;
+                }
+                $company->db_name = $candidate;
+            }
+        });
+    }
 
     protected $casts = [
         'settings' => 'array',
         'theme' => 'array',
         'trial_ends_at' => 'datetime',
+        'letterhead_uploaded_at' => 'datetime',
     ];
 
     public function getCompanyNameAttribute(): string
@@ -70,12 +98,28 @@ class Company extends Model
 
     public function logoUrl(): ?string
     {
-        return $this->logo ? asset($this->logo) : null;
+        if ($this->logo && file_exists(public_path($this->logo))) {
+            return asset($this->logo);
+        }
+        if (file_exists(public_path('logo.png'))) {
+            return asset('logo.png');
+        }
+        return null;
     }
 
     public function faviconUrl(): ?string
     {
         return $this->favicon ? asset($this->favicon) : null;
+    }
+
+    public function hasLetterhead(): bool
+    {
+        return !empty($this->letterhead_file);
+    }
+
+    public function letterheadUrl(): ?string
+    {
+        return $this->letterhead_file ? asset($this->letterhead_file) : null;
     }
 
     public function users(): HasMany
@@ -94,6 +138,16 @@ class Company extends Model
             ->where('status', 'active')
             ->where('ends_at', '>', now())
             ->latest();
+    }
+
+    /**
+     * Most recent non-cancelled subscription (active, trial, pending or expired), used for display
+     * when the company has no currently running paid subscription.
+     */
+    public function latestSubscription()
+    {
+        return $this->hasOne(CompanySubscription::class)
+            ->ofMany(['id' => 'max'], fn ($query) => $query->where('status', '!=', 'cancelled'));
     }
 
     public function modules(): BelongsToMany
@@ -125,7 +179,7 @@ class Company extends Model
 
     public function isActive(): bool
     {
-        return $this->status === 'active';
+        return strtolower((string)$this->status) === 'active' && !$this->isSuspended() && !$this->isExpired();
     }
 
     public function isOnTrial(): bool
@@ -149,7 +203,7 @@ class Company extends Model
 
     public function isSuspended(): bool
     {
-        if (strtolower($this->status ?? '') === 'suspended') {
+        if (strtolower((string)$this->status) === 'suspended' || !empty($this->manually_suspended)) {
             return true;
         }
 
@@ -162,6 +216,64 @@ class Company extends Model
         return false;
     }
 
+    public function isExpired(): bool
+    {
+        if (strtolower((string)$this->status) === 'expired') {
+            return true;
+        }
+
+        try {
+            if (app()->bound(\App\Services\SubscriptionService::class)) {
+                return app(\App\Services\SubscriptionService::class)->isExpired($this);
+            }
+        } catch (\Throwable $e) {}
+
+        return false;
+    }
+
+    public function getCentralCompanyId(): ?int
+    {
+        if ($this->getConnectionName() === 'central' || $this instanceof \App\Models\Central\Company) {
+            return (int) $this->id;
+        }
+
+        if (session('current_company_id')) {
+            return (int) session('current_company_id');
+        }
+
+        if (auth()->check() && auth()->user()->company_id) {
+            return (int) auth()->user()->company_id;
+        }
+
+        try {
+            $currentDb = config('database.connections.tenant.database') ?: env('DB_DATABASE');
+            $centralComp = \Illuminate\Support\Facades\DB::connection('central')
+                ->table('companies')
+                ->where(function ($q) use ($currentDb) {
+                    if (!empty($currentDb)) {
+                        $q->orWhere('db_name', $currentDb);
+                    }
+                    if (!empty($this->email)) {
+                        $q->orWhere('email', $this->email);
+                    }
+                    if (!empty($this->company_code)) {
+                        $q->orWhere('company_code', $this->company_code);
+                    }
+                    if (!empty($this->name)) {
+                        $q->orWhere('name', $this->name);
+                    }
+                })
+                ->select('id')
+                ->first();
+
+            if ($centralComp) {
+                return (int) $centralComp->id;
+            }
+        } catch (\Throwable $e) {}
+
+        return (int) $this->id;
+    }
+
     public function remainingDays(): int
     {
         try {
@@ -169,164 +281,5 @@ class Company extends Model
         } catch (\Throwable $e) {
             return 0;
         }
-    }
-
-    public function hasFeature(string $featureSlug): bool
-    {
-        if ($this->isSuspended()) {
-            return false;
-        }
-
-        if (in_array($featureSlug, ['home', 'profile'], true)) {
-            return true;
-        }
-
-        try {
-            $slugs = match ($featureSlug) {
-                'crm', 'deals', 'crm-deals' => ['crm-deals', 'crm', 'deals', 'leads-contacts'],
-                'leads', 'leads-contacts' => ['leads-contacts', 'leads', 'crm'],
-                'leaves', 'leave-management', 'leave-settings' => ['leave-management', 'leaves', 'leave-settings', 'hr'],
-                'employees', 'user-management' => ['employees', 'user-management', 'hr'],
-                'designations' => ['designations', 'hr'],
-                'departments' => ['departments', 'hr'],
-                'attendance', 'attendance-settings' => ['attendance', 'attendance-settings', 'hr'],
-                'holidays', 'holiday-settings' => ['holidays', 'holiday-settings', 'hr'],
-                'awards', 'recognition' => ['recognition', 'awards', 'hr'],
-                'recruitment', 'recruitment-settings' => ['recruitment', 'recruitment-settings', 'hr'],
-                'appraisal', 'performance-settings' => ['appraisal', 'performance-settings', 'hr'],
-                'hr', 'hr-management' => ['hr', 'hr-management', 'hr-employees'],
-                'projects' => ['projects', 'work'],
-                'tasks' => ['tasks', 'work'],
-                'timelogs', 'timesheets' => ['timesheets', 'timelogs', 'work'],
-                'work' => ['work'],
-                'payroll', 'payslips', 'salary-structures', 'payroll-architectures', 'payroll-settings', 'payroll-policies', 'payroll-cycles', 'payroll-reports', 'bonus-rules', 'deduction-rules', 'overtime-rules', 'tax-rules', 'formula-builder' => ['payroll', 'payslips', 'salary-structures', 'payroll-architectures', 'payroll-settings', 'payroll-policies', 'payroll-cycles', 'payroll-reports', 'bonus-rules', 'deduction-rules', 'overtime-rules', 'tax-rules', 'formula-builder'],
-                'expenses' => ['expenses', 'billing'],
-                'billing' => ['billing', 'expenses'],
-                'clients', 'client' => ['clients', 'client', 'leads-contacts'],
-                'collaborating-companies', 'collaborating_companies' => ['collaborating-companies', 'collaborating_companies'],
-                'reports', 'standard-reports', 'analytics', 'advanced-reports', 'company-complaints', 'activity-logs', 'system-logs' => ['reports', 'standard-reports', 'analytics', 'advanced-reports', 'company-complaints', 'activity-logs', 'system-logs'],
-                'organization', 'teams' => ['organization', 'teams'],
-                'tickets' => ['tickets'],
-                'contracts' => ['contracts'],
-                'notifications', 'notification-settings' => ['notifications', 'notification-settings'],
-                'settings' => ['settings'],
-                'settings-dashboard' => ['settings-dashboard', 'settings'],
-                'company-profile-settings' => ['company-profile-settings', 'settings'],
-                'organization-details-settings' => ['organization-details-settings', 'settings'],
-                'business-address-settings' => ['business-address-settings', 'settings'],
-                'work-schedule-settings' => ['work-schedule-settings', 'settings'],
-                'security-settings' => ['security-settings', 'settings'],
-                'change-password-settings' => ['change-password-settings', 'settings'],
-                'role-permissions-settings' => ['role-permissions-settings', 'role-management', 'settings'],
-                'localization-settings' => ['localization-settings', 'settings'],
-                'terms-policy-settings' => ['terms-policy-settings', 'settings'],
-                default => [$featureSlug],
-            };
-
-            // 1. Explicit Company Module Overrides set by Super Admin (takes top priority)
-            $overrides = \Illuminate\Support\Facades\DB::connection('central')
-                ->table('company_modules')
-                ->join('modules', 'modules.id', '=', 'company_modules.module_id')
-                ->where('company_modules.company_id', $this->id)
-                ->whereIn('modules.slug', $slugs)
-                ->select('company_modules.is_enabled')
-                ->orderBy('company_modules.is_enabled', 'asc') // disabled (0) comes first
-                ->get();
-
-            if ($overrides->isNotEmpty()) {
-                if ($overrides->contains('is_enabled', 0)) {
-                    return false;
-                }
-                if ($overrides->contains('is_enabled', 1)) {
-                    return true;
-                }
-            }
-        } catch (\Throwable $e) {}
-
-        // 2. Check if parent category feature is disabled by Super Admin
-        if ($this->isParentFeatureRevoked($featureSlug)) {
-            return false;
-        }
-
-        // 3. Check Active Subscription Plan Module Entitlements
-        try {
-            $sub = $this->activeSubscription;
-            if ($sub && $sub->plan_id) {
-                $plan = $sub->plan ?? \App\Models\Central\Plan::on('central')->find($sub->plan_id);
-                $planSlug = strtolower($plan?->slug ?? '');
-
-                // Standard paid plans (gold, platinum, diamond) include all base platform features by default
-                if (in_array($planSlug, ['gold', 'platinum', 'diamond'], true)) {
-                    return true;
-                }
-
-                $planModules = \Illuminate\Support\Facades\DB::connection('central')
-                    ->table('plan_modules')
-                    ->join('modules', 'modules.id', '=', 'plan_modules.module_id')
-                    ->where('plan_modules.plan_id', $sub->plan_id)
-                    ->pluck('modules.slug')
-                    ->toArray();
-
-                if (! empty($planModules)) {
-                    foreach ($slugs as $slug) {
-                        if (in_array($slug, $planModules, true)) {
-                            return true;
-                        }
-                    }
-                    return false;
-                }
-            }
-        } catch (\Throwable $e) {}
-
-        // 4. Default for active or trial accounts without explicit restrictions
-        if ($this->isOnTrial() || $this->isActive()) {
-            return true;
-        }
-
-        return false;
-    }
-
-    private function isParentFeatureRevoked(string $featureSlug): bool
-    {
-        $parentKey = match ($featureSlug) {
-            'designations', 'departments', 'attendance', 'leaves', 'leave-management', 'holidays', 'awards', 'recognition', 'recruitment', 'appraisal', 'employees', 'user-management' => 'hr',
-            'projects', 'tasks', 'timelogs', 'timesheets' => 'work',
-            'deals', 'crm', 'crm-deals', 'leads-contacts' => 'leads',
-            'expenses', 'billing', 'payslips', 'salary-structures', 'payroll-architectures' => 'payroll',
-            'teams' => 'organization',
-            'settings-dashboard', 'company-profile-settings', 'organization-details-settings', 'business-address-settings', 'work-schedule-settings', 'leave-settings', 'holiday-settings', 'attendance-settings', 'payroll-settings', 'recruitment-settings', 'performance-settings', 'notification-settings', 'email-settings', 'document-settings', 'security-settings', 'change-password-settings', 'role-permissions-settings', 'localization-settings', 'terms-policy-settings' => 'settings',
-            default => null,
-        };
-
-        if (! $parentKey) {
-            return false;
-        }
-
-        try {
-            $parentSlugs = match ($parentKey) {
-                'hr' => ['hr', 'hr-management', 'hr-employees'],
-                'work' => ['work'],
-                'leads' => ['leads', 'leads-contacts', 'crm'],
-                'payroll' => ['payroll'],
-                'organization' => ['organization'],
-                'settings' => ['settings', 'module-management'],
-                default => [$parentKey],
-            };
-
-            $parentOverride = \Illuminate\Support\Facades\DB::connection('central')
-                ->table('company_modules')
-                ->join('modules', 'modules.id', '=', 'company_modules.module_id')
-                ->where('company_modules.company_id', $this->id)
-                ->whereIn('modules.slug', $parentSlugs)
-                ->select('company_modules.is_enabled')
-                ->orderBy('company_modules.is_enabled', 'asc')
-                ->first();
-
-            if ($parentOverride !== null && (int) $parentOverride->is_enabled === 0) {
-                return true;
-            }
-        } catch (\Throwable $e) {}
-
-        return false;
     }
 }

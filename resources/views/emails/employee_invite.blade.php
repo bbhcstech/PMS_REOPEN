@@ -4,7 +4,7 @@
 @if(!empty($messageText))
 {!! nl2br(e($messageText)) !!}
 @else
-Welcome to Xinksoft Technologies Pvt. Ltd.
+You have been invited to join {{ $companyName }}. Click the button below to set your password and activate your account. This link is valid for 7 days and can be used once.
 @endif
 
 @component('mail::button', ['url' => $inviteLink])
@@ -15,5 +15,5 @@ If the button above does not work, copy and paste this URL into your browser:
 {{ $inviteLink }}
 
 Thanks,<br>
-Xinksoft Team
+{{ $companyName }} Team
 @endcomponent

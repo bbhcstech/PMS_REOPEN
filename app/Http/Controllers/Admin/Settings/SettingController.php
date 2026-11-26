@@ -46,13 +46,13 @@ class SettingController extends Controller
                         'name' => 'Parent Department',
                         'description' => 'Manage main organization units',
                         'icon' => 'bx bx-building-house',
-                        'route' => 'parent-departments.index'
+                        'route' => 'admin.settings.parent-departments.index'
                     ],
                     [
                         'name' => 'Sub Department',
                         'description' => 'Manage sub-teams & branches',
                         'icon' => 'bx bx-git-repo-forked',
-                        'route' => 'departments.index'
+                        'route' => 'admin.settings.departments.index'
                     ]
                 ]
             ],
@@ -61,7 +61,7 @@ class SettingController extends Controller
                 'description' => 'Software Engineer, HR Manager, Team Lead, etc.',
                 'icon' => 'bx bx-id-card',
                 'color' => 'danger',
-                'route' => 'designations.index',
+                'route' => 'admin.settings.designations.index',
                 'category' => 'Organization'
             ],
             'work-schedule' => [
@@ -96,14 +96,6 @@ class SettingController extends Controller
                 'route' => 'attendance.settings',
                 'category' => 'HR'
             ],
-            'payroll-settings' => [
-                'name' => 'Payroll Settings',
-                'description' => 'Salary structure, pay cycle, deductions, allowances',
-                'icon' => 'bx bx-wallet',
-                'color' => 'primary',
-                'route' => 'payroll.settings.index',
-                'category' => 'Finance'
-            ],
             'recruitment-settings' => [
                 'name' => 'Recruitment Settings',
                 'description' => 'Job categories, recruitment stages, hiring configuration',
@@ -114,7 +106,7 @@ class SettingController extends Controller
             ],
             'performance-settings' => [
                 'name' => 'Performance Settings',
-                'description' => 'Appraisal cycles, rating scales, performance criteria',
+                'description' => 'Appraisal criteria, review cycles, approval workflow and salary increase recommendations',
                 'icon' => 'bx bx-trending-up',
                 'color' => 'success',
                 'route' => 'admin.settings.performance',
@@ -177,6 +169,15 @@ class SettingController extends Controller
                 'category' => 'System'
             ],
         ];
+
+        if (! \Illuminate\Support\Facades\Auth::guard('super_admin')->check()
+            && ! in_array(strtolower((string) auth()->user()?->role), ['admin', 'administrator', 'superadmin', 'hr', 'manager'], true)) {
+            unset($settingsGroups['branches-locations']);
+        }
+
+        if (! \App\Services\WorkforceAccess::isAdmin(auth()->user())) {
+            unset($settingsGroups['departments'], $settingsGroups['designations']);
+        }
 
         return view('admin.settings.index', compact('settingsGroups'));
     }

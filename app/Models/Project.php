@@ -4,13 +4,14 @@ namespace App\Models;
 
 use App\Models\TenantModel;
 
+use App\Traits\BelongsToCompany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Project extends TenantModel
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, BelongsToCompany;
 
     protected $casts = [
         'manual_timelog' => 'boolean',
@@ -25,8 +26,9 @@ class Project extends TenantModel
     ];
 
     protected $fillable = [
-        'client_id', 'created_by', 'name', 'project_code', 'category_id', 'department_id', 'team_id',
-        'description', 'start_date', 'deadline', 'without_deadline', 'status', 'priority', 'notes', 'remarks',
+        'company_id',
+        'client_id', 'project_type', 'created_by', 'name', 'project_code', 'category_id', 'department_id', 'team_id',
+        'description', 'start_date', 'deadline', 'without_deadline', 'status', 'payment_status', 'priority', 'notes', 'remarks',
         'public_gantt_chart', 'public_taskboard', 'client_access', 'need_approval_by_admin',
         'public', 'allow_client_notification', 'completion_percent',
         'calculate_task_progress', 'project_budget', 'hours_allocated', 'currency_id',

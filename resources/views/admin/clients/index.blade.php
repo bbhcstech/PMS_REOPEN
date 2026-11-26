@@ -3,22 +3,36 @@
 @section('title', 'Clients')
 
 @section('content')
-<div class="container-fluid px-4 py-4">
+@include('admin.clients.partials.workspace-styles')
+
+<div class="container-fluid" id="pms-client-workspace">
     <!-- Top Header -->
-    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
-        <div>
-            <h3 class="fw-bold mb-0 text-dark"><i class="bx bx-user-voice text-primary me-2"></i> Client Management</h3>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item"><a href="{{ route('dashboard') }}" class="text-decoration-none">Dashboard</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Clients</li>
-                </ol>
-            </nav>
+    <div class="pms-cl-topbar">
+        <div class="pms-cl-heading-group">
+            <div class="pms-cl-title-icon">
+                <i class="bx bx-user-voice"></i>
+            </div>
+            <div>
+                <h1 class="pms-cl-title">Client Management</h1>
+                <p class="pms-cl-subtitle">Manage client accounts, company profiles, verification status, and linked projects.</p>
+            </div>
         </div>
 
-        <div class="d-flex align-items-center gap-2">
-            <a href="{{ route('clients.create') }}" class="btn btn-primary rounded-pill px-4 shadow-sm">
-                <i class="bx bx-plus-circle me-1"></i> Add Client
+        <div class="pms-cl-actions">
+            <div class="pms-cl-switcher" role="group" aria-label="View toggle">
+                <a href="{{ route('clients.index') }}" class="pms-cl-switch-btn is-active" data-toggle="tooltip" title="Table View">
+                    <i class="bi bi-list-ul"></i>
+                    <span>All Clients</span>
+                </a>
+                <a href="{{ route('clients.pending') }}" class="pms-cl-switch-btn show-unverified" data-toggle="tooltip" title="Account verification pending">
+                    <i class="bi bi-person-x"></i>
+                    <span>Pending Verification</span>
+                </a>
+            </div>
+
+            <a href="{{ route('clients.create') }}" class="pms-cl-btn-primary">
+                <i class="bx bx-plus-circle"></i>
+                <span>Add Client</span>
             </a>
         </div>
     </div>
@@ -31,16 +45,16 @@
     @endif
 
     <!-- Filters Section -->
-    <div class="card border-0 shadow-sm rounded-4 mb-4">
+    <div class="pms-cl-card mb-4">
         <div class="card-body p-4">
             <form method="GET" action="{{ route('clients.index') }}">
                 <div class="row g-3 align-items-end">
                     <div class="col-lg-4 col-md-5">
-                        <label for="duration" class="form-label fw-semibold text-dark mb-1">Duration / Date Range</label>
+                        <label for="duration" class="pms-cl-label">Duration / Date Range</label>
                         <div class="input-group">
-                            <span class="input-group-text bg-white border-end-0"><i class="bx bx-calendar text-primary"></i></span>
+                            <span class="input-group-text bg-transparent border-end-0"><i class="bx bx-calendar text-primary"></i></span>
                             <input type="text"
-                                   class="form-control border-start-0 ps-0 rounded-end"
+                                   class="form-control border-start-0 ps-0"
                                    id="duration"
                                    name="duration"
                                    value="{{ request('duration') }}"
@@ -50,23 +64,25 @@
                     </div>
 
                     <div class="col-lg-4 col-md-4">
-                        <label for="name" class="form-label fw-semibold text-dark mb-1">Filter by Client</label>
-                        <select class="form-select rounded-3" id="name" name="name">
+                        <label for="name" class="pms-cl-label">Filter by Client</label>
+                        <select class="form-select select2" id="name" name="name">
                             <option value="">All Clients</option>
                             @foreach($clients as $c)
                                 <option value="{{ $c->id }}" {{ request('name') == $c->id ? 'selected' : '' }}>
-                                    {{ $c->client_uid ?? $c->id }} - {{ $c->name }} ({{ $c->company_name ?? 'Company' }})
+                                    {{ $c->client_uid ?? $c->id }} - {{ $c->name }}
                                 </option>
                             @endforeach
                         </select>
                     </div>
 
                     <div class="col-lg-4 col-md-3 d-flex align-items-center gap-2">
-                        <button type="submit" class="btn btn-primary rounded-pill px-4 flex-grow-1 text-nowrap">
-                            <i class="bx bx-filter-alt me-1"></i> Filter
+                        <button type="submit" class="pms-cl-btn-primary flex-grow-1 text-nowrap">
+                            <i class="bx bx-filter-alt"></i>
+                            <span>Filter</span>
                         </button>
-                        <a href="{{ route('clients.index') }}" class="btn btn-outline-secondary rounded-pill px-4 flex-grow-1 text-nowrap">
-                            <i class="bx bx-refresh me-1"></i> Reset
+                        <a href="{{ route('clients.index') }}" class="pms-cl-btn-secondary flex-grow-1 text-nowrap">
+                            <i class="bx bx-refresh"></i>
+                            <span>Reset</span>
                         </a>
                     </div>
                 </div>
@@ -74,122 +90,83 @@
         </div>
     </div>
 
-    <!-- Actions & Views Switcher Toolbar -->
-    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
-        <!-- Quick Bulk Actions -->
-        <div class="d-flex align-items-center gap-2">
-            <select class="form-select form-select-sm rounded-pill w-auto" id="quick-action-type">
-                <option value="">Choose Bulk Action</option>
-                <option value="change-status">Change Status</option>
-                <option value="delete">Delete Selected</option>
-            </select>
-
-            <select class="form-select form-select-sm rounded-pill w-auto d-none" id="quick-action-status">
-                <option value="Active">Mark Active</option>
-                <option value="Inactive">Mark Inactive</option>
-            </select>
-
-            <button class="btn btn-sm btn-primary rounded-pill px-3" id="quick-action-apply" disabled>Apply</button>
-        </div>
-
-        <!-- View Switcher -->
-        <div class="btn-group" role="group">
-            <a href="{{ route('clients.index') }}" class="btn btn-sm btn-outline-primary {{ request()->routeIs('clients.index') ? 'active' : '' }}" title="Table View">
-                <i class="bx bx-list-ul me-1"></i> Client Directory
-            </a>
-            <a href="{{ route('clients.pending') }}" class="btn btn-sm btn-outline-warning {{ request()->routeIs('clients.pending') ? 'active' : '' }}" title="Pending Verification">
-                <i class="bx bx-user-x me-1"></i> Verification Pending
-            </a>
-        </div>
-    </div>
-
-    <!-- Clients Table Card -->
-    <div class="card border-0 shadow-sm rounded-4">
+    <!-- Table Card -->
+    <div class="pms-cl-card mb-4">
         <div class="card-body p-4">
             <div class="table-responsive">
-                <table id="clientsTable" class="table table-hover align-middle w-100">
-                    <thead class="table-light">
+                <table id="clientsTable" class="table table-hover table-striped align-middle pms-cl-table mb-0">
+                    <thead>
                         <tr>
-                            <th style="width: 30px;"><input type="checkbox" id="selectAll" class="form-check-input"></th>
-                            <th style="width: 100px;">Client ID</th>
-                            <th>Client & Company</th>
-                            <th>Contact Info</th>
-                            <th>Category</th>
-                            <th>Active Projects</th>
+                            <th style="width:40px;"><input type="checkbox" class="form-check-input" id="selectAll"></th>
+                            <th>Client ID</th>
+                            <th style="white-space: nowrap;">Name</th>
+                            <th>Email</th>
+                            <th style="white-space: nowrap;">Company</th>
                             <th>Status</th>
-                            <th>Created On</th>
-                            <th style="width: 80px;" class="text-end">Actions</th>
+                            <th style="white-space: nowrap;">Created</th>
+                            <th class="text-end">Action</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach($clients as $client)
                             <tr data-id="{{ $client->id }}">
-                                <td><input type="checkbox" class="client-checkbox form-check-input" value="{{ $client->id }}"></td>
-                                <td class="fw-bold">
-                                    <span class="badge bg-light text-dark border font-monospace">
-                                        {{ $client->client_uid ?? ('CL-' . $client->id) }}
-                                    </span>
-                                </td>
-                                <td>
-                                    <div class="d-flex align-items-center gap-3">
-                                        <div class="avatar bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width: 38px; height: 38px;">
-                                            {{ strtoupper(substr($client->name ?? 'C', 0, 2)) }}
-                                        </div>
+                                <td><input type="checkbox" class="form-check-input client-checkbox" value="{{ $client->id }}"></td>
+                                <td><span class="fw-semibold">{{ $client->client_uid ?? '—' }}</span></td>
+                                <td style="white-space: nowrap;">
+                                    <div class="d-flex align-items-center gap-2">
+                                        @if(!empty($client->profile_picture))
+                                            <img src="{{ asset($client->profile_picture) }}" alt="{{ $client->name }}" class="pms-cl-avatar">
+                                        @else
+                                            <span class="pms-cl-avatar">{{ strtoupper(substr($client->name ?? 'C', 0, 1)) }}</span>
+                                        @endif
                                         <div>
-                                            <div class="fw-bold text-dark mb-0">
-                                                <a href="{{ route('clients.show', $client->id) }}" class="text-dark text-decoration-none">
-                                                    {{ $client->salutation }} {{ $client->name }}
-                                                </a>
-                                            </div>
-                                            <small class="text-muted"><i class="bx bx-building me-1"></i> {{ $client->company_name ?? 'Individual Client' }}</small>
+                                            <a href="{{ route('clients.show', $client->id) }}" class="pms-cl-client-link d-block">{{ $client->name }}</a>
+                                            @if($client->salutation)
+                                                <small class="text-muted">{{ $client->salutation }} {{ $client->name }}</small>
+                                            @endif
                                         </div>
                                     </div>
                                 </td>
-                                <td>
-                                    <div class="fw-semibold text-dark"><i class="bx bx-envelope text-primary me-1"></i> {{ $client->email }}</div>
-                                    @if($client->mobile || $client->office_phone)
-                                        <small class="text-muted"><i class="bx bx-phone me-1"></i> {{ $client->mobile ?? $client->office_phone }}</small>
-                                    @endif
-                                </td>
-                                <td>
-                                    <span class="badge bg-info-subtle text-info border border-info-subtle px-3 py-1">
-                                        {{ $client->category->name ?? 'Corporate Client' }}
-                                    </span>
-                                </td>
+                                <td>{{ $client->email }}</td>
+                                <td style="white-space: nowrap;">{{ $client->company_name ?? '—' }}</td>
                                 <td>
                                     @php
-                                        $projCount = $client->projects->count();
+                                        $clientStatus = strtolower(trim((string)($client->status ?? 'active')));
+                                        $statusPillClass = match($clientStatus) {
+                                            'active' => 'is-active',
+                                            'pending' => 'is-pending',
+                                            default => 'is-inactive'
+                                        };
                                     @endphp
-                                    <a href="{{ route('projects.index', ['client_id' => $client->id]) }}" class="badge bg-success-subtle text-success border border-success-subtle text-decoration-none px-3 py-1">
-                                        <i class="bx bx-briefcase me-1"></i> {{ $projCount }} Projects
-                                    </a>
+                                    <span class="pms-cl-status {{ $statusPillClass }} text-capitalize">
+                                        {{ $client->status ?? 'Active' }}
+                                    </span>
                                 </td>
-                                <td>
-                                    @if(strtolower((string)($client->status ?? 'active')) == 'active')
-                                        <span class="badge bg-success rounded-pill px-3 py-1">Active</span>
-                                    @else
-                                        <span class="badge bg-secondary rounded-pill px-3 py-1">{{ ucfirst($client->status ?? 'Inactive') }}</span>
-                                    @endif
-                                </td>
-                                <td class="text-nowrap small text-muted">
-                                    {{ $client->created_at ? \Carbon\Carbon::parse($client->created_at)->format('d M Y') : '—' }}
+                                <td style="white-space: nowrap;">
+                                    {{ $client->created_at ? \Carbon\Carbon::parse($client->created_at)->format('d-m-Y') : '—' }}
                                 </td>
                                 <td class="text-end">
-                                    <div class="dropdown">
-                                        <button class="btn btn-sm btn-light rounded-circle shadow-sm" type="button" id="dropdownMenuButton{{ $client->id }}" data-bs-toggle="dropdown" aria-expanded="false">
-                                            <i class="bx bx-dots-vertical-rounded"></i>
+                                    <div class="dropdown dropup">
+                                        <button class="pms-cl-action-trigger" type="button" id="dropdownMenuButton{{ $client->id }}" data-bs-toggle="dropdown" data-bs-boundary="viewport" data-bs-popper-config='{"strategy":"fixed"}' aria-expanded="false">
+                                            <i class="bi bi-three-dots-vertical"></i>
                                         </button>
 
-                                        <ul class="dropdown-menu dropdown-menu-end rounded-3 shadow border-0" aria-labelledby="dropdownMenuButton{{ $client->id }}">
+                                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton{{ $client->id }}">
                                             <li>
-                                                <a class="dropdown-item py-2" href="{{ route('clients.show', $client->id) }}">
-                                                    <i class="bx bx-show me-2 text-primary"></i> View Details & Deals
+                                                <a class="dropdown-item" href="{{ route('clients.show', $client->id) }}">
+                                                    <i class="bi bi-eye me-2"></i> View
                                                 </a>
                                             </li>
 
                                             <li>
-                                                <a class="dropdown-item py-2" href="{{ route('clients.edit', $client->id) }}">
-                                                    <i class="bx bx-edit me-2 text-info"></i> Edit Client
+                                                <a class="dropdown-item" href="{{ route('clients.show', $client->id) }}#projects">
+                                                    <i class="bi bi-folder2 me-2 text-primary"></i> Projects
+                                                </a>
+                                            </li>
+
+                                            <li>
+                                                <a class="dropdown-item" href="{{ route('clients.edit', $client->id) }}">
+                                                    <i class="bi bi-pencil-square me-2"></i> Edit
                                                 </a>
                                             </li>
 
@@ -199,8 +176,8 @@
                                                 <form action="{{ route('clients.destroy', $client->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this client?');">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="submit" class="dropdown-item py-2 text-danger">
-                                                        <i class="bx bx-trash me-2"></i> Delete
+                                                    <button type="submit" class="dropdown-item text-danger">
+                                                        <i class="bi bi-trash me-2"></i> Delete
                                                     </button>
                                                 </form>
                                             </li>
@@ -213,145 +190,168 @@
                 </table>
             </div>
 
-            <!-- Pagination control -->
-            <div class="mt-3">
-                {{ $clients->links() }}
+            {{-- Footer row: Bulk delete & Pagination --}}
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-3 pt-3 border-top">
+                <div>
+                    <button id="bulkDeleteBtn" class="pms-cl-btn-danger" disabled>
+                        <i class="bi bi-trash"></i>
+                        <span>Bulk Delete</span>
+                    </button>
+                </div>
+
+                <div class="client-pagination">
+                    {{ $clients->links() }}
+                </div>
             </div>
         </div>
     </div>
 </div>
 @endsection
 
-@push('css')
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
-
-<style>
-    /* DataTables polish */
-    .dt-buttons .btn {
-        border-radius: 50rem !important;
-        padding: 0.35rem 0.9rem !important;
-        font-size: 0.82rem !important;
-        font-weight: 600 !important;
-        margin-right: 0.35rem !important;
-        background: #ffffff !important;
-        border: 1px solid var(--pms-border, #e5e7eb) !important;
-        color: #374151 !important;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
-    }
-    .dt-buttons .btn:hover {
-        background: var(--pms-primary-soft, #e4f3eb) !important;
-        color: var(--pms-primary, #0f744c) !important;
-    }
-    .dataTables_filter input {
-        border-radius: 50rem !important;
-        padding: 0.35rem 1rem !important;
-        border: 1px solid #d1d5db !important;
-        outline: none !important;
-    }
-    .dataTables_paginate .paginate_button.current {
-        background: var(--pms-primary, #0f744c) !important;
-        color: #ffffff !important;
-        border-radius: 50rem !important;
-        border: none !important;
-    }
-</style>
-@endpush
-
 @push('js')
-<script src="https://cdn.jsdelivr.net/npm/moment@2.29.1/moment.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+    {{-- CSS/JS dependencies --}}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+    <script src="https://cdn.jsdelivr.net/npm/moment@2.29.1/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta2/dist/css/bootstrap-select.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta2/dist/js/bootstrap-select.min.js"></script>
 
-<!-- DataTables buttons -->
-<script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.3.0-beta.1/pdfmake.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.3.0-beta.1/vfs_fonts.js"></script>
-
-<script>
+    <script>
     $(document).ready(function () {
-        let clientsTable = $('#clientsTable').DataTable({
-            dom: '<"d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3"Bf>rt<"d-flex flex-wrap align-items-center justify-content-between gap-3 mt-3"ip>',
-            buttons: [
-                { extend: 'copy', className: 'btn', text: '<i class="bx bx-copy me-1"></i> Copy', exportOptions: { columns: ':not(:first-child):not(:last-child)' } },
-                { extend: 'csv', className: 'btn', text: '<i class="bx bx-file me-1"></i> CSV', exportOptions: { columns: ':not(:first-child):not(:last-child)' } },
-                { extend: 'excel', className: 'btn', text: '<i class="bx bx-spreadsheet me-1"></i> Excel', exportOptions: { columns: ':not(:first-child):not(:last-child)' } },
-                { extend: 'pdf', className: 'btn', text: '<i class="bx bxs-file-pdf me-1"></i> PDF', exportOptions: { columns: ':not(:first-child):not(:last-child)' } },
-                { extend: 'print', className: 'btn', text: '<i class="bx bx-printer me-1"></i> Print', exportOptions: { columns: ':not(:first-child):not(:last-child)' } }
-            ],
+        $('#clientsTable').DataTable({
             paging: false,
             info: false,
+            responsive: false,
             language: {
-                search: "",
-                searchPlaceholder: "Start typing to search clients..."
+                search: "_INPUT_",
+                searchPlaceholder: "Start typing to search...",
+                emptyTable: "No clients found."
             },
-            columnDefs: [
-                { targets: [0, 8], searchable: false, orderable: false }
-            ]
-        });
-
-        // Quick action handler
-        $('#quick-action-type').on('change', function() {
-            const action = $(this).val();
-            if (action === 'change-status') {
-                $('#quick-action-status').removeClass('d-none');
-            } else {
-                $('#quick-action-status').addClass('d-none');
+            drawCallback: function() {
+                updateBulkButtonsState();
+                initClientDropdowns();
             }
-            toggleApplyButton();
         });
 
-        function toggleApplyButton() {
-            const hasChecked = $('.client-checkbox:checked').length > 0;
-            const hasAction = $('#quick-action-type').val() !== '';
-            $('#quick-action-apply').prop('disabled', !(hasChecked && hasAction));
-        }
-
-        $('#clientsTable').on('change', '.client-checkbox', toggleApplyButton);
-        $('#selectAll').on('click', function() {
-            $('.client-checkbox').prop('checked', this.checked);
-            toggleApplyButton();
-        });
-
-        $('#quick-action-apply').on('click', function() {
-            const action = $('#quick-action-type').val();
-            const status = $('#quick-action-status').val();
-            const selectedIds = $('.client-checkbox:checked').map((_, el) => $(el).val()).get();
-
-            if (action === 'delete' && !confirm('Are you sure you want to delete selected clients?')) return;
-
-            $.ajax({
-                url: '{{ route("clients.bulkAction") }}',
-                method: 'POST',
-                data: {
-                    _token: '{{ csrf_token() }}',
-                    action: action,
-                    status: status,
-                    client_ids: selectedIds
-                },
-                success: function(res) {
-                    if (res.success) location.reload();
-                },
-                error: function() {
-                    alert('Error applying bulk action');
+        function initClientDropdowns() {
+            document.querySelectorAll('#clientsTable [data-bs-toggle="dropdown"]').forEach(function(btn) {
+                if (window.bootstrap && bootstrap.Dropdown) {
+                    bootstrap.Dropdown.getOrCreateInstance(btn, {
+                        boundary: 'viewport',
+                        popperConfig: function(defaultBsPopperConfig) {
+                            return Object.assign({}, defaultBsPopperConfig, {
+                                strategy: 'fixed',
+                                placement: 'top-end'
+                            });
+                        }
+                    });
                 }
             });
-        });
+        }
 
-        // Daterange picker
+        initClientDropdowns();
+
+        // daterangepicker for Duration filter
+        const predefinedRanges = {
+            'Today': [moment(), moment()],
+            'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+            'This Month': [moment().startOf('month'), moment().endOf('month')],
+            'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
+            'Last 90 Days': [moment().subtract(89, 'days'), moment()],
+            'Last 6 Months': [moment().subtract(6, 'months').startOf('month'), moment()],
+            'Last 1 Year': [moment().subtract(1, 'year').startOf('month'), moment()],
+            'Custom Range': []
+        };
+
         $('#duration').daterangepicker({
             autoUpdateInput: false,
-            locale: { format: 'YYYY-MM-DD', cancelLabel: 'Clear' }
+            showDropdowns: true,
+            opens: 'left',
+            locale: {
+                format: 'YYYY-MM-DD',
+                cancelLabel: 'Clear'
+            },
+            ranges: predefinedRanges
         });
 
         $('#duration').on('apply.daterangepicker', function (ev, picker) {
-            $(this).val(picker.startDate.format('YYYY-MM-DD') + ' to ' + picker.endDate.format('YYYY-MM-DD'));
+            if (picker.chosenLabel === 'Custom Range') {
+                $(this).val(picker.startDate.format('YYYY-MM-DD') + ' to ' + picker.endDate.format('YYYY-MM-DD'));
+            } else {
+                $(this).val(picker.chosenLabel);
+            }
         });
 
         $('#duration').on('cancel.daterangepicker', function () {
             $(this).val('');
         });
+
+        // select2 init
+        $('.select2').select2({ width: '100%' });
+
+        // Select all checkbox
+        $('#selectAll').on('change', function () {
+            $('.client-checkbox').prop('checked', this.checked).trigger('change');
+            updateBulkButtonsState();
+        });
+
+        // Individual checkbox change
+        $(document).on('change', '.client-checkbox', function () {
+            $('#selectAll').prop(
+                'checked',
+                $('.client-checkbox').length === $('.client-checkbox:checked').length
+            );
+            updateBulkButtonsState();
+        });
+
+        // Bulk Delete button under table
+        $('#bulkDeleteBtn').on('click', function () {
+            const ids = $('.client-checkbox:checked').map(function () { return $(this).val(); }).get();
+
+            if (ids.length === 0) {
+                alert('Please select at least one client.');
+                return;
+            }
+
+            if (!confirm('Are you sure you want to permanently delete the selected clients? This will also remove associated files and users.')) {
+                return;
+            }
+
+            $.ajax({
+                url: '{{ route("clients.bulk-delete") }}',
+                type: 'POST',
+                data: {
+                    _token: '{{ csrf_token() }}',
+                    client_ids: ids
+                },
+                success: function (res) {
+                    if (res.success) {
+                        ids.forEach(function(id){
+                            $("tr[data-id='" + id + "']").remove();
+                        });
+
+                        $('#selectAll').prop('checked', false);
+                        updateBulkButtonsState();
+
+                        alert(res.message || 'Clients deleted successfully.');
+                    } else {
+                        alert(res.message || 'Failed to delete clients.');
+                    }
+                },
+                error: function (xhr) {
+                    let msg = 'Something went wrong while deleting clients.';
+                    if (xhr.responseJSON && xhr.responseJSON.message) msg = xhr.responseJSON.message;
+                    alert(msg);
+                }
+            });
+        });
+
+        function updateBulkButtonsState() {
+            const anyChecked = $('.client-checkbox:checked').length > 0;
+            $('#bulkDeleteBtn').prop('disabled', !anyChecked);
+        }
+
+        updateBulkButtonsState();
     });
-</script>
+    </script>
 @endpush

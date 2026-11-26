@@ -11,8 +11,8 @@
     transition: all 0.2s ease;
 }
 html[data-pms-theme="dark"] .form-card-modern {
-    background: #102119;
-    border-color: rgba(225, 255, 240, 0.12);
+    background: #0F1530;
+    border-color: rgba(79, 131, 255, 0.12);
 }
 .form-card-header-modern {
     background: #ffffff;
@@ -22,8 +22,8 @@ html[data-pms-theme="dark"] .form-card-modern {
     border-top-right-radius: 16px;
 }
 html[data-pms-theme="dark"] .form-card-header-modern {
-    background: #102119;
-    border-bottom-color: rgba(225, 255, 240, 0.08);
+    background: #0F1530;
+    border-bottom-color: rgba(79, 131, 255, 0.08);
 }
 .form-label-modern {
     font-size: 0.84rem;
@@ -48,22 +48,22 @@ html[data-pms-theme="dark"] .form-label-modern {
 }
 html[data-pms-theme="dark"] .form-control-modern,
 html[data-pms-theme="dark"] .form-select-modern {
-    background-color: #183026;
-    border-color: rgba(225, 255, 240, 0.15);
+    background-color: #141B3D;
+    border-color: rgba(79, 131, 255, 0.15);
     color: #ffffff;
 }
 .form-control-modern:focus, .form-select-modern:focus {
     background-color: #ffffff;
-    border-color: #0f744c;
-    box-shadow: 0 0 0 3.5px rgba(15, 116, 76, 0.12);
+    border-color: #2F6BFF;
+    box-shadow: 0 0 0 3.5px rgba(47, 107, 255, 0.12);
     color: #0f172a;
     outline: none;
 }
 html[data-pms-theme="dark"] .form-control-modern:focus,
 html[data-pms-theme="dark"] .form-select-modern:focus {
-    background-color: #102119;
-    border-color: #40d48c;
-    box-shadow: 0 0 0 3.5px rgba(64, 212, 140, 0.18);
+    background-color: #0F1530;
+    border-color: #60A5FA;
+    box-shadow: 0 0 0 3.5px rgba(79, 131, 255, 0.18);
     color: #ffffff;
 }
 .form-control-modern::placeholder {
@@ -97,29 +97,29 @@ textarea.form-control-modern {
     color: #0f172a;
 }
 html[data-pms-theme="dark"] .btn-back-pill {
-    background-color: #183026;
-    border-color: rgba(225, 255, 240, 0.2);
+    background-color: #141B3D;
+    border-color: rgba(79, 131, 255, 0.2);
     color: #e2e8f0;
 }
 html[data-pms-theme="dark"] .btn-back-pill:hover {
-    background-color: #204033;
+    background-color: rgba(79, 131, 255, 0.2);
     color: #ffffff;
 }
 .btn-submit-emerald {
-    background: linear-gradient(135deg, #0f744c 0%, #10b981 100%);
+    background: linear-gradient(135deg, #4F83FF 0%, #2F6BFF 100%);
     color: #ffffff;
     border: none;
     border-radius: 10px;
     padding: 0.65rem 1.75rem;
     font-size: 0.9rem;
     font-weight: 600;
-    box-shadow: 0 4px 14px rgba(15, 116, 76, 0.25);
+    box-shadow: 0 4px 14px rgba(47, 107, 255, 0.25);
     transition: all 0.2s ease;
 }
 .btn-submit-emerald:hover {
-    background: linear-gradient(135deg, #094c32 0%, #059669 100%);
+    background: linear-gradient(135deg, #2F6BFF 0%, #1E4FCC 100%);
     color: #ffffff;
-    box-shadow: 0 6px 18px rgba(15, 116, 76, 0.35);
+    box-shadow: 0 6px 18px rgba(47, 107, 255, 0.35);
     transform: translateY(-1px);
 }
 .btn-cancel-modern {
@@ -138,29 +138,41 @@ html[data-pms-theme="dark"] .btn-back-pill:hover {
     color: #1e293b;
 }
 html[data-pms-theme="dark"] .btn-cancel-modern {
-    background: #183026;
-    border-color: rgba(225, 255, 240, 0.15);
+    background: #141B3D;
+    border-color: rgba(79, 131, 255, 0.15);
     color: #cbd5e1;
 }
 html[data-pms-theme="dark"] .btn-cancel-modern:hover {
-    background: #204033;
+    background: rgba(79, 131, 255, 0.2);
     color: #ffffff;
 }
 </style>
 
-<div class="container-fluid py-3">
+@include('admin.partials.crm-workspace-styles')
+
+<div class="container-fluid" id="pms-crm-workspace">
 
     {{-- HEADER --}}
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h4 class="fw-bold mb-1 d-flex align-items-center gap-2" style="color: #0f172a;">
-                <span class="fs-4">✏️</span> Edit Deal Opportunity
-            </h4>
-            <p class="text-muted small mb-0">Update deal information, stage, probability, and deal value for {{ $deal->deal_name }}</p>
+    <div class="pms-crm-topbar">
+        <div class="pms-crm-heading-group">
+            <div class="pms-crm-title-icon">
+                <i class="fas fa-edit"></i>
+            </div>
+            <div>
+                <h1 class="pms-crm-title">Edit Deal Opportunity</h1>
+                <p class="pms-crm-subtitle">Update deal information, stage, probability, and deal value for {{ $deal->deal_name }}.</p>
+            </div>
         </div>
-        <a href="{{ route('admin.deals.index') }}" class="btn-back-pill">
-            <i class="fas fa-arrow-left me-1"></i> Back to Deals
-        </a>
+        <div class="pms-crm-actions">
+            <a href="{{ route('admin.deals.show', $deal->id) }}" class="pms-crm-btn-outline-primary">
+                <i class="fas fa-eye"></i>
+                <span>View Details</span>
+            </a>
+            <a href="{{ route('admin.deals.index') }}" class="pms-crm-btn-secondary">
+                <i class="fas fa-arrow-left"></i>
+                <span>Back to Deals</span>
+            </a>
+        </div>
     </div>
 
     {{-- FORM CARD --}}
@@ -170,7 +182,7 @@ html[data-pms-theme="dark"] .btn-cancel-modern:hover {
 
         <div class="card form-card-modern mb-4">
             <div class="card-header form-card-header-modern">
-                <h6 class="fw-bold mb-0 text-dark d-flex align-items-center gap-2"><span class="fs-5">🤝</span> Deal Details</h6>
+                <h6 class="fw-bold mb-0 d-flex align-items-center gap-2"><span class="pms-crm-sec-icon"><i class="fas fa-handshake"></i></span> Deal Details</h6>
             </div>
             <div class="card-body p-4">
                 <div class="row g-3">

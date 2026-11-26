@@ -4,6 +4,7 @@
 
 <style>
 .crm-kpi-card {
+    min-width: 0;
     background: #ffffff;
     border-radius: 10px;
     padding: 18px 20px;
@@ -25,6 +26,80 @@
     justify-content: center;
     font-size: 20px;
 }
+.crm-kpi-icon i {
+    color: inherit !important;
+    -webkit-text-fill-color: currentColor !important;
+}
+.crm-kpi-icon.text-success,
+.crm-kpi-icon.bg-success {
+    background-color: rgba(47, 107, 255, 0.15) !important;
+    color: #10b981 !important;
+}
+.crm-kpi-icon.text-success i,
+.crm-kpi-icon.bg-success i {
+    color: #10b981 !important;
+    -webkit-text-fill-color: #10b981 !important;
+}
+.crm-kpi-icon.text-primary,
+.crm-kpi-icon.bg-primary {
+    background-color: rgba(59, 130, 246, 0.15) !important;
+    color: #3b82f6 !important;
+}
+.crm-kpi-icon.text-primary i,
+.crm-kpi-icon.bg-primary i {
+    color: #3b82f6 !important;
+    -webkit-text-fill-color: #3b82f6 !important;
+}
+.crm-kpi-icon.text-info,
+.crm-kpi-icon.bg-info {
+    background-color: rgba(14, 165, 233, 0.15) !important;
+    color: #0ea5e9 !important;
+}
+.crm-kpi-icon.text-info i,
+.crm-kpi-icon.bg-info i {
+    color: #0ea5e9 !important;
+    -webkit-text-fill-color: #0ea5e9 !important;
+}
+.crm-kpi-icon.text-warning,
+.crm-kpi-icon.bg-warning {
+    background-color: rgba(245, 158, 11, 0.15) !important;
+    color: #d97706 !important;
+}
+.crm-kpi-icon.text-warning i,
+.crm-kpi-icon.bg-warning i {
+    color: #d97706 !important;
+    -webkit-text-fill-color: #d97706 !important;
+}
+.crm-kpi-icon.text-danger,
+.crm-kpi-icon.bg-danger {
+    background-color: rgba(239, 68, 68, 0.15) !important;
+    color: #ef4444 !important;
+}
+.crm-kpi-icon.text-danger i,
+.crm-kpi-icon.bg-danger i {
+    color: #ef4444 !important;
+    -webkit-text-fill-color: #ef4444 !important;
+}
+.crm-kpi-icon.text-purple,
+.crm-kpi-icon.bg-purple {
+    background-color: rgba(139, 92, 246, 0.15) !important;
+    color: #8b5cf6 !important;
+}
+.crm-kpi-icon.text-purple i,
+.crm-kpi-icon.bg-purple i {
+    color: #8b5cf6 !important;
+    -webkit-text-fill-color: #8b5cf6 !important;
+}
+.crm-kpi-icon.text-secondary,
+.crm-kpi-icon.bg-secondary {
+    background-color: rgba(100, 116, 139, 0.15) !important;
+    color: #64748b !important;
+}
+.crm-kpi-icon.text-secondary i,
+.crm-kpi-icon.bg-secondary i {
+    color: #64748b !important;
+    -webkit-text-fill-color: #64748b !important;
+}
 .crm-kpi-title {
     font-size: 13px;
     font-weight: 600;
@@ -34,6 +109,8 @@
     margin-bottom: 4px;
 }
 .crm-kpi-value {
+    max-width: 100%;
+    overflow-wrap: anywhere;
     font-size: 22px;
     font-weight: 700;
     color: #1e293b;
@@ -50,6 +127,71 @@
     box-shadow: 0 2px 6px rgba(0,0,0,0.04);
     margin-bottom: 20px;
     border: 1px solid #eef2f6;
+}
+
+/* Dark Mode Support for KPI Cards & Top Filter Bar */
+html[data-pms-theme="dark"] .crm-kpi-card,
+html[data-bs-theme="dark"] .crm-kpi-card,
+html[data-theme="dark"] .crm-kpi-card,
+body[data-pms-theme="dark"] .crm-kpi-card,
+[data-pms-theme="dark"] .crm-kpi-card {
+    background: #0F1530 !important;
+    border-color: rgba(238, 241, 251, 0.12) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35) !important;
+}
+
+html[data-pms-theme="dark"] .crm-kpi-card:hover,
+html[data-bs-theme="dark"] .crm-kpi-card:hover,
+html[data-theme="dark"] .crm-kpi-card:hover,
+body[data-pms-theme="dark"] .crm-kpi-card:hover,
+[data-pms-theme="dark"] .crm-kpi-card:hover {
+    background: #141B3D !important;
+    border-color: rgba(238, 241, 251, 0.22) !important;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45) !important;
+}
+
+html[data-pms-theme="dark"] .crm-kpi-title,
+html[data-bs-theme="dark"] .crm-kpi-title,
+html[data-theme="dark"] .crm-kpi-title,
+body[data-pms-theme="dark"] .crm-kpi-title,
+[data-pms-theme="dark"] .crm-kpi-title {
+    color: #94a3b8 !important;
+    -webkit-text-fill-color: #94a3b8 !important;
+}
+
+html[data-pms-theme="dark"] .crm-kpi-value,
+html[data-bs-theme="dark"] .crm-kpi-value,
+html[data-theme="dark"] .crm-kpi-value,
+body[data-pms-theme="dark"] .crm-kpi-value,
+[data-pms-theme="dark"] .crm-kpi-value {
+    color: #EEF1FB !important;
+    -webkit-text-fill-color: #EEF1FB !important;
+}
+
+html[data-pms-theme="dark"] .top-bar,
+html[data-bs-theme="dark"] .top-bar,
+html[data-theme="dark"] .top-bar,
+body[data-pms-theme="dark"] .top-bar,
+[data-pms-theme="dark"] .top-bar {
+    background: #0F1530 !important;
+    border-color: rgba(238, 241, 251, 0.12) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35) !important;
+}
+
+html[data-pms-theme="dark"] .top-bar .form-control,
+html[data-pms-theme="dark"] .top-bar .form-select,
+html[data-bs-theme="dark"] .top-bar .form-control,
+html[data-bs-theme="dark"] .top-bar .form-select,
+html[data-theme="dark"] .top-bar .form-control,
+html[data-theme="dark"] .top-bar .form-select,
+body[data-pms-theme="dark"] .top-bar .form-control,
+body[data-pms-theme="dark"] .top-bar .form-select,
+[data-pms-theme="dark"] .top-bar .form-control,
+[data-pms-theme="dark"] .top-bar .form-select {
+    background-color: #1A234A !important;
+    border-color: rgba(238, 241, 251, 0.16) !important;
+    color: #EEF1FB !important;
+    -webkit-text-fill-color: #EEF1FB !important;
 }
 .kanban-container {
     display: flex;
@@ -97,6 +239,54 @@
     box-shadow: 0 4px 12px rgba(0,0,0,0.08);
 }
 
+#dealsKanbanBoard {
+    min-width: 0;
+    max-width: 100%;
+    align-items: stretch;
+}
+#dealsKanbanBoard .kanban-col {
+    min-width: 0;
+    background: var(--bx-surface-2, #f8fafc) !important;
+    border-color: var(--bx-border, #e2e8f0) !important;
+    color: var(--bx-ink, #0f172a) !important;
+    overflow: hidden;
+}
+#dealsKanbanBoard .kanban-col-header {
+    background: var(--bx-surface, #ffffff) !important;
+    gap: 12px;
+    flex-shrink: 0;
+    min-height: 72px;
+}
+#dealsKanbanBoard .kanban-col-header > div {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+#dealsKanbanBoard .kanban-col-header h6 {
+    color: var(--bx-ink, #0f172a) !important;
+    -webkit-text-fill-color: var(--bx-ink, #0f172a) !important;
+}
+#dealsKanbanBoard .kanban-col-header small,
+#dealsKanbanBoard .kanban-col-body > .text-muted {
+    color: var(--bx-ink-muted, #64748b) !important;
+    -webkit-text-fill-color: var(--bx-ink-muted, #64748b) !important;
+}
+#dealsKanbanBoard .kanban-col-header > .badge {
+    flex-shrink: 0;
+    background: var(--bx-surface-2, #f1f5f9) !important;
+    border-color: var(--bx-border, #e2e8f0) !important;
+    color: var(--bx-ink, #0f172a) !important;
+    -webkit-text-fill-color: var(--bx-ink, #0f172a) !important;
+}
+#dealsKanbanBoard .kanban-card {
+    background: var(--bx-surface, #ffffff) !important;
+    border-color: var(--bx-border, #cbd5e1) !important;
+    overflow-wrap: anywhere;
+}
+#dealsKanbanBoard .kanban-card h6 {
+    min-width: 0;
+    margin-right: 8px;
+}
+
 /* Premium Table UI/UX Styles */
 .premium-table-card {
     background: #ffffff;
@@ -107,8 +297,8 @@
     transition: all 0.2s ease;
 }
 html[data-pms-theme="dark"] .premium-table-card {
-    background: #102119;
-    border-color: rgba(225, 255, 240, 0.12);
+    background: #0F1530;
+    border-color: rgba(79, 131, 255, 0.12);
 }
 .premium-table {
     margin-bottom: 0;
@@ -121,8 +311,8 @@ html[data-pms-theme="dark"] .premium-table-card {
     border-bottom: 2px solid #cbd5e1;
 }
 html[data-pms-theme="dark"] .premium-table thead tr {
-    background-color: #183026;
-    border-bottom-color: rgba(225, 255, 240, 0.15);
+    background-color: #141B3D;
+    border-bottom-color: rgba(79, 131, 255, 0.15);
 }
 .premium-table th {
     font-size: 0.73rem;
@@ -140,21 +330,21 @@ html[data-pms-theme="dark"] .premium-table thead tr {
 }
 html[data-pms-theme="dark"] .premium-table th {
     color: #cbd5e1;
-    border-bottom-color: rgba(225, 255, 240, 0.15);
-    border-right-color: rgba(225, 255, 240, 0.1);
+    border-bottom-color: rgba(79, 131, 255, 0.15);
+    border-right-color: rgba(79, 131, 255, 0.1);
 }
 .premium-table tbody tr {
     border-bottom: 1px solid #e2e8f0;
     transition: background-color 0.15s ease-in-out;
 }
 html[data-pms-theme="dark"] .premium-table tbody tr {
-    border-bottom-color: rgba(225, 255, 240, 0.08);
+    border-bottom-color: rgba(79, 131, 255, 0.08);
 }
 .premium-table tbody tr:hover {
     background-color: #f8fafc;
 }
 html[data-pms-theme="dark"] .premium-table tbody tr:hover {
-    background-color: #162a21;
+    background-color: #141B3D;
 }
 .premium-table td {
     padding: 1.1rem 1.1rem;
@@ -169,8 +359,8 @@ html[data-pms-theme="dark"] .premium-table tbody tr:hover {
 }
 html[data-pms-theme="dark"] .premium-table td {
     color: #e2e8f0;
-    border-bottom-color: rgba(225, 255, 240, 0.08);
-    border-right-color: rgba(225, 255, 240, 0.1);
+    border-bottom-color: rgba(79, 131, 255, 0.08);
+    border-right-color: rgba(79, 131, 255, 0.1);
 }
 .badge-pill-priority-urgent {
     background-color: #fee2e2;
@@ -208,6 +398,51 @@ html[data-pms-theme="dark"] .premium-table td {
     font-size: 0.78rem;
     font-weight: 600;
 }
+
+/* Priority Badges Dark Mode */
+html[data-pms-theme="dark"] .badge-pill-priority-urgent,
+html[data-bs-theme="dark"] .badge-pill-priority-urgent,
+html[data-theme="dark"] .badge-pill-priority-urgent,
+body[data-pms-theme="dark"] .badge-pill-priority-urgent,
+[data-pms-theme="dark"] .badge-pill-priority-urgent {
+    background-color: rgba(239, 68, 68, 0.2) !important;
+    color: #f87171 !important;
+    -webkit-text-fill-color: #f87171 !important;
+    border: 1px solid rgba(248, 113, 113, 0.4) !important;
+}
+
+html[data-pms-theme="dark"] .badge-pill-priority-high,
+html[data-bs-theme="dark"] .badge-pill-priority-high,
+html[data-theme="dark"] .badge-pill-priority-high,
+body[data-pms-theme="dark"] .badge-pill-priority-high,
+[data-pms-theme="dark"] .badge-pill-priority-high {
+    background-color: rgba(249, 115, 22, 0.2) !important;
+    color: #fb923c !important;
+    -webkit-text-fill-color: #fb923c !important;
+    border: 1px solid rgba(251, 146, 60, 0.4) !important;
+}
+
+html[data-pms-theme="dark"] .badge-pill-priority-medium,
+html[data-bs-theme="dark"] .badge-pill-priority-medium,
+html[data-theme="dark"] .badge-pill-priority-medium,
+body[data-pms-theme="dark"] .badge-pill-priority-medium,
+[data-pms-theme="dark"] .badge-pill-priority-medium {
+    background-color: rgba(14, 165, 233, 0.2) !important;
+    color: #38bdf8 !important;
+    -webkit-text-fill-color: #38bdf8 !important;
+    border: 1px solid rgba(56, 189, 248, 0.4) !important;
+}
+
+html[data-pms-theme="dark"] .badge-pill-priority-low,
+html[data-bs-theme="dark"] .badge-pill-priority-low,
+html[data-theme="dark"] .badge-pill-priority-low,
+body[data-pms-theme="dark"] .badge-pill-priority-low,
+[data-pms-theme="dark"] .badge-pill-priority-low {
+    background-color: rgba(148, 163, 184, 0.18) !important;
+    color: #cbd5e1 !important;
+    -webkit-text-fill-color: #cbd5e1 !important;
+    border: 1px solid rgba(148, 163, 184, 0.4) !important;
+}
 .btn-action-circle {
     width: 36px;
     height: 36px;
@@ -226,12 +461,12 @@ html[data-pms-theme="dark"] .premium-table td {
     border-color: #cbd5e1;
 }
 html[data-pms-theme="dark"] .btn-action-circle {
-    background-color: #183026;
-    border-color: rgba(225, 255, 240, 0.15);
+    background-color: #141B3D;
+    border-color: rgba(79, 131, 255, 0.15);
     color: #cbd5e1;
 }
 html[data-pms-theme="dark"] .btn-action-circle:hover {
-    background-color: #204033;
+    background-color: rgba(79, 131, 255, 0.2);
     color: #ffffff;
 }
 .dropdown-menu-premium {
@@ -241,8 +476,8 @@ html[data-pms-theme="dark"] .btn-action-circle:hover {
     padding: 0.5rem;
 }
 html[data-pms-theme="dark"] .dropdown-menu-premium {
-    background: #102119;
-    border-color: rgba(225, 255, 240, 0.15);
+    background: #0F1530;
+    border-color: rgba(79, 131, 255, 0.15);
 }
 .dropdown-menu-premium .dropdown-item {
     border-radius: 8px;
@@ -260,7 +495,7 @@ html[data-pms-theme="dark"] .dropdown-menu-premium .dropdown-item {
     color: #cbd5e1;
 }
 html[data-pms-theme="dark"] .dropdown-menu-premium .dropdown-item:hover {
-    background-color: #183026;
+    background-color: #141B3D;
     color: #ffffff;
 }
 .premium-table-footer {
@@ -272,33 +507,49 @@ html[data-pms-theme="dark"] .dropdown-menu-premium .dropdown-item:hover {
     font-weight: 600;
 }
 html[data-pms-theme="dark"] .premium-table-footer {
-    background-color: #14281e;
-    border-top-color: rgba(225, 255, 240, 0.08);
+    background-color: #141B3D;
+    border-top-color: rgba(79, 131, 255, 0.08);
     color: #94a3b8;
 }
 </style>
 
-<div class="container-fluid py-3">
+@include('admin.partials.crm-workspace-styles')
+
+<div class="container-fluid" id="pms-crm-workspace">
 
     {{-- HEADER --}}
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h4 class="fw-bold mb-1" style="color: #0f172a;"><i class="fas fa-handshake me-2 text-success"></i>Deals & Sales Pipeline</h4>
-            <p class="text-muted small mb-0">Track pipeline stages, deal probabilities, weighted values, and close rates</p>
+    <div class="pms-crm-topbar">
+        <div class="pms-crm-heading-group">
+            <div class="pms-crm-title-icon">
+                <i class="fas fa-handshake"></i>
+            </div>
+            <div>
+                <h1 class="pms-crm-title">Deals &amp; Sales Pipeline</h1>
+                <p class="pms-crm-subtitle">Track pipeline stages, deal probabilities, weighted values, and close rates.</p>
+            </div>
         </div>
-        <div class="d-flex gap-2">
-            <a href="{{ route('admin.deals.index', array_merge(request()->query(), ['view' => request('view') === 'kanban' ? 'table' : 'kanban'])) }}" class="btn btn-outline-primary fw-semibold px-3">
-                <i class="fas {{ request('view') === 'kanban' ? 'fa-table' : 'fa-columns' }} me-1"></i>
-                Switch to {{ request('view') === 'kanban' ? 'Table View' : 'Kanban View' }}
-            </a>
-            <a href="{{ route('admin.deals.create') }}" class="btn btn-success fw-semibold shadow-sm px-3">
-                <i class="fas fa-plus me-1"></i> Add Deal
-            </a>
-            <button class="btn btn-outline-secondary px-3" data-bs-toggle="modal" data-bs-target="#importDealsModal">
-                <i class="fas fa-file-import me-1"></i> Import
+        <div class="pms-crm-actions">
+            <div class="pms-crm-switcher" role="group" aria-label="Deals view toggle">
+                <a href="{{ route('admin.deals.index', array_merge(request()->query(), ['view' => 'table'])) }}" class="pms-crm-switch-btn {{ request('view', 'table') !== 'kanban' ? 'is-active' : '' }}">
+                    <i class="fas fa-table"></i>
+                    <span>Table View</span>
+                </a>
+                <a href="{{ route('admin.deals.index', array_merge(request()->query(), ['view' => 'kanban'])) }}" class="pms-crm-switch-btn {{ request('view') === 'kanban' ? 'is-active' : '' }}">
+                    <i class="fas fa-columns"></i>
+                    <span>Kanban View</span>
+                </a>
+            </div>
+            <button class="pms-crm-btn-secondary" data-bs-toggle="modal" data-bs-target="#importDealsModal">
+                <i class="fas fa-file-import"></i>
+                <span>Import</span>
             </button>
-            <a href="{{ route('admin.deals.export', request()->query()) }}" class="btn btn-outline-secondary px-3">
-                <i class="fas fa-file-export me-1"></i> Export
+            <a href="{{ route('admin.deals.export', request()->query()) }}" class="pms-crm-btn-secondary">
+                <i class="fas fa-file-export"></i>
+                <span>Export</span>
+            </a>
+            <a href="{{ route('admin.deals.create') }}" class="pms-crm-btn-primary">
+                <i class="fas fa-plus"></i>
+                <span>Add Deal</span>
             </a>
         </div>
     </div>
@@ -351,7 +602,7 @@ html[data-pms-theme="dark"] .premium-table-footer {
                     <span class="crm-kpi-title">Pipeline Value</span>
                     <div class="crm-kpi-icon bg-purple bg-opacity-10 text-purple"><i class="fas fa-chart-line"></i></div>
                 </div>
-                <h3 class="crm-kpi-value text-primary fs-5">₹{{ number_format($kpiStats['pipeline_value'] ?? 0, 2) }}</h3>
+                <h3 class="crm-kpi-value text-primary fs-5" title="₹{{ number_format($kpiStats['pipeline_value'] ?? 0, 2) }}" aria-label="Pipeline value: ₹{{ number_format($kpiStats['pipeline_value'] ?? 0, 2) }}">₹{{ \App\Support\CompactNumber::format($kpiStats['pipeline_value'] ?? 0) }}</h3>
             </div>
         </div>
 
@@ -361,7 +612,7 @@ html[data-pms-theme="dark"] .premium-table-footer {
                     <span class="crm-kpi-title">Weighted Value</span>
                     <div class="crm-kpi-icon bg-success bg-opacity-10 text-success"><i class="fas fa-coins"></i></div>
                 </div>
-                <h3 class="crm-kpi-value text-success fs-5">₹{{ number_format($kpiStats['weighted_value'] ?? 0, 2) }}</h3>
+                <h3 class="crm-kpi-value text-success fs-5" title="₹{{ number_format($kpiStats['weighted_value'] ?? 0, 2) }}" aria-label="Weighted value: ₹{{ number_format($kpiStats['weighted_value'] ?? 0, 2) }}">₹{{ \App\Support\CompactNumber::format($kpiStats['weighted_value'] ?? 0) }}</h3>
             </div>
         </div>
     </div>
@@ -403,9 +654,9 @@ html[data-pms-theme="dark"] .premium-table-footer {
                 </select>
             </div>
 
-            <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-filter me-1"></i> Filter</button>
+            <button type="submit" class="pms-crm-btn-primary"><i class="fas fa-filter"></i> Filter</button>
             @if(request()->hasAny(['search', 'pipeline', 'agent_id', 'priority', 'start_date', 'end_date']))
-                <a href="{{ route('admin.deals.index', ['view' => request('view')]) }}" class="btn btn-outline-danger btn-sm">Reset</a>
+                <a href="{{ route('admin.deals.index', ['view' => request('view')]) }}" class="pms-crm-btn-danger">Reset</a>
             @endif
         </div>
     </form>
@@ -413,22 +664,22 @@ html[data-pms-theme="dark"] .premium-table-footer {
     {{-- KANBAN OR TABLE VIEW --}}
     @if(request('view') === 'kanban')
         {{-- KANBAN BOARD VIEW --}}
-        <div class="kanban-container">
+        <div class="kanban-container" id="dealsKanbanBoard">
             @foreach($stages as $stg)
                 <div class="kanban-col">
                     <div class="kanban-col-header" style="border-bottom-color: {{ $stg->color ?? '#3b82f6' }};">
                         <div>
-                            <h6 class="fw-bold mb-0" style="color: #0f172a;">{{ $stg->name }}</h6>
+                            <h6 class="fw-bold mb-0">{{ $stg->name }}</h6>
                             <small class="text-muted">{{ count($dealsByStage[$stg->id] ?? []) }} deals</small>
                         </div>
-                        <span class="badge bg-light text-dark border">{{ $stg->default_probability }}% Prob</span>
+                        <span class="badge border">{{ $stg->default_probability }}% Prob</span>
                     </div>
 
                     <div class="kanban-col-body kanban-column" data-stage-id="{{ $stg->id }}" data-stage-name="{{ strtolower($stg->name) }}">
                         @forelse($dealsByStage[$stg->id] ?? [] as $deal)
                             <div class="kanban-card deal-card" data-deal-id="{{ $deal->id }}" draggable="true">
                                 <div class="d-flex justify-content-between align-items-start mb-2">
-                                    <h6 class="fw-bold mb-0"><a href="{{ route('admin.deals.show', $deal->id) }}" class="text-dark text-decoration-none">{{ $deal->deal_name }}</a></h6>
+                                    <h6 class="fw-bold mb-0"><a href="{{ route('admin.deals.show', $deal->id) }}" class="pms-crm-entity-link">{{ $deal->deal_name }}</a></h6>
                                     @php
                                         $prio = strtolower($deal->priority ?? 'medium');
                                         $prioBadge = match($prio) {
@@ -485,19 +736,19 @@ html[data-pms-theme="dark"] .premium-table-footer {
                             <tr>
                                 <td class="ps-4"><input type="checkbox" class="form-check-input deal-checkbox" value="{{ $dl->id }}"></td>
                                 <td>
-                                    <a href="{{ route('admin.deals.show', $dl->id) }}" class="fw-bold text-decoration-none d-block" style="color: #0f172a; font-size: 0.9rem;">{{ $dl->deal_name }}</a>
+                                    <a href="{{ route('admin.deals.show', $dl->id) }}" class="pms-crm-entity-link d-block">{{ $dl->deal_name }}</a>
                                     <span class="text-muted d-block mt-1" style="font-size: 0.79rem;"><i class="far fa-user me-1"></i>{{ $dl->lead_name }}</span>
                                 </td>
-                                <td><span class="fw-semibold text-secondary" style="font-size: 0.88rem;">{{ $dl->company_name ?: 'N/A' }}</span></td>
+                                <td><span class="pms-crm-cell-strong">{{ $dl->company_name ?: 'N/A' }}</span></td>
                                 <td class="fw-bold text-success" style="font-size: 0.9rem;">{{ $dl->currency }} {{ number_format($dl->value, 2) }}</td>
                                 <td class="text-center">
-                                    <span class="badge-pill-source text-primary" style="border-color: rgba(15, 116, 76, 0.2);">
+                                    <span class="badge-pill-source text-primary" style="border-color: rgba(47, 107, 255, 0.2);">
                                         <i class="fas fa-layer-group me-1"></i>{{ $dl->stage->name ?? 'N/A' }} ({{ $dl->probability }}%)
                                     </span>
                                 </td>
-                                <td class="fw-bold text-dark" style="font-size: 0.88rem;">{{ $dl->currency }} {{ number_format($dl->weighted_value ?? $dl->calculateWeightedValue(), 2) }}</td>
-                                <td class="text-secondary" style="font-size: 0.84rem; font-weight: 500;">{{ $dl->close_date ? $dl->close_date->format('M d, Y') : 'N/A' }}</td>
-                                <td style="font-size: 0.84rem; font-weight: 600; color: #334155;">{{ $dl->agent->name ?? 'Unassigned' }}</td>
+                                <td class="pms-crm-cell-strong">{{ $dl->currency }} {{ number_format($dl->weighted_value ?? $dl->calculateWeightedValue(), 2) }}</td>
+                                <td class="pms-crm-subtext" style="font-weight: 500;">{{ $dl->close_date ? $dl->close_date->format('M d, Y') : 'N/A' }}</td>
+                                <td class="pms-crm-cell-strong">{{ $dl->agent->name ?? 'Unassigned' }}</td>
                                 <td class="text-center">
                                     @php
                                         $prio = strtolower($dl->priority ?? 'medium');
@@ -534,10 +785,15 @@ html[data-pms-theme="dark"] .premium-table-footer {
                         @empty
                             <tr>
                                 <td colspan="10" class="text-center py-5 text-muted">
-                                    <i class="fas fa-handshake-slash fa-3x mb-3 text-muted opacity-50"></i>
-                                    <h5 class="fw-bold">No Deals Found</h5>
+                                    <div class="pms-crm-empty-icon">
+                                        <i class="fas fa-handshake-slash"></i>
+                                    </div>
+                                    <h5 class="fw-bold mb-1">No Deals Found</h5>
                                     <p class="small mb-3">Create your first deal to start tracking your sales pipeline.</p>
-                                    <a href="{{ route('admin.deals.create') }}" class="btn-submit-emerald d-inline-flex align-items-center text-decoration-none px-3 py-2" style="font-size: 0.85rem;"><i class="fas fa-plus me-1"></i> Add First Deal</a>
+                                    <a href="{{ route('admin.deals.create') }}" class="pms-crm-btn-primary">
+                                        <i class="fas fa-plus"></i>
+                                        <span>Add First Deal</span>
+                                    </a>
                                 </td>
                             </tr>
                         @endforelse
@@ -575,8 +831,8 @@ html[data-pms-theme="dark"] .premium-table-footer {
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-success btn-sm px-4">Import Deals</button>
+                    <button type="button" class="pms-crm-btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="pms-crm-btn-primary">Import Deals</button>
                 </div>
             </form>
         </div>

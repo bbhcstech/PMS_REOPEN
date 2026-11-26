@@ -29,6 +29,10 @@ class DocumentSettingsController extends Controller
 
     public function update(Request $request)
     {
+        if (auth()->user()?->role !== 'admin') {
+            abort(403, 'Unauthorized. Only administrators can update document settings.');
+        }
+
         $request->validate([
             'max_file_size_mb' => 'required|numeric|min:1|max:100',
             'allowed_extensions' => 'required|string',
@@ -44,11 +48,28 @@ class DocumentSettingsController extends Controller
             ['label' => 'Allowed Extensions', 'value' => strtolower(trim($request->allowed_extensions)), 'page' => 'document-settings', 'section' => 'Document', 'type' => 'text']
         );
 
+        // Broadcast notification to Admin, HR, Manager, and Employees
+        \App\Services\SystemNotificationService::notifyAllRoles(
+            'Document Policies & File Rules Updated',
+            'Staff document compliance requirements and upload size rules have been updated by ' . (auth()->user()?->name ?? 'Admin') . '.',
+            route('admin.settings.document'),
+            [
+                'type' => 'setting_update',
+                'setting_module' => 'document-settings',
+                'icon' => 'fa-file-lines',
+                'color' => 'primary',
+            ]
+        );
+
         return back()->with('success', 'Document system file rules updated successfully!');
     }
 
     public function addDocumentType(Request $request)
     {
+        if (auth()->user()?->role !== 'admin') {
+            abort(403, 'Unauthorized. Only administrators can add document types.');
+        }
+
         $request->validate([
             'name' => 'required|string|max:255',
         ]);
@@ -80,11 +101,28 @@ class DocumentSettingsController extends Controller
             ['label' => 'Document Types List', 'value' => implode(', ', $names), 'page' => 'document-settings', 'section' => 'Document', 'type' => 'text']
         );
 
+        // Broadcast notification to Admin, HR, Manager, and Employees
+        \App\Services\SystemNotificationService::notifyAllRoles(
+            'New Document Type Added',
+            'A new required document type (' . $name . ') has been configured by ' . (auth()->user()?->name ?? 'Admin') . '.',
+            route('admin.settings.document'),
+            [
+                'type' => 'setting_update',
+                'setting_module' => 'document-settings',
+                'icon' => 'fa-file-lines',
+                'color' => 'success',
+            ]
+        );
+
         return back()->with('success', "New Document Type '{$name}' added successfully!");
     }
 
     public function deleteDocumentType(Request $request)
     {
+        if (auth()->user()?->role !== 'admin') {
+            abort(403, 'Unauthorized. Only administrators can delete document types.');
+        }
+
         $request->validate([
             'name' => 'required|string',
         ]);
@@ -105,6 +143,19 @@ class DocumentSettingsController extends Controller
         AppSetting::updateOrCreate(
             ['key' => 'doc_types'],
             ['label' => 'Document Types List', 'value' => implode(', ', $names), 'page' => 'document-settings', 'section' => 'Document', 'type' => 'text']
+        );
+
+        // Broadcast notification to Admin, HR, Manager, and Employees
+        \App\Services\SystemNotificationService::notifyAllRoles(
+            'Document Type Removed',
+            'Document type requirement (' . $targetName . ') has been removed by ' . (auth()->user()?->name ?? 'Admin') . '.',
+            route('admin.settings.document'),
+            [
+                'type' => 'setting_update',
+                'setting_module' => 'document-settings',
+                'icon' => 'fa-trash-alt',
+                'color' => 'warning',
+            ]
         );
 
         return back()->with('success', "Document Type '{$targetName}' removed.");

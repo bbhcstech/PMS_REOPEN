@@ -8,31 +8,109 @@
 @section('content')
 
 <style>
-    /* ===== LUXURY DASHBOARD THEME VARIABLES & CORE ===== */
-    :root {
-        --emerald-primary: #0f744c;
-        --emerald-dark: #073a26;
-        --emerald-deep: #05291b;
-        --emerald-light: #10b981;
-        --emerald-soft: #e4f3eb;
-        --emerald-glow: rgba(16, 185, 129, 0.25);
-        --purple-accent: #7c3aed;
-        --blue-accent: #2563eb;
-        --amber-accent: #f59e0b;
-        --rose-accent: #ef4444;
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700;800&display=swap');
 
-        --slate-dark: #0f172a;
-        --slate-body: #334155;
-        --slate-muted: #64748b;
-        --slate-light: #f8fafc;
+    /* ======================================================
+       BITROXIA ADMIN WORKSPACE DASHBOARD — DESIGN SYSTEM
+       Visual Reference: https://pms.thesmartservice.in/
+       Core Palette:
+         • Primary Accent:    #2F6BFF (Professional Blue)
+         • Secondary Accent:  #06B6D4 (Cyan / Teal)
+         • Supporting Accent: #8B5CF6 (Violet / Purple)
+         • Success State:     #10B981 (Emerald)
+         • Warning State:     #F59E0B (Amber)
+         • Danger State:      #EF4444 (Red)
+         • Headings:          #0F172A (Dark Slate / Navy)
+         • Body Text:         #334155 (Medium Slate)
+         • Muted / Meta:      #64748B (Cool Gray)
+         • Surface:           #FFFFFF (Crisp White)
+         • Background:        #F8FAFC (Low-Contrast Cool Neutral)
+         • Borders:           #E2E8F0 (Subtle Cool-Gray)
+       ====================================================== */
 
-        --glass-surface: linear-gradient(145deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 249, 0.94) 100%);
-        --glass-border: 1px solid rgba(255, 255, 255, 0.85);
-        --card-shadow-sm: 0 10px 25px -5px rgba(0, 0, 0, 0.04), 0 4px 10px rgba(0, 0, 0, 0.02);
-        --card-shadow-md: 0 20px 45px -10px rgba(15, 116, 76, 0.08), 0 6px 18px rgba(0, 0, 0, 0.03);
-        --card-shadow-lg: 0 30px 70px -15px rgba(15, 116, 76, 0.16), 0 12px 30px rgba(0, 0, 0, 0.05);
+    :root,
+    html[data-pms-theme="light"],
+    html[data-theme="light"] {
+        /* Semantic Color Tokens */
+        --bx-blue: #2F6BFF;
+        --bx-blue-dim: #1E4FCC;
+        --bx-blue-soft: rgba(47, 107, 255, 0.08);
+        --bx-blue-subtle: rgba(47, 107, 255, 0.04);
 
-        --font-family-main: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
+        --bx-cyan: #06B6D4;
+        --bx-cyan-dim: #0891B2;
+        --bx-cyan-soft: rgba(6, 182, 212, 0.08);
+
+        --bx-violet: #8B5CF6;
+        --bx-violet-dim: #7C3AED;
+        --bx-violet-soft: rgba(139, 92, 246, 0.08);
+
+        --bx-emerald: #10B981;
+        --bx-emerald-dim: #2F6BFF;
+        --bx-emerald-soft: rgba(47, 107, 255, 0.08);
+
+        --bx-amber: #F59E0B;
+        --bx-amber-soft: rgba(245, 158, 11, 0.08);
+
+        --bx-red: #EF4444;
+        --bx-red-soft: rgba(239, 68, 68, 0.08);
+
+        /* Surfaces & Inks */
+        --bx-bg: #F8FAFC;
+        --bx-surface: #FFFFFF;
+        --bx-surface-2: #F8FAFC;
+        --bx-surface-3: #F1F5F9;
+
+        --bx-ink: #0F172A;
+        --bx-ink-body: #334155;
+        --bx-ink-muted: #64748B;
+        --bx-ink-faint: #94A3B8;
+
+        --bx-border: #E2E8F0;
+        --bx-border-strong: #CBD5E1;
+        --bx-border-focus: rgba(47, 107, 255, 0.35);
+
+        --bx-shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05), 0 1px 2px rgba(15, 23, 42, 0.03);
+        --bx-shadow-md: 0 4px 12px -2px rgba(15, 23, 42, 0.06), 0 2px 6px -1px rgba(15, 23, 42, 0.03);
+        --bx-shadow-lg: 0 12px 24px -4px rgba(15, 23, 42, 0.08), 0 4px 8px -2px rgba(15, 23, 42, 0.03);
+
+        --bx-gauge-track: #E2E8F0;
+        --bx-gauge-inner: #FFFFFF;
+
+        --font-display: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+        --font-body: 'Inter', 'Plus Jakarta Sans', system-ui, sans-serif;
+    }
+
+    /* Dark Mode Theme Tokens */
+    html[data-pms-theme="dark"],
+    html[data-theme="dark"] {
+        --bx-bg: #070B1A;
+        --bx-surface: #0F1530;
+        --bx-surface-2: #141B3D;
+        --bx-surface-3: #1A2247;
+
+        --bx-ink: #EEF1FB;
+        --bx-ink-body: #CBD5E1;
+        --bx-ink-muted: #9AA3C7;
+        --bx-ink-faint: #6B739A;
+
+        --bx-border: rgba(238, 241, 251, 0.09);
+        --bx-border-strong: rgba(238, 241, 251, 0.16);
+        --bx-border-focus: rgba(47, 107, 255, 0.5);
+
+        --bx-blue-soft: rgba(47, 107, 255, 0.18);
+        --bx-cyan-soft: rgba(6, 182, 212, 0.18);
+        --bx-violet-soft: rgba(139, 92, 246, 0.18);
+        --bx-emerald-soft: rgba(47, 107, 255, 0.18);
+        --bx-amber-soft: rgba(245, 158, 11, 0.18);
+        --bx-red-soft: rgba(239, 68, 68, 0.18);
+
+        --bx-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.25);
+        --bx-shadow-md: 0 8px 20px -4px rgba(0, 0, 0, 0.4);
+        --bx-shadow-lg: 0 16px 36px -6px rgba(0, 0, 0, 0.5);
+
+        --bx-gauge-track: #1A2247;
+        --bx-gauge-inner: #0F1530;
     }
 
     * {
@@ -40,54 +118,23 @@
     }
 
     body {
-        background: linear-gradient(135deg, #f1f5f3 0%, #e6eee8 50%, #f7faf8 100%) !important;
-        font-family: var(--font-family-main);
-        color: var(--slate-dark);
-        line-height: 1.6;
+        background: var(--bx-bg) !important;
+        font-family: var(--font-body);
+        color: var(--bx-ink-body);
+        line-height: 1.55;
         -webkit-font-smoothing: antialiased;
+        transition: background 0.25s ease, color 0.25s ease;
     }
 
-    /* ===== ANIMATIONS & SHIMMER EFFECTS ===== */
+    /* Subdued Animations */
     @keyframes fadeInUp {
         from {
             opacity: 0;
-            transform: translateY(24px);
+            transform: translateY(14px);
         }
         to {
             opacity: 1;
             transform: translateY(0);
-        }
-    }
-
-    @keyframes floatHero {
-        0%, 100% {
-            transform: translateY(0) rotate(0deg);
-        }
-        50% {
-            transform: translateY(-12px) rotate(1.5deg);
-        }
-    }
-
-    @keyframes shimmerSweep {
-        0% {
-            transform: translateX(-150%) skewX(-20deg);
-            opacity: 0;
-        }
-        50% {
-            opacity: 1;
-        }
-        100% {
-            transform: translateX(250%) skewX(-20deg);
-            opacity: 0;
-        }
-    }
-
-    @keyframes gradientShift {
-        0%, 100% {
-            background-position: 0% 50%;
-        }
-        50% {
-            background-position: 100% 50%;
         }
     }
 
@@ -97,380 +144,339 @@
         }
     }
 
-    @keyframes bounceIn {
-        0% {
-            opacity: 0;
-            transform: scale(0.7) translateY(10px);
-        }
-        70% {
-            transform: scale(1.04);
-        }
-        100% {
-            opacity: 1;
-            transform: scale(1);
-        }
+    /* Floating orbs are hidden for a clean, professional SaaS experience */
+    .floating-elements {
+        display: none !important;
     }
 
-    /* ===== MAIN CONTAINER ===== */
+    /* Main Container */
     #main {
-        min-height: 100vh;
+        min-height: 0;
         position: relative;
-        overflow-x: hidden;
+        background: transparent;
     }
 
-    .content-wrapper {
-        padding: 1.75rem 2.25rem;
+    #main > .content-wrapper {
+        padding: 0;
         max-width: 100%;
         position: relative;
         z-index: 1;
-        animation: fadeInUp 0.75s ease-out;
+        animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    /* ===== FLOATING AMBIENT GLOW ===== */
-    .floating-elements {
-        position: fixed;
-        width: 100%;
-        height: 100%;
-        pointer-events: none;
-        z-index: 0;
-    }
-
-    .floating-element {
-        position: absolute;
-        border-radius: 50%;
-        opacity: 0.22;
-        filter: blur(60px);
-        animation: floatHero 18s infinite ease-in-out;
-    }
-
-    .floating-element:nth-child(1) {
-        width: 450px;
-        height: 450px;
-        background: var(--emerald-primary);
-        top: -5%;
-        left: -5%;
-    }
-
-    .floating-element:nth-child(2) {
-        width: 380px;
-        height: 380px;
-        background: var(--purple-accent);
-        bottom: 10%;
-        right: -5%;
-        animation-delay: 4s;
-    }
-
-    .floating-element:nth-child(3) {
-        width: 280px;
-        height: 280px;
-        background: var(--blue-accent);
-        top: 45%;
-        left: 40%;
-        animation-delay: 8s;
-    }
-
-    /* ===== INDUSTRY DASHBOARD SHELL & CONTAINERS ===== */
+    /* Dashboard Shell */
     .industry-dashboard-shell {
         display: flex;
         flex-direction: column;
-        gap: 1.75rem;
+        gap: 1.5rem;
         margin-bottom: 2rem;
     }
 
-    /* ===== HERO COMMAND CENTER CARD ===== */
+    /* ======================================================
+       DASHBOARD HEADER / HERO COMMAND CENTER
+       Clean SaaS Hierarchy:
+         • Eyebrow: "Admin Workspace"
+         • Title: Strong, crisp typography
+         • Contextual description
+         • Clean action buttons
+       ====================================================== */
     .industry-hero-card {
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(246, 250, 247, 0.94) 100%);
-        border: 1px solid rgba(255, 255, 255, 0.95);
-        border-radius: 30px;
-        box-shadow: 0 25px 65px -15px rgba(15, 116, 76, 0.12), 0 8px 24px rgba(0, 0, 0, 0.03);
-        backdrop-filter: blur(24px);
-        -webkit-backdrop-filter: blur(24px);
+        background: var(--bx-surface);
+        border: 1px solid var(--bx-border);
+        border-radius: 16px;
+        box-shadow: var(--bx-shadow-sm);
         display: grid;
-        grid-template-columns: minmax(0, 1.4fr) minmax(290px, 0.6fr);
+        grid-template-columns: minmax(0, 1.4fr) minmax(260px, 0.6fr);
         gap: 2rem;
-        min-height: 320px;
+        min-height: 220px;
         overflow: hidden;
-        padding: clamp(1.8rem, 3.5vw, 2.75rem);
+        padding: 1.75rem 2.25rem;
         position: relative;
-        isolation: isolate;
-        transition: transform 0.35s ease, box-shadow 0.35s ease;
+        transition: box-shadow 0.2s ease, border-color 0.2s ease;
     }
 
     .industry-hero-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 32px 80px -15px rgba(15, 116, 76, 0.18), 0 12px 30px rgba(0, 0, 0, 0.05);
-    }
-
-    .industry-hero-card::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 5px;
-        background: linear-gradient(90deg, #094c32, #0f744c, #10b981, #2563eb, #7c3aed);
-        background-size: 300% 300%;
-        animation: gradientShift 6s ease infinite;
+        box-shadow: var(--bx-shadow-md);
+        border-color: var(--bx-border-strong);
     }
 
     .industry-hero-copy {
         align-self: center;
-        max-width: 780px;
+        max-width: 720px;
     }
 
     .industry-eyebrow {
         align-items: center;
-        background: linear-gradient(135deg, #073a26 0%, #0f744c 100%);
-        border: 1px solid rgba(16, 185, 129, 0.3);
+        background: var(--bx-blue-soft);
+        border: 1px solid rgba(47, 107, 255, 0.2);
         border-radius: 999px;
-        color: #ffffff !important;
+        color: var(--bx-blue) !important;
         display: inline-flex;
-        font-size: 0.85rem;
-        font-weight: 800;
-        letter-spacing: 0.08em;
-        margin-bottom: 1.15rem;
-        padding: 0.5rem 1rem;
+        font-family: var(--font-display);
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        margin-bottom: 0.85rem;
+        padding: 0.35rem 0.85rem;
         text-transform: uppercase;
-        box-shadow: 0 4px 12px rgba(15, 116, 76, 0.15);
+        gap: 6px;
     }
 
-    .industry-eyebrow * {
-        color: #ffffff !important;
+    .industry-eyebrow i {
+        font-size: 0.95rem;
     }
 
     .industry-hero-copy h1 {
-        color: var(--slate-dark);
-        font-size: clamp(2.4rem, 4.5vw, 3.8rem);
-        font-weight: 900;
-        letter-spacing: -0.03em;
-        line-height: 1.1;
-        margin-bottom: 1rem;
-        background: linear-gradient(135deg, #073a26 0%, #0f744c 45%, #0f172a 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
+        font-family: var(--font-display);
+        font-size: clamp(1.65rem, 2.5vw, 2.15rem);
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        line-height: 1.2;
+        margin-bottom: 0.65rem;
+        color: var(--bx-ink) !important;
     }
 
     .industry-hero-copy p {
-        color: #475569;
-        font-size: clamp(1.05rem, 1.8vw, 1.2rem);
-        font-weight: 600;
-        max-width: 660px;
-        line-height: 1.65;
+        color: var(--bx-ink-muted);
+        font-size: 0.95rem;
+        font-weight: 500;
+        max-width: 600px;
+        line-height: 1.55;
         margin-bottom: 0;
     }
 
     .industry-actions {
         display: flex;
         flex-wrap: wrap;
-        gap: 1rem;
-        margin-top: 1.65rem;
+        gap: 0.75rem;
+        margin-top: 1.4rem;
     }
 
+    /* Buttons */
     .industry-btn {
         align-items: center;
-        border-radius: 999px;
+        border-radius: 10px;
         display: inline-flex;
-        font-weight: 800;
-        font-size: 1.05rem;
-        gap: 0.6rem;
+        font-family: var(--font-display);
+        font-weight: 650;
+        font-size: 0.875rem;
+        gap: 0.5rem;
         justify-content: center;
-        min-height: 48px;
-        padding: 0.85rem 1.6rem;
+        min-height: 40px;
+        padding: 0.6rem 1.25rem;
         text-decoration: none;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: all 0.2s ease;
         white-space: nowrap;
+        cursor: pointer;
     }
 
     .industry-btn-primary {
-        background: linear-gradient(135deg, #073a26 0%, #0f744c 60%, #10b981 100%);
-        box-shadow: 0 14px 30px rgba(15, 116, 76, 0.32);
-        color: #ffffff !important;
-        border: none;
+        background: var(--bx-blue);
+        border: 1px solid var(--bx-blue);
+        color: #FFFFFF !important;
+        box-shadow: 0 1px 3px rgba(47, 107, 255, 0.25);
     }
 
     .industry-btn-primary:hover {
-        transform: translateY(-3px) scale(1.03);
-        box-shadow: 0 20px 40px rgba(15, 116, 76, 0.45);
-        color: #ffffff !important;
+        background: var(--bx-blue-dim);
+        border-color: var(--bx-blue-dim);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(47, 107, 255, 0.3);
+        color: #FFFFFF !important;
     }
 
     .industry-btn-light {
-        background: #ffffff;
-        border: 2px solid rgba(15, 116, 76, 0.2);
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04);
-        color: var(--slate-dark) !important;
+        background: var(--bx-surface);
+        border: 1px solid var(--bx-border);
+        color: var(--bx-ink-body) !important;
+        box-shadow: var(--bx-shadow-sm);
     }
 
     .industry-btn-light:hover {
-        background: rgba(15, 116, 76, 0.06);
-        border-color: var(--emerald-primary);
-        transform: translateY(-3px) scale(1.03);
-        box-shadow: 0 12px 28px rgba(15, 116, 76, 0.15);
-        color: var(--emerald-primary) !important;
+        background: var(--bx-surface-3);
+        border-color: var(--bx-border-strong);
+        color: var(--bx-ink) !important;
+        transform: translateY(-1px);
+    }
+
+    .industry-btn-outline {
+        background: transparent;
+        border: 1px solid var(--bx-border-strong);
+        color: var(--bx-blue) !important;
+    }
+
+    .industry-btn-outline:hover {
+        background: var(--bx-blue-soft);
+        border-color: var(--bx-blue);
+        color: var(--bx-blue) !important;
+        transform: translateY(-1px);
     }
 
     .industry-hero-visual {
         align-items: center;
         display: flex;
         justify-content: center;
-        min-height: 240px;
         position: relative;
     }
 
     .industry-hero-visual img {
-        filter: drop-shadow(0 30px 45px rgba(15, 116, 76, 0.22));
-        max-height: 290px;
+        max-height: 180px;
         object-fit: contain;
-        transform: rotate(-1.5deg);
-        width: min(100%, 440px);
-        animation: floatHero 7s ease-in-out infinite;
-        transition: transform 0.4s ease;
+        width: auto;
+        filter: drop-shadow(0 10px 24px rgba(15, 23, 42, 0.08));
     }
 
-    /* ===== STAT CARDS ROW (OVERVIEW GRID) ===== */
+    /* ======================================================
+       STATISTICS / KPI CARDS (OVERVIEW GRID)
+       Semantic Colors:
+         • Projects   → Blue (#2F6BFF)
+         • Tasks      → Violet (#8B5CF6)
+         • Tickets    → Cyan (#06B6D4)
+         • Attendance → Emerald (#10B981)
+       ====================================================== */
     .industry-overview-grid {
         display: grid;
-        gap: 1.35rem;
+        gap: 1.25rem;
         grid-template-columns: repeat(4, minmax(0, 1fr));
     }
 
     .industry-metric-card {
-        background: linear-gradient(145deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 249, 0.94) 100%);
-        border: 1px solid rgba(226, 232, 240, 0.9);
-        border-radius: 24px;
-        color: var(--slate-dark) !important;
-        min-height: 165px;
+        background: var(--bx-surface);
+        border: 1px solid var(--bx-border);
+        border-radius: 14px;
+        color: var(--bx-ink) !important;
+        min-height: 150px;
         overflow: hidden;
-        padding: 1.4rem;
+        padding: 1.25rem 1.35rem;
         position: relative;
         text-decoration: none;
-        transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: var(--card-shadow-sm);
+        transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        box-shadow: var(--bx-shadow-sm);
         display: flex;
         flex-direction: column;
         justify-content: space-between;
     }
 
-    .industry-metric-card::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 4px;
-        background: linear-gradient(90deg, var(--emerald-primary), var(--emerald-light));
-        opacity: 0;
-        transition: opacity 0.3s ease;
-    }
-
     .industry-metric-card:hover {
-        border-color: rgba(15, 116, 76, 0.35);
-        box-shadow: var(--card-shadow-lg);
-        transform: translateY(-8px) scale(1.025);
+        transform: translateY(-2px);
+        box-shadow: var(--bx-shadow-md);
     }
 
-    .industry-metric-card:hover::before {
-        opacity: 1;
-    }
+    .kpi-card-projects:hover { border-color: var(--bx-blue); }
+    .kpi-card-tasks:hover { border-color: var(--bx-violet); }
+    .kpi-card-tickets:hover { border-color: var(--bx-cyan); }
+    .kpi-card-attendance:hover { border-color: var(--bx-emerald); }
 
-    .industry-metric-card span {
-        color: var(--slate-muted) !important;
-        display: block;
-        font-size: 0.9rem;
-        font-weight: 800;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-    }
-
-    .industry-metric-card strong {
-        color: var(--slate-dark);
-        display: block;
-        font-size: clamp(2.4rem, 3.5vw, 3.2rem);
-        font-weight: 900;
-        line-height: 1.05;
-        margin: 0.5rem 0;
-        letter-spacing: -0.03em;
-    }
-
-    .industry-metric-card small {
-        color: var(--slate-muted) !important;
+    .kpi-card-top {
         display: flex;
         align-items: center;
-        gap: 0.4rem;
-        font-size: 0.86rem;
+        justify-content: space-between;
+    }
+
+    .kpi-card-top span {
+        color: var(--bx-ink-muted) !important;
+        font-family: var(--font-display);
+        font-size: 0.82rem;
         font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
     }
 
-    .industry-metric-card.is-primary {
-        background: linear-gradient(135deg, #073a26 0%, #0f744c 55%, #10b981 100%) !important;
-        border: 1px solid rgba(16, 185, 129, 0.4) !important;
-        box-shadow: 0 20px 45px -10px rgba(15, 116, 76, 0.35) !important;
-    }
-
-    .industry-metric-card.is-primary,
-    .industry-metric-card.is-primary *,
-    .industry-metric-card.is-primary span,
-    .industry-metric-card.is-primary strong,
-    .industry-metric-card.is-primary small,
-    .industry-metric-card.is-primary i,
-    .industry-metric-card.is-primary a {
-        color: #ffffff !important;
-    }
-
-    .industry-arrow {
-        bottom: 1.25rem;
-        right: 1.25rem;
-        position: absolute;
-        width: 42px;
-        height: 42px;
-        border-radius: 50%;
-        background: rgba(15, 116, 76, 0.08);
-        color: var(--emerald-primary) !important;
+    .kpi-icon-box {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.4rem;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        font-size: 1.2rem;
+        flex-shrink: 0;
     }
 
-    .industry-metric-card.is-primary .industry-arrow {
-        background: rgba(255, 255, 255, 0.2);
-        color: #ffffff !important;
+    .kpi-blue { background: var(--bx-blue-soft); color: var(--bx-blue); }
+    .kpi-violet { background: var(--bx-violet-soft); color: var(--bx-violet); }
+    .kpi-cyan { background: var(--bx-cyan-soft); color: var(--bx-cyan); }
+    .kpi-emerald { background: var(--bx-emerald-soft); color: var(--bx-emerald); }
+
+    .kpi-number {
+        color: var(--bx-ink) !important;
+        display: block;
+        font-family: var(--font-display);
+        font-size: clamp(2rem, 2.8vw, 2.4rem);
+        font-weight: 800;
+        line-height: 1.05;
+        margin: 0.35rem 0;
+        letter-spacing: -0.03em;
+    }
+
+    .kpi-card-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .kpi-card-footer small {
+        color: var(--bx-ink-muted);
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .industry-arrow {
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        background: var(--bx-surface-2);
+        border: 1px solid var(--bx-border);
+        color: var(--bx-ink-muted);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.95rem;
+        transition: all 0.2s ease;
     }
 
     .industry-metric-card:hover .industry-arrow {
-        background: var(--emerald-primary);
-        color: #ffffff !important;
-        transform: translate(3px, -3px) rotate(45deg);
-        box-shadow: 0 6px 16px rgba(15, 116, 76, 0.3);
+        background: var(--bx-blue);
+        border-color: var(--bx-blue);
+        color: #FFFFFF !important;
+        transform: translateX(2px);
+    }
+    /* Theme icon rules (loaded later, !important) recolour every dashboard icon blue; keep the
+       hovered footer arrow white on its blue button in both themes. */
+    html body .industry-overview-grid .industry-metric-card:hover .industry-arrow {
+        color: #FFFFFF !important;
+        -webkit-text-fill-color: #FFFFFF !important;
+        -webkit-text-stroke-color: #FFFFFF !important;
     }
 
-    /* ===== EXECUTIVE BUSINESS MODEL & PREDICTIONS GRID ===== */
+    /* ======================================================
+       EXECUTIVE PANELS & BUSINESS MODEL
+       ====================================================== */
     .saas-executive-grid {
         display: grid;
-        gap: 1.35rem;
+        gap: 1.25rem;
         grid-template-columns: 1.15fr 0.85fr;
     }
 
     .industry-panel {
-        background: linear-gradient(145deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 249, 0.94) 100%);
-        border: 1px solid rgba(226, 232, 240, 0.85);
-        border-radius: 26px;
-        padding: 1.6rem;
-        overflow: hidden;
+        background: var(--bx-surface);
+        border: 1px solid var(--bx-border);
+        border-radius: 16px;
+        padding: 1.5rem;
         position: relative;
-        box-shadow: var(--card-shadow-md);
-        backdrop-filter: blur(16px);
-        transition: all 0.35s ease;
+        box-shadow: var(--bx-shadow-sm);
+        transition: all 0.2s ease;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
     }
 
     .industry-panel:hover {
-        border-color: rgba(15, 116, 76, 0.25);
-        box-shadow: var(--card-shadow-lg);
+        border-color: var(--bx-border-strong);
+        box-shadow: var(--bx-shadow-md);
     }
 
     .industry-panel-head {
@@ -478,316 +484,377 @@
         display: flex;
         gap: 1rem;
         justify-content: space-between;
-        margin-bottom: 1.4rem;
+        margin-bottom: 1.25rem;
     }
 
     .industry-panel-head h3 {
-        color: var(--slate-dark);
-        font-size: 1.3rem;
-        font-weight: 900;
-        letter-spacing: -0.02em;
-        margin: 0 0 0.3rem;
+        color: var(--bx-ink);
+        font-family: var(--font-display);
+        font-size: 1.15rem;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        margin: 0 0 0.25rem;
     }
 
     .industry-panel-head p {
-        color: var(--slate-muted);
-        font-size: 0.95rem;
-        font-weight: 600;
+        color: var(--bx-ink-muted);
+        font-size: 0.85rem;
+        font-weight: 500;
         margin: 0;
-        line-height: 1.5;
+        line-height: 1.45;
     }
 
     .industry-panel-head a {
         align-items: center;
-        background: rgba(15, 116, 76, 0.1);
-        border: 1px solid rgba(15, 116, 76, 0.2);
-        border-radius: 999px;
-        color: var(--emerald-primary) !important;
+        background: var(--bx-surface-2);
+        border: 1px solid var(--bx-border);
+        border-radius: 8px;
+        color: var(--bx-blue) !important;
         display: inline-flex;
         flex: 0 0 auto;
-        font-size: 0.85rem;
-        font-weight: 800;
-        padding: 0.55rem 1rem;
+        font-family: var(--font-display);
+        font-size: 0.8rem;
+        font-weight: 650;
+        padding: 0.4rem 0.85rem;
         text-decoration: none;
-        transition: all 0.25s ease;
+        transition: all 0.2s ease;
     }
 
     .industry-panel-head a:hover {
-        background: var(--emerald-primary);
+        background: var(--bx-blue);
+        border-color: var(--bx-blue);
         color: #ffffff !important;
-        transform: translateY(-2px);
-        box-shadow: 0 6px 18px rgba(15, 116, 76, 0.25);
     }
 
     /* Revenue Strip Cards */
     .saas-revenue-strip {
         display: grid;
-        gap: 1rem;
+        gap: 0.85rem;
         grid-template-columns: repeat(4, minmax(0, 1fr));
     }
 
     .saas-money-card {
-        background: linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(241, 248, 244, 0.85));
-        border: 1px solid rgba(226, 232, 240, 0.9);
-        border-radius: 20px;
-        min-height: 145px;
-        overflow: hidden;
-        padding: 1.25rem;
+        background: var(--bx-surface-2);
+        border: 1px solid var(--bx-border);
+        border-radius: 12px;
+        min-height: 125px;
+        min-width: 0;
+        padding: 1rem;
         position: relative;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: all 0.2s ease;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
     }
 
     .saas-money-card:hover {
-        border-color: rgba(15, 116, 76, 0.35);
-        box-shadow: 0 16px 36px -8px rgba(15, 116, 76, 0.15);
-        transform: translateY(-5px);
+        border-color: var(--bx-blue);
+        transform: translateY(-2px);
     }
 
     .saas-money-card span {
-        color: var(--slate-muted) !important;
+        color: var(--bx-ink-muted) !important;
         display: block;
-        font-size: 0.82rem;
-        font-weight: 800;
+        font-family: var(--font-display);
+        font-size: 0.75rem;
+        font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.05em;
     }
 
     .saas-money-card strong {
-        color: var(--slate-dark);
+        color: var(--bx-ink);
         display: block;
-        font-size: clamp(1.4rem, 2vw, 2.1rem);
-        font-weight: 950;
+        font-family: var(--font-display);
+        font-size: clamp(1.2rem, 1.7vw, 1.65rem);
+        font-weight: 800;
         letter-spacing: -0.02em;
-        line-height: 1.1;
-        margin: 0.5rem 0 0.3rem;
+        line-height: 1.15;
+        margin: 0.35rem 0 0.25rem;
+        max-width: 100%;
+        overflow-wrap: anywhere;
+        white-space: normal;
     }
 
     .saas-money-card em {
-        color: var(--emerald-primary);
-        font-size: 0.82rem;
+        color: var(--bx-blue);
+        font-size: 0.78rem;
         font-style: normal;
-        font-weight: 800;
+        font-weight: 650;
     }
 
     /* Prediction Grid */
     .saas-prediction-grid {
         display: grid;
-        gap: 1rem;
+        gap: 0.85rem;
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .saas-insight-card {
-        background: linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(248, 250, 249, 0.92));
-        border: 1px solid rgba(226, 232, 240, 0.9);
-        border-radius: 20px;
-        min-height: 145px;
-        padding: 1.25rem;
+        background: var(--bx-surface-2);
+        border: 1px solid var(--bx-border);
+        border-radius: 12px;
+        min-height: 125px;
+        padding: 1rem;
         position: relative;
-        transition: all 0.3s ease;
+        transition: all 0.2s ease;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
     }
 
     .saas-insight-card:hover {
-        border-color: rgba(15, 116, 76, 0.3);
-        box-shadow: 0 16px 36px -8px rgba(15, 116, 76, 0.14);
-        transform: translateY(-5px);
+        border-color: var(--bx-border-strong);
+        transform: translateY(-2px);
     }
 
     .saas-insight-card span {
-        color: var(--slate-muted) !important;
+        color: var(--bx-ink-muted) !important;
         display: block;
-        font-size: 0.82rem;
-        font-weight: 800;
+        font-family: var(--font-display);
+        font-size: 0.75rem;
+        font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.05em;
     }
 
     .saas-insight-card strong {
-        color: var(--slate-dark);
+        color: var(--bx-ink);
         display: block;
-        font-size: 1.2rem;
-        font-weight: 900;
-        margin: 0.4rem 0;
+        font-family: var(--font-display);
+        font-size: 1.05rem;
+        font-weight: 800;
+        margin: 0.3rem 0;
     }
 
     .saas-insight-card p {
-        color: var(--slate-body);
-        font-size: 0.86rem;
-        font-weight: 600;
+        color: var(--bx-ink-body);
+        font-size: 0.82rem;
+        font-weight: 500;
         margin: 0;
-        line-height: 1.45;
+        line-height: 1.4;
     }
 
+    /* Risk Status Pills */
     .saas-risk-pill {
         align-items: center;
-        border-radius: 999px;
-        display: inline-flex;
-        font-size: 0.78rem;
-        font-weight: 900;
-        gap: 0.4rem;
-        padding: 0.4rem 0.75rem;
+        border-radius: 8px !important;
+        display: inline-flex !important;
+        font-size: 0.72rem !important;
+        font-weight: 700 !important;
+        gap: 0.35rem !important;
+        padding: 0.3rem 0.65rem !important;
+        letter-spacing: 0.04em !important;
+        text-transform: uppercase !important;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     }
 
     .saas-risk-low {
-        background: rgba(16, 185, 129, 0.14);
-        border: 1px solid rgba(16, 185, 129, 0.25);
-        color: #047857;
+        background: #EEF2FF !important;
+        border: 1px solid #C7D2FE !important;
+        color: #2F6BFF !important;
+        -webkit-text-fill-color: #2F6BFF !important;
+    }
+
+    .saas-risk-low i,
+    .saas-risk-low .bx,
+    .saas-risk-low * {
+        color: #2F6BFF !important;
+        -webkit-text-fill-color: #2F6BFF !important;
+        background-color: #2F6BFF !important;
     }
 
     .saas-risk-mid {
-        background: rgba(245, 158, 11, 0.14);
-        border: 1px solid rgba(245, 158, 11, 0.25);
-        color: #92400e;
+        background: #FFFBEB !important;
+        border: 1px solid #FDE68A !important;
+        color: #D97706 !important;
+        -webkit-text-fill-color: #D97706 !important;
+    }
+
+    .saas-risk-mid i,
+    .saas-risk-mid .bx,
+    .saas-risk-mid * {
+        color: #D97706 !important;
+        -webkit-text-fill-color: #D97706 !important;
+        background-color: #D97706 !important;
     }
 
     .saas-risk-high {
-        background: rgba(239, 68, 68, 0.14);
-        border: 1px solid rgba(239, 68, 68, 0.25);
-        color: #991b1b;
+        background: #FEF2F2 !important;
+        border: 1px solid #FECACA !important;
+        color: #DC2626 !important;
+        -webkit-text-fill-color: #DC2626 !important;
     }
 
-    /* ===== TREND BOARD & GAUGES ===== */
-    .saas-trend-board {
-        display: grid;
-        gap: 1.35rem;
-        grid-template-columns: 1fr 1fr;
+    .saas-risk-high i,
+    .saas-risk-high .bx,
+    .saas-risk-high * {
+        color: #DC2626 !important;
+        -webkit-text-fill-color: #DC2626 !important;
+        background-color: #DC2626 !important;
     }
 
-    .saas-line-card {
-        min-height: 230px;
+    /* Dark Mode Risk Status Pills - High Contrast & Clearly Visible */
+    html[data-pms-theme="dark"] .saas-risk-low,
+    html[data-theme="dark"] .saas-risk-low {
+        background: rgba(47, 107, 255, 0.18) !important;
+        border: 1px solid rgba(47, 107, 255, 0.45) !important;
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
     }
 
-    .saas-sparkline {
-        align-items: flex-end;
-        display: flex;
-        gap: 0.75rem;
-        height: 130px;
-        margin-top: 1.25rem;
-        padding: 0.5rem;
-        background: rgba(15, 116, 76, 0.03);
-        border-radius: 16px;
-        border: 1px dashed rgba(15, 116, 76, 0.15);
+    html[data-pms-theme="dark"] .saas-risk-low i,
+    html[data-pms-theme="dark"] .saas-risk-low .bx,
+    html[data-pms-theme="dark"] .saas-risk-low *,
+    html[data-theme="dark"] .saas-risk-low i,
+    html[data-theme="dark"] .saas-risk-low .bx,
+    html[data-theme="dark"] .saas-risk-low * {
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
+        background-color: #60A5FA !important;
     }
 
-    .saas-sparkline span {
-        background: linear-gradient(180deg, var(--emerald-primary), var(--emerald-light));
-        border-radius: 999px 999px 6px 6px;
-        flex: 1 1 0;
-        min-width: 12px;
-        height: var(--spark);
-        animation: progressFill 1.2s cubic-bezier(0.4, 0, 0.2, 1) both;
-        transition: transform 0.25s ease;
+    html[data-pms-theme="dark"] .saas-risk-mid,
+    html[data-theme="dark"] .saas-risk-mid {
+        background: rgba(245, 158, 11, 0.18) !important;
+        border: 1px solid rgba(245, 158, 11, 0.45) !important;
+        color: #FBBF24 !important;
+        -webkit-text-fill-color: #FBBF24 !important;
     }
 
-    .saas-sparkline span:hover {
-        transform: scaleY(1.08);
-        background: linear-gradient(180deg, var(--purple-accent), var(--blue-accent));
+    html[data-pms-theme="dark"] .saas-risk-mid i,
+    html[data-pms-theme="dark"] .saas-risk-mid .bx,
+    html[data-pms-theme="dark"] .saas-risk-mid *,
+    html[data-theme="dark"] .saas-risk-mid i,
+    html[data-theme="dark"] .saas-risk-mid .bx,
+    html[data-theme="dark"] .saas-risk-mid * {
+        color: #FBBF24 !important;
+        -webkit-text-fill-color: #FBBF24 !important;
+        background-color: #FBBF24 !important;
     }
 
+    html[data-pms-theme="dark"] .saas-risk-high,
+    html[data-theme="dark"] .saas-risk-high {
+        background: rgba(239, 68, 68, 0.2) !important;
+        border: 1px solid rgba(239, 68, 68, 0.5) !important;
+        color: #F87171 !important;
+        -webkit-text-fill-color: #F87171 !important;
+    }
+
+    html[data-pms-theme="dark"] .saas-risk-high i,
+    html[data-pms-theme="dark"] .saas-risk-high .bx,
+    html[data-theme="dark"] .saas-risk-high *,
+    html[data-theme="dark"] .saas-risk-high i,
+    html[data-theme="dark"] .saas-risk-high .bx,
+    html[data-theme="dark"] .saas-risk-high * {
+        color: #F87171 !important;
+        -webkit-text-fill-color: #F87171 !important;
+        background-color: #F87171 !important;
+    }
+
+    /* Gauges */
     .industry-gauge {
         align-items: center;
-        background: conic-gradient(var(--emerald-light) 0deg, var(--emerald-primary) var(--value-deg), #e2e8f0 var(--value-deg), #e2e8f0 180deg, transparent 180deg);
-        border-radius: 190px 190px 24px 24px;
+        background: conic-gradient(var(--bx-cyan) 0deg, var(--bx-blue) var(--value-deg), var(--bx-gauge-track) var(--value-deg), var(--bx-gauge-track) 180deg, transparent 180deg);
+        border-radius: 180px 180px 20px 20px;
         display: flex;
-        height: 155px;
+        height: 145px;
         justify-content: center;
-        margin: 0.75rem auto 1.25rem;
-        max-width: 280px;
+        margin: 0.5rem auto 1rem;
+        max-width: 260px;
         position: relative;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
     }
 
     .industry-gauge::after {
-        background: #ffffff;
-        border-radius: 160px 160px 20px 20px;
+        background: var(--bx-gauge-inner);
+        border-radius: 155px 155px 16px 16px;
         content: "";
-        inset: 22px 22px 0;
+        inset: 20px 20px 0;
         position: absolute;
     }
 
     .industry-gauge div {
-        margin-top: 30px;
+        margin-top: 25px;
         position: relative;
         text-align: center;
         z-index: 1;
     }
 
     .industry-gauge strong {
-        color: var(--slate-dark);
+        color: var(--bx-ink);
         display: block;
-        font-size: 2.35rem;
-        font-weight: 900;
+        font-family: var(--font-display);
+        font-size: 2.15rem;
+        font-weight: 800;
         line-height: 1;
     }
 
     .industry-gauge span {
-        color: var(--slate-muted) !important;
-        font-size: 0.88rem;
-        font-weight: 800;
+        color: var(--bx-ink-muted) !important;
+        font-family: var(--font-display);
+        font-size: 0.8rem;
+        font-weight: 700;
         text-transform: uppercase;
+        letter-spacing: 0.05em;
     }
 
     .industry-presence-row {
         display: grid;
-        gap: 0.75rem;
+        gap: 0.65rem;
         grid-template-columns: repeat(3, minmax(0, 1fr));
     }
 
     .industry-presence-row span {
-        background: rgba(15, 116, 76, 0.05);
-        border: 1px solid rgba(15, 116, 76, 0.12);
-        border-radius: 16px;
-        color: var(--slate-body) !important;
-        font-size: 0.85rem;
-        font-weight: 800;
-        padding: 0.85rem 0.65rem;
+        background: var(--bx-surface-2);
+        border: 1px solid var(--bx-border);
+        border-radius: 10px;
+        color: var(--bx-ink-body) !important;
+        font-size: 0.82rem;
+        font-weight: 600;
+        padding: 0.75rem 0.5rem;
         text-align: center;
     }
 
     .industry-presence-row b {
-        color: var(--slate-dark);
+        color: var(--bx-ink);
         display: block;
-        font-size: 1.15rem;
-        font-weight: 900;
+        font-family: var(--font-display);
+        font-size: 1.1rem;
+        font-weight: 800;
     }
 
-    /* ===== WORK ANALYTICS & TEAM PRESENCE GRID ===== */
+    /* ======================================================
+       WORK ANALYTICS & PRESENCE
+       ====================================================== */
     .industry-main-grid {
         display: grid;
-        gap: 1.35rem;
-        grid-template-columns: minmax(0, 1.4fr) minmax(320px, 0.6fr);
+        gap: 1.25rem;
+        grid-template-columns: minmax(0, 1.4fr) minmax(300px, 0.6fr);
     }
 
     .industry-bars {
         display: grid;
-        gap: 1rem;
+        gap: 0.85rem;
     }
 
     .industry-bar {
         align-items: center;
         display: grid;
         gap: 1rem;
-        grid-template-columns: minmax(0, 1fr) 110px;
+        grid-template-columns: minmax(0, 1fr) 100px;
     }
 
     .industry-bar span {
-        background: #f1f5f9;
+        background: var(--bx-surface-3);
         border-radius: 999px;
         display: block;
-        height: 16px;
+        height: 12px;
         overflow: hidden;
         position: relative;
-        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.04);
     }
 
     .industry-bar span::after {
-        animation: progressFill 1.3s ease both;
-        background: linear-gradient(90deg, #073a26, #0f744c, #10b981);
+        background: var(--bx-blue);
         border-radius: inherit;
         content: "";
         inset: 0 auto 0 0;
@@ -796,344 +863,103 @@
     }
 
     .industry-bar.is-muted span::after {
-        background: linear-gradient(90deg, #f59e0b, #ef4444);
+        background: var(--bx-emerald);
     }
 
     .industry-bar label {
-        color: var(--slate-dark);
-        font-size: 0.92rem;
-        font-weight: 900;
-        margin: 0;
-    }
-
-    /* ===== AUTOMATIC FEATURE MODULE CARDS GRID ===== */
-    .saas-module-grid {
-        display: grid;
-        gap: 1.1rem;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-    }
-
-    .saas-module-card {
-        background: linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 249, 0.92));
-        border: 1px solid rgba(226, 232, 240, 0.9);
-        border-radius: 22px;
-        color: var(--slate-dark) !important;
-        display: flex;
-        flex-direction: column;
-        gap: 0.85rem;
-        min-height: 205px;
-        padding: 1.1rem;
-        text-decoration: none;
-        transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: var(--card-shadow-sm);
-    }
-
-    .saas-module-card:hover {
-        border-color: rgba(15, 116, 76, 0.35);
-        box-shadow: var(--card-shadow-lg);
-        transform: translateY(-6px) scale(1.02);
-    }
-
-    .saas-module-head {
-        align-items: center;
-        display: flex;
-        gap: 0.75rem;
-    }
-
-    .saas-module-icon {
-        align-items: center;
-        background: linear-gradient(135deg, rgba(15, 116, 76, 0.14), rgba(37, 99, 235, 0.14));
-        border-radius: 14px;
-        color: var(--emerald-primary) !important;
-        display: inline-flex;
-        flex: 0 0 44px;
-        font-size: 1.35rem;
-        height: 44px;
-        justify-content: center;
-        width: 44px;
-    }
-
-    .saas-module-card h4 {
-        color: var(--slate-dark);
-        font-size: 0.98rem;
-        font-weight: 900;
-        margin: 0;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
-    .saas-module-card small {
-        color: var(--slate-muted);
-        font-size: 0.8rem;
-        font-weight: 700;
-    }
-
-    .saas-module-donut {
-        --accent: var(--emerald-primary);
-        align-items: center;
-        align-self: center;
-        background: conic-gradient(var(--accent) calc(var(--percent) * 1%), #e2e8f0 0);
-        border-radius: 50%;
-        display: flex;
-        height: 96px;
-        justify-content: center;
-        position: relative;
-        width: 96px;
-        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
-    }
-
-    .saas-module-donut::after {
-        background: #ffffff;
-        border-radius: 50%;
-        content: "";
-        inset: 12px;
-        position: absolute;
-    }
-
-    .saas-module-donut strong {
-        color: var(--slate-dark);
-        font-size: 1.15rem;
-        font-weight: 950;
-        position: relative;
-        z-index: 1;
-    }
-
-    .saas-module-meta {
-        align-items: center;
-        display: flex;
-        justify-content: space-between;
-        margin-top: auto;
-    }
-
-    .saas-module-meta em {
-        background: rgba(15, 116, 76, 0.1);
-        border-radius: 999px;
-        color: var(--emerald-primary);
-        font-size: 0.78rem;
-        font-style: normal;
-        font-weight: 900;
-        padding: 0.35rem 0.65rem;
-    }
-
-    /* ===== MODULE INTELLIGENCE PIE CHARTS GRID ===== */
-    .industry-chart-grid {
-        display: grid;
-        gap: 1.1rem;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-    }
-
-    .industry-chart-card {
-        background: linear-gradient(145deg, #ffffff, rgba(248, 250, 249, 0.92));
-        border: 1px solid rgba(226, 232, 240, 0.9);
-        border-radius: 22px;
-        min-height: 255px;
-        padding: 1.25rem;
-        transition: all 0.35s ease;
-        box-shadow: var(--card-shadow-sm);
-    }
-
-    .industry-chart-card:hover {
-        border-color: rgba(15, 116, 76, 0.3);
-        box-shadow: var(--card-shadow-lg);
-        transform: translateY(-5px);
-    }
-
-    .industry-chart-body {
-        align-items: center;
-        display: flex;
-        flex-direction: column;
-        gap: 0.95rem;
-        text-align: center;
-    }
-
-    .industry-donut {
-        --accent: var(--emerald-primary);
-        align-items: center;
-        animation: bounceIn 0.65s ease both;
-        background: conic-gradient(var(--accent) calc(var(--percent) * 1%), #e2e8f0 0);
-        border-radius: 50%;
-        display: flex;
-        height: 135px;
-        justify-content: center;
-        position: relative;
-        width: 135px;
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
-    }
-
-    .industry-donut::after {
-        background: #ffffff;
-        border-radius: 50%;
-        content: "";
-        inset: 16px;
-        position: absolute;
-    }
-
-    .industry-donut strong {
-        color: var(--slate-dark);
-        font-size: 1.45rem;
-        font-weight: 900;
-        position: relative;
-        z-index: 1;
-    }
-
-    .industry-chart-meta h4 {
-        color: var(--slate-dark);
-        font-size: 1.05rem;
-        font-weight: 900;
-        margin: 0 0 0.3rem;
-    }
-
-    .industry-chart-meta p {
-        color: var(--slate-muted);
+        color: var(--bx-ink);
         font-size: 0.85rem;
-        font-weight: 700;
+        font-weight: 650;
         margin: 0;
     }
 
-    .industry-chart-link {
-        color: var(--emerald-primary) !important;
-        font-size: 0.88rem;
-        font-weight: 900;
-        text-decoration: none;
-        transition: all 0.2s ease;
-    }
-
-    .industry-chart-link:hover {
-        color: var(--emerald-dark) !important;
-        text-decoration: underline;
-    }
-
-    /* ===== FEATURE SHORTCUTS GRID ===== */
-    .industry-feature-grid {
-        display: grid;
+    /* Keep Work Analytics horizontal in light mode despite shared chart styles. */
+    html:not([data-pms-theme="dark"]) .industry-analytics-card .industry-bars {
+        grid-template-columns: minmax(0, 1fr);
+        min-height: 0;
+        align-items: stretch;
         gap: 1rem;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
+        padding-top: 0;
     }
 
-    .industry-feature-card {
+    html:not([data-pms-theme="dark"]) .industry-analytics-card .industry-bar {
+        grid-template-columns: minmax(0, 1fr) 100px;
+        justify-items: stretch;
         align-items: center;
-        background: linear-gradient(145deg, #ffffff, rgba(248, 250, 249, 0.92));
-        border: 1px solid rgba(226, 232, 240, 0.9);
-        border-radius: 20px;
-        color: var(--slate-dark) !important;
-        display: grid;
-        gap: 0.9rem;
-        grid-template-columns: 48px minmax(0, 1fr) auto;
-        min-height: 90px;
-        padding: 1rem;
-        text-decoration: none;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: var(--card-shadow-sm);
+        gap: 1rem;
     }
 
-    .industry-feature-card:hover {
-        border-color: rgba(15, 116, 76, 0.35);
-        box-shadow: var(--card-shadow-md);
-        transform: translateY(-4px) translateX(2px);
+    html:not([data-pms-theme="dark"]) .industry-analytics-card .industry-bar span {
+        width: 100%;
+        height: 12px;
+        min-height: 0;
+        background: #e2e8f0;
+        box-shadow: none;
     }
 
-    .industry-feature-icon {
-        align-items: center;
-        background: linear-gradient(135deg, rgba(15, 116, 76, 0.12), rgba(37, 99, 235, 0.12));
-        border-radius: 16px;
-        color: var(--emerald-primary) !important;
-        display: inline-flex;
-        font-size: 1.4rem;
-        height: 48px;
-        justify-content: center;
-        width: 48px;
-        transition: transform 0.3s ease;
+    html:not([data-pms-theme="dark"]) .industry-analytics-card .industry-bar span::after {
+        background: #2f6bff;
     }
 
-    .industry-feature-card:hover .industry-feature-icon {
-        transform: scale(1.15) rotate(5deg);
-        background: var(--emerald-primary);
-        color: #ffffff !important;
+    html:not([data-pms-theme="dark"]) .industry-analytics-card .industry-bar.is-muted span::after {
+        background: #10b981;
     }
 
-    .industry-feature-copy {
-        min-width: 0;
+    html:not([data-pms-theme="dark"]) .industry-analytics-card .industry-bar label {
+        color: #334155 !important;
     }
 
-    .industry-feature-copy strong,
-    .industry-feature-copy small {
-        display: block;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
-    .industry-feature-copy strong {
-        color: var(--slate-dark);
-        font-size: 0.96rem;
-        font-weight: 900;
-    }
-
-    .industry-feature-copy small {
-        color: var(--slate-muted);
-        font-size: 0.8rem;
-        font-weight: 700;
-    }
-
-    .industry-feature-card em {
-        background: rgba(15, 116, 76, 0.08);
-        border-radius: 999px;
-        color: var(--emerald-primary);
-        font-size: 0.8rem;
-        font-style: normal;
-        font-weight: 900;
-        min-width: 44px;
-        padding: 0.4rem 0.65rem;
-        text-align: center;
-    }
-
-    /* ===== WELCOME SECTION & STATS CARDS ===== */
+    /* ======================================================
+       SECONDARY SECTIONS: STATS, WELCOME, CONTENT
+       ====================================================== */
     .welcome-section {
-        margin-bottom: 2rem;
+        margin-bottom: 1.75rem;
     }
 
     .welcome-card {
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(246, 250, 247, 0.94));
-        border: 1px solid rgba(226, 232, 240, 0.9);
-        border-radius: 26px;
+        background: var(--bx-surface);
+        border: 1px solid var(--bx-border);
+        border-radius: 16px;
         overflow: hidden;
-        box-shadow: var(--card-shadow-md);
+        box-shadow: var(--bx-shadow-sm);
     }
 
     .welcome-content {
-        padding: 2.25rem;
+        padding: 2rem;
     }
 
     .welcome-title {
-        font-size: 1.85rem;
-        font-weight: 900;
-        color: var(--slate-dark);
-        margin-bottom: 0.75rem;
+        font-family: var(--font-display);
+        font-size: 1.65rem;
+        font-weight: 800;
+        color: var(--bx-ink);
+        margin-bottom: 0.65rem;
     }
 
     .welcome-text {
-        color: var(--slate-muted);
-        font-size: 1rem;
-        margin-bottom: 1.5rem;
+        color: var(--bx-ink-muted);
+        font-size: 0.95rem;
+        margin-bottom: 1.25rem;
+        line-height: 1.55;
     }
 
     .welcome-badges {
         display: flex;
-        gap: 1rem;
+        gap: 0.65rem;
         flex-wrap: wrap;
     }
 
     .welcome-badge {
         display: flex;
         align-items: center;
-        gap: 0.5rem;
-        background: rgba(15, 116, 76, 0.08);
-        color: var(--emerald-primary);
-        padding: 0.5rem 1rem;
+        gap: 0.45rem;
+        background: var(--bx-blue-soft);
+        border: 1px solid rgba(47, 107, 255, 0.2);
+        color: var(--bx-blue);
+        padding: 0.35rem 0.85rem;
         border-radius: 999px;
-        font-size: 0.85rem;
-        font-weight: 800;
+        font-size: 0.78rem;
+        font-weight: 700;
     }
 
     .welcome-illustration {
@@ -1144,355 +970,488 @@
         padding: 1.5rem;
     }
 
+    .welcome-illustration img {
+        max-height: 180px;
+        filter: drop-shadow(0 10px 20px rgba(15, 23, 42, 0.08));
+    }
+
+    /* Secondary Stats Grid */
     .stats-section {
-        margin-bottom: 2rem;
+        margin-bottom: 1.75rem;
     }
 
     .stats-grid {
         display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 1.35rem;
-    }
-
-    .stat-card {
-        background: #ffffff;
-        border: 1px solid rgba(226, 232, 240, 0.9);
-        border-radius: 22px;
-        padding: 1.4rem;
-        box-shadow: var(--card-shadow-sm);
-        transition: all 0.3s ease;
-    }
-
-    .stat-card:hover {
-        transform: translateY(-4px);
-        box-shadow: var(--card-shadow-md);
-    }
-
-    .stat-value {
-        font-size: 2.2rem;
-        font-weight: 900;
-        color: var(--slate-dark);
-    }
-
-    .stat-label {
-        font-size: 0.88rem;
-        font-weight: 700;
-        color: var(--slate-muted);
-    }
-
-    /* ===== SECONDARY STATS CARDS GRID ===== */
-    .stats-section {
-        margin-bottom: 2rem;
-    }
-
-    .stats-grid {
-        display: grid;
-        gap: 1.35rem;
+        gap: 1.25rem;
         grid-template-columns: repeat(4, minmax(0, 1fr));
     }
 
     .stat-card {
-        background: linear-gradient(145deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 249, 0.94) 100%);
-        border: 1px solid rgba(226, 232, 240, 0.9);
-        border-radius: 22px;
-        padding: 1.4rem;
+        background: var(--bx-surface);
+        border: 1px solid var(--bx-border);
+        border-radius: 14px;
+        padding: 1.25rem;
         position: relative;
-        box-shadow: var(--card-shadow-sm);
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: var(--bx-shadow-sm);
+        transition: all 0.2s ease;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
     }
 
     .stat-card:hover {
-        border-color: rgba(15, 116, 76, 0.3);
-        box-shadow: var(--card-shadow-md);
-        transform: translateY(-4px);
+        border-color: var(--bx-blue);
+        transform: translateY(-2px);
     }
 
     .stat-header {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        margin-bottom: 0.85rem;
+        margin-bottom: 0.75rem;
     }
 
     .stat-icon {
-        width: 46px;
-        height: 46px;
-        border-radius: 14px;
-        background: linear-gradient(135deg, rgba(15, 116, 76, 0.12), rgba(16, 185, 129, 0.12));
-        color: var(--emerald-primary);
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        background: var(--pms-primary, #2F6BFF) !important;
+        color: #ffffff !important;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.4rem;
+        font-size: 1.35rem;
+        box-shadow: 0 4px 12px rgba(47, 107, 255, 0.2);
+        flex-shrink: 0;
+    }
+
+    .stat-icon i,
+    .stat-icon .bx,
+    .stat-icon [class*="bx"],
+    .stat-icon svg {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        background-color: transparent !important;
+        background: transparent !important;
+        fill: #ffffff !important;
+        opacity: 1 !important;
+        font-size: 1.35rem !important;
+        line-height: 1 !important;
+        visibility: visible !important;
+        display: inline-block !important;
+    }
+
+    .stat-card:first-of-type .stat-icon,
+    .stat-card.is-featured .stat-icon {
+        background: rgba(255, 255, 255, 0.22) !important;
+        border: 1px solid rgba(255, 255, 255, 0.35) !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12) !important;
+        color: #ffffff !important;
+    }
+
+    .stat-card:first-of-type .stat-icon i,
+    .stat-card:first-of-type .stat-icon .bx,
+    .stat-card:first-of-type .stat-icon [class*="bx"],
+    .stat-card:first-of-type .stat-icon svg,
+    .stat-card.is-featured .stat-icon i,
+    .stat-card.is-featured .stat-icon .bx,
+    .stat-card.is-featured .stat-icon [class*="bx"],
+    .stat-card.is-featured .stat-icon svg {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        background-color: transparent !important;
+        background: transparent !important;
+        fill: #ffffff !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        display: inline-block !important;
     }
 
     .stat-title {
-        margin: 0 0 0.4rem;
-        font-size: 0.92rem;
-        font-weight: 800;
-        color: var(--slate-muted);
+        margin: 0 0 0.35rem;
+        font-size: 0.85rem;
+        font-weight: 650;
+        color: var(--bx-ink-muted);
     }
 
     .stat-title a {
-        color: var(--slate-muted);
+        color: var(--bx-ink-muted);
         text-decoration: none;
-        transition: color 0.2s;
     }
 
     .stat-title a:hover {
-        color: var(--emerald-primary);
+        color: var(--bx-blue);
     }
 
     .stat-value {
-        font-size: 2.2rem;
-        font-weight: 900;
-        color: var(--slate-dark);
+        font-family: var(--font-display);
+        font-size: 1.95rem;
+        font-weight: 800;
+        color: var(--bx-ink);
         line-height: 1.1;
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.45rem;
     }
 
     .stat-trend {
         display: inline-flex;
         align-items: center;
-        gap: 0.35rem;
-        font-size: 0.82rem;
-        font-weight: 800;
-        color: var(--emerald-primary);
+        gap: 0.3rem;
+        font-size: 0.78rem;
+        font-weight: 650;
+        color: var(--bx-emerald);
     }
 
     .stat-progress {
-        margin-top: 0.85rem;
+        margin-top: 0.75rem;
     }
 
     .progress-container {
-        height: 8px;
-        background: #f1f5f9;
+        height: 6px;
+        background: var(--bx-surface-3);
         border-radius: 999px;
         overflow: hidden;
     }
 
     .progress-bar {
         height: 100%;
-        background: linear-gradient(90deg, var(--emerald-primary), var(--emerald-light));
+        background: var(--bx-blue);
         border-radius: 999px;
-        transition: width 1s ease;
     }
 
-    /* ===== CONTENT CARDS GRID ===== */
+    #totalEmployeesCard {
+        background: linear-gradient(145deg, #1e4fcc, #2f6bff) !important;
+        border-color: rgba(255, 255, 255, 0.2) !important;
+    }
+
+    #totalEmployeesCard .stat-title,
+    #totalEmployeesCard .stat-title a,
+    #totalEmployeesCard .stat-value,
+    #totalEmployeesCard .stat-trend,
+    #totalEmployeesCard .stat-trend span,
+    #totalEmployeesCard .stat-trend i,
+    #totalEmployeesCard .stat-dropdown > button,
+    #totalEmployeesCard .stat-dropdown > button i {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
+    #totalEmployeesCard i.bx,
+    #totalEmployeesCard i.bx::before {
+        font-family: boxicons !important;
+        font-weight: normal !important;
+        font-style: normal !important;
+        line-height: 1 !important;
+        background: transparent !important;
+        filter: none;
+    }
+
+    #totalEmployeesCard .stat-icon {
+        background: rgba(255, 255, 255, 0.22) !important;
+        border: 1px solid rgba(255, 255, 255, 0.4) !important;
+    }
+
+    #totalEmployeesCard .stat-icon i::before,
+    #totalEmployeesCard .stat-trend i::before,
+    #totalEmployeesCard .stat-dropdown > button i::before {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        opacity: 1 !important;
+    }
+
+    #totalEmployeesCard .stat-dropdown > button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.12) !important;
+        border: 1px solid rgba(255, 255, 255, 0.3) !important;
+        opacity: 1 !important;
+    }
+
+    #totalEmployeesCard .stat-dropdown > button:hover,
+    #totalEmployeesCard .stat-dropdown > button:focus-visible {
+        background: rgba(255, 255, 255, 0.18) !important;
+    }
+
+    #totalEmployeesCard .stat-progress {
+        background: transparent !important;
+    }
+
+    #totalEmployeesCard .progress-container {
+        background: rgba(255, 255, 255, 0.25) !important;
+    }
+
+    #totalEmployeesCard .progress-bar {
+        background: #ffffff !important;
+        height: 100% !important;
+        opacity: 1 !important;
+    }
+
+    /* ======================================================
+       CONTENT CARDS & LISTS (TICKETS, TASKS, ACTIVITIES)
+       Soft Status Badges & Clean Timeline
+       ====================================================== */
     .content-section {
-        margin-bottom: 2rem;
+        margin-bottom: 1.75rem;
     }
 
     .content-grid {
         display: grid;
-        gap: 1.35rem;
+        gap: 1.25rem;
         grid-template-columns: repeat(3, minmax(0, 1fr));
     }
 
     .content-card {
-        background: linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 249, 0.94));
-        border: 1px solid rgba(226, 232, 240, 0.9);
-        border-radius: 24px;
+        background: var(--bx-surface);
+        border: 1px solid var(--bx-border);
+        border-radius: 16px;
         overflow: hidden;
-        box-shadow: var(--card-shadow-sm);
+        box-shadow: var(--bx-shadow-sm);
         display: flex;
         flex-direction: column;
         height: 480px;
-        transition: all 0.3s ease;
+        transition: all 0.2s ease;
     }
 
     .content-card:hover {
-        border-color: rgba(15, 116, 76, 0.25);
-        box-shadow: var(--card-shadow-md);
+        border-color: var(--bx-border-strong);
+        box-shadow: var(--bx-shadow-md);
     }
 
     .card-header {
-        padding: 1.25rem 1.5rem;
-        border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+        padding: 1.15rem 1.4rem;
+        border-bottom: 1px solid var(--bx-border);
         display: flex;
         align-items: center;
         justify-content: space-between;
-        background: rgba(255, 255, 255, 0.6);
+        background: var(--bx-surface);
     }
 
     .card-title {
-        font-size: 1.1rem;
-        font-weight: 900;
-        color: var(--slate-dark);
+        font-family: var(--font-display);
+        font-size: 0.98rem;
+        font-weight: 700;
+        color: var(--bx-ink);
         display: flex;
         align-items: center;
-        gap: 0.6rem;
+        gap: 0.5rem;
     }
 
     .card-title i {
-        color: var(--emerald-primary);
-        font-size: 1.3rem;
+        color: var(--bx-blue);
+        font-size: 1.15rem;
+    }
+
+    /* Header icons sit on coloured tiles in both dashboard themes. */
+    html body #main .dashboard-notification-feed .content-card .card-title > i,
+    html body #main .dashboard-notification-feed .content-card .card-title > i::before {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        opacity: 1 !important;
     }
 
     .card-action {
-        color: var(--emerald-primary);
-        font-size: 0.85rem;
-        font-weight: 800;
+        color: var(--bx-blue);
+        font-size: 0.8rem;
+        font-weight: 650;
         text-decoration: none;
         display: flex;
         align-items: center;
-        gap: 0.3rem;
-        transition: all 0.2s;
+        gap: 0.25rem;
     }
 
     .card-action:hover {
-        color: var(--emerald-dark);
-        transform: translateX(2px);
+        color: var(--bx-blue-dim);
     }
 
     .card-body {
-        padding: 1.25rem 1.5rem;
+        padding: 1.15rem 1.4rem;
         overflow-y: auto;
         flex: 1;
     }
 
     .list-item {
-        padding: 0.9rem;
-        border-radius: 16px;
-        background: rgba(248, 250, 249, 0.8);
-        border: 1px solid rgba(226, 232, 240, 0.7);
-        margin-bottom: 0.85rem;
-        transition: all 0.25s ease;
+        padding: 0.85rem 1rem;
+        border-radius: 10px;
+        background: var(--bx-surface-2);
+        border: 1px solid var(--bx-border);
+        margin-bottom: 0.75rem;
+        transition: all 0.2s ease;
     }
 
     .list-item:hover {
-        background: #ffffff;
-        border-color: rgba(15, 116, 76, 0.25);
-        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.04);
+        background: var(--bx-surface-3);
+        border-color: var(--bx-border-strong);
+        transform: translateX(2px);
     }
 
     .list-item-header {
         display: flex;
         align-items: flex-start;
         justify-content: space-between;
-        gap: 0.75rem;
-        margin-bottom: 0.4rem;
+        gap: 0.65rem;
+        margin-bottom: 0.35rem;
     }
 
     .list-item-title {
-        font-size: 0.95rem;
-        font-weight: 800;
-        color: var(--slate-dark);
-        margin: 0 0 0.3rem;
+        font-family: var(--font-display);
+        font-size: 0.88rem;
+        font-weight: 700;
+        color: var(--bx-ink);
+        margin: 0 0 0.25rem;
     }
 
     .list-item-meta {
         display: flex;
         align-items: center;
-        gap: 0.85rem;
-        font-size: 0.8rem;
-        color: var(--slate-muted);
-        font-weight: 600;
+        gap: 0.75rem;
+        font-size: 0.78rem;
+        color: var(--bx-ink-muted);
+        font-weight: 500;
     }
 
     .list-item-meta span {
         display: flex;
         align-items: center;
-        gap: 0.3rem;
+        gap: 0.25rem;
     }
 
-    .badge-low {
-        background: rgba(16, 185, 129, 0.12);
-        color: #047857;
-        border: 1px solid rgba(16, 185, 129, 0.2);
+    /* Soft Tinted Status Badges (Requirement 9) */
+    .badge-low,
+    .badge.bg-success {
+        background: #EEF2FF !important;
+        color: #2F6BFF !important;
+        border: 1px solid #C7D2FE !important;
+        border-radius: 6px;
+        font-weight: 650;
+        font-size: 0.72rem;
+        padding: 0.2rem 0.5rem;
     }
 
-    .badge-medium {
-        background: rgba(245, 158, 11, 0.12);
-        color: #92400e;
-        border: 1px solid rgba(245, 158, 11, 0.2);
+    .badge-medium,
+    .badge.bg-warning {
+        background: #FFFBEB !important;
+        color: #D97706 !important;
+        border: 1px solid #FDE68A !important;
+        border-radius: 6px;
+        font-weight: 650;
+        font-size: 0.72rem;
+        padding: 0.2rem 0.5rem;
     }
 
-    .badge-high {
-        background: rgba(239, 68, 68, 0.12);
-        color: #991b1b;
-        border: 1px solid rgba(239, 68, 68, 0.2);
+    .badge-high,
+    .badge.bg-danger {
+        background: #FEF2F2 !important;
+        color: #DC2626 !important;
+        border: 1px solid #FECACA !important;
+        border-radius: 6px;
+        font-weight: 650;
+        font-size: 0.72rem;
+        padding: 0.2rem 0.5rem;
+    }
+
+    .badge.bg-primary {
+        background: #EFF6FF !important;
+        color: #2563EB !important;
+        border: 1px solid #BFDBFE !important;
+        border-radius: 6px;
+        font-weight: 650;
+        font-size: 0.72rem;
+        padding: 0.2rem 0.5rem;
     }
 
     .empty-state {
         text-align: center;
-        padding: 2.5rem 1rem;
-        color: var(--slate-muted);
+        padding: 2rem 1rem;
+        color: var(--bx-ink-muted);
     }
 
     .empty-state i {
-        font-size: 3rem;
-        color: var(--emerald-primary);
-        margin-bottom: 0.75rem;
-        opacity: 0.8;
+        font-size: 2.5rem;
+        color: var(--bx-blue);
+        margin-bottom: 0.65rem;
+        opacity: 0.85;
     }
 
     .empty-state p {
-        font-size: 0.95rem;
-        font-weight: 700;
+        font-size: 0.88rem;
+        font-weight: 600;
         margin: 0;
     }
 
+    /* Activities Timeline */
     .timeline {
         position: relative;
-        padding-left: 1.25rem;
+        padding-left: 1.15rem;
     }
 
     .timeline::before {
         content: "";
         position: absolute;
         left: 4px;
-        top: 8px;
-        bottom: 8px;
+        top: 6px;
+        bottom: 6px;
         width: 2px;
-        background: rgba(15, 116, 76, 0.15);
+        background: var(--bx-border-strong);
     }
 
     .timeline-item {
         position: relative;
-        margin-bottom: 1.1rem;
+        margin-bottom: 1rem;
     }
 
-    .timeline-point {
+    .timeline-item::after {
+        content: "";
         position: absolute;
-        left: -1.25rem;
-        top: 4px;
+        left: -1.15rem;
+        top: 5px;
         width: 10px;
         height: 10px;
         border-radius: 50%;
-        background: var(--emerald-primary);
-        box-shadow: 0 0 0 3px rgba(15, 116, 76, 0.15);
+        background: var(--bx-surface);
+        border: 2px solid var(--bx-blue);
     }
 
-    .timeline-event {
-        font-size: 0.88rem;
-        color: var(--slate-body);
+    .timeline-content {
+        padding-left: 0.4rem;
+    }
+
+    .timeline-title {
+        font-size: 0.85rem;
+        font-weight: 650;
+        color: var(--bx-ink);
+        margin-bottom: 0.2rem;
+    }
+
+    .timeline-project {
+        font-size: 0.78rem;
+        color: var(--bx-blue);
         font-weight: 600;
+        margin-bottom: 0.2rem;
     }
 
-    /* ===== RESPONSIVE MEDIA QUERIES ===== */
-    @media (max-width: 1399.98px) {
-        .saas-module-grid {
-            grid-template-columns: repeat(4, minmax(0, 1fr));
-        }
+    .timeline-time {
+        font-size: 0.72rem;
+        color: var(--bx-ink-faint);
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
     }
 
+    /* ======================================================
+       RESPONSIVE BREAKPOINTS
+       ====================================================== */
     @media (max-width: 1199.98px) {
         .industry-overview-grid,
-        .industry-chart-grid,
-        .industry-feature-grid,
         .saas-revenue-strip,
-        .saas-module-grid,
         .stats-grid,
         .content-grid {
             grid-template-columns: repeat(2, minmax(0, 1fr));
         }
 
         .saas-executive-grid,
-        .saas-trend-board,
         .industry-main-grid {
             grid-template-columns: 1fr;
         }
@@ -1504,7 +1463,7 @@
         }
 
         .industry-hero-visual {
-            min-height: 180px;
+            display: none;
         }
 
         .content-grid {
@@ -1513,20 +1472,738 @@
     }
 
     @media (max-width: 575.98px) {
-        .content-wrapper {
-            padding: 1rem;
+        #main > .content-wrapper {
+            padding: 0;
         }
 
         .industry-overview-grid,
         .saas-revenue-strip,
         .saas-prediction-grid,
-        .saas-module-grid,
-        .industry-chart-grid,
-        .industry-feature-grid,
         .industry-presence-row,
         .stats-grid,
         .content-grid {
             grid-template-columns: 1fr;
+        }
+    }
+
+    /* ======================================================
+       WORKSPACE LOOK & FEEL OVERRIDES (HIGH SPECIFICITY)
+       Beats pms-refresh.css while preserving dark mode & functionality
+       ====================================================== */
+    #main.bx-admin-workspace {
+        background: transparent !important;
+        min-height: 0 !important;
+    }
+
+    #main.bx-admin-workspace .content-wrapper {
+        padding: 0 0 2rem !important;
+        max-width: 1440px;
+        margin: 0 auto;
+    }
+
+    #main.bx-admin-workspace .industry-dashboard-shell {
+        gap: 1.25rem !important;
+        margin-bottom: 1.5rem !important;
+    }
+
+    /* Hero Command Center */
+    #main.bx-admin-workspace .industry-hero-card {
+        background: var(--bx-surface) !important;
+        border: 1px solid var(--bx-border) !important;
+        border-radius: 16px !important;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04) !important;
+        grid-template-columns: minmax(0, 1.35fr) minmax(300px, 0.85fr) !important;
+        gap: 1.75rem !important;
+        min-height: 210px !important;
+        padding: 1.75rem 2rem !important;
+        align-items: center;
+    }
+
+    #main.bx-admin-workspace .industry-hero-copy {
+        padding: 0 !important;
+        max-width: 560px;
+    }
+
+    #main.bx-admin-workspace .industry-eyebrow {
+        background: #EFF6FF !important;
+        border: 1px solid rgba(37, 99, 235, 0.14) !important;
+        color: #2563EB !important;
+        -webkit-text-fill-color: #2563EB !important;
+        font-size: 0.7rem !important;
+        font-weight: 700 !important;
+        letter-spacing: 0.06em !important;
+        padding: 0.3rem 0.75rem !important;
+        margin-bottom: 0.85rem !important;
+    }
+
+    #main.bx-admin-workspace .industry-eyebrow i {
+        color: #2563EB !important;
+        -webkit-text-fill-color: #2563EB !important;
+        -webkit-text-stroke: 0 !important;
+        font-size: 0.9rem !important;
+    }
+
+    html[data-pms-theme="dark"] #main.bx-admin-workspace .industry-eyebrow {
+        background: rgba(47, 107, 255, 0.16) !important;
+        border-color: rgba(96, 165, 250, 0.25) !important;
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
+    }
+
+    html[data-pms-theme="dark"] #main.bx-admin-workspace .industry-eyebrow i {
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
+    }
+
+    #main.bx-admin-workspace .industry-hero-copy h1 {
+        font-family: var(--font-display) !important;
+        font-size: clamp(1.65rem, 2.35vw, 2.15rem) !important;
+        font-weight: 800 !important;
+        letter-spacing: -0.025em !important;
+        line-height: 1.15 !important;
+        color: var(--bx-ink) !important;
+        -webkit-text-fill-color: var(--bx-ink) !important;
+        margin: 0 0 0.65rem !important;
+    }
+
+    #main.bx-admin-workspace .industry-hero-copy p {
+        color: var(--bx-ink-muted) !important;
+        -webkit-text-fill-color: var(--bx-ink-muted) !important;
+        font-size: 0.88rem !important;
+        font-weight: 500 !important;
+        line-height: 1.5 !important;
+        margin: 0 0 1.25rem !important;
+    }
+
+    #main.bx-admin-workspace .industry-actions {
+        gap: 0.65rem !important;
+        margin-top: 0 !important;
+    }
+
+    #main.bx-admin-workspace .industry-btn {
+        border-radius: 10px !important;
+        min-height: 38px !important;
+        padding: 0.5rem 1rem !important;
+        font-size: 0.82rem !important;
+        font-weight: 600 !important;
+        box-shadow: none !important;
+    }
+
+    #main.bx-admin-workspace .industry-btn i {
+        font-size: 1rem !important;
+        -webkit-text-stroke: 0 !important;
+    }
+
+    #main.bx-admin-workspace .industry-btn-primary {
+        background: #2563EB !important;
+        border: 1px solid #2563EB !important;
+        color: #FFFFFF !important;
+        -webkit-text-fill-color: #FFFFFF !important;
+        box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25) !important;
+    }
+
+    #main.bx-admin-workspace .industry-btn-primary:hover {
+        background: #1D4ED8 !important;
+        border-color: #1D4ED8 !important;
+    }
+
+    #main.bx-admin-workspace .industry-btn-light {
+        background: var(--bx-surface) !important;
+        border: 1px solid var(--bx-border) !important;
+        color: var(--bx-ink) !important;
+        -webkit-text-fill-color: var(--bx-ink) !important;
+    }
+
+    #main.bx-admin-workspace .industry-btn-light i {
+        color: var(--bx-ink-body) !important;
+        -webkit-text-fill-color: var(--bx-ink-body) !important;
+    }
+
+    #main.bx-admin-workspace .industry-btn-light:hover {
+        background: var(--bx-surface-3) !important;
+        border-color: var(--bx-border-strong) !important;
+    }
+
+    /* Hero Right: Enterprise Live Monitoring Widget */
+    #main.bx-admin-workspace .industry-hero-visual {
+        padding: 0 !important;
+        justify-content: flex-end !important;
+    }
+
+    #main.bx-admin-workspace .bx-monitor-widget {
+        width: 100%;
+        max-width: 356px;
+        background: linear-gradient(180deg, #F8FAFC 0%, #FFFFFF 100%);
+        border: 1px solid var(--bx-border);
+        border-radius: 16px;
+        padding: 14px;
+        box-shadow: 0 8px 24px -6px rgba(15, 23, 42, 0.08), 0 0 0 4px rgba(241, 245, 249, 0.75);
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    html[data-pms-theme="dark"] #main.bx-admin-workspace .bx-monitor-widget {
+        background: linear-gradient(180deg, #141B3D 0%, #0F1530 100%);
+        border-color: rgba(238, 241, 251, 0.12);
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4), 0 0 0 4px rgba(20, 27, 61, 0.5);
+    }
+
+    #main.bx-admin-workspace .bx-monitor-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 2px;
+    }
+
+    #main.bx-admin-workspace .bx-monitor-title {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        font-size: 0.76rem;
+        font-weight: 700;
+        color: var(--bx-ink) !important;
+        -webkit-text-fill-color: var(--bx-ink) !important;
+    }
+
+    #main.bx-admin-workspace .bx-monitor-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #10B981;
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+        display: inline-block;
+        flex-shrink: 0;
+    }
+
+    #main.bx-admin-workspace .bx-monitor-ver {
+        font-size: 0.68rem;
+        font-weight: 600;
+        color: var(--bx-ink-faint) !important;
+        -webkit-text-fill-color: var(--bx-ink-faint) !important;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    #main.bx-admin-workspace .bx-monitor-mid {
+        display: grid;
+        grid-template-columns: 1.05fr 0.95fr;
+        gap: 10px;
+    }
+
+    #main.bx-admin-workspace .bx-monitor-pipeline {
+        background: linear-gradient(155deg, #052E1E 0%, #0A4F35 100%);
+        border-radius: 12px;
+        padding: 11px 12px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        min-height: 92px;
+    }
+
+    #main.bx-admin-workspace .bx-monitor-pipeline span {
+        font-size: 0.68rem;
+        font-weight: 600;
+        color: #86EFAC !important;
+        -webkit-text-fill-color: #86EFAC !important;
+    }
+
+    #main.bx-admin-workspace .bx-pipeline-bars {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        align-items: end;
+        gap: 5px;
+        height: 44px;
+        margin-top: 8px;
+    }
+
+    #main.bx-admin-workspace .bx-pipeline-bars i {
+        display: block;
+        border-radius: 4px 4px 2px 2px;
+        font-style: normal;
+        -webkit-text-stroke: 0 !important;
+    }
+
+    #main.bx-admin-workspace .bx-monitor-nodes {
+        background: var(--bx-surface);
+        border: 1px solid var(--bx-border);
+        border-radius: 12px;
+        padding: 11px 12px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    html[data-pms-theme="dark"] #main.bx-admin-workspace .bx-monitor-nodes,
+    html[data-pms-theme="dark"] #main.bx-admin-workspace .bx-monitor-throughput {
+        background: rgba(15, 21, 48, 0.85);
+        border-color: rgba(238, 241, 251, 0.1);
+    }
+
+    #main.bx-admin-workspace .bx-monitor-nodes-label {
+        font-size: 0.64rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: var(--bx-ink-muted) !important;
+        -webkit-text-fill-color: var(--bx-ink-muted) !important;
+    }
+
+    #main.bx-admin-workspace .bx-monitor-nodes strong {
+        font-family: var(--font-display);
+        font-size: 1.35rem;
+        font-weight: 800;
+        line-height: 1.1;
+        color: var(--bx-ink) !important;
+        -webkit-text-fill-color: var(--bx-ink) !important;
+        letter-spacing: -0.02em;
+    }
+
+    #main.bx-admin-workspace .bx-monitor-nodes em {
+        font-style: normal;
+        font-size: 0.68rem;
+        font-weight: 600;
+        color: #10B981 !important;
+        -webkit-text-fill-color: #10B981 !important;
+    }
+
+    #main.bx-admin-workspace .bx-monitor-throughput {
+        background: var(--bx-surface);
+        border: 1px solid var(--bx-border);
+        border-radius: 12px;
+        padding: 9px 12px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+    }
+
+    #main.bx-admin-workspace .bx-monitor-throughput-copy span {
+        display: block;
+        font-size: 0.66rem;
+        font-weight: 600;
+        color: var(--bx-ink-muted) !important;
+        -webkit-text-fill-color: var(--bx-ink-muted) !important;
+    }
+
+    #main.bx-admin-workspace .bx-monitor-throughput-copy strong {
+        display: block;
+        font-family: var(--font-display);
+        font-size: 0.82rem;
+        font-weight: 800;
+        color: var(--bx-ink) !important;
+        -webkit-text-fill-color: var(--bx-ink) !important;
+    }
+
+    #main.bx-admin-workspace .bx-throughput-bars {
+        display: flex;
+        align-items: flex-end;
+        gap: 4px;
+        height: 24px;
+    }
+
+    #main.bx-admin-workspace .bx-throughput-bars i {
+        display: block;
+        width: 5px;
+        border-radius: 999px;
+        background: #10B981;
+        font-style: normal;
+        -webkit-text-stroke: 0 !important;
+    }
+
+    /* 4-Column KPI Row */
+    #main.bx-admin-workspace .industry-overview-grid {
+        gap: 1rem !important;
+    }
+
+    #main.bx-admin-workspace .industry-metric-card {
+        background: var(--bx-surface) !important;
+        border: 1px solid var(--bx-border) !important;
+        border-radius: 14px !important;
+        min-height: 136px !important;
+        padding: 1.15rem 1.25rem !important;
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03) !important;
+    }
+
+    #main.bx-admin-workspace .kpi-card-top span {
+        font-size: 0.72rem !important;
+        font-weight: 700 !important;
+        letter-spacing: 0.06em !important;
+        color: var(--bx-ink-muted) !important;
+        -webkit-text-fill-color: var(--bx-ink-muted) !important;
+    }
+
+    #main.bx-admin-workspace .kpi-icon-box {
+        width: 34px !important;
+        height: 34px !important;
+        border-radius: 9px !important;
+        background: #EFF6FF !important;
+        color: #2563EB !important;
+        font-size: 1.05rem !important;
+    }
+
+    #main.bx-admin-workspace .kpi-icon-box i {
+        color: #2563EB !important;
+        -webkit-text-fill-color: #2563EB !important;
+        -webkit-text-stroke: 0 !important;
+    }
+
+    html[data-pms-theme="dark"] #main.bx-admin-workspace .kpi-icon-box {
+        background: rgba(47, 107, 255, 0.16) !important;
+        color: #60A5FA !important;
+    }
+
+    html[data-pms-theme="dark"] #main.bx-admin-workspace .kpi-icon-box i {
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
+    }
+
+    #main.bx-admin-workspace .kpi-number {
+        font-size: 1.95rem !important;
+        font-weight: 800 !important;
+        letter-spacing: -0.03em !important;
+        color: var(--bx-ink) !important;
+        -webkit-text-fill-color: var(--bx-ink) !important;
+        margin: 0.45rem 0 0.55rem !important;
+    }
+
+    #main.bx-admin-workspace .kpi-card-footer small {
+        font-size: 0.76rem !important;
+        font-weight: 600 !important;
+        color: var(--bx-ink-muted) !important;
+        -webkit-text-fill-color: var(--bx-ink-muted) !important;
+    }
+
+    #main.bx-admin-workspace .kpi-card-footer small i {
+        -webkit-text-stroke: 0 !important;
+        font-size: 0.9rem !important;
+    }
+
+    #main.bx-admin-workspace .kpi-card-projects .kpi-card-footer small,
+    #main.bx-admin-workspace .kpi-card-projects .kpi-card-footer small i {
+        color: #2563EB !important;
+        -webkit-text-fill-color: #2563EB !important;
+    }
+
+    html[data-pms-theme="dark"] #main.bx-admin-workspace .kpi-card-projects .kpi-card-footer small,
+    html[data-pms-theme="dark"] #main.bx-admin-workspace .kpi-card-projects .kpi-card-footer small i {
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
+    }
+
+    #main.bx-admin-workspace .industry-arrow {
+        width: auto !important;
+        height: auto !important;
+        border: none !important;
+        background: transparent !important;
+        color: var(--bx-ink-muted) !important;
+        -webkit-text-fill-color: var(--bx-ink-muted) !important;
+        -webkit-text-stroke: 0 !important;
+        font-size: 1rem !important;
+    }
+
+    #main.bx-admin-workspace .industry-metric-card:hover .industry-arrow {
+        background: transparent !important;
+        color: #2563EB !important;
+        -webkit-text-fill-color: #2563EB !important;
+        -webkit-text-stroke: 0 !important;
+    }
+
+    /* Executive Business Model & Feature Predictions */
+    #main.bx-admin-workspace .saas-executive-grid {
+        display: grid !important;
+        grid-template-columns: 1.25fr 0.95fr !important;
+        gap: 1.25rem !important;
+    }
+
+    #main.bx-admin-workspace .industry-panel {
+        background: var(--bx-surface) !important;
+        border: 1px solid var(--bx-border) !important;
+        border-radius: 16px !important;
+        padding: 1.35rem 1.5rem !important;
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03) !important;
+    }
+
+    #main.bx-admin-workspace .industry-panel-head {
+        margin-bottom: 1rem !important;
+    }
+
+    #main.bx-admin-workspace .industry-panel-head h3 {
+        font-size: 1.05rem !important;
+        font-weight: 700 !important;
+        color: var(--bx-ink) !important;
+        -webkit-text-fill-color: var(--bx-ink) !important;
+    }
+
+    #main.bx-admin-workspace .industry-panel-head p {
+        font-size: 0.78rem !important;
+        font-weight: 500 !important;
+        color: var(--bx-ink-muted) !important;
+        -webkit-text-fill-color: var(--bx-ink-muted) !important;
+        margin-top: 0.15rem !important;
+    }
+
+    #main.bx-admin-workspace .industry-panel-head a {
+        background: #EFF6FF !important;
+        border: 1px solid rgba(37, 99, 235, 0.14) !important;
+        border-radius: 999px !important;
+        color: #2563EB !important;
+        -webkit-text-fill-color: #2563EB !important;
+        font-size: 0.74rem !important;
+        font-weight: 600 !important;
+        padding: 0.28rem 0.75rem !important;
+    }
+
+    #main.bx-admin-workspace .industry-panel-head a:hover {
+        background: #2563EB !important;
+        color: #FFFFFF !important;
+        -webkit-text-fill-color: #FFFFFF !important;
+    }
+
+    html[data-pms-theme="dark"] #main.bx-admin-workspace .industry-panel-head a {
+        background: rgba(47, 107, 255, 0.16) !important;
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
+    }
+
+    /* Enterprise Budget Allocation Bar */
+    #main.bx-admin-workspace .bx-budget-block {
+        margin-bottom: 1.1rem;
+    }
+
+    #main.bx-admin-workspace .bx-budget-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        margin-bottom: 0.45rem;
+        font-size: 0.78rem;
+    }
+
+    #main.bx-admin-workspace .bx-budget-label {
+        font-weight: 650;
+        color: var(--bx-ink) !important;
+        -webkit-text-fill-color: var(--bx-ink) !important;
+    }
+
+    #main.bx-admin-workspace .bx-budget-figures {
+        font-weight: 700;
+        color: var(--bx-ink) !important;
+        -webkit-text-fill-color: var(--bx-ink) !important;
+    }
+
+    #main.bx-admin-workspace .bx-budget-figures span {
+        font-weight: 500;
+        color: var(--bx-ink-muted) !important;
+        -webkit-text-fill-color: var(--bx-ink-muted) !important;
+    }
+
+    #main.bx-admin-workspace .bx-budget-track {
+        width: 100%;
+        height: 8px;
+        border-radius: 999px;
+        background: #E2E8F0;
+        overflow: hidden;
+    }
+
+    html[data-pms-theme="dark"] #main.bx-admin-workspace .bx-budget-track {
+        background: #1A2247;
+    }
+
+    #main.bx-admin-workspace .bx-budget-fill {
+        height: 100%;
+        border-radius: 999px;
+        background: #2563EB;
+        transition: width 0.4s ease;
+    }
+
+    /* 3-card Revenue Strip */
+    #main.bx-admin-workspace .saas-revenue-strip {
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+        gap: 0.8rem !important;
+    }
+
+    #main.bx-admin-workspace .saas-money-card {
+        background: var(--bx-surface-2) !important;
+        border: 1px solid var(--bx-border) !important;
+        border-radius: 12px !important;
+        min-height: 98px !important;
+        padding: 0.85rem 0.95rem !important;
+    }
+
+    #main.bx-admin-workspace .saas-money-card span {
+        font-size: 0.68rem !important;
+        font-weight: 700 !important;
+        letter-spacing: 0.05em !important;
+        color: var(--bx-ink-muted) !important;
+        -webkit-text-fill-color: var(--bx-ink-muted) !important;
+    }
+
+    #main.bx-admin-workspace .saas-money-card strong {
+        font-size: clamp(1.15rem, 1.5vw, 1.4rem) !important;
+        font-weight: 800 !important;
+        color: var(--bx-ink) !important;
+        -webkit-text-fill-color: var(--bx-ink) !important;
+        margin: 0.25rem 0 0.2rem !important;
+    }
+
+    #main.bx-admin-workspace .saas-money-card.is-positive-value strong {
+        color: #10B981 !important;
+        -webkit-text-fill-color: #10B981 !important;
+    }
+
+    #main.bx-admin-workspace .saas-money-card em {
+        font-size: 0.7rem !important;
+        font-weight: 600 !important;
+        color: var(--bx-ink-muted) !important;
+        -webkit-text-fill-color: var(--bx-ink-muted) !important;
+    }
+
+    #main.bx-admin-workspace .saas-money-card em.is-positive-meta {
+        color: #10B981 !important;
+        -webkit-text-fill-color: #10B981 !important;
+    }
+
+    /* Feature Predictions Grid */
+    #main.bx-admin-workspace .saas-prediction-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 0.85rem !important;
+    }
+
+    #main.bx-admin-workspace .saas-insight-card {
+        background: var(--bx-surface-2) !important;
+        border: 1px solid var(--bx-border) !important;
+        border-radius: 12px !important;
+        min-height: 112px !important;
+        padding: 0.95rem 1rem !important;
+        justify-content: flex-start !important;
+        gap: 0.35rem;
+    }
+
+    #main.bx-admin-workspace .saas-insight-card > span {
+        font-size: 0.68rem !important;
+        font-weight: 700 !important;
+        letter-spacing: 0.05em !important;
+        color: var(--bx-ink-muted) !important;
+        -webkit-text-fill-color: var(--bx-ink-muted) !important;
+    }
+
+    #main.bx-admin-workspace .bx-prediction-status {
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+        margin: 0.15rem 0 0.25rem;
+    }
+
+    #main.bx-admin-workspace .bx-signal-dot {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        flex-shrink: 0;
+        display: inline-block;
+    }
+
+    #main.bx-admin-workspace .bx-signal-dot.is-low {
+        background: #10B981;
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.18);
+    }
+
+    #main.bx-admin-workspace .bx-signal-dot.is-mid {
+        background: #F59E0B;
+        box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
+    }
+
+    #main.bx-admin-workspace .bx-signal-dot.is-high {
+        background: #F59E0B;
+        box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
+    }
+
+    #main.bx-admin-workspace .bx-prediction-status strong {
+        font-size: 0.96rem !important;
+        font-weight: 800 !important;
+        color: var(--bx-ink) !important;
+        -webkit-text-fill-color: var(--bx-ink) !important;
+        margin: 0 !important;
+        line-height: 1.2;
+    }
+
+    #main.bx-admin-workspace .saas-insight-card p {
+        font-size: 0.76rem !important;
+        font-weight: 500 !important;
+        color: var(--bx-ink-muted) !important;
+        -webkit-text-fill-color: var(--bx-ink-muted) !important;
+        line-height: 1.4 !important;
+    }
+
+    /* Panel Footer Strip */
+    #main.bx-admin-workspace .bx-panel-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        margin-top: 1.1rem;
+        padding-top: 0.85rem;
+        border-top: 1px solid var(--bx-border);
+        font-size: 0.75rem;
+    }
+
+    #main.bx-admin-workspace .bx-panel-footer-meta {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        color: var(--bx-ink-muted) !important;
+        -webkit-text-fill-color: var(--bx-ink-muted) !important;
+        font-weight: 500;
+    }
+
+    #main.bx-admin-workspace .bx-panel-footer-meta i {
+        color: #F59E0B !important;
+        -webkit-text-fill-color: #F59E0B !important;
+        -webkit-text-stroke: 0 !important;
+        font-size: 0.9rem !important;
+    }
+
+    #main.bx-admin-workspace .bx-panel-footer-link {
+        color: #2563EB !important;
+        -webkit-text-fill-color: #2563EB !important;
+        font-weight: 650 !important;
+        text-decoration: none;
+    }
+
+    #main.bx-admin-workspace .bx-panel-footer-link:hover {
+        text-decoration: underline;
+    }
+
+    html[data-pms-theme="dark"] #main.bx-admin-workspace .bx-panel-footer-link {
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
+    }
+
+    @media (max-width: 1199.98px) {
+        #main.bx-admin-workspace .saas-executive-grid {
+            grid-template-columns: 1fr !important;
+        }
+    }
+
+    @media (max-width: 991.98px) {
+        #main.bx-admin-workspace .industry-hero-card {
+            grid-template-columns: 1fr !important;
+        }
+        #main.bx-admin-workspace .industry-hero-visual {
+            display: flex !important;
+            justify-content: flex-start !important;
+        }
+        #main.bx-admin-workspace .bx-monitor-widget {
+            max-width: 100%;
+        }
+    }
+
+    @media (max-width: 767.98px) {
+        #main.bx-admin-workspace .saas-revenue-strip,
+        #main.bx-admin-workspace .saas-prediction-grid {
+            grid-template-columns: 1fr !important;
+        }
+        #main.bx-admin-workspace .industry-hero-card {
+            padding: 1.25rem !important;
         }
     }
 </style>
@@ -1538,7 +2215,7 @@
     <div class="floating-element"></div>
 </div>
 
-<main id="main" class="main">
+<main id="main" class="main bx-admin-workspace">
 
     <div class="content-wrapper">
 
@@ -1553,90 +2230,10 @@
             $dashboardAbsentCount = $absentCount ?? max($dashboardTotalEmployees - $dashboardPresentCount, 0);
             $dashboardAttendancePercent = $dashboardTotalEmployees > 0 ? round(($dashboardPresentCount / $dashboardTotalEmployees) * 100) : 0;
             $dashboardTaskScale = max($dashboardPendingTask, $dashboardUnresolvedTicket, $dashboardTotalProject, $dashboardTotalClient, 1);
-            $dashboardPendingLeaves = optional($pendingLeaves ?? collect())->count();
-            $dashboardFeatureScale = max(
-                $dashboardTotalEmployees,
-                $dashboardPresentCount,
-                $dashboardPendingLeaves,
-                $dashboardTotalProject,
-                $dashboardPendingTask,
-                $dashboardUnresolvedTicket,
-                $dashboardTotalClient,
-                1
-            );
-            $featureLinks = [
-                ['label' => 'Employees', 'hint' => 'Team directory', 'icon' => 'bx-group', 'route' => 'employees.index', 'value' => $dashboardTotalEmployees],
-                ['label' => 'Attendance', 'hint' => 'Today and reports', 'icon' => 'bx-calendar-check', 'route' => 'attendance.index', 'value' => $dashboardPresentCount],
-                ['label' => 'Leaves', 'hint' => 'Requests and policy', 'icon' => 'bx-calendar-minus', 'route' => 'leaves.index', 'value' => $dashboardPendingLeaves],
-                ['label' => 'Projects', 'hint' => 'Active work', 'icon' => 'bx-briefcase-alt-2', 'route' => 'projects.index', 'value' => $dashboardTotalProject],
-                ['label' => 'Tasks', 'hint' => 'Pending actions', 'icon' => 'bx-task', 'route' => 'tasks.index', 'value' => $dashboardPendingTask],
-                ['label' => 'Timesheet', 'hint' => 'Work logs', 'icon' => 'bx-time-five', 'route' => 'timelogs.index', 'value' => 'Log'],
-                ['label' => 'Tickets', 'hint' => 'Support queue', 'icon' => 'bx-support', 'route' => 'tickets.index', 'value' => $dashboardUnresolvedTicket],
-                ['label' => 'Clients', 'hint' => 'Client records', 'icon' => 'bx-user-circle', 'route' => 'clients.index', 'value' => $dashboardTotalClient],
-                ['label' => 'Leads', 'hint' => 'Contacts pipeline', 'icon' => 'bx-target-lock', 'route' => 'leads.contacts.index', 'value' => 'CRM'],
-                ['label' => 'Deals', 'hint' => 'Sales stages', 'icon' => 'bx-trending-up', 'route' => 'admin.deals.index', 'value' => 'Deal'],
-                ['label' => 'Holidays', 'hint' => 'Calendar view', 'icon' => 'bx-calendar-star', 'route' => 'holidays.calendar', 'value' => 'Cal'],
-                ['label' => 'Reports', 'hint' => 'Attendance report', 'icon' => 'bx-bar-chart-alt-2', 'route' => 'attendance.report', 'value' => 'View'],
-                ['label' => 'Payroll', 'hint' => 'Salary operations', 'icon' => 'bx-wallet', 'route' => 'payroll.index', 'value' => 'Pay'],
-                ['label' => 'Organization', 'hint' => 'Company directory', 'icon' => 'bx-sitemap', 'route' => 'organization.index', 'value' => 'Org'],
-                ['label' => 'Awards', 'hint' => 'Recognition', 'icon' => 'bx-trophy', 'route' => 'awards.index', 'value' => 'HR'],
-                ['label' => 'Departments', 'hint' => 'Team structure', 'icon' => 'bx-buildings', 'route' => 'departments.index', 'value' => 'Dept'],
-                ['label' => 'Designations', 'hint' => 'Role hierarchy', 'icon' => 'bx-id-card', 'route' => 'designations.index', 'value' => 'Role'],
-                ['label' => 'Modules', 'hint' => 'Feature controls', 'icon' => 'bx-grid-alt', 'route' => 'admin.modules.index', 'value' => 'Mod'],
-                ['label' => 'Permissions', 'hint' => 'Access matrix', 'icon' => 'bx-lock-alt', 'route' => 'admin.role-permissions.index', 'value' => 'ACL'],
-                ['label' => 'Settings', 'hint' => 'System setup', 'icon' => 'bx-cog', 'route' => 'admin.settings.app', 'value' => 'Set'],
-            ];
-            $featureLinks = collect($featureLinks)->filter(function ($link) use ($currentCompany) {
-                $slug = match ($link['label']) {
-                    'Employees' => 'employees',
-                    'Attendance' => 'attendance',
-                    'Leaves' => 'leaves',
-                    'Projects' => 'projects',
-                    'Tasks' => 'tasks',
-                    'Timesheet' => 'timelogs',
-                    'Tickets' => 'tickets',
-                    'Clients' => 'clients',
-                    'Leads' => 'leads',
-                    'Deals' => 'deals',
-                    'Holidays' => 'holidays',
-                    'Reports' => 'reports',
-                    'Payroll' => 'payroll',
-                    'Organization' => 'organization',
-                    'Awards' => 'awards',
-                    'Departments' => 'departments',
-                    'Designations' => 'designations',
-                    default => strtolower($link['label']),
-                };
-                return $currentCompany ? $currentCompany->hasFeature($slug) : true;
-            })->values()->all();
-
-            $adminPieCharts = [
-                ['label' => 'Attendance', 'slug' => 'attendance', 'hint' => "{$dashboardPresentCount} present / {$dashboardTotalEmployees} employees", 'route' => 'attendance.index', 'value' => $dashboardPresentCount, 'percent' => $dashboardAttendancePercent, 'color' => '#10b981'],
-                ['label' => 'Projects', 'slug' => 'projects', 'hint' => "{$dashboardTotalProject} active projects", 'route' => 'projects.index', 'value' => $dashboardTotalProject, 'percent' => round(($dashboardTotalProject / $dashboardFeatureScale) * 100), 'color' => '#2563eb'],
-                ['label' => 'Tasks', 'slug' => 'tasks', 'hint' => "{$dashboardPendingTask} pending tasks", 'route' => 'tasks.index', 'value' => $dashboardPendingTask, 'percent' => round(($dashboardPendingTask / $dashboardFeatureScale) * 100), 'color' => '#f59e0b'],
-                ['label' => 'Tickets', 'slug' => 'tickets', 'hint' => "{$dashboardUnresolvedTicket} unresolved tickets", 'route' => 'tickets.index', 'value' => $dashboardUnresolvedTicket, 'percent' => round(($dashboardUnresolvedTicket / $dashboardFeatureScale) * 100), 'color' => '#ef4444'],
-                ['label' => 'Clients', 'slug' => 'clients', 'hint' => "{$dashboardTotalClient} client records", 'route' => 'clients.index', 'value' => $dashboardTotalClient, 'percent' => round(($dashboardTotalClient / $dashboardFeatureScale) * 100), 'color' => '#7c3aed'],
-                ['label' => 'Leaves', 'slug' => 'leaves', 'hint' => "{$dashboardPendingLeaves} pending requests", 'route' => 'leaves.index', 'value' => $dashboardPendingLeaves, 'percent' => round(($dashboardPendingLeaves / $dashboardFeatureScale) * 100), 'color' => '#06b6d4'],
-                ['label' => 'Employees', 'slug' => 'employees', 'hint' => "{$dashboardTotalEmployees} total employees", 'route' => 'employees.index', 'value' => $dashboardTotalEmployees, 'percent' => round(($dashboardTotalEmployees / $dashboardFeatureScale) * 100), 'color' => '#14b8a6'],
-                ['label' => 'Reports', 'slug' => 'reports', 'hint' => 'Attendance and operations reporting', 'route' => 'attendance.report', 'value' => 'View', 'percent' => max(35, $dashboardAttendancePercent), 'color' => '#64748b'],
-            ];
-            $adminPieCharts = collect($adminPieCharts)->filter(function ($chart) use ($currentCompany) {
-                return $currentCompany ? $currentCompany->hasFeature($chart['slug']) : true;
-            })->values()->all();
-
             $safeTableSum = function (string $table, string $column): float {
                 try {
                     return \Illuminate\Support\Facades\Schema::hasTable($table) && \Illuminate\Support\Facades\Schema::hasColumn($table, $column)
                         ? (float) \Illuminate\Support\Facades\DB::table($table)->sum($column)
-                        : 0;
-                } catch (\Throwable $e) {
-                    return 0;
-                }
-            };
-            $safeTableCount = function (string $table): int {
-                try {
-                    return \Illuminate\Support\Facades\Schema::hasTable($table)
-                        ? (int) \Illuminate\Support\Facades\DB::table($table)->count()
                         : 0;
                 } catch (\Throwable $e) {
                     return 0;
@@ -1654,12 +2251,23 @@
             $budgetUtilization = $projectBudgetTotal > 0 ? round(($expenseInvestmentValue / $projectBudgetTotal) * 100) : 0;
             $currency = '₹';
             $formatMoney = fn ($value) => $currency . number_format((float) $value, 0);
+            $formatCompactMoney = function ($value) use ($currency) {
+                $amount = (float) $value;
+                foreach ([1e12 => 'T', 1e9 => 'B', 1e6 => 'M', 1e3 => 'K'] as $scale => $suffix) {
+                    if (round(abs($amount) / $scale, 2) >= 1) {
+                        $short = rtrim(rtrim(number_format($amount / $scale, 2, '.', ','), '0'), '.');
+                        return $currency . $short . $suffix;
+                    }
+                }
+                return $currency . number_format($amount, 0);
+            };
             $financeCards = [
-                ['label' => 'Total Revenue Outlook', 'value' => $formatMoney($grossRevenue), 'meta' => 'Deals, contracts, invoices, payments'],
-                ['label' => 'Investment / Expenses', 'value' => $formatMoney($expenseInvestmentValue), 'meta' => $budgetUtilization . '% of project budget'],
-                ['label' => 'Project Budget', 'value' => $formatMoney($projectBudgetTotal), 'meta' => 'Allocated delivery budget'],
-                ['label' => 'Net Business Outlook', 'value' => $formatMoney($netOutlook), 'meta' => $netOutlook >= 0 ? 'Positive operating signal' : 'Needs revenue recovery'],
+                ['label' => 'Revenue', 'value' => $grossRevenue, 'meta' => 'Deals, contracts & invoices', 'positive' => $grossRevenue > 0],
+                ['label' => 'Committed', 'value' => $expenseInvestmentValue, 'meta' => $budgetUtilization . '% of project budget', 'positive' => false],
+                ['label' => 'Net Return', 'value' => $netOutlook, 'meta' => $netOutlook >= 0 ? 'Positive operating signal' : 'Needs revenue recovery', 'positive' => $netOutlook >= 0, 'highlightValue' => $netOutlook >= 0],
+                ['label' => 'Project Budget', 'value' => $projectBudgetTotal, 'meta' => 'Allocated delivery budget', 'positive' => false],
             ];
+            $financeStripCards = array_slice($financeCards, 0, 3);
             $deliveryRisk = $dashboardTotalProject > 0 ? round(($dashboardUnresolvedTicket + $dashboardPendingTask) / max($dashboardTotalProject, 1)) : 0;
             $peopleRisk = $dashboardTotalEmployees > 0 ? round((($dashboardAbsentCount + $dashboardLateCount) / $dashboardTotalEmployees) * 100) : 0;
             $growthSignal = $dashboardTotalClient > 0 ? round(($dealPipelineValue / max($dashboardTotalClient, 1))) : 0;
@@ -1669,293 +2277,262 @@
                 ['label' => 'Revenue Prediction', 'value' => $netOutlook >= 0 ? 'Profitable Outlook' : 'Cost Pressure', 'hint' => 'Projected revenue minus tracked investments and expenses.', 'risk' => $netOutlook >= 0 ? 'low' : 'high'],
                 ['label' => 'Pipeline Prediction', 'value' => $growthSignal > 0 ? $formatMoney($growthSignal) . ' / client' : 'Build Pipeline', 'hint' => 'Average pipeline value per active client.', 'risk' => $growthSignal > 0 ? 'low' : 'mid'],
             ];
-            $moduleRouteFallbacks = [
-                'dashboard' => 'dashboard',
-                'employees' => 'employees.index',
-                'attendance' => 'attendance.index',
-                'leaves' => 'leaves.index',
-                'holidays' => 'holidays.index',
-                'awards' => 'awards.index',
-                'reports' => 'attendance.report',
-                'clients' => 'clients.index',
-                'projects' => 'projects.index',
-                'tasks' => 'tasks.index',
-                'timelogs' => 'timelogs.index',
-                'payroll' => 'payroll.index',
-                'leads' => 'leads.contacts.index',
-                'tickets' => 'tickets.index',
-                'settings' => 'admin.settings.app',
-                'organization' => 'organization.index',
-                'departments' => 'departments.index',
-                'designations' => 'designations.index',
-                'collaborating-companies' => 'collaborating-companies.index',
-            ];
-            $moduleRouteParams = [
-                'admin.role-accounts.index' => ['role' => 'hr'],
-            ];
-            $safeRouteUrl = function (?string $routeName) use ($moduleRouteParams): ?string {
-                if (! $routeName || ! Route::has($routeName)) {
-                    return null;
-                }
-
-                try {
-                    $route = Route::getRoutes()->getByName($routeName);
-                    $requiredParameters = $route ? $route->parameterNames() : [];
-                    $params = $moduleRouteParams[$routeName] ?? [];
-
-                    foreach ($requiredParameters as $parameter) {
-                        if (! array_key_exists($parameter, $params)) {
-                            return null;
-                        }
-                    }
-
-                    return route($routeName, $params);
-                } catch (\Throwable $e) {
-                    return null;
-                }
-            };
-            $moduleMetricMap = [
-                'employees' => $dashboardTotalEmployees,
-                'attendance' => $dashboardPresentCount,
-                'leaves' => $dashboardPendingLeaves,
-                'clients' => $dashboardTotalClient,
-                'projects' => $dashboardTotalProject,
-                'tasks' => $dashboardPendingTask,
-                'tickets' => $dashboardUnresolvedTicket,
-                'timelogs' => $safeTableCount('time_logs') ?: $safeTableCount('timelogs'),
-                'payroll' => $safeTableCount('payrolls'),
-                'leads' => $safeTableCount('lead_contacts'),
-                'awards' => $safeTableCount('awards'),
-                'holidays' => $safeTableCount('holidays'),
-                'departments' => $safeTableCount('departments'),
-                'designations' => $safeTableCount('designations'),
-                'organization' => $dashboardTotalEmployees,
-                'settings' => $safeTableCount('modules'),
-            ];
-            try {
-                $activeModules = \App\Models\Module::query()
-                    ->where('is_active', true)
-                    ->orderBy('sort_order')
-                    ->orderBy('name')
-                    ->get();
-            } catch (\Throwable $e) {
-                $activeModules = collect();
-            }
-            if ($currentCompany && method_exists($currentCompany, 'hasFeature')) {
-                $activeModules = $activeModules->filter(fn ($m) => $currentCompany->hasFeature($m->slug))->values();
-            }
-            $moduleScale = max(collect($moduleMetricMap)->filter(fn ($value) => is_numeric($value))->max() ?? 1, 1);
-            $autoModuleCards = $activeModules->map(function ($module, $index) use ($moduleRouteFallbacks, $moduleMetricMap, $moduleScale, $safeRouteUrl) {
-                $route = $module->route_name ?: ($moduleRouteFallbacks[$module->slug] ?? null);
-                $url = $safeRouteUrl($route);
-                $metric = $moduleMetricMap[$module->slug] ?? 1;
-                return [
-                    'name' => $module->name,
-                    'slug' => $module->slug,
-                    'icon' => $module->icon ?: 'bx-grid-alt',
-                    'route' => $route,
-                    'url' => $url,
-                    'value' => $metric,
-                    'percent' => is_numeric($metric) ? round(((float) $metric / $moduleScale) * 100) : 35,
-                    'color' => ['#2563eb', '#10b981', '#f59e0b', '#ef4444', '#7c3aed', '#06b6d4', '#14b8a6', '#64748b'][$index % 8],
-                ];
-            })->filter(fn ($module) => $module['url'])->values();
-            if ($autoModuleCards->isEmpty()) {
-                $autoModuleCards = collect($moduleRouteFallbacks)->filter(function ($route, $slug) use ($currentCompany) {
-                    return $currentCompany ? $currentCompany->hasFeature($slug) : true;
-                })->map(function ($route, $slug) use ($moduleMetricMap, $moduleScale, $safeRouteUrl) {
-                    $url = $safeRouteUrl($route);
-                    $metric = $moduleMetricMap[$slug] ?? 1;
-
-                    return [
-                        'name' => \Illuminate\Support\Str::headline($slug),
-                        'slug' => $slug,
-                        'icon' => 'bx-grid-alt',
-                        'route' => $route,
-                        'url' => $url,
-                        'value' => $metric,
-                        'percent' => is_numeric($metric) ? round(((float) $metric / $moduleScale) * 100) : 35,
-                        'color' => '#2563eb',
-                    ];
-                })->filter(fn ($module) => $module['url'])->take(8)->values();
-            }
-            $sparkValues = [
-                max(10, min(100, $dashboardAttendancePercent)),
-                max(10, min(100, round(($dashboardTotalProject / $dashboardFeatureScale) * 100))),
-                max(10, min(100, round(($dashboardPendingTask / $dashboardFeatureScale) * 100))),
-                max(10, min(100, round(($dashboardUnresolvedTicket / $dashboardFeatureScale) * 100))),
-                max(10, min(100, $budgetUtilization)),
-                max(10, min(100, $activeModules->count() * 4)),
-            ];
         @endphp
 
         <section class="industry-dashboard-shell">
             <div class="industry-hero-card">
                 <div class="industry-hero-copy">
-                    <span class="industry-eyebrow">Workspace overview</span>
-                    <h1>Dashboard</h1>
-                    <p>Plan work, track teams, review support, and jump into every PMS feature from one clean command center.</p>
+                    <span class="industry-eyebrow"><i class="bx bx-check-shield"></i> Admin Workspace</span>
+                    <h1>Admin Workspace Dashboard</h1>
+                    <p>Real-time command center for project progression, employee presence, pending work queue, and enterprise operations.</p>
                     <div class="industry-actions">
                         @if(Route::has('projects.create'))
+                            @if(auth()->user()->canViewModule('projects'))
                             <a href="{{ route('projects.create') }}" class="industry-btn industry-btn-primary">
                                 <i class="bx bx-plus"></i> Add Project
                             </a>
+                            @endif
                         @endif
                         @if(Route::has('tasks.create'))
+                            @if(auth()->user()->canViewModule('tasks'))
                             <a href="{{ route('tasks.create') }}" class="industry-btn industry-btn-light">
-                                <i class="bx bx-task"></i> New Task
+                                <i class="bx bx-check-square"></i> New Task
                             </a>
+                            @endif
+                        @endif
+                        @if(Route::has('attendance.report'))
+                            @if(auth()->user()->canViewModule('reports-attendance'))
+                            <a href="{{ route('attendance.report') }}" class="industry-btn industry-btn-light">
+                                <i class="bx bx-bar-chart-alt-2"></i> Attendance Report
+                            </a>
+                            @endif
                         @endif
                     </div>
                 </div>
                 <div class="industry-hero-visual">
-                    <img src="{{ asset('admin/assets/img/illustrations/dashboard-ui-preview.png') }}" alt="Dashboard overview">
+                    <div class="bx-monitor-widget" aria-label="Enterprise Live Monitoring summary">
+                        <div class="bx-monitor-head">
+                            <span class="bx-monitor-title">
+                                <span class="bx-monitor-dot" aria-hidden="true"></span>
+                                Enterprise Live Monitoring
+                            </span>
+                            <span class="bx-monitor-ver">v4.1.2</span>
+                        </div>
+                        <div class="bx-monitor-mid">
+                            <div class="bx-monitor-pipeline">
+                                <span>System Pipeline</span>
+                                <div class="bx-pipeline-bars" aria-hidden="true">
+                                    <i style="height: 36%; background: #0E6B47;"></i>
+                                    <i style="height: 55%; background: #16A34A;"></i>
+                                    <i style="height: 74%; background: #34D399;"></i>
+                                    <i style="height: 96%; background: #6EE7B7;"></i>
+                                </div>
+                            </div>
+                            <div class="bx-monitor-nodes">
+                                <span class="bx-monitor-nodes-label">Live Nodes</span>
+                                <strong>99.98%</strong>
+                                <em>Optimal Status</em>
+                            </div>
+                        </div>
+                        <div class="bx-monitor-throughput">
+                            <div class="bx-monitor-throughput-copy">
+                                <span>Weekly Throughput</span>
+                                <strong>14.8k operations</strong>
+                            </div>
+                            <div class="bx-throughput-bars" aria-hidden="true">
+                                <i style="height: 45%;"></i>
+                                <i style="height: 75%;"></i>
+                                <i style="height: 60%;"></i>
+                                <i style="height: 90%;"></i>
+                                <i style="height: 100%;"></i>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <div class="industry-overview-grid">
-                <a href="{{ Route::has('projects.index') ? route('projects.index') : '#' }}" class="industry-metric-card is-primary">
-                    <span>Total Projects</span>
-                    <strong>{{ $dashboardTotalProject }}</strong>
-                    <small><i class="bx bx-up-arrow-alt"></i> Open project workspace</small>
-                    <i class="bx bx-right-arrow-alt industry-arrow"></i>
+                @if(auth()->user()->canViewModule('projects'))
+                <a href="{{ Route::has('projects.index') ? route('projects.index') : '#' }}" class="industry-metric-card kpi-card-projects">
+                    <div class="kpi-card-top">
+                        <span>Total Projects</span>
+                        <div class="kpi-icon-box kpi-blue">
+                            <i class="bx bx-briefcase-alt-2"></i>
+                        </div>
+                    </div>
+                    <strong class="kpi-number">{{ $dashboardTotalProject }}</strong>
+                    <div class="kpi-card-footer">
+                        <small><i class="bx bx-up-arrow-alt"></i> Open project workspace</small>
+                        <i class="bx bx-right-arrow-alt industry-arrow"></i>
+                    </div>
                 </a>
-                <a href="{{ Route::has('tasks.index') ? route('tasks.index') : '#' }}" class="industry-metric-card">
-                    <span>Pending Tasks</span>
-                    <strong>{{ $dashboardPendingTask }}</strong>
-                    <small>Task queue</small>
-                    <i class="bx bx-right-arrow-alt industry-arrow"></i>
+                @endif
+                @if(auth()->user()->canViewModule('tasks'))
+                <a href="{{ Route::has('tasks.index') ? route('tasks.index') : '#' }}" class="industry-metric-card kpi-card-tasks">
+                    <div class="kpi-card-top">
+                        <span>Pending Tasks</span>
+                        <div class="kpi-icon-box kpi-violet">
+                            <i class="bx bx-check-square"></i>
+                        </div>
+                    </div>
+                    <strong class="kpi-number">{{ $dashboardPendingTask }}</strong>
+                    <div class="kpi-card-footer">
+                        <small><i class="bx bx-time"></i> Active in queue</small>
+                        <i class="bx bx-right-arrow-alt industry-arrow"></i>
+                    </div>
                 </a>
-                <a href="{{ Route::has('tickets.index') ? route('tickets.index') : '#' }}" class="industry-metric-card">
-                    <span>Open Tickets</span>
-                    <strong>{{ $dashboardUnresolvedTicket }}</strong>
-                    <small>Support needs attention</small>
-                    <i class="bx bx-right-arrow-alt industry-arrow"></i>
+                @endif
+                @if(auth()->user()->canViewModule('tickets'))
+                <a href="{{ Route::has('tickets.index') ? route('tickets.index') : '#' }}" class="industry-metric-card kpi-card-tickets">
+                    <div class="kpi-card-top">
+                        <span>Open Tickets</span>
+                        <div class="kpi-icon-box kpi-cyan">
+                            <i class="bx bx-support"></i>
+                        </div>
+                    </div>
+                    <strong class="kpi-number">{{ $dashboardUnresolvedTicket }}</strong>
+                    <div class="kpi-card-footer">
+                        <small><i class="bx bx-error-circle"></i> Requires attention</small>
+                        <i class="bx bx-right-arrow-alt industry-arrow"></i>
+                    </div>
                 </a>
-                <a href="{{ Route::has('attendance.report') ? route('attendance.report') : '#' }}" class="industry-metric-card">
-                    <span>Attendance</span>
-                    <strong>{{ $dashboardAttendancePercent }}%</strong>
-                    <small>{{ $dashboardPresentCount }} present today</small>
-                    <i class="bx bx-right-arrow-alt industry-arrow"></i>
+                @endif
+                @if(auth()->user()->canViewModule('attendance'))
+                <a href="{{ Route::has('attendance.report') ? route('attendance.report') : '#' }}" class="industry-metric-card kpi-card-attendance">
+                    <div class="kpi-card-top">
+                        <span>Attendance</span>
+                        <div class="kpi-icon-box kpi-emerald">
+                            <i class="bx bx-user-check"></i>
+                        </div>
+                    </div>
+                    <strong class="kpi-number">{{ $dashboardAttendancePercent }}%</strong>
+                    <div class="kpi-card-footer">
+                        <small><i class="bx bx-check"></i> {{ $dashboardPresentCount }} present today</small>
+                        <i class="bx bx-right-arrow-alt industry-arrow"></i>
+                    </div>
                 </a>
+                @endif
             </div>
 
             <div class="saas-executive-grid">
+                @if(auth()->user()->canViewModule('reports-finance'))
                 <div class="industry-panel">
-                    <div class="industry-panel-head">
-                        <div>
-                            <h3>Executive Business Model</h3>
-                            <p>Revenue, investment, budget, and net outlook from available finance data.</p>
-                        </div>
-                        <a href="{{ Route::has('admin.deals.index') ? route('admin.deals.index') : '#' }}">Pipeline</a>
-                    </div>
-                    <div class="saas-revenue-strip">
-                        @foreach($financeCards as $card)
-                            <div class="saas-money-card">
-                                <span>{{ $card['label'] }}</span>
-                                <strong>{{ $card['value'] }}</strong>
-                                <em>{{ $card['meta'] }}</em>
+                    <div>
+                        <div class="industry-panel-head">
+                            <div>
+                                <h3>Executive Business Model</h3>
+                                <p>Revenue, investment, budget, and net outlook from available finance data.</p>
                             </div>
-                        @endforeach
-                    </div>
-                </div>
-
-                <div class="industry-panel">
-                    <div class="industry-panel-head">
-                        <div>
-                            <h3>Feature Predictions</h3>
-                            <p>Simple operating signals generated from current dashboard data.</p>
+                            <a href="{{ Route::has('admin.deals.index') ? route('admin.deals.index') : '#' }}">Pipeline</a>
                         </div>
-                    </div>
-                    <div class="saas-prediction-grid">
-                        @foreach($predictionCards as $card)
-                            <div class="saas-insight-card">
-                                <span>{{ $card['label'] }}</span>
-                                <strong>{{ $card['value'] }}</strong>
-                                <p>{{ $card['hint'] }}</p>
-                                <div class="mt-2">
-                                    <span class="saas-risk-pill saas-risk-{{ $card['risk'] }}">
-                                        <i class="bx bx-pulse"></i> {{ ucfirst($card['risk']) }} signal
-                                    </span>
+                        <div class="bx-budget-block">
+                            <div class="bx-budget-row">
+                                <span class="bx-budget-label">Enterprise Budget Allocation</span>
+                                <span class="bx-budget-figures" title="{{ $formatMoney($expenseInvestmentValue) . ' / ' . $formatMoney($projectBudgetTotal) }}">
+                                    {{ $formatMoney($expenseInvestmentValue) }} <span>/ {{ $formatMoney($projectBudgetTotal) }}</span>
+                                </span>
+                            </div>
+                            <div class="bx-budget-track" role="progressbar" aria-valuenow="{{ min(100, max(0, $budgetUtilization)) }}" aria-valuemin="0" aria-valuemax="100" aria-label="Enterprise Budget Allocation">
+                                <div class="bx-budget-fill" style="width: {{ $projectBudgetTotal > 0 ? min(100, max(4, $budgetUtilization)) : 0 }}%;"></div>
+                            </div>
+                        </div>
+                        <div class="saas-revenue-strip">
+                            @foreach($financeStripCards as $card)
+                                <div class="saas-money-card {{ !empty($card['highlightValue']) ? 'is-positive-value' : '' }}">
+                                    <span>{{ $card['label'] }}</span>
+                                    <strong title="{{ $formatMoney($card['value']) }}" aria-label="{{ $card['label'] . ': ' . $formatMoney($card['value']) }}">{{ $formatCompactMoney($card['value']) }}</strong>
+                                    <em class="{{ !empty($card['positive']) ? 'is-positive-meta' : '' }}">{{ $card['meta'] }}</em>
                                 </div>
-                            </div>
-                        @endforeach
-                    </div>
-                </div>
-            </div>
-
-            <div class="saas-trend-board">
-                <div class="industry-panel saas-line-card">
-                    <div class="industry-panel-head">
-                        <div>
-                            <h3>Operating Trend Graph</h3>
-                            <p>Compact trend generated from attendance, projects, tasks, tickets, investment, and modules.</p>
+                            @endforeach
                         </div>
                     </div>
-                    <div class="saas-sparkline" aria-label="Operating trend graph">
-                        @foreach($sparkValues as $spark)
-                            <span style="--spark: {{ $spark }}%"></span>
-                        @endforeach
+                    <div class="bx-panel-footer">
+                        <span class="bx-panel-footer-meta">Last financial sync: {{ now()->format('h:i A') }}</span>
+                        @if(Route::has('reports.finance'))
+                            <a href="{{ route('reports.finance') }}" class="bx-panel-footer-link">View Detailed Ledger &rsaquo;</a>
+                        @elseif(Route::has('admin.deals.index'))
+                            <a href="{{ route('admin.deals.index') }}" class="bx-panel-footer-link">View Detailed Ledger &rsaquo;</a>
+                        @endif
                     </div>
                 </div>
+                @endif
 
                 <div class="industry-panel">
-                    <div class="industry-panel-head">
-                        <div>
-                            <h3>SaaS Health Score</h3>
-                            <p>Blended score across team presence, workload, revenue outlook, and enabled modules.</p>
+                    <div>
+                        <div class="industry-panel-head">
+                            <div>
+                                <h3>Feature Predictions</h3>
+                                <p>Simple operating signals generated from current dashboard data.</p>
+                            </div>
+                        </div>
+                        <div class="saas-prediction-grid">
+                            @foreach($predictionCards as $card)
+                                @if(auth()->user()->canViewModule(match ($card['label']) {
+                                    'Delivery Prediction' => 'tasks', 'People Prediction' => 'attendance',
+                                    'Revenue Prediction' => 'reports-finance', default => 'crm-deals',
+                                }))
+                                <div class="saas-insight-card">
+                                    <span>{{ $card['label'] }}</span>
+                                    <div class="bx-prediction-status">
+                                        <span class="bx-signal-dot is-{{ $card['risk'] }}" aria-hidden="true"></span>
+                                        <strong>{{ $card['value'] }}</strong>
+                                    </div>
+                                    <p>{{ $card['hint'] }}</p>
+                                </div>
+                                @endif
+                            @endforeach
                         </div>
                     </div>
-                    @php
-                        $healthScore = max(0, min(100, round(
-                            ($dashboardAttendancePercent * .35)
-                            + (max(0, 100 - min(100, $deliveryRisk * 8)) * .25)
-                            + (($netOutlook >= 0 ? 100 : 45) * .2)
-                            + (min(100, $activeModules->count() * 5) * .2)
-                        )));
-                    @endphp
-                    <div class="industry-gauge" style="--value-deg: {{ round($healthScore * 1.8) }}deg">
-                        <div>
-                            <strong>{{ $healthScore }}%</strong>
-                            <span>Health</span>
-                        </div>
-                    </div>
-                    <div class="industry-presence-row">
-                        <span><b>{{ $activeModules->count() }}</b> Modules</span>
-                        <span><b>{{ $dashboardPendingTask }}</b> Tasks</span>
-                        <span><b>{{ $dashboardUnresolvedTicket }}</b> Tickets</span>
+                    <div class="bx-panel-footer">
+                        <span class="bx-panel-footer-meta"><i class="bx bxs-zap"></i> Real-time heuristic analysis</span>
+                        @if(Route::has('admin.settings.app') && auth()->user()->canViewModule('settings'))
+                            <a href="{{ route('admin.settings.app') }}" class="bx-panel-footer-link">Config Signals</a>
+                        @endif
                     </div>
                 </div>
             </div>
 
             <div class="industry-main-grid">
+                <!-- feature-panel-reports-task -->@if(collect(['projects', 'tasks', 'tickets', 'attendance', 'clients'])->contains(fn ($slug) => auth()->user()->canViewModule($slug)))
                 <div class="industry-panel industry-analytics-card">
                     <div class="industry-panel-head">
                         <div>
                             <h3>Work Analytics</h3>
                             <p>Quick health snapshot across core modules.</p>
                         </div>
-                        <a href="{{ Route::has('attendance.report') ? route('attendance.report') : '#' }}">View Report</a>
+                        @if(auth()->user()->canViewModule('reports-attendance'))<a href="{{ Route::has('attendance.report') ? route('attendance.report') : '#' }}">View Report</a>@endif
                     </div>
                     <div class="industry-bars" aria-label="Dashboard analytics chart">
-                        <div class="industry-bar" style="--bar: {{ max(18, min(100, round(($dashboardTotalProject / $dashboardTaskScale) * 100))) }}%">
+                        @if(auth()->user()->canViewModule('projects'))
+                <div class="industry-bar" style="--bar: {{ max(18, min(100, round(($dashboardTotalProject / $dashboardTaskScale) * 100))) }}%">
                             <span></span><label>Projects</label>
                         </div>
-                        <div class="industry-bar" style="--bar: {{ max(18, min(100, round(($dashboardPendingTask / $dashboardTaskScale) * 100))) }}%">
+                @endif
+                        @if(auth()->user()->canViewModule('tasks'))
+                <div class="industry-bar" style="--bar: {{ max(18, min(100, round(($dashboardPendingTask / $dashboardTaskScale) * 100))) }}%">
                             <span></span><label>Tasks</label>
                         </div>
-                        <div class="industry-bar" style="--bar: {{ max(18, min(100, round(($dashboardUnresolvedTicket / $dashboardTaskScale) * 100))) }}%">
+                @endif
+                        @if(auth()->user()->canViewModule('tickets'))
+                <div class="industry-bar" style="--bar: {{ max(18, min(100, round(($dashboardUnresolvedTicket / $dashboardTaskScale) * 100))) }}%">
                             <span></span><label>Tickets</label>
                         </div>
-                        <div class="industry-bar" style="--bar: {{ max(18, min(100, round(($dashboardTotalClient / $dashboardTaskScale) * 100))) }}%">
+                @endif
+                        @if(auth()->user()->canViewModule('clients'))
+                <div class="industry-bar" style="--bar: {{ max(18, min(100, round(($dashboardTotalClient / $dashboardTaskScale) * 100))) }}%">
                             <span></span><label>Clients</label>
                         </div>
-                        <div class="industry-bar is-muted" style="--bar: {{ max(18, min(100, $dashboardAttendancePercent)) }}%">
+                @endif
+                        @if(auth()->user()->canViewModule('attendance'))
+                <div class="industry-bar is-muted" style="--bar: {{ max(18, min(100, $dashboardAttendancePercent)) }}%">
                             <span></span><label>Attendance</label>
                         </div>
+                @endif
                     </div>
                 </div>
+                @endif
 
+                <!-- feature-panel-attendance -->@if(auth()->user()->canViewModule('attendance'))
                 <div class="industry-panel industry-attendance-card">
                     <div class="industry-panel-head">
                         <div>
@@ -1976,91 +2553,12 @@
                         <span><b>{{ $dashboardAbsentCount }}</b> Absent</span>
                     </div>
                 </div>
+                @endif
             </div>
 
-            @if($autoModuleCards->isNotEmpty())
-                <div class="industry-panel">
-                    <div class="industry-panel-head">
-                        <div>
-                            <h3>Automatic Feature Analytics</h3>
-                            <p>Generated from active admin modules. New active modules appear here when their route is available.</p>
-                        </div>
-                        <a href="{{ Route::has('admin.modules.index') ? route('admin.modules.index') : '#' }}">Manage Modules</a>
-                    </div>
-                    <div class="saas-module-grid">
-                        @foreach($autoModuleCards as $module)
-                            <a href="{{ $module['url'] }}" class="saas-module-card">
-                                <div class="saas-module-head">
-                                    <span class="saas-module-icon"><i class="bx {{ $module['icon'] }}"></i></span>
-                                    <div>
-                                        <h4>{{ $module['name'] }}</h4>
-                                        <small>{{ $module['slug'] }}</small>
-                                    </div>
-                                </div>
-                                <div class="saas-module-donut" style="--percent: {{ max(3, min(100, $module['percent'])) }}; --accent: {{ $module['color'] }};">
-                                    <strong>{{ is_numeric($module['value']) ? $module['value'] : $module['value'] }}</strong>
-                                </div>
-                                <div class="saas-module-meta">
-                                    <small>{{ max(3, min(100, $module['percent'])) }}% signal</small>
-                                    <em>Open</em>
-                                </div>
-                            </a>
-                        @endforeach
-                    </div>
-                </div>
-            @endif
-
-            <div class="industry-panel">
-                <div class="industry-panel-head">
-                    <div>
-                        <h3>Module Intelligence</h3>
-                        <p>Pie-style module coverage across the admin workspace.</p>
-                    </div>
-                    <a href="{{ Route::has('attendance.report') ? route('attendance.report') : '#' }}">Analytics</a>
-                </div>
-                <div class="industry-chart-grid">
-                    @foreach($adminPieCharts as $chart)
-                        @if(Route::has($chart['route']))
-                            <div class="industry-chart-card">
-                                <div class="industry-chart-body">
-                                    <div class="industry-donut" style="--percent: {{ max(3, min(100, $chart['percent'])) }}; --accent: {{ $chart['color'] }};">
-                                        <strong>{{ is_numeric($chart['value']) ? $chart['value'] : $chart['value'] }}</strong>
-                                    </div>
-                                    <div class="industry-chart-meta">
-                                        <h4>{{ $chart['label'] }}</h4>
-                                        <p>{{ $chart['hint'] }}</p>
-                                    </div>
-                                    <a href="{{ route($chart['route']) }}" class="industry-chart-link">Open {{ $chart['label'] }}</a>
-                                </div>
-                            </div>
-                        @endif
-                    @endforeach
-                </div>
-            </div>
-
-            <div class="industry-panel industry-feature-panel">
-                <div class="industry-panel-head">
-                    <div>
-                        <h3>Feature Shortcuts</h3>
-                        <p>Every core module is one click away.</p>
-                    </div>
-                </div>
-                <div class="industry-feature-grid">
-                    @foreach($featureLinks as $feature)
-                        @if(Route::has($feature['route']))
-                            <a href="{{ route($feature['route']) }}" class="industry-feature-card">
-                                <span class="industry-feature-icon"><i class="bx {{ $feature['icon'] }}"></i></span>
-                                <span class="industry-feature-copy">
-                                    <strong>{{ $feature['label'] }}</strong>
-                                    <small>{{ $feature['hint'] }}</small>
-                                </span>
-                                <em>{{ $feature['value'] }}</em>
-                            </a>
-                        @endif
-                    @endforeach
-                </div>
-            </div>
         </section>
+
+        @include('admin.partials.dashboard-shortcuts')
 
         <!-- Welcome Section -->
         <div class="welcome-section">
@@ -2068,7 +2566,7 @@
                 <div class="row g-0">
                     <div class="col-lg-7">
                         <div class="welcome-content">
-                            <h1 class="welcome-title">{{ $currentCompany?->greeting_message ?: 'Welcome to' }} {{ $currentCompany?->display_name ?? 'Bitroxia' }} Dashboard</h1>
+                            <h1 class="welcome-title">{{ $currentCompany?->greeting_message ?: 'Welcome to' }} {{ $currentCompany?->display_name ?? ($currentCompany?->name ?? 'Company') }} Dashboard</h1>
                             <p class="welcome-text">Manage your projects, team, and clients efficiently with our comprehensive dashboard. Track progress, monitor performance, and make data-driven decisions.</p>
                             <div class="welcome-badges">
                                 <div class="welcome-badge">
@@ -2111,13 +2609,14 @@
                 @endphp
 
                 <!-- Total Employees -->
-                <div class="stat-card">
+                @if(auth()->user()->canViewModule('employees'))
+                <div class="stat-card" id="totalEmployeesCard">
                     <div class="stat-header">
                         <div class="stat-icon">
                             <i class="bx bx-group"></i>
                         </div>
                         <div class="stat-dropdown">
-                            <button class="btn p-0" type="button" data-bs-toggle="dropdown">
+                            <button class="btn p-0" type="button" data-bs-toggle="dropdown" aria-label="Total Employees actions">
                                 <i class="bx bx-dots-vertical-rounded"></i>
                             </button>
                             <div class="dropdown-menu dropdown-menu-end">
@@ -2142,8 +2641,10 @@
                         </div>
                     </div>
                 </div>
+                @endif
 
                 <!-- Total Attendance - DIVISION BY ZERO FIXED -->
+                @if(auth()->user()->canViewModule('attendance'))
                 <div class="stat-card">
                     <div class="stat-header">
                         <div class="stat-icon">
@@ -2175,8 +2676,10 @@
                         </div>
                     </div>
                 </div>
+                @endif
 
                 <!-- Total Clients -->
+                @if(auth()->user()->canViewModule('clients'))
                 <div class="stat-card">
                     <div class="stat-header">
                         <div class="stat-icon">
@@ -2208,8 +2711,10 @@
                         </div>
                     </div>
                 </div>
+                @endif
 
                 <!-- Total Projects -->
+                @if(auth()->user()->canViewModule('projects'))
                 <div class="stat-card">
                     <div class="stat-header">
                         <div class="stat-icon">
@@ -2241,13 +2746,15 @@
                         </div>
                     </div>
                 </div>
+                @endif
             </div>
         </div>
 
         <!-- Content Section -->
-        <div class="content-section">
+        <div class="content-section dashboard-notification-feed">
             <div class="content-grid">
                 <!-- Open Tickets -->
+                @if(auth()->user()->canViewModule('tickets'))
                 <div class="content-card">
                     <div class="card-header">
                         <div class="card-title">
@@ -2286,8 +2793,10 @@
                         @endforelse
                     </div>
                 </div>
+                @endif
 
                 <!-- Pending Tasks -->
+                @if(auth()->user()->canViewModule('tasks'))
                 <div class="content-card">
                     <div class="card-header">
                         <div class="card-title">
@@ -2322,6 +2831,7 @@
                         @endforelse
                     </div>
                 </div>
+                @endif
 
                 <!-- Project Activities -->
                 <div class="content-card">
@@ -2412,7 +2922,7 @@
         }
 
         // Add hover effects to cards
-        const cards = document.querySelectorAll('.stat-card, .content-card, .industry-metric-card, .industry-panel, .industry-feature-card, .industry-chart-card');
+        const cards = document.querySelectorAll('.stat-card, .content-card, .industry-metric-card, .industry-panel');
         cards.forEach(card => {
             card.addEventListener('mouseenter', function() {
                 this.style.zIndex = '10';
@@ -2472,7 +2982,7 @@
 
         // Add intersection observer for scroll animations. Keep mobile panels visible so
         // dashboard sections do not disappear when mobile browsers delay observers.
-        const animatedCards = document.querySelectorAll('.stat-card, .content-card, .industry-metric-card, .industry-panel, .industry-feature-card, .industry-chart-card');
+        const animatedCards = document.querySelectorAll('.stat-card, .content-card, .industry-metric-card, .industry-panel');
         if (window.innerWidth > 575 && 'IntersectionObserver' in window) {
             const observerOptions = {
                 threshold: 0.1,

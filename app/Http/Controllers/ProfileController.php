@@ -20,14 +20,19 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): View
     {
-        // Get active designations from database
-        $designations = Designation::where('status', 'active')
-            ->orderBy('order')
-            ->orderBy('name')
-            ->get();
+        $user = $request->user();
+        // Only employee profiles display the designation picker. Manager profiles must
+        // not depend on unrelated designation tables or their schema being upgraded.
+        $designations = collect();
+        if (($user->role ?? '') === 'employee') {
+            $designations = Designation::where('status', 'active')
+                ->orderBy('order')
+                ->orderBy('name')
+                ->get();
+        }
 
         return view('profile.edit', [
-            'user' => $request->user(),
+            'user' => $user,
             'designations' => $designations // Pass designations to view
         ]);
     }

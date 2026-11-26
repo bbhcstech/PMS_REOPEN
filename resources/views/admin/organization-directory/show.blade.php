@@ -31,18 +31,7 @@
     $canManageDirectory = in_array(auth()->user()?->role, ['admin', 'hr'], true);
 @endphp
 
-<div class="org-page">
-    <!-- Breadcrumb -->
-    <div class="org-breadcrumb">
-        <a href="{{ route('dashboard') }}"><i class="fas fa-home me-1"></i> Dashboard</a>
-        <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
-        <a href="{{ route('organization.index') }}">Organization</a>
-        <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
-        <span>Employees</span>
-        <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
-        <span class="text-dark font-semibold">{{ $employee->name }}</span>
-    </div>
-
+<div id="pms-org-show-page" class="org-page">
     @if(session('success'))
         <div class="alert alert-success border-0 shadow-sm rounded-xl py-3 px-4 mb-4 fw-bold text-emerald-800 bg-emerald-50">
             <i class="fas fa-check-circle me-2 text-emerald-600"></i> {{ session('success') }}
@@ -56,31 +45,32 @@
     @endif
 
     <!-- Profile Executive Hero Banner -->
-    <div class="org-profile-banner" style="background: linear-gradient(135deg, #094c32 0%, #0f744c 65%, #146c47 100%) !important; color: #ffffff !important;">
+    <div class="org-profile-banner pms-org-profile-card">
         <div class="org-banner-content">
             <div class="org-profile-user-group">
                 @if($avatar)
                     <img src="{{ $avatar }}" alt="{{ $employee->name }}" class="org-banner-avatar">
                 @else
-                    <div class="org-banner-avatar" style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important;">{{ $initials }}</div>
+                    <div class="org-banner-avatar">{{ $initials }}</div>
                 @endif
                 <div class="org-banner-info">
-                    <h1 style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; text-shadow: 0 2px 6px rgba(0,0,0,0.3) !important; font-weight: 800 !important;">{{ $employee->name }}</h1>
+                    <h1>{{ $employee->name }}</h1>
                     <div class="org-banner-chips">
-                        <span class="org-banner-chip" style="background: rgba(255, 255, 255, 0.2) !important; border: 1px solid rgba(255, 255, 255, 0.35) !important;">
-                            <i class="fas fa-briefcase" style="color: #a7f3d0 !important; -webkit-text-fill-color: #a7f3d0 !important;"></i>
-                            <span style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; font-weight: 700 !important; background: transparent !important; border: none !important; padding: 0 !important; margin: 0 !important;">{{ $designationName }}</span>
+                        <span class="org-banner-chip">
+                            <i class="fas fa-briefcase"></i>
+                            <span>{{ $designationName }}</span>
                         </span>
-                        <span class="org-banner-chip" style="background: rgba(255, 255, 255, 0.2) !important; border: 1px solid rgba(255, 255, 255, 0.35) !important;">
-                            <i class="fas fa-building" style="color: #a7f3d0 !important; -webkit-text-fill-color: #a7f3d0 !important;"></i>
-                            <span style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; font-weight: 700 !important; background: transparent !important; border: none !important; padding: 0 !important; margin: 0 !important;">{{ $deptName }}</span>
+                        <span class="org-banner-chip">
+                            <i class="fas fa-building"></i>
+                            <span>{{ $deptName }}</span>
                         </span>
-                        <span class="org-banner-chip" style="background: rgba(255, 255, 255, 0.2) !important; border: 1px solid rgba(255, 255, 255, 0.35) !important;">
-                            <i class="fas fa-id-badge" style="color: #a7f3d0 !important; -webkit-text-fill-color: #a7f3d0 !important;"></i>
-                            <span style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; font-weight: 700 !important; background: transparent !important; border: none !important; padding: 0 !important; margin: 0 !important;">{{ $empCode }}</span>
+                        <span class="org-banner-chip">
+                            <i class="fas fa-id-badge"></i>
+                            <span>{{ $empCode }}</span>
                         </span>
-                        <span class="org-status-pill {{ $status }}" style="padding: 5px 14px; font-size: 0.82rem; font-weight: 800 !important;">
-                            <span class="org-status-dot"></span> {{ ucfirst($status) }}
+                        <span class="org-banner-chip org-status-chip {{ $status }}">
+                            <span class="org-status-dot"></span>
+                            <span>{{ ucfirst($status) }}</span>
                         </span>
                     </div>
                 </div>
@@ -88,15 +78,18 @@
 
             <div class="d-flex align-items-center gap-2 flex-wrap">
                 @if($canManageDirectory)
-                    <a href="{{ route('employees.edit', $employee) }}" class="org-btn org-banner-btn-primary" style="background: #ffffff !important; color: #094c32 !important; -webkit-text-fill-color: #094c32 !important; border: 1px solid #ffffff !important; font-weight: 800 !important;">
-                        <i class="fas fa-user-pen" style="color: #094c32 !important; -webkit-text-fill-color: #094c32 !important;"></i> Full HR Edit
+                    <a href="{{ route('employees.edit', ['employee' => $employee, 'return_url' => url()->full()]) }}" class="org-btn org-btn-primary">
+                        <i class="fas fa-user-pen"></i> Full HR Edit
                     </a>
-                    <a href="#directory-editor" class="org-btn org-banner-btn-secondary" style="background: rgba(255, 255, 255, 0.2) !important; color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; border: 1px solid rgba(255, 255, 255, 0.4) !important; font-weight: 700 !important;">
-                        <i class="fas fa-pen-to-square" style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important;"></i> Edit Public Info
+                    <a href="#directory-editor" class="org-btn org-btn-secondary">
+                        <i class="fas fa-pen-to-square"></i> Edit Public Info
                     </a>
                 @endif
-                <a href="{{ route('organization.index') }}" class="org-btn org-banner-btn-outline" style="background: transparent !important; color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; border: 1px solid rgba(255, 255, 255, 0.45) !important; font-weight: 700 !important;">
-                    <i class="fas fa-arrow-left" style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important;"></i> Back to Directory
+                @php
+                    $backToDirUrl = request('from_view') ? route('organization.index', ['view' => request('from_view')]) : route('organization.index');
+                @endphp
+                <a href="{{ $backToDirUrl }}" class="org-btn org-btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Directory
                 </a>
             </div>
         </div>
@@ -221,42 +214,37 @@
                 </div>
             </div>
 
-            <!-- Personal Context & Tenure Structured Table -->
-            <div class="org-main-card">
-                <div class="org-card-title">
-                    <i class="fas fa-circle-user text-blue-600 me-2"></i> Personal Information & Context
+            <!-- Personal information: only saved fields from the employee form. -->
+            @php
+                $personalFields = collect([
+                    ['label' => 'Birthday', 'icon' => 'fa-cake-candles text-pink-500', 'value' => $dob ? \Carbon\Carbon::parse($dob)->format('d M (Y)') : null],
+                    ['label' => 'Joining Date', 'icon' => 'fa-calendar-check text-emerald-600', 'value' => $joiningDate ? \Carbon\Carbon::parse($joiningDate)->format('d M Y') : null],
+                    ['label' => 'Gender', 'icon' => 'fa-venus-mars text-purple-600', 'value' => filled($detail?->gender) ? ucfirst($detail->gender) : (filled($employee->gender) ? ucfirst($employee->gender) : null)],
+                    ['label' => 'Country / Location', 'icon' => 'fa-earth-americas text-sky-600', 'value' => filled($detail?->country) ? $detail->country : $employee->country],
+                    ['label' => 'Primary Language', 'icon' => 'fa-language text-amber-600', 'value' => filled($detail?->language) ? $detail->language : $employee->language],
+                ])->filter(fn ($field) => filled($field['value']))->values();
+            @endphp
+            @if($personalFields->isNotEmpty())
+                <div class="org-main-card">
+                    <div class="org-card-title">
+                        <i class="fas fa-circle-user text-blue-600 me-2"></i> Personal Information & Context
+                    </div>
+                    <div class="org-profile-table-wrap">
+                        <table class="org-profile-data-table">
+                            <tbody>
+                                @foreach($personalFields->chunk(2) as $fieldRow)
+                                    <tr>
+                                        @foreach($fieldRow as $field)
+                                            <td class="org-data-label"><i class="fas {{ $field['icon'] }} me-2"></i> {{ $field['label'] }}</td>
+                                            <td class="org-data-value" @if($fieldRow->count() === 1) colspan="3" @endif>{{ $field['value'] }}</td>
+                                        @endforeach
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-                <div class="org-profile-table-wrap">
-                    <table class="org-profile-data-table">
-                        <tbody>
-                            <tr>
-                                <td class="org-data-label"><i class="fas fa-cake-candles text-pink-500 me-2"></i> Birthday</td>
-                                <td class="org-data-value">{{ $dob ? \Carbon\Carbon::parse($dob)->format('d M (Y)') : 'Not specified' }}</td>
-                                <td class="org-data-label"><i class="fas fa-calendar-check text-emerald-600 me-2"></i> Joining Date</td>
-                                <td class="org-data-value">{{ $joiningDate ? \Carbon\Carbon::parse($joiningDate)->format('d M Y') : 'Not specified' }}</td>
-                            </tr>
-                            <tr>
-                                <td class="org-data-label"><i class="fas fa-venus-mars text-purple-600 me-2"></i> Gender</td>
-                                <td class="org-data-value">{{ ucfirst($detail?->gender ?? $employee->gender ?? 'Not specified') }}</td>
-                                <td class="org-data-label"><i class="fas fa-earth-americas text-sky-600 me-2"></i> Country / Location</td>
-                                <td class="org-data-value">{{ $detail?->country ?? $employee->country ?? 'Not specified' }}</td>
-                            </tr>
-                            <tr>
-                                <td class="org-data-label"><i class="fas fa-language text-amber-600 me-2"></i> Primary Language</td>
-                                <td class="org-data-value">{{ $detail?->language ?? $employee->language ?? 'Not specified' }}</td>
-                                <td class="org-data-label"><i class="fas fa-clock text-slate-500 me-2"></i> Service Tenure</td>
-                                <td class="org-data-value fw-bold text-slate-700">
-                                    @if($joiningDate)
-                                        {{ \Carbon\Carbon::parse($joiningDate)->diffForHumans(null, true) }}
-                                    @else
-                                        Not available
-                                    @endif
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+            @endif
 
             <!-- About & Bio -->
             <div class="org-main-card">
@@ -273,11 +261,14 @@
                 <div class="org-card-title">
                     <i class="fas fa-award text-amber-600 me-2"></i> Skills & Expertise
                 </div>
-                @if($detail?->skills)
+                @php
+                    $skillsList = $detail?->clean_skills_array ?? [];
+                @endphp
+                @if(!empty($skillsList))
                     <div class="d-flex flex-wrap gap-2">
-                        @foreach(array_filter(array_map('trim', explode(',', $detail->skills))) as $skill)
-                            <span class="badge bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-pill px-3 py-2 font-semibold text-xs">
-                                <i class="fas fa-check-circle me-1 text-emerald-500"></i> {{ $skill }}
+                        @foreach($skillsList as $skill)
+                            <span class="org-skill-badge">
+                                <i class="fas fa-check-circle" style="color: #10B981 !important;"></i> {{ $skill }}
                             </span>
                         @endforeach
                     </div>
@@ -310,7 +301,7 @@
 
                         <div class="org-form-group">
                             <label class="org-form-label">Skills (Comma Separated)</label>
-                            <input type="text" name="skills" class="org-form-control" style="padding: 12px 18px !important;" value="{{ old('skills', $detail?->skills) }}" placeholder="e.g. Laravel, React, Operations Management, CRM">
+                            <input type="text" name="skills" class="org-form-control" style="padding: 12px 18px !important;" value="{{ old('skills', !empty($skillsList) ? implode(', ', $skillsList) : '') }}" placeholder="e.g. Laravel, React, Operations Management, CRM">
                             @error('skills')<small class="text-danger font-semibold mt-1">{{ $message }}</small>@enderror
                         </div>
 

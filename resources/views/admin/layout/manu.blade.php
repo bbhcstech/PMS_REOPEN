@@ -4,896 +4,25 @@
 
 @php $userId = Auth::id(); @endphp
 
-<style>
-   /* ===================== PURPLE & WHITE COLOR THEME ===================== */
-
-   /* Global Purple Theme Variables */
-   :root {
-       --purple-primary: #7C3AED;
-       --purple-light: #8B5CF6;
-       --purple-dark: #6D28D9;
-       --purple-soft: #EDE9FE;
-       --purple-gradient: linear-gradient(135deg, #7C3AED 0%, #8B5CF6 100%);
-       --purple-hover: rgba(124, 58, 237, 0.08);
-       --white-pure: #FFFFFF;
-       --white-soft: #F9FAFB;
-       --text-dark: #1F2937;
-       --text-soft: #4B5563;
-       --shadow-purple: 0 4px 20px rgba(124, 58, 237, 0.12);
-   }
-
-   /* ===================== GLOBAL MODAL FIX ===================== */
-   .modal-backdrop.show {
-       opacity: 0.4 !important;
-   }
-
-   body.modal-open {
-       opacity: 1 !important;
-   }
-
-   .modal { z-index: 1050; }
-   .modal-backdrop { z-index: 1040; }
-
-   .modal-content {
-       background-color: var(--white-pure) !important;
-       box-shadow: 0 0.75rem 1.5rem rgba(124, 58, 237, 0.15);
-       border-radius: 10px;
-       border: 1px solid rgba(124, 58, 237, 0.1);
-   }
-
-   .modal-header {
-       border-bottom: 1px solid rgba(124, 58, 237, 0.1);
-       color: var(--purple-dark);
-   }
-
-   .modal-title {
-       color: var(--purple-primary);
-       font-weight: 700;
-   }
-
-   .btn-close:hover {
-       background-color: var(--purple-soft);
-       border-radius: 4px;
-   }
-
-   /* ===================== NAVBAR CORE PREMIUM FIX ===================== */
-   #layout-navbar {
-       display: flex;
-       flex-wrap: nowrap !important;
-       align-items: center;
-       width: 100%;
-       background: rgba(255, 255, 255, 0.92) !important;
-       backdrop-filter: blur(20px) saturate(180%);
-       -webkit-backdrop-filter: blur(20px) saturate(180%);
-       box-shadow: 0 12px 35px -10px rgba(15, 116, 76, 0.08), 0 2px 6px rgba(0, 0, 0, 0.03) !important;
-       border-radius: 20px;
-       border: 1px solid rgba(255, 255, 255, 0.9);
-       padding: 0.65rem 1.25rem;
-       font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
-   }
-
-   #layout-navbar .nav-item,
-   #layout-navbar .fw-bold,
-   #layout-navbar .navbar-brand {
-       font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
-       font-size: 1.18rem !important;
-       font-weight: 800 !important;
-       letter-spacing: -0.015em;
-   }
-
-   #layout-navbar .navbar-nav {
-       display: flex;
-       flex-direction: row;
-       flex-wrap: nowrap !important;
-       align-items: center;
-   }
-
-   #layout-navbar .navbar-nav > * {
-       flex: 0 0 auto;
-       white-space: nowrap;
-   }
-
-   .navbar-nav > div {
-       display: contents;
-   }
-
-   /* ===================== RIGHT ICONS & SEARCH FIX ===================== */
-   .navbar-nav-right,
-   #layout-navbar .navbar-nav-right {
-       display: flex;
-       flex-direction: row !important;
-       flex-wrap: nowrap !important;
-       align-items: center;
-       gap: 10px;
-   }
-
-   .header-icon-box {
-       display: flex;
-       align-items: center;
-       justify-content: center;
-       min-width: 40px;
-       height: 40px;
-       border-radius: 12px;
-       background: rgba(15, 116, 76, 0.06);
-       color: #0f744c;
-       transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-   }
-
-   .header-icon-box:hover {
-       color: #094c32;
-       background: rgba(15, 116, 76, 0.12);
-       transform: translateY(-2px) scale(1.06);
-       box-shadow: 0 6px 18px rgba(15, 116, 76, 0.15);
-   }
-
-   .header-icon-box i {
-       color: #0f744c;
-       font-size: 1.2rem;
-   }
-
-   /* ===================== SEARCH FIELD CONTROL ===================== */
-   @media (max-width: 992px) {
-       #layout-navbar input[type="text"] {
-           display: none !important;
-       }
-   }
-
-   /* ===================== MOBILE / TABLET FINAL FIX ===================== */
-   @media (max-width: 992px) {
-
-       #layout-navbar {
-           padding: 0.5rem 0.75rem;
-       }
-
-       #layout-navbar .navbar-nav,
-       #layout-navbar .navbar-nav-right {
-           flex-direction: row !important;
-           flex-wrap: nowrap !important;
-           align-items: center;
-       }
-
-       #layout-navbar .navbar-nav > *,
-       #layout-navbar .navbar-nav-right > * {
-           flex: 0 0 auto;
-       }
-
-       /* hide username only, keep avatar */
-       .dropdown-user .d-md-block {
-           display: none !important;
-       }
-   }
-
-   /* ===================== EXTRA SAFETY ===================== */
-   .layout-menu {
-       transition: transform 0.3s ease;
-       background: linear-gradient(135deg, var(--white-pure) 0%, var(--white-soft) 100%);
-       border-right: 1px solid rgba(124, 58, 237, 0.1);
-   }
-
-   .layout-menu-active .layout-menu {
-       transform: translateX(0);
-   }
-
-   /* ===================== MENU THEME - PURPLE & WHITE ===================== */
-   .bg-menu-theme {
-       background: linear-gradient(135deg, var(--white-pure) 0%, var(--white-soft) 100%) !important;
-   }
-
-   .app-brand {
-       background: var(--white-pure);
-       border-bottom: 1px solid rgba(124, 58, 237, 0.1);
-   }
-
-   .app-brand-text {
-       color: var(--purple-primary) !important;
-       font-weight: 800 !important;
-   }
-
-   .app-brand-logo.demo {
-       width: 42px;
-       height: 42px;
-       border-radius: 12px;
-       overflow: hidden;
-       display: inline-flex;
-       align-items: center;
-       justify-content: center;
-       flex: 0 0 auto;
-       box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
-       background: #ffffff;
-       padding: 4px;
-   }
-
-   .app-brand-logo.demo img {
-       max-width: 100%;
-       max-height: 100%;
-       width: auto;
-       height: auto;
-       object-fit: contain;
-       display: block;
-   }
-
-    .app-brand-text.demo {
-        max-width: 175px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        font-size: 1.05rem !important;
-        font-weight: 800 !important;
-        line-height: 1.25;
-        letter-spacing: -0.01em !important;
-        background: linear-gradient(135deg, #0569ff, #13d5e7 50%, #8f25ff);
-        -webkit-background-clip: text;
-        background-clip: text;
-        -webkit-text-fill-color: transparent !important;
-        color: transparent !important;
-    }
-
-   .menu-inner .menu-item .menu-link {
-       color: var(--text-dark);
-       transition: all 0.2s ease;
-   }
-
-   .menu-inner .menu-item .menu-link i {
-       color: var(--purple-primary);
-   }
-
-   .menu-inner .menu-item:hover > .menu-link {
-       background-color: var(--purple-hover);
-       color: var(--purple-primary);
-   }
-
-   .menu-inner .menu-item.active > .menu-link {
-       background: var(--purple-gradient);
-       color: var(--white-pure);
-       box-shadow: 0 4px 12px rgba(15, 116, 76, 0.16);
-   }
-
-   .menu-inner .menu-item.active > .menu-link i {
-       color: var(--white-pure);
-   }
-
-   .menu-inner .menu-item.active:not(.open) > .menu-link {
-       position: relative;
-       overflow: hidden;
-       animation: sidebarActiveGlow 1.8s ease-in-out infinite;
-   }
-
-   .menu-inner .menu-item.active:not(.open) > .menu-link::after {
-       content: "";
-       position: absolute;
-       right: 12px;
-       top: 50%;
-       width: 8px;
-       height: 8px;
-       border-radius: 999px;
-       background: #ffffff;
-       box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.9);
-       transform: translateY(-50%);
-       animation: sidebarActiveDot 1.25s ease-in-out infinite;
-   }
-
-    @keyframes sidebarActiveGlow {
-        0%, 100% {
-            box-shadow: 0 4px 12px rgba(15, 116, 76, 0.16);
-        }
-        50% {
-            box-shadow: 0 6px 16px rgba(15, 116, 76, 0.24);
-        }
-    }
-
-   @keyframes sidebarActiveDot {
-       0% {
-           box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.9);
-       }
-       70% {
-           box-shadow: 0 0 0 8px rgba(255, 255, 255, 0);
-       }
-       100% {
-           box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
-       }
-   }
-
-   .menu-inner .menu-item.open > .menu-link {
-       background-color: var(--purple-hover);
-       color: var(--purple-primary);
-   }
-
-   .menu-sub {
-       background: rgba(124, 58, 237, 0.02);
-   }
-
-   .menu-sub .menu-item .menu-link {
-       color: var(--text-soft);
-   }
-
-   .menu-sub .menu-item:hover .menu-link {
-       color: var(--purple-primary);
-       background-color: var(--purple-hover);
-   }
-
-   .menu-sub .menu-item.active .menu-link {
-       color: var(--purple-primary);
-       font-weight: 700;
-       background: linear-gradient(90deg, var(--purple-soft) 0%, rgba(124, 58, 237, 0.05) 100%);
-       border-left: 3px solid var(--purple-primary);
-   }
-
-   .menu-divider {
-       border-color: rgba(124, 58, 237, 0.1) !important;
-   }
-
-   /* Dropdown Menu Purple Theme */
-   .dropdown-menu {
-       border: 1px solid rgba(124, 58, 237, 0.1);
-       box-shadow: var(--shadow-purple);
-   }
-
-   .dropdown-item:hover {
-       background-color: var(--purple-hover);
-       color: var(--purple-primary);
-   }
-
-   .dropdown-item i {
-       color: var(--purple-primary);
-   }
-
-   /* Badge Purple Theme */
-   .badge.bg-danger {
-       background: var(--purple-gradient) !important;
-       color: var(--white-pure);
-   }
-
-   /* Form Controls Purple Theme */
-   .form-control:focus,
-   .form-select:focus {
-       border-color: var(--purple-light);
-       box-shadow: 0 0 0 0.25rem rgba(124, 58, 237, 0.1);
-   }
-
-   .btn-primary {
-       background: var(--purple-gradient) !important;
-       border: none !important;
-       color: var(--white-pure) !important;
-   }
-
-   .btn-primary:hover {
-       background: linear-gradient(135deg, var(--purple-dark) 0%, var(--purple-primary) 100%) !important;
-       box-shadow: var(--shadow-purple);
-   }
-
-   .btn-outline-primary {
-       border-color: var(--purple-primary) !important;
-       color: var(--purple-primary) !important;
-   }
-
-   .btn-outline-primary:hover {
-       background: var(--purple-gradient) !important;
-       color: var(--white-pure) !important;
-   }
-
-   /* Text Colors */
-   .text-primary {
-       color: var(--purple-primary) !important;
-   }
-
-   .text-dark {
-       color: var(--text-dark) !important;
-   }
-
-   .text-muted {
-       color: var(--text-soft) !important;
-   }
-
-   /* Links */
-   a {
-       color: var(--purple-primary);
-       transition: color 0.2s ease;
-   }
-
-   a:hover {
-       color: var(--purple-dark);
-   }
-
-   /* Notification Dropdown */
-   .notification-dropdown {
-       border-top: 3px solid var(--purple-primary);
-   }
-
-   .notification-dropdown li:hover {
-       background-color: var(--purple-hover);
-   }
-
-   .notification-bell.has-unread i {
-       color: #7C3AED !important;
-       animation: pmsBellShake 1.15s ease-in-out infinite;
-       transform-origin: top center;
-   }
-
-   .notification-item-unread {
-       background: linear-gradient(90deg, rgba(124, 58, 237, 0.12), rgba(255, 255, 255, 0.98));
-       border-left: 4px solid #7C3AED;
-   }
-
-   .notification-item-read {
-       background: #fff;
-       opacity: 0.72;
-   }
-
-   .notification-unread-dot {
-       width: 8px;
-       height: 8px;
-       border-radius: 50%;
-       background: #7C3AED;
-       box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.12);
-       flex: 0 0 8px;
-       margin-top: 6px;
-   }
-
-   @keyframes pmsBellShake {
-       0%, 100% { transform: rotate(0); }
-       15% { transform: rotate(12deg); }
-       30% { transform: rotate(-10deg); }
-       45% { transform: rotate(7deg); }
-       60% { transform: rotate(-5deg); }
-       75% { transform: rotate(2deg); }
-   }
-
-   /* Avatar border */
-   .avatar-online img {
-       width: 40px;
-       height: 40px;
-       min-width: 40px;
-       min-height: 40px;
-       max-width: 40px;
-       max-height: 40px;
-       border: 2px solid var(--purple-primary);
-       border-radius: 50% !important;
-       object-fit: cover;
-       object-position: center;
-       display: block;
-   }
-
-   .navbar-profile-avatar {
-       width: 40px !important;
-       height: 40px !important;
-       aspect-ratio: 1 / 1;
-       border-radius: 50% !important;
-       object-fit: cover;
-       object-position: center;
-   }
-
-   /* Timer Icon */
-   .text-danger {
-       color: var(--purple-primary) !important;
-   }
-
-   /* Modal Footer */
-   .modal-footer {
-       border-top: 1px solid rgba(124, 58, 237, 0.1);
-   }
-
-   /* Active Timer Modal Header */
-   .modal-header.bg-danger {
-       background: var(--purple-gradient) !important;
-   }
-
-   /* List Group Items */
-   .list-group-item {
-       border-left: 5px solid var(--purple-primary) !important;
-       border-color: rgba(124, 58, 237, 0.1);
-   }
-
-   /* ===================== END PURPLE THEME ===================== */
-
-   /* ===================== SIDEBAR FONT BOLD FIX ===================== */
-/* Make all sidebar menu text bold for better visibility */
-.menu-inner .menu-item .menu-link,
-.menu-inner .menu-item .menu-link div,
-.menu-inner .menu-item .menu-link .text-truncate,
-.menu-sub .menu-item .menu-link,
-.menu-sub .menu-item .menu-link div,
-.menu-sub .menu-item .menu-link .text-truncate {
-    font-weight: 600 !important;
-    color: #1F2937 !important; /* Dark gray for better contrast */
-}
-
-/* Make active menu items even bolder */
-.menu-inner .menu-item.active > .menu-link,
-.menu-inner .menu-item.active > .menu-link div,
-.menu-inner .menu-item.active > .menu-link .text-truncate {
-    font-weight: 700 !important;
-    color: #FFFFFF !important; /* White text on purple gradient */
-}
-
-/* Active submenu items */
-.menu-sub .menu-item.active .menu-link,
-.menu-sub .menu-item.active .menu-link div,
-.menu-sub .menu-item.active .menu-link .text-truncate {
-    font-weight: 700 !important;
-    color: #7C3AED !important; /* Purple for active submenu items */
-}
-
-/* Hover states */
-.menu-inner .menu-item:hover > .menu-link,
-.menu-inner .menu-item:hover > .menu-link div,
-.menu-inner .menu-item:hover > .menu-link .text-truncate,
-.menu-sub .menu-item:hover .menu-link,
-.menu-sub .menu-item:hover .menu-link div,
-.menu-sub .menu-item:hover .menu-link .text-truncate {
-    font-weight: 600 !important;
-    color: #7C3AED !important; /* Purple on hover */
-}
-
-/* Section headers/ parent menu items with toggle */
-.menu-item.has-sub > .menu-link,
-.menu-item .menu-toggle {
-    font-weight: 650 !important;
-}
-
-/* Ensure submenu items are also bold */
-.menu-sub .menu-link {
-    font-weight: 600 !important;
-}
-
-/* Department submenu items fix */
-.menu-sub .menu-sub .menu-link,
-.menu-sub .menu-sub .menu-link div {
-    font-weight: 600 !important;
-}
-
-/* Override any existing font weights */
-.app-brand-text {
-    font-weight: 800 !important; /* Keep brand text extra bold */
-}
-
-/* Ensure all sidebar text is visible */
-.menu-text,
-[data-i18n] {
-    font-weight: 600 !important;
-}
-
-/* Fix for the department toggle text */
-.menu-item .menu-toggle .text-truncate,
-.menu-item.has-sub .menu-link .text-truncate {
-    font-weight: 650 !important;
-}
-
-.sticky-note-trigger {
-    position: relative;
-}
-
-.sticky-note-count {
-    position: absolute;
-    top: -8px;
-    right: -10px;
-    min-width: 18px;
-    height: 18px;
-    padding: 0 5px;
-    border-radius: 999px;
-    background: #ef4444;
-    color: #fff;
-    font-size: 11px;
-    font-weight: 800;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 6px 14px rgba(239, 68, 68, 0.28);
-}
-
-.sidebar-notification-badge {
-    margin-left: auto;
-    min-width: 18px;
-    height: 18px;
-    padding: 0 5px;
-    border-radius: 999px;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    font-size: 10px;
-    font-weight: 800;
-    line-height: 1;
-    color: #fff;
-    background: #7C3AED;
-    box-shadow: 0 6px 14px rgba(124, 58, 237, 0.18);
-}
-
-.sidebar-notification-badge.is-visible {
-    display: inline-flex;
-}
-
-.sidebar-notification-badge.type-new { background: #2563eb; }
-.sidebar-notification-badge.type-pending { background: #f59e0b; }
-.sidebar-notification-badge.type-issue { background: #ef4444; }
-.sidebar-notification-badge.type-warning { background: #d97706; }
-.sidebar-notification-badge.type-unread { background: #7C3AED; }
-
-.notification-bell {
-    position: relative;
-    width: 42px;
-    height: 42px;
-    border-radius: 14px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    background: #f8fafc;
-    border: 1px solid rgba(15, 23, 42, 0.08);
-    transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
-}
-
-.notification-bell:hover {
-    background: #eef2ff;
-    box-shadow: 0 12px 30px rgba(79, 70, 229, 0.16);
-    transform: translateY(-1px);
-}
-
-.notification-bell.has-unread {
-    color: #4f46e5;
-    animation: notificationBellPulse 1.8s ease-in-out infinite;
-}
-
-.notification-bell .badge {
-    position: absolute;
-    top: -6px;
-    right: -6px;
-    min-width: 20px;
-    height: 20px;
-    border-radius: 999px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 11px;
-    font-weight: 900;
-    border: 2px solid #fff;
-}
-
-.notification-dropdown {
-    width: min(430px, calc(100vw - 24px)) !important;
-    max-height: 560px;
-    overflow: hidden;
-    border-radius: 18px;
-}
-
-.notification-dropdown-head {
-    padding: 16px 18px;
-    background: linear-gradient(135deg, #f8fafc, #eef2ff);
-    border-bottom: 1px solid rgba(15, 23, 42, 0.08);
-}
-
-.notification-dropdown-body {
-    max-height: 410px;
-    overflow-y: auto;
-    padding: 8px;
-}
-
-.notification-card-link {
-    display: grid;
-    grid-template-columns: 44px 1fr auto;
-    gap: 12px;
-    align-items: start;
-    padding: 12px;
-    border-radius: 14px;
-    text-decoration: none;
-    color: inherit;
-    border: 1px solid transparent;
-    transition: background .16s ease, border-color .16s ease, transform .16s ease;
-}
-
-.notification-card-link:hover {
-    background: #f8fafc;
-    border-color: rgba(79, 70, 229, 0.14);
-    transform: translateY(-1px);
-    color: inherit;
-}
-
-.notification-card-link.is-unread {
-    background: #eef2ff;
-    border-color: rgba(79, 70, 229, 0.18);
-}
-
-.notification-avatar-icon {
-    width: 44px;
-    height: 44px;
-    border-radius: 14px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    color: #fff;
-    font-size: 17px;
-    background: linear-gradient(135deg, #6366f1, #8b5cf6);
-    box-shadow: 0 10px 22px rgba(99, 102, 241, 0.24);
-}
-
-.notification-avatar-icon.color-warning { background: linear-gradient(135deg, #f59e0b, #f97316); }
-.notification-avatar-icon.color-success { background: linear-gradient(135deg, #10b981, #059669); }
-.notification-avatar-icon.color-danger { background: linear-gradient(135deg, #ef4444, #dc2626); }
-.notification-avatar-icon.color-info { background: linear-gradient(135deg, #06b6d4, #2563eb); }
-
-.notification-title {
-    display: block;
-    font-size: 14px;
-    font-weight: 900;
-    line-height: 1.25;
-    margin-bottom: 4px;
-}
-
-.notification-message {
-    display: block;
-    font-size: 12px;
-    color: #64748b;
-    line-height: 1.35;
-    margin-bottom: 6px;
-}
-
-.notification-time {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 11px;
-    color: #94a3b8;
-    font-weight: 800;
-}
-
-.notification-unread-dot {
-    width: 9px;
-    height: 9px;
-    margin-top: 17px;
-    border-radius: 50%;
-    background: #4f46e5;
-    box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.12);
-}
-
-.notification-dropdown-foot {
-    display: flex;
-    justify-content: space-between;
-    gap: 10px;
-    padding: 12px 16px;
-    border-top: 1px solid rgba(15, 23, 42, 0.08);
-    background: #fff;
-}
-
-@keyframes notificationBellPulse {
-    0%, 100% { box-shadow: 0 0 0 rgba(79, 70, 229, 0); }
-    50% { box-shadow: 0 0 0 8px rgba(79, 70, 229, 0.08); }
-}
-
-.menu-link.sidebar-has-important {
-    position: relative;
-}
-
-.menu-link.sidebar-has-important::before {
-    content: "";
-    position: absolute;
-    inset: 7px 8px 7px auto;
-    width: 3px;
-    border-radius: 999px;
-    background: currentColor;
-    opacity: 0.55;
-    animation: sidebarBadgeGlow 1.65s ease-in-out infinite;
-}
-
-.menu-item.sidebar-has-important-item > .menu-link {
-    background: rgba(245, 158, 11, 0.08);
-}
-
-@keyframes sidebarBadgeGlow {
-    0%, 100% { opacity: 0.35; box-shadow: 0 0 0 rgba(124, 58, 237, 0); }
-    50% { opacity: 0.9; box-shadow: 0 0 12px rgba(124, 58, 237, 0.45); }
-}
-
-.sticky-note-dock {
-    position: fixed;
-    right: 22px;
-    bottom: 22px;
-    z-index: 1025;
-    width: min(340px, calc(100vw - 32px));
-    display: grid;
-    gap: 12px;
-    pointer-events: none;
-}
-
-.sticky-note-card {
-    pointer-events: auto;
-    position: relative;
-    padding: 16px 16px 14px;
-    border-radius: 8px 8px 18px 8px;
-    color: #243029;
-    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.16);
-    transform-origin: top left;
-    animation: stickyFloatIn 0.55s ease both, stickySway 4.5s ease-in-out infinite;
-    overflow: hidden;
-}
-
-.sticky-note-card::before {
-    content: "";
-    position: absolute;
-    inset: 0 0 auto;
-    height: 10px;
-    background: rgba(255, 255, 255, 0.38);
-}
-
-.sticky-note-card:nth-child(2n) {
-    animation-delay: 0.08s, 0.2s;
-    transform: rotate(1deg);
-}
-
-.sticky-note-card:nth-child(3n) {
-    animation-delay: 0.14s, 0.35s;
-    transform: rotate(-1deg);
-}
-
-.sticky-note-card.yellow { background: linear-gradient(135deg, #fff7ad, #fde68a); }
-.sticky-note-card.blue { background: linear-gradient(135deg, #bfdbfe, #93c5fd); }
-.sticky-note-card.red { background: linear-gradient(135deg, #fecaca, #fca5a5); }
-.sticky-note-card.gray { background: linear-gradient(135deg, #f1f5f9, #cbd5e1); }
-.sticky-note-card.purple { background: linear-gradient(135deg, #ddd6fe, #c4b5fd); }
-.sticky-note-card.green { background: linear-gradient(135deg, #bbf7d0, #86efac); }
-
-.sticky-note-card p {
-    margin: 0 0 10px;
-    font-size: 0.94rem;
-    font-weight: 650;
-    line-height: 1.35;
-    white-space: pre-line;
-}
-
-.sticky-note-meta {
-    font-size: 0.72rem;
-    font-weight: 700;
-    color: rgba(31, 41, 55, 0.62);
-}
-
-.sticky-note-actions {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    display: flex;
-    gap: 4px;
-}
-
-.sticky-note-actions button {
-    width: 26px;
-    height: 26px;
-    border: 0;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.58);
-    color: #1f2937;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.sticky-notes-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-    gap: 14px;
-}
-
-@keyframes stickyFloatIn {
-    from { opacity: 0; transform: translateY(18px) rotate(-2deg) scale(0.96); }
-    to { opacity: 1; transform: translateY(0) rotate(var(--note-tilt, 0deg)) scale(1); }
-}
-
-@keyframes stickySway {
-    0%, 100% { translate: 0 0; }
-    50% { translate: 0 -4px; }
-}
-
-@media (max-width: 768px) {
-    .sticky-note-dock {
-        left: 12px;
-        right: 12px;
-        bottom: 12px;
-        width: auto;
-    }
-}
-
-</style>
+@include('admin.layout.partials.workspace-styles')
 @php
     $adminRefreshVersion = file_exists(public_path('admin/assets/css/pms-refresh.css')) ? filemtime(public_path('admin/assets/css/pms-refresh.css')) : time();
     $logoVersion = file_exists(public_path('logo.png')) ? filemtime(public_path('logo.png')) : time();
     $companySetting = \App\Models\CompanySetting::first();
-    $brandLogo = $currentCompany?->logo ? asset($currentCompany->logo) : ($companySetting?->company_logo ? asset($companySetting->company_logo) : asset('logo.png') . '?v=' . $logoVersion);
-    $brandName = $currentCompany?->brand_name ?? ($companySetting?->company_name ?? 'Bitroxia');
+    $resolvedLogo = null;
+    if (!empty($currentCompany?->logo) && file_exists(public_path($currentCompany->logo))) {
+        $resolvedLogo = asset($currentCompany->logo);
+    } elseif (!empty($companySetting?->company_logo) && file_exists(public_path($companySetting->company_logo))) {
+        $resolvedLogo = asset($companySetting->company_logo);
+    } elseif (file_exists(public_path('logo.png'))) {
+        $resolvedLogo = asset('logo.png') . '?v=' . $logoVersion;
+    } elseif (file_exists(public_path('logos/bitroxia_logo.png'))) {
+        $resolvedLogo = asset('logos/bitroxia_logo.png');
+    } else {
+        $resolvedLogo = asset('logo.png');
+    }
+    $brandLogo = $resolvedLogo;
+    $brandName = $currentCompany?->brand_name ?? ($currentCompany?->name ?? ($companySetting?->company_name ?? 'Bitroxia'));
 @endphp
 <link rel="stylesheet" href="{{ asset('admin/assets/css/pms-refresh.css') }}?v={{ $adminRefreshVersion }}">
 
@@ -923,9 +52,13 @@
     $canSeeModule = fn (string $slug) => auth()->user()?->canViewModule($slug) ?? false;
     $canAnyModule = fn (array $slugs) => collect($slugs)->contains(fn ($slug) => $canSeeModule($slug));
     $isEmployeeUser = strtolower((string) auth()->user()?->role) === 'employee';
-    $userId = auth()->id();
-    $navbarNotifications = auth()->user()->notifications()->latest()->take(8)->get();
-    $navbarUnreadCount = auth()->user()->unreadNotifications()->count();
+    try {
+        $navbarNotifications = auth()->user()?->notifications()->latest()->take(8)->get() ?? collect();
+        $navbarUnreadCount = auth()->user()?->unreadNotifications()->count() ?? 0;
+    } catch (\Throwable $e) {
+        $navbarNotifications = collect();
+        $navbarUnreadCount = 0;
+    }
     $sidebarNotificationItems = SidebarNotificationService::forUser(auth()->user());
     $assignedWorkProjects = collect();
     $assignedWorkTasks = collect();
@@ -1006,7 +139,7 @@
           <div class="app-brand demo">
             <a href="{{ route('dashboard') }}" class="app-brand-link">
               <span class="app-brand-logo demo">
-                <img src="{{ $brandLogo }}" alt="{{ $brandName }} logo">
+                <img src="{{ $brandLogo }}" alt="{{ $brandName }} logo" onerror="this.onerror=null;this.src='{{ asset('logo.png') }}';">
               </span>
               <span class="app-brand-text demo menu-text fw-bold ms-2">{{ $brandName }}</span>
             </a>
@@ -1038,7 +171,7 @@
 
                 <li class="menu-item {{ request()->routeIs('subscription.suspended') ? 'active' : '' }}">
                     <a href="{{ route('subscription.suspended') }}" class="menu-link text-danger fw-bold">
-                        <i class="menu-icon tf-icons bx bx-zap text-danger"></i>
+                        <i class="menu-icon tf-icons bx bxs-zap text-danger"></i>
                         <div class="text-truncate">Reactivate Plan</div>
                     </a>
                 </li>
@@ -1048,20 +181,19 @@
                         <div class="text-truncate">Notifications Center</div>
                     </a>
                 </li>
+                @if(\App\Support\PlatformSupportAccess::companyAdmin(auth()->user()))
                 <li class="menu-item {{ request()->routeIs('admin.company-complaints.*') ? 'active' : '' }}">
                     <a href="{{ route('admin.company-complaints.index') }}" class="menu-link">
                         <i class="menu-icon tf-icons bx bx-support"></i>
                         <div class="text-truncate">Platform Support</div>
                     </a>
                 </li>
+                @endif
                 <li class="menu-item">
-                    <form method="POST" action="{{ route('logout') }}" id="sidebarSuspendedLogoutForm">
-                        @csrf
-                        <a href="javascript:void(0);" onclick="document.getElementById('sidebarSuspendedLogoutForm').submit();" class="menu-link text-muted">
-                            <i class="menu-icon tf-icons bx bx-log-out"></i>
-                            <div class="text-truncate">Log Out</div>
-                        </a>
-                    </form>
+                    <a href="{{ route('logout.get') }}" class="menu-link text-muted">
+                        <i class="menu-icon tf-icons bx bx-log-out"></i>
+                        <div class="text-truncate">Log Out</div>
+                    </a>
                 </li>
             @else
 
@@ -1074,6 +206,14 @@
             </li>
             @endif
 
+            @if(auth()->user()?->company_id && !\App\Services\TenantScope::isPlatformAdmin() && auth()->user()->moduleToggleAllows('company-assistant'))
+            <li class="menu-item {{ request()->routeIs('company.ai.*') ? 'active' : '' }}">
+              <a href="{{ route('company.ai.index') }}" class="menu-link">
+                  <i class="menu-icon tf-icons bx bx-bot"></i>
+                  <div class="text-truncate">Company Assistant</div>
+              </a>
+            </li>
+            @endif
             @if($canSeeModule('notifications'))
             <li class="menu-item {{ request()->routeIs('notifications.*') ? 'active' : '' }}">
               <a href="{{ route('notifications.all') }}" class="menu-link" data-sidebar-key="notifications">
@@ -1083,6 +223,7 @@
             </li>
             @endif
 
+            @if($canSeeModule('my-documents') || $canSeeModule('documents'))
             <!-- My Documents -->
             <li class="menu-item {{ request()->routeIs('my-documents.*') ? 'active' : '' }}">
               <a href="{{ route('my-documents.index') }}" class="menu-link" data-sidebar-key="my-documents">
@@ -1090,13 +231,14 @@
                   <div class="text-truncate" data-i18n="My Documents">My Documents</div>
               </a>
             </li>
+            @endif
 
-            <!-- My Projects (for Employee) -->
-            @if($isEmployeeUser || $canSeeModule('projects'))
-            <li class="menu-item {{ (request()->routeIs('projects.*') && !request()->routeIs('projects.tasks.*') && !request()->routeIs('projects.timelogs.*')) ? 'active' : '' }}">
-              <a href="{{ route('projects.index') }}" class="menu-link" data-sidebar-key="my-projects">
-                  <i class="menu-icon tf-icons bx bx-briefcase-alt-2"></i>
-                  <div class="text-truncate" data-i18n="My Projects">My Projects</div>
+            @if(auth()->user()?->company_id && ! in_array(auth()->user()->normalizedRole(), ['admin', 'superadmin', 'client'], true) && auth()->user()->moduleToggleAllows('my-payslips'))
+            <!-- My Payslips: own released payslips (salary is set by the company Admin / HR) -->
+            <li class="menu-item {{ request()->routeIs('my-payslips.*') ? 'active' : '' }}">
+              <a href="{{ route('my-payslips.index') }}" class="menu-link">
+                  <i class="menu-icon tf-icons bx bx-receipt"></i>
+                  <div class="text-truncate" data-i18n="My Payslips">My Payslips</div>
               </a>
             </li>
             @endif
@@ -1132,158 +274,291 @@
 
 
 
-            <!-- Layouts -->
-            @if($canAnyModule(['employees', 'designations', 'departments', 'attendance', 'leaves', 'holidays', 'awards', 'recruitment', 'appraisal']))
-            <li class="menu-item {{ request()->routeIs('employees.*') ||
-                      request()->routeIs('designations.*') ||
-                      (request()->routeIs('attendance.*') && !request()->routeIs('attendance.report')) ||
-                      request()->routeIs('leaves.*') ||
-                      request()->routeIs('holidays.*') ||
-                      request()->routeIs('awards.*') ||
-                      request()->routeIs('employee.awards') ||
-                      request()->routeIs('recruitment.*') ||
-                      request()->routeIs('appraisal.*')
-                      ? 'active open' : '' }}">
+            @php
+                $isHrSidebarUser = strtolower((string)(auth()->user()?->role ?? '')) === 'hr';
+            @endphp
 
-              <a href="javascript:void(0);" class="menu-link menu-toggle" data-sidebar-key="hr">
-                <i class="menu-icon tf-icons bx bx-layout"></i>
-                <div class="text-truncate" data-i18n="Layouts">HR</div>
-              </a>
-
-
-
-              <ul class="menu-sub">
-                    @if($canSeeModule('employees'))
-                        <li class="menu-item {{ request()->routeIs('employees.*') ? 'active' : '' }}">
-                            <a href="{{ route('employees.index') }}" class="menu-link" data-sidebar-key="employees">
-                                <div class="text-truncate" data-i18n="Without menu">Employee</div>
-                            </a>
-                        </li>
-                    @endif
-
-                    @if($canSeeModule('recruitment'))
-                        <li class="menu-item {{ request()->routeIs('recruitment.*') ? 'active' : '' }}">
-                            <a href="{{ route('recruitment.index') }}" class="menu-link" data-sidebar-key="recruitment">
-                                <div class="text-truncate" data-i18n="Recruitment">Recruitment</div>
-                            </a>
-                        </li>
-                    @endif
-
-                    @if($canSeeModule('appraisal'))
-                        <li class="menu-item {{ request()->routeIs('appraisal.*') ? 'active' : '' }}">
-                            <a href="{{ route('appraisal.index') }}" class="menu-link" data-sidebar-key="appraisal">
-                                <div class="text-truncate" data-i18n="Appraisal">Appraisal</div>
-                            </a>
-                        </li>
-                    @endif
-
-                    @if($canSeeModule('designations'))
-                        <li class="menu-item {{ request()->routeIs('designations.*') ? 'active' : '' }}">
-                            <a href="{{ route('designations.index') }}" class="menu-link">
-                                <div class="text-truncate" data-i18n="Without menu">Designation</div>
-                            </a>
-                        </li>
-
- <!-- Department with Submenu -->
-                  @if($canSeeModule('departments'))
-                  <li class="menu-item {{ request()->routeIs('parent-departments.*') || request()->routeIs('departments.*') ? 'active open' : '' }}">
-                    <a href="javascript:void(0);" class="menu-link menu-toggle">
-                      <div class="text-truncate">Department</div>
+            @if(in_array(strtolower((string) auth()->user()?->role), ['hr', 'manager'], true))
+                @if($canSeeModule('attendance'))
+                <li class="menu-item {{ request()->routeIs('attendance.index') && request('view') === 'personal' ? 'active' : '' }}">
+                    <a href="{{ route('attendance.index', ['view' => 'personal']) }}" class="menu-link">
+                        <i class="menu-icon tf-icons bx bx-calendar-check"></i><div>My Attendance</div>
                     </a>
-                    <ul class="menu-sub">
-                      <li class="menu-item {{ request()->routeIs('parent-departments.*') ? 'active' : '' }}">
-                        <a href="{{ route('parent-departments.index') }}" class="menu-link">
-                          <div class="text-truncate">Parent Department</div>
+                </li>
+                @endif
+                @if($canSeeModule('leaves'))
+                <li class="menu-item {{ request()->routeIs('leaves.mine') ? 'active' : '' }}">
+                    <a href="{{ route('leaves.mine') }}" class="menu-link">
+                        <i class="menu-icon tf-icons bx bx-user-check"></i><div>My Leave Requests</div>
+                    </a>
+                </li>
+                @endif
+            @endif
+
+            @if($isHrSidebarUser)
+                {{-- HR Role: Show all HR features directly as top-level sidebar items without outer HR dropdown wrapper --}}
+                @if($canSeeModule('employees'))
+                    <li class="menu-item {{ request()->routeIs('employees.*') ? 'active' : '' }}">
+                        <a href="{{ route('employees.index') }}" class="menu-link" data-sidebar-key="employees">
+                            <i class="menu-icon tf-icons bx bx-user"></i>
+                            <div class="text-truncate" data-i18n="Without menu">Employee</div>
                         </a>
-                      </li>
-                      <li class="menu-item {{ request()->routeIs('departments.*') ? 'active' : '' }}">
-                        <a href="{{ route('departments.index') }}" class="menu-link">
-                          <div class="text-truncate">Sub Department</div>
-                        </a>
-                      </li>
-                    </ul>
-                  </li>
-                  @endif
+                    </li>
                 @endif
 
-
-                     @if($canSeeModule('attendance'))
-                    <li class="menu-item {{ (request()->routeIs('attendance.*') && !request()->routeIs('attendance.report')) ? 'active' : '' }}">
-                          <a href="{{ route('attendance.index') }}" class="menu-link" data-sidebar-key="attendance">
-                            <div class="text-truncate" data-i18n="Without menu">
-                              {{ auth()->user()->role == 'admin' ? 'Attendance' : 'My Attendance' }}
-                            </div>
-                          </a>
+                @if($canSeeModule('recruitment'))
+                    <li class="menu-item {{ request()->routeIs('recruitment.*') ? 'active' : '' }}">
+                        <a href="{{ route('recruitment.index') }}" class="menu-link" data-sidebar-key="recruitment">
+                            <i class="menu-icon tf-icons bx bx-user-plus"></i>
+                            <div class="text-truncate" data-i18n="Recruitment">Recruitment</div>
+                        </a>
                     </li>
-                    @endif
+                @endif
 
+                @if($canSeeModule('appraisal'))
+                    <li class="menu-item {{ request()->routeIs('appraisal.*') ? 'active' : '' }}">
+                        <a href="{{ route('appraisal.index') }}" class="menu-link" data-sidebar-key="appraisal">
+                            <i class="menu-icon tf-icons bx bx-trending-up"></i>
+                            <div class="text-truncate" data-i18n="Appraisal">Appraisal</div>
+                        </a>
+                    </li>
+                @endif
 
-<!--
-                @if(auth()->user()->role === 'admin')
-                <li class="menu-item {{ request()->routeIs('attendance.report') ? 'active open' : '' }}">
-                  <a href="{{ route('attendance.report') }}" class="menu-link">
-                    <div class="text-truncate" data-i18n="Without menu">Attendance Report</div>
-                  </a>
-                </li>
-                 @endif -->
+                @if($canSeeModule('designations'))
+                    <li class="menu-item {{ request()->routeIs('designations.*') ? 'active' : '' }}">
+                        <a href="{{ route('designations.index') }}" class="menu-link" data-sidebar-key="designations">
+                            <i class="menu-icon tf-icons bx bx-id-card"></i>
+                            <div class="text-truncate" data-i18n="Without menu">Designation</div>
+                        </a>
+                    </li>
+                @endif
 
+                @if($canSeeModule('departments'))
+                    <li class="menu-item department-sidebar-menu {{ request()->routeIs('parent-departments.*') || request()->routeIs('departments.*') ? 'active open' : '' }}">
+                        <a href="javascript:void(0);" class="menu-link menu-toggle" data-sidebar-key="departments">
+                            <i class="menu-icon tf-icons bx bx-buildings"></i>
+                            <div class="text-truncate">Department</div>
+                        </a>
+                        <ul class="menu-sub">
+                            @if($canSeeModule('department-parent'))
+                            <li class="menu-item {{ request()->routeIs('parent-departments.*') ? 'active' : '' }}">
+                                <a href="{{ route('parent-departments.index') }}" class="menu-link">
+                                    <div class="text-truncate">Parent Department</div>
+                                </a>
+                            </li>
+                            @endif
+                            @if($canSeeModule('department-sub'))
+                            <li class="menu-item {{ request()->routeIs('departments.*') ? 'active' : '' }}">
+                                <a href="{{ route('departments.index') }}" class="menu-link">
+                                    <div class="text-truncate">Sub Department</div>
+                                </a>
+                            </li>
+                            @endif
+                        </ul>
+                    </li>
+                @endif
 
+                @if($canSeeModule('attendance') && (!\App\Services\WorkforceAccess::isAuthority(auth()->user()) || \App\Services\WorkforceAccess::canManageLeaves(auth()->user())))
+                    <li class="menu-item {{ (request()->routeIs('attendance.*') && !request()->routeIs('attendance.report')) ? 'active' : '' }}">
+                        <a href="{{ route('attendance.index') }}" class="menu-link" data-sidebar-key="attendance">
+                            <i class="menu-icon tf-icons bx bx-calendar-check"></i>
+                            <div class="text-truncate" data-i18n="Without menu">Attendance</div>
+                        </a>
+                    </li>
+                @endif
 
                 @if($canSeeModule('leaves'))
-                <li class="menu-item {{ request()->routeIs('leaves.*') ? 'active' : '' }}">
-                <a href="{{ route('leaves.index') }}" class="menu-link" data-sidebar-key="leaves">
-                    <div class="text-truncate" data-i18n="Without navbar">My Leaves</div>
-                </a>
-                </li>
+                    @if(!\App\Services\WorkforceAccess::isAuthority(auth()->user()) || \App\Services\WorkforceAccess::canManageLeaves(auth()->user()))
+<li class="menu-item {{ (request()->routeIs('leaves.index') || request()->routeIs('leaves.show') || request()->routeIs('leaves.calendar') || request()->routeIs('leaves.archive') || request()->routeIs('leaves.apology-letters.*')) ? 'active' : '' }}">
+                        <a href="{{ route('leaves.index') }}" class="menu-link" data-sidebar-key="leaves">
+                            <i class="menu-icon tf-icons bx bx-calendar-x"></i>
+                            <div class="text-truncate" data-i18n="Without navbar">My Leaves</div>
+                        </a>
+                    </li>
+@endif
+                    @if($canSeeModule('leaves-apply'))
+                    <li class="menu-item {{ request()->routeIs('leaves.create') ? 'active' : '' }}">
+                        <a href="{{ route('leaves.create') }}" class="menu-link" data-sidebar-key="leaves-apply">
+                            <i class="menu-icon tf-icons bx bx-calendar-plus"></i>
+                            <div class="text-truncate">Apply Leave</div>
+                        </a>
+                    </li>
+                    @endif
                 @endif
 
-
-                <!-- @if(auth()->user()->role === 'admin')
-                <li class="menu-item {{ request()->routeIs('admin.leave.report') ? 'active open' : '' }}">
-                <a href="{{ route('admin.leave.report') }}" class="menu-link">
-                    <div class="text-truncate" data-i18n="Without navbar">Leaves Report</div>
-                </a>
-                </li>
-                @endif -->
-
-                {{-- Employee Holiday View --}}
                 @if($canSeeModule('holidays'))
-                <li class="menu-item {{ request()->routeIs('holidays.*') ? 'active' : '' }}">
-                <a href="{{ route('holidays.calendar') }}" class="menu-link" data-sidebar-key="holidays">
-                    <div class="text-truncate">Holiday List</div>
-                </a>
-                </li>
+                    <li class="menu-item {{ request()->routeIs('holidays.*') ? 'active' : '' }}">
+                        <a href="{{ route('holidays.calendar') }}" class="menu-link" data-sidebar-key="holidays">
+                            <i class="menu-icon tf-icons bx bx-sun"></i>
+                            <div class="text-truncate">Holiday List</div>
+                        </a>
+                    </li>
                 @endif
 
-
-                    @if($canSeeModule('awards') && auth()->user()->role === 'admin')
-                    <!-- Admin sees Appreciation menu -->
-                    <li class="menu-item {{ request()->routeIs('awards.*') ? 'active' : '' }}">
-                        <a href="{{ route('awards.index') }}" class="menu-link">
+                @if($canSeeModule('awards'))
+                    <li class="menu-item {{ request()->routeIs('awards.*') || request()->routeIs('employee.awards') ? 'active' : '' }}">
+                        <a href="{{ route('awards.index') }}" class="menu-link" data-sidebar-key="awards">
+                            <i class="menu-icon tf-icons bx bx-award"></i>
                             <div class="text-truncate" data-i18n="Container">Recognition</div>
                         </a>
                     </li>
+                    @if(auth()->user()->moduleToggleAllows('letterhead'))
                     <li class="menu-item {{ request()->routeIs('letterhead.*') || request()->routeIs('admin.letterhead.*') ? 'active' : '' }}">
-                        <a href="{{ route('letterhead.index') }}" class="menu-link">
+                        <a href="{{ route('letterhead.index') }}" class="menu-link" data-sidebar-key="letterhead">
+                            <i class="menu-icon tf-icons bx bx-file-blank"></i>
                             <div class="text-truncate" data-i18n="Letter Head">Letter Head</div>
                         </a>
                     </li>
-                    @elseif($canSeeModule('awards') && auth()->user()->role === 'employee')
-                    <!-- Employee also sees Recognition menu but goes to filtered view -->
-                    <li class="menu-item {{ request()->routeIs('awards.*') || request()->routeIs('employee.awards') ? 'active' : '' }}">
-                        <a href="{{ route('awards.index') }}" class="menu-link">
-                            <div class="text-truncate" data-i18n="Container">My Awards</div>
-                        </a>
-                    </li>
-                    <li class="menu-item {{ request()->routeIs('letterhead.*') || request()->routeIs('admin.letterhead.*') ? 'active' : '' }}">
-                        <a href="{{ route('letterhead.index') }}" class="menu-link">
-                            <div class="text-truncate" data-i18n="Letter Head">Letter Head</div>
-                        </a>
-                    </li>
+                    @endif
                 @endif
+            @else
+                <!-- Layouts (Collapsible HR Menu for Admin, Manager, etc.) -->
+                @if($canAnyModule(['employees', 'designations', 'departments', 'attendance', 'leaves', 'holidays', 'awards', 'recruitment', 'appraisal']))
+                <li class="menu-item {{ request()->routeIs('employees.*') ||
+                          request()->routeIs('designations.*') ||
+                          (request()->routeIs('attendance.*') && !request()->routeIs('attendance.report')) ||
+                          request()->routeIs('leaves.*') ||
+                          request()->routeIs('holidays.*') ||
+                          request()->routeIs('awards.*') ||
+                          request()->routeIs('employee.awards') ||
+                          request()->routeIs('recruitment.*') ||
+                          request()->routeIs('appraisal.*')
+                          ? 'active open' : '' }}">
 
-              </ul>
-            </li>
+                  <a href="javascript:void(0);" class="menu-link menu-toggle" data-sidebar-key="hr">
+                    <i class="menu-icon tf-icons bx bx-layout"></i>
+                    <div class="text-truncate" data-i18n="Layouts">HR</div>
+                  </a>
+
+                  <ul class="menu-sub">
+                        @if($canSeeModule('employees'))
+                            <li class="menu-item {{ request()->routeIs('employees.*') ? 'active' : '' }}">
+                                <a href="{{ route('employees.index') }}" class="menu-link" data-sidebar-key="employees">
+                                    <div class="text-truncate" data-i18n="Without menu">Employee</div>
+                                </a>
+                            </li>
+                        @endif
+
+                        @if($canSeeModule('recruitment'))
+                            <li class="menu-item {{ request()->routeIs('recruitment.*') ? 'active' : '' }}">
+                                <a href="{{ route('recruitment.index') }}" class="menu-link" data-sidebar-key="recruitment">
+                                    <div class="text-truncate" data-i18n="Recruitment">Recruitment</div>
+                                </a>
+                            </li>
+                        @endif
+
+                        @if($canSeeModule('appraisal'))
+                            <li class="menu-item {{ request()->routeIs('appraisal.*') ? 'active' : '' }}">
+                                <a href="{{ route('appraisal.index') }}" class="menu-link" data-sidebar-key="appraisal">
+                                    <div class="text-truncate" data-i18n="Appraisal">Appraisal</div>
+                                </a>
+                            </li>
+                        @endif
+
+                        @if($canSeeModule('designations'))
+                            <li class="menu-item {{ request()->routeIs('designations.*') ? 'active' : '' }}">
+                                <a href="{{ route('designations.index') }}" class="menu-link">
+                                    <div class="text-truncate" data-i18n="Without menu">Designation</div>
+                                </a>
+                            </li>
+                        @endif
+
+     <!-- Department with Submenu -->
+                      @if($canSeeModule('departments'))
+                      <li class="menu-item department-sidebar-menu {{ request()->routeIs('parent-departments.*') || request()->routeIs('departments.*') ? 'active open' : '' }}">
+                        <a href="javascript:void(0);" class="menu-link menu-toggle">
+                          <div class="text-truncate">Department</div>
+                        </a>
+                        <ul class="menu-sub">
+                          @if($canSeeModule('department-parent'))
+                          <li class="menu-item {{ request()->routeIs('parent-departments.*') ? 'active' : '' }}">
+                            <a href="{{ route('parent-departments.index') }}" class="menu-link">
+                              <div class="text-truncate">Parent Department</div>
+                            </a>
+                          </li>
+                          @endif
+                          @if($canSeeModule('department-sub'))
+                          <li class="menu-item {{ request()->routeIs('departments.*') ? 'active' : '' }}">
+                            <a href="{{ route('departments.index') }}" class="menu-link">
+                              <div class="text-truncate">Sub Department</div>
+                            </a>
+                          </li>
+                          @endif
+                        </ul>
+                      </li>
+                      @endif
+
+
+                        @if(\App\Services\WorkforceAccess::isAdmin(auth()->user()))
+                        @if($canSeeModule('attendance') && (!\App\Services\WorkforceAccess::isAuthority(auth()->user()) || \App\Services\WorkforceAccess::canManageLeaves(auth()->user())))
+                        @if($canSeeModule('higher-level-attendance'))
+                        <li class="menu-item {{ request()->routeIs('admin.authority-attendance') ? 'active' : '' }}"><a href="{{ route('admin.authority-attendance', ['view' => 'team']) }}" class="menu-link"><div class="text-truncate">Higher-level attendance</div></a></li>
+                        @endif
+                        @endif
+                        @if($canSeeModule('leaves'))
+                        @if($canSeeModule('higher-level-leaves'))
+                        <li class="menu-item {{ request()->routeIs('admin.authority-leaves') ? 'active' : '' }}"><a href="{{ route('admin.authority-leaves') }}" class="menu-link"><div class="text-truncate">Higher-level leaves</div></a></li>
+                        @endif
+                        @endif
+                        @endif
+                         @if($canSeeModule('attendance') && (!\App\Services\WorkforceAccess::isAuthority(auth()->user()) || \App\Services\WorkforceAccess::canManageLeaves(auth()->user())))
+                        <li class="menu-item {{ (request()->routeIs('attendance.*') && !request()->routeIs('attendance.report')) ? 'active' : '' }}">
+                              <a href="{{ route('attendance.index') }}" class="menu-link" data-sidebar-key="attendance">
+                                <div class="text-truncate" data-i18n="Without menu">
+                                  {{ in_array(strtolower((string)(auth()->user()->role ?? '')), ['admin', 'superadmin', 'administrator'], true) ? 'Attendance' : 'My Attendance' }}
+                                </div>
+                              </a>
+                        </li>
+                        @endif
+
+
+                    @if($canSeeModule('leaves'))
+                    @if(!\App\Services\WorkforceAccess::isAuthority(auth()->user()) || \App\Services\WorkforceAccess::canManageLeaves(auth()->user()))
+<li class="menu-item {{ (request()->routeIs('leaves.index') || request()->routeIs('leaves.show') || request()->routeIs('leaves.calendar') || request()->routeIs('leaves.archive') || request()->routeIs('leaves.apology-letters.*')) ? 'active' : '' }}">
+                    <a href="{{ route('leaves.index') }}" class="menu-link" data-sidebar-key="leaves">
+                        <div class="text-truncate" data-i18n="Without navbar">My Leaves</div>
+                    </a>
+                    </li>
+@endif
+                    @if($canSeeModule('leaves-apply'))
+                    <li class="menu-item {{ request()->routeIs('leaves.create') ? 'active' : '' }}">
+                    <a href="{{ route('leaves.create') }}" class="menu-link" data-sidebar-key="leaves-apply">
+                        <div class="text-truncate">Apply Leave</div>
+                    </a>
+                    </li>
+                    @endif
+                    @endif
+
+
+                    {{-- Employee Holiday View --}}
+                    @if($canSeeModule('holidays'))
+                    <li class="menu-item {{ request()->routeIs('holidays.*') ? 'active' : '' }}">
+                    <a href="{{ route('holidays.calendar') }}" class="menu-link" data-sidebar-key="holidays">
+                        <div class="text-truncate">Holiday List</div>
+                    </a>
+                    </li>
+                    @endif
+
+
+                        @if($canSeeModule('awards'))
+                        {{-- Recognition follows the role permission for every role (employees see their own awards). --}}
+                        <li class="menu-item {{ request()->routeIs('awards.*') || request()->routeIs('employee.awards') ? 'active' : '' }}">
+                            <a href="{{ route('awards.index') }}" class="menu-link">
+                                <div class="text-truncate" data-i18n="Container">{{ auth()->user()->role === 'employee' ? 'My Awards' : 'Recognition' }}</div>
+                            </a>
+                        </li>
+                        @if(auth()->user()->moduleToggleAllows('letterhead'))
+                        <li class="menu-item {{ request()->routeIs('letterhead.*') || request()->routeIs('admin.letterhead.*') ? 'active' : '' }}">
+                            <a href="{{ route('letterhead.index') }}" class="menu-link">
+                                <div class="text-truncate" data-i18n="Letter Head">Letter Head</div>
+                            </a>
+                        </li>
+                        @endif
+                    @endif
+
+                  </ul>
+                </li>
+                @endif
             @endif
 
 
@@ -1297,59 +572,80 @@
               </a>
 
               <ul class="menu-sub">
+                  @if($canSeeModule('reports-task'))
                   <li class="menu-item {{ request()->routeIs('reports.task') ? 'active' : '' }}">
                     <a href="{{ route('reports.task') }}" class="menu-link">
                       <div class="text-truncate">Task Report</div>
                     </a>
                   </li>
+                  @endif
 
+                  @if($canSeeModule('reports-timelog'))
                   <li class="menu-item {{ request()->routeIs('reports.timelog') ? 'active' : '' }}">
                     <a href="{{ route('reports.timelog') }}" class="menu-link">
                       <div class="text-truncate">Time Log Report</div>
                     </a>
                   </li>
+                  @endif
 
+                  @if($canSeeModule('reports-finance'))
                   <li class="menu-item {{ request()->routeIs('reports.finance') ? 'active' : '' }}">
                     <a href="{{ route('reports.finance') }}" class="menu-link">
                       <div class="text-truncate">Finance Report</div>
+                      <span class="badge rounded-pill ms-auto" style="background: rgba(245, 158, 11, 0.18); color: #B45309; font-size: 0.62rem; font-weight: 800;">Soon</span>
                     </a>
                   </li>
+                  @endif
 
+                  @if($canSeeModule('reports-income-vs-expense'))
                   <li class="menu-item {{ request()->routeIs('reports.income-vs-expense') ? 'active' : '' }}">
                     <a href="{{ route('reports.income-vs-expense') }}" class="menu-link">
                       <div class="text-truncate">Income Vs Expense</div>
+                      <span class="badge rounded-pill ms-auto" style="background: rgba(245, 158, 11, 0.18); color: #B45309; font-size: 0.62rem; font-weight: 800;">Soon</span>
                     </a>
                   </li>
+                  @endif
 
+                  @if($canSeeModule('reports-leave'))
                   <li class="menu-item {{ request()->routeIs('admin.leave.report') ? 'active' : '' }}">
                     <a href="{{ route('admin.leave.report') }}" class="menu-link">
                       <div class="text-truncate">Leave Report</div>
                     </a>
                   </li>
+                  @endif
 
+                  @if($canSeeModule('reports-attendance'))
                   <li class="menu-item {{ request()->routeIs('attendance.report') ? 'active' : '' }}">
                     <a href="{{ route('attendance.report') }}" class="menu-link">
                       <div class="text-truncate">Attendance Report</div>
                     </a>
                   </li>
+                  @endif
 
+                  @if($canSeeModule('reports-expense'))
                   <li class="menu-item {{ request()->routeIs('reports.expense') ? 'active' : '' }}">
                     <a href="{{ route('reports.expense') }}" class="menu-link">
                       <div class="text-truncate">Expense Report</div>
+                      <span class="badge rounded-pill ms-auto" style="background: rgba(245, 158, 11, 0.18); color: #B45309; font-size: 0.62rem; font-weight: 800;">Soon</span>
                     </a>
                   </li>
+                  @endif
 
+                  @if($canSeeModule('reports-deal'))
                   <li class="menu-item {{ request()->routeIs('reports.deal') ? 'active' : '' }}">
                     <a href="{{ route('reports.deal') }}" class="menu-link">
                       <div class="text-truncate">Deal Report</div>
                     </a>
                   </li>
+                  @endif
 
+                  @if($canSeeModule('reports-sales'))
                   <li class="menu-item {{ request()->routeIs('reports.sales') ? 'active' : '' }}">
                     <a href="{{ route('reports.sales') }}" class="menu-link">
                       <div class="text-truncate">Sales Report</div>
                     </a>
                   </li>
+                  @endif
               </ul>
             </li>
             @endif
@@ -1361,7 +657,7 @@
             <li class="menu-item {{ request()->routeIs('collaborating-companies.*') ? 'active' : '' }}">
                 <a href="{{ route('collaborating-companies.index') }}" class="menu-link" data-sidebar-key="collaborating-companies">
                     <i class="menu-icon tf-icons bx bx-buildings"></i>
-                    <div class="text-truncate">Collaborating Companies</div>
+                    <div class="text-truncate">Collab Companies</div>
                 </a>
             </li>
             @endif
@@ -1369,13 +665,13 @@
             @if($canSeeModule('clients'))
             <li class="menu-item {{ request()->routeIs('clients.*') ? 'active' : '' }}">
                 <a href="{{ route('clients.index') }}" class="menu-link" data-sidebar-key="clients">
-                    <i class="menu-icon tf-icons bx bx-user-voice"></i>
+                    <i class="menu-icon tf-icons bx bx-user"></i>
                     <div class="text-truncate">Client</div>
                 </a>
             </li>
             @endif
 
-            @if(($canSeeModule('work') || in_array(strtolower((string) auth()->user()?->role), ['admin', 'manager', 'hr'], true)) && ($canAnyModule(['projects', 'tasks', 'timelogs', 'timesheets']) || in_array(strtolower((string) auth()->user()?->role), ['admin', 'manager', 'hr'], true)))
+            @if($canSeeModule('work') && $canAnyModule(['projects', 'tasks', 'timelogs', 'timesheets']))
             <li class="menu-item {{ request()->routeIs('projects.*') ||
                 request()->routeIs('tasks.*') || request()->routeIs('users.tasks.*') ||
                 request()->routeIs('timelogs.*') || request()->routeIs('task-timer.*') ||
@@ -1387,7 +683,7 @@
                 </a>
 
                 <ul class="menu-sub">
-                    @if($canSeeModule('projects') || in_array(strtolower((string) auth()->user()?->role), ['admin', 'manager', 'hr'], true))
+                    @if($canSeeModule('projects'))
                         <li class="menu-item {{ (request()->routeIs('projects.*') && !request()->routeIs('projects.tasks.*') && !request()->routeIs('projects.timelogs.*')) ? 'active' : '' }}">
                             <a href="{{ route('projects.index') }}" class="menu-link" data-sidebar-key="projects">
                                 <div class="text-truncate" data-i18n="Landing">Projects</div>
@@ -1395,7 +691,7 @@
                         </li>
                     @endif
 
-                    @if($canSeeModule('tasks') || in_array(strtolower((string) auth()->user()?->role), ['admin', 'manager', 'hr'], true))
+                    @if($canSeeModule('tasks'))
                     <li class="menu-item {{ request()->routeIs('tasks.*') || request()->routeIs('projects.tasks.*') || request()->routeIs('users.tasks.*') || request()->routeIs('task-timer.*') ? 'active' : '' }}">
                         <a href="{{ route('tasks.index') }}" class="menu-link" data-sidebar-key="tasks">
                             <div class="text-truncate" data-i18n="Pricing">Tasks</div>
@@ -1403,124 +699,17 @@
                     </li>
                     @endif
 
-                    @if($canSeeModule('timelogs') || $canSeeModule('timesheets') || in_array(strtolower((string) auth()->user()?->role), ['admin', 'manager', 'hr'], true))
+                    @if($canSeeModule('timelogs') || $canSeeModule('timesheets'))
                         <li class="menu-item {{ request()->routeIs('timelogs.*') || request()->routeIs('projects.timelogs.*') ? 'active' : '' }}">
                             <a href="{{ route('timelogs.index') }}" class="menu-link" data-sidebar-key="timelogs">
                                 <div class="text-truncate" data-i18n="Payment">Timesheet</div>
                             </a>
                         </li>
                     @endif
-
-                    <!-- Contracts Section - Admin Only -->
-
-                    <!-- @if(auth()->user()->role === 'admin')
-                         <li class="menu-item {{ request()->routeIs('admin.contracts.*') ? 'active open' : '' }}">
-                            <a href="{{ route('admin.contracts.index') }}" class="menu-link">
-                                <div class="text-truncate" data-i18n="Contracts">Contracts</div>
-                            </a>
-                        </li>
-
-                        <li class="menu-item {{ request()->routeIs('admin.contract-templates.*') ? 'active open' : '' }}">
-                            <a href="{{ route('admin.contract-templates.index') }}" class="menu-link">
-                                <div class="text-truncate" data-i18n="Contract Templates">Contract Templates</div>
-                            </a>
-                        </li> -->
-                    @endif
                 </ul>
             </li>
             @endif
 
-            @if($canSeeModule('payroll') && $canAnyModule(['payroll', 'payroll-architectures', 'payslips', 'salary-structures', 'payroll-policies', 'payroll-cycles', 'tax-rules', 'bonus-rules', 'deduction-rules', 'overtime-rules', 'payroll-reports', 'payroll-audit-logs', 'payroll-settings', 'payroll-import-export', 'payroll-archive', 'formula-builder']))
-            <li class="menu-item {{ request()->routeIs('payroll.*') ? 'active open' : '' }}">
-                <a href="javascript:void(0);" class="menu-link menu-toggle" data-sidebar-key="payroll">
-                    <i class="menu-icon tf-icons bx bx-wallet"></i>
-                    <div class="text-truncate">Payroll</div>
-                </a>
-
-                <ul class="menu-sub">
-                    @if($canSeeModule('payroll'))
-                        <li class="menu-item {{ request()->routeIs('payroll.index') ? 'active' : '' }}">
-                            <a href="{{ route('payroll.index') }}" class="menu-link"><div>Payroll</div></a>
-                        </li>
-                    @endif
-                    @if($canSeeModule('payroll-architectures'))
-                        <li class="menu-item {{ request()->routeIs('payroll.architectures.*') ? 'active' : '' }}">
-                            <a href="{{ route('payroll.architectures.index') }}" class="menu-link"><div>Payroll Architectures</div></a>
-                        </li>
-                    @endif
-                    @if($canSeeModule('payslips'))
-                        <li class="menu-item {{ request()->routeIs('payroll.payslips.*') ? 'active' : '' }}">
-                            <a href="{{ route('payroll.payslips.index') }}" class="menu-link"><div>Payslips</div></a>
-                        </li>
-                    @endif
-                    @if($canSeeModule('salary-structures'))
-                        <li class="menu-item {{ request()->routeIs('payroll.salary-structures.*') ? 'active' : '' }}">
-                            <a href="{{ route('payroll.salary-structures.index') }}" class="menu-link"><div>Salary Structures</div></a>
-                        </li>
-                    @endif
-                    @if($canSeeModule('payroll-cycles'))
-                        <li class="menu-item {{ request()->routeIs('payroll.cycles.*') ? 'active' : '' }}">
-                            <a href="{{ route('payroll.cycles.index') }}" class="menu-link"><div>Payroll Cycles</div></a>
-                        </li>
-                    @endif
-                    @if($canSeeModule('payroll-policies'))
-                        <li class="menu-item {{ request()->routeIs('payroll.policies.*') ? 'active' : '' }}">
-                            <a href="{{ route('payroll.policies.index') }}" class="menu-link"><div>Payroll Policies</div></a>
-                        </li>
-                    @endif
-                    @if($canSeeModule('deduction-rules'))
-                        <li class="menu-item {{ request()->routeIs('payroll.deduction-rules.*') ? 'active' : '' }}">
-                            <a href="{{ route('payroll.deduction-rules.index') }}" class="menu-link"><div>Deduction Rules</div></a>
-                        </li>
-                    @endif
-                    @if($canSeeModule('bonus-rules'))
-                        <li class="menu-item {{ request()->routeIs('payroll.bonus-rules.*') ? 'active' : '' }}">
-                            <a href="{{ route('payroll.bonus-rules.index') }}" class="menu-link"><div>Bonus Rules</div></a>
-                        </li>
-                    @endif
-                    @if($canSeeModule('tax-rules'))
-                        <li class="menu-item {{ request()->routeIs('payroll.tax-rules.*') ? 'active' : '' }}">
-                            <a href="{{ route('payroll.tax-rules.index') }}" class="menu-link"><div>Tax Rules</div></a>
-                        </li>
-                    @endif
-                    @if($canSeeModule('overtime-rules'))
-                        <li class="menu-item {{ request()->routeIs('payroll.overtime-rules.*') ? 'active' : '' }}">
-                            <a href="{{ route('payroll.overtime-rules.index') }}" class="menu-link"><div>Overtime Rules</div></a>
-                        </li>
-                    @endif
-                    @if($canSeeModule('formula-builder'))
-                        <li class="menu-item {{ request()->routeIs('payroll.formula-builder.*') ? 'active' : '' }}">
-                            <a href="{{ route('payroll.formula-builder.index') }}" class="menu-link"><div>Formula Builder</div></a>
-                        </li>
-                    @endif
-                    @if($canSeeModule('payroll-reports'))
-                        <li class="menu-item {{ request()->routeIs('payroll.reports.*') ? 'active' : '' }}">
-                            <a href="{{ route('payroll.reports.index') }}" class="menu-link"><div>Payroll Reports</div></a>
-                        </li>
-                    @endif
-                    @if($canSeeModule('payroll-import-export'))
-                        <li class="menu-item {{ request()->routeIs('payroll.import-export.*') ? 'active' : '' }}">
-                            <a href="{{ route('payroll.import-export.index') }}" class="menu-link"><div>Import Export</div></a>
-                        </li>
-                    @endif
-                    @if($canSeeModule('payroll-archive'))
-                        <li class="menu-item {{ request()->routeIs('payroll.archive.*') ? 'active' : '' }}">
-                            <a href="{{ route('payroll.archive.index') }}" class="menu-link"><div>Payroll Archive</div></a>
-                        </li>
-                    @endif
-                    @if($canSeeModule('payroll-audit-logs'))
-                        <li class="menu-item {{ request()->routeIs('payroll.audit-logs.*') ? 'active' : '' }}">
-                            <a href="{{ route('payroll.audit-logs.index') }}" class="menu-link"><div>Audit Logs</div></a>
-                        </li>
-                    @endif
-                    @if($canSeeModule('payroll-settings'))
-                        <li class="menu-item {{ request()->routeIs('payroll.settings.*') ? 'active' : '' }}">
-                            <a href="{{ route('payroll.settings.index') }}" class="menu-link"><div>Payroll Settings</div></a>
-                        </li>
-                    @endif
-                </ul>
-            </li>
-            @endif
 
 <!--    //leads section -->
 
@@ -1533,130 +722,177 @@
 
                         <ul class="menu-sub">
                             {{-- Lead Contact --}}
+                            @if(auth()->user()->moduleToggleAllows('leads-contacts'))
                             <li class="menu-item {{ request()->routeIs('leads.contacts.*') ? 'active' : '' }}">
                                 <a href="{{ route('leads.contacts.index') }}" class="menu-link">
                                     <div class="text-truncate" data-i18n="Landing">Lead Contact</div>
                                 </a>
                             </li>
+                            @endif
 
                             {{-- Deals --}}
+                            @if(auth()->user()->moduleToggleAllows('crm-deals'))
                             <li class="menu-item {{ request()->routeIs('admin.deals.*') ? 'active' : '' }}">
                                 <a href="{{ route('admin.deals.index') }}" class="menu-link">
                                     <div class="text-truncate">Deals</div>
                                 </a>
                             </li>
+                            @endif
                         </ul>
                     </li>
+                @endif
+
+                @if($canSeeModule('products') || in_array(auth()->user()?->normalizedRole(), ['admin', 'superadmin'], true))
+                <!-- Products -->
+                <li class="menu-item {{ request()->routeIs('products.*') ? 'active' : '' }}">
+                    <a href="{{ route('products.index') }}" class="menu-link" data-sidebar-key="products">
+                        <i class="menu-icon tf-icons bx bx-cube"></i>
+                        <div class="text-truncate" data-i18n="Products">Products</div>
+                    </a>
+                </li>
+                @endif
+
+                @if($canSeeModule('orders'))
+                <!-- Orders -->
+                <li class="menu-item {{ request()->routeIs('orders.*') ? 'active' : '' }}">
+                    <a href="{{ route('orders.index') }}" class="menu-link" data-sidebar-key="orders">
+                        <i class="menu-icon tf-icons bx bx-cart"></i>
+                        <div class="text-truncate" data-i18n="Orders">Orders</div>
+                    </a>
+                </li>
                 @endif
 
                 <!-- //ticket section . -->
 
 
-            @if($canSeeModule('tickets'))
+            {{-- Internal work tickets are separate from Platform Support & Complaints. --}}
+            @if($canSeeModule('tickets') && ! \App\Support\TicketAccess::hiddenForCurrentUser())
             <li class="menu-item {{ request()->routeIs('tickets.*') || request()->routeIs('ticket-groups.*') ? 'active' : '' }}">
                   <a href="{{ route('tickets.index') }}" class="menu-link" data-sidebar-key="tickets">
                        <i class="menu-icon tf-icons bx bx-receipt"></i>
-                      <div class="text-truncate" data-i18n="Dashboard">Ticket</div>
+                      <div class="text-truncate" data-i18n="Dashboard">Internal Tickets</div>
                   </a>
               </li>
             @endif
 
             <!-- Platform Support & Complaints -->
+            @if(\App\Support\PlatformSupportAccess::companyAdmin(auth()->user()) && auth()->user()->moduleToggleAllows('company-complaints'))
             <li class="menu-item {{ request()->routeIs('admin.company-complaints.*') ? 'active' : '' }}">
                 <a href="{{ route('admin.company-complaints.index') }}" class="menu-link">
                     <i class="menu-icon tf-icons bx bx-support"></i>
                     <div class="text-truncate">Platform Support &amp; Complaints</div>
                 </a>
             </li>
+            @endif
 
-            @if($canSeeModule('settings'))
-                <li class="menu-item {{ request()->routeIs('settings.*') || request()->routeIs('admin.settings.*') || request()->routeIs('admin.modules.*') || request()->routeIs('admin.role-permissions.*') || request()->routeIs('admin.role-accounts.*') ? 'active open' : '' }}">
+            {{-- Payroll access follows saved permissions for Admin and HR. --}}
+            @php
+                $canUsePayrollWorkspace = in_array(strtolower((string)(auth()->user()->role ?? '')), ['admin', 'superadmin', 'administrator', 'hr'], true);
+            @endphp
+            @if($canUsePayrollWorkspace && ($canSeeModule('payroll') || $canSeeModule('payslips')))
+            <li class="menu-item {{ request()->routeIs('payroll.*') ? 'active' : '' }}">
+                <a href="{{ route($canSeeModule('payroll') ? 'payroll.index' : 'payroll.payslips.index') }}" class="menu-link">
+                    <i class="menu-icon tf-icons bx bx-money"></i>
+                    <div class="text-truncate" data-i18n="Payroll">Payroll</div>
+                </a>
+            </li>
+            @endif
+
+            @if($canSeeModule('settings') || in_array(auth()->user()?->normalizedRole(), ['admin', 'superadmin'], true))
+                @php
+                    // Holiday Settings shares the holidays.* routes with the HR "Holiday List" page (holidays.calendar).
+                    $holidaySettingsActive = request()->routeIs('holidays.*') && ! request()->routeIs('holidays.calendar');
+                    // Keep Settings expanded on every one of its own pages (Holiday and Attendance Settings included).
+                    $settingsMenuOpen = request()->routeIs('settings.*', 'admin.settings.*', 'admin.modules.*', 'admin.role-permissions.*', 'admin.role-accounts.*', 'attendance.settings*') || $holidaySettingsActive;
+                @endphp
+                <li class="menu-item {{ $settingsMenuOpen ? 'active open' : '' }}" data-sidebar-menu="settings">
                     <a href="javascript:void(0);" class="menu-link menu-toggle">
                         <i class="menu-icon tf-icons bx bx-cog"></i>
                         <div class="text-truncate" data-i18n="Settings">Settings</div>
                     </a>
                     <ul class="menu-sub">
-                        @if($canSeeModule('settings-dashboard'))
-                        <li class="menu-item {{ request()->routeIs('admin.settings.index') ? 'active' : '' }}"><a href="{{ route('admin.settings.index') }}" class="menu-link"><div>Settings Dashboard</div></a></li>
-                        @endif
-                        @if($canSeeModule('company-profile-settings'))
-                        <li class="menu-item {{ request()->routeIs('settings.company') ? 'active' : '' }}"><a href="{{ route('settings.company') }}" class="menu-link"><div>Company Profile</div></a></li>
-                        @endif
-                        @if($canSeeModule('organization-details-settings'))
-                        <li class="menu-item {{ request()->routeIs('admin.settings.organization-details*') ? 'active' : '' }}"><a href="{{ route('admin.settings.organization-details') }}" class="menu-link"><div>Organization Details</div></a></li>
-                        @endif
-                        @if($canSeeModule('business-address-settings'))
-                        <li class="menu-item {{ request()->routeIs('admin.settings.business-address*') ? 'active' : '' }}"><a href="{{ route('admin.settings.business-address.index') }}" class="menu-link"><div>Branches / Locations</div></a></li>
-                        @endif
-                        @if($canSeeModule('departments'))
-                        <li class="menu-item {{ request()->routeIs('parent-departments.*') || request()->routeIs('departments.*') ? 'active open' : '' }}">
-                            <a href="javascript:void(0);" class="menu-link menu-toggle">
-                                <div>Department</div>
-                            </a>
-                            <ul class="menu-sub">
-                                <li class="menu-item {{ request()->routeIs('parent-departments.*') ? 'active' : '' }}">
-                                    <a href="{{ route('parent-departments.index') }}" class="menu-link">
-                                        <div>Parent Department</div>
-                                    </a>
-                                </li>
-                                <li class="menu-item {{ request()->routeIs('departments.*') ? 'active' : '' }}">
-                                    <a href="{{ route('departments.index') }}" class="menu-link">
-                                        <div>Sub Department</div>
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-                        @endif
-                        @if($canSeeModule('designations'))
-                        <li class="menu-item {{ request()->routeIs('designations.*') ? 'active' : '' }}"><a href="{{ route('designations.index') }}" class="menu-link"><div>Designations</div></a></li>
-                        @endif
-                        @if($canSeeModule('work-schedule-settings'))
-                        <li class="menu-item {{ request()->routeIs('admin.settings.work-schedule*') ? 'active' : '' }}"><a href="{{ route('admin.settings.work-schedule') }}" class="menu-link"><div>Work Schedule</div></a></li>
-                        @endif
-                        @if($canSeeModule('leave-settings'))
-                        <li class="menu-item {{ request()->routeIs('admin.settings.leave*') ? 'active' : '' }}"><a href="{{ route('admin.settings.leave') }}" class="menu-link"><div>Leave Settings</div></a></li>
-                        @endif
-                        @if($canSeeModule('holiday-settings'))
-                        <li class="menu-item {{ request()->routeIs('holidays.*') ? 'active' : '' }}"><a href="{{ route('holidays.index') }}" class="menu-link"><div>Holiday Settings</div></a></li>
-                        @endif
                         @if($canSeeModule('attendance-settings'))
                         <li class="menu-item {{ request()->routeIs('attendance.settings*') ? 'active' : '' }}"><a href="{{ route('attendance.settings') }}" class="menu-link"><div>Attendance Settings</div></a></li>
                         @endif
-                        @if($canSeeModule('payroll-settings'))
-                        <li class="menu-item {{ request()->routeIs('payroll.settings*') ? 'active' : '' }}"><a href="{{ route('payroll.settings.index') }}" class="menu-link"><div>Payroll Settings</div></a></li>
-                        @endif
-                        @if($canSeeModule('recruitment-settings'))
-                        <li class="menu-item {{ request()->routeIs('admin.settings.recruitment*') ? 'active' : '' }}"><a href="{{ route('admin.settings.recruitment') }}" class="menu-link"><div>Recruitment Settings</div></a></li>
-                        @endif
-                        @if($canSeeModule('performance-settings'))
-                        <li class="menu-item {{ request()->routeIs('admin.settings.performance*') ? 'active' : '' }}"><a href="{{ route('admin.settings.performance') }}" class="menu-link"><div>Performance Settings</div></a></li>
-                        @endif
-                        @if($canSeeModule('notification-settings'))
-                        <li class="menu-item {{ request()->routeIs('admin.settings.notification*') ? 'active' : '' }}"><a href="{{ route('admin.settings.notification') }}" class="menu-link"><div>Notification Settings</div></a></li>
-                        @endif
-                        @if($canSeeModule('email-settings'))
-                        <li class="menu-item {{ request()->routeIs('admin.settings.email*') ? 'active' : '' }}"><a href="{{ route('admin.settings.email') }}" class="menu-link"><div>Email Settings</div></a></li>
-                        @endif
-                        @if($canSeeModule('document-settings'))
-                        <li class="menu-item {{ request()->routeIs('admin.settings.document*') ? 'active' : '' }}"><a href="{{ route('admin.settings.document') }}" class="menu-link"><div>Document Settings</div></a></li>
-                        @endif
-                        @if($canSeeModule('security-settings'))
-                        <li class="menu-item {{ request()->routeIs('admin.settings.security*') ? 'active' : '' }}"><a href="{{ route('admin.settings.security') }}" class="menu-link"><div>Security Settings</div></a></li>
+                        @if($canSeeModule('business-address-settings') && in_array(strtolower((string) auth()->user()?->role), ['admin', 'administrator', 'superadmin', 'hr', 'manager'], true))
+                        <li class="menu-item {{ request()->routeIs('admin.settings.business-address*') ? 'active' : '' }}"><a href="{{ route('admin.settings.business-address.index') }}" class="menu-link"><div>Branches / Locations</div></a></li>
                         @endif
                         @if($canSeeModule('change-password-settings'))
                         <li class="menu-item {{ request()->routeIs('admin.settings.change-password*') ? 'active' : '' }}"><a href="{{ route('admin.settings.change-password') }}" class="menu-link"><div>Change Password</div></a></li>
                         @endif
-                        @if($canSeeModule('role-permissions-settings') || $canSeeModule('role-management'))
-                        <li class="menu-item {{ request()->routeIs('admin.role-permissions.*') ? 'active' : '' }}"><a href="{{ route('admin.role-permissions.index') }}" class="menu-link"><div>Role & Permission</div></a></li>
+                        @if($canSeeModule('company-profile-settings'))
+                        <li class="menu-item {{ request()->routeIs('settings.company') ? 'active' : '' }}"><a href="{{ route('settings.company') }}" class="menu-link"><div>Company Profile</div></a></li>
+                        @endif
+                        @if(\App\Services\WorkforceAccess::isAdmin(auth()->user()) && $canSeeModule('departments'))
+                        <li class="menu-item department-sidebar-menu {{ request()->routeIs('admin.settings.parent-departments.*') || request()->routeIs('admin.settings.departments.*') ? 'active open' : '' }}">
+                            <a href="javascript:void(0);" class="menu-link menu-toggle">
+                                <div>Department</div>
+                            </a>
+                            <ul class="menu-sub">
+                                @if($canSeeModule('department-parent'))
+                                <li class="menu-item {{ request()->routeIs('admin.settings.parent-departments.*') ? 'active' : '' }}">
+                                    <a href="{{ route('admin.settings.parent-departments.index') }}" class="menu-link">
+                                        <div>Parent Department</div>
+                                    </a>
+                                </li>
+                                @endif
+                                @if($canSeeModule('department-sub'))
+                                <li class="menu-item {{ request()->routeIs('admin.settings.departments.*') ? 'active' : '' }}">
+                                    <a href="{{ route('admin.settings.departments.index') }}" class="menu-link">
+                                        <div>Sub Department</div>
+                                    </a>
+                                </li>
+                                @endif
+                            </ul>
+                        </li>
+                        @endif
+                        @if(\App\Services\WorkforceAccess::isAdmin(auth()->user()) && $canSeeModule('designations'))
+                        <li class="menu-item {{ request()->routeIs('admin.settings.designations.*') ? 'active' : '' }}"><a href="{{ route('admin.settings.designations.index') }}" class="menu-link"><div>Designations</div></a></li>
+                        @endif
+                        @if($canSeeModule('document-settings'))
+                        <li class="menu-item {{ request()->routeIs('admin.settings.document*') ? 'active' : '' }}"><a href="{{ route('admin.settings.document') }}" class="menu-link"><div>Document Settings</div></a></li>
+                        @endif
+                        @if($canSeeModule('email-settings'))
+                        <li class="menu-item {{ request()->routeIs('admin.settings.email*') ? 'active' : '' }}"><a href="{{ route('admin.settings.email') }}" class="menu-link"><div>Email Settings</div></a></li>
+                        @endif
+                        @if($canSeeModule('holiday-settings'))
+                        <li class="menu-item {{ $holidaySettingsActive ? 'active' : '' }}"><a href="{{ route('holidays.index') }}" class="menu-link"><div>Holiday Settings</div></a></li>
+                        @endif
+                        @if($canSeeModule('leave-settings'))
+                        <li class="menu-item {{ request()->routeIs('admin.settings.leave*') ? 'active' : '' }}"><a href="{{ route('admin.settings.leave') }}" class="menu-link"><div>Leave Settings</div></a></li>
                         @endif
                         @if($canSeeModule('localization-settings'))
                         <li class="menu-item {{ request()->routeIs('admin.settings.localization*') ? 'active' : '' }}"><a href="{{ route('admin.settings.localization') }}" class="menu-link"><div>Localization</div></a></li>
                         @endif
+                        @if($canSeeModule('module-management') || in_array(auth()->user()?->normalizedRole(), ['admin', 'superadmin'], true))
+                        <li class="menu-item {{ request()->routeIs('admin.modules.*') ? 'active' : '' }}"><a href="{{ route('admin.modules.index') }}" class="menu-link"><div>Module Management</div></a></li>
+                        @endif
+                        @if($canSeeModule('notification-settings'))
+                        <li class="menu-item {{ request()->routeIs('admin.settings.notification*') ? 'active' : '' }}"><a href="{{ route('admin.settings.notification') }}" class="menu-link"><div>Notification Settings</div></a></li>
+                        @endif
+                        @if($canSeeModule('organization-details-settings'))
+                        <li class="menu-item {{ request()->routeIs('admin.settings.organization-details*') ? 'active' : '' }}"><a href="{{ route('admin.settings.organization-details') }}" class="menu-link"><div>Organization Details</div></a></li>
+                        @endif
+                        @if($canSeeModule('performance-settings'))
+                        <li class="menu-item {{ request()->routeIs('admin.settings.performance*') ? 'active' : '' }}"><a href="{{ route('admin.settings.performance') }}" class="menu-link"><div>Performance Settings</div></a></li>
+                        @endif
+                        @if($canSeeModule('recruitment-settings'))
+                        <li class="menu-item {{ request()->routeIs('admin.settings.recruitment*') ? 'active' : '' }}"><a href="{{ route('admin.settings.recruitment') }}" class="menu-link"><div>Recruitment Settings</div></a></li>
+                        @endif
+                        @if($canSeeModule('role-permissions-settings') || $canSeeModule('role-management') || in_array(auth()->user()?->normalizedRole(), ['admin', 'superadmin'], true))
+                        <li class="menu-item {{ request()->routeIs('admin.role-permissions.*') ? 'active' : '' }}"><a href="{{ route('admin.role-permissions.index') }}" class="menu-link"><div>Role & Permission</div></a></li>
+                        @endif
+                        @if($canSeeModule('security-settings'))
+                        <li class="menu-item {{ request()->routeIs('admin.settings.security*') ? 'active' : '' }}"><a href="{{ route('admin.settings.security') }}" class="menu-link"><div>Security Settings</div></a></li>
+                        @endif
+                        @if($canSeeModule('settings-dashboard'))
+                        <li class="menu-item {{ request()->routeIs('admin.settings.index') ? 'active' : '' }}"><a href="{{ route('admin.settings.index') }}" class="menu-link"><div>Settings Dashboard</div></a></li>
+                        @endif
                         @if($canSeeModule('terms-policy-settings'))
                         <li class="menu-item {{ request()->routeIs('admin.settings.terms-policy*') ? 'active' : '' }}"><a href="{{ route('admin.settings.terms-policy') }}" class="menu-link"><div>Terms &amp; Policy</div></a></li>
                         @endif
-                        @if($canSeeModule('module-management'))
-                        <li class="menu-item {{ request()->routeIs('admin.modules.*') ? 'active' : '' }}"><a href="{{ route('admin.modules.index') }}" class="menu-link"><div>Module Management</div></a></li>
+                        @if($canSeeModule('work-schedule-settings'))
+                        <li class="menu-item {{ request()->routeIs('admin.settings.work-schedule*') ? 'active' : '' }}"><a href="{{ route('admin.settings.work-schedule') }}" class="menu-link"><div>Work Schedule</div></a></li>
                         @endif
                     </ul>
                 </li>
@@ -1911,6 +1147,12 @@
                 });
             });
 
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') {
+                    closeMobileMenu();
+                }
+            });
+
             window.addEventListener('resize', function () {
                 if (window.innerWidth >= 1200) {
                     closeMobileMenu();
@@ -1926,50 +1168,50 @@
           <nav
             class="layout-navbar container-xxl navbar-detached navbar navbar-expand-xl align-items-center bg-navbar-theme"
             id="layout-navbar">
-            <div class="layout-menu-toggle navbar-nav align-items-xl-center me-4 me-xl-0 d-xl-none">
-              <a class="nav-item nav-link px-0 me-xl-6" href="javascript:void(0)">
+            <div class="layout-menu-toggle navbar-nav align-items-xl-center me-3 me-sm-4 me-xl-0 d-xl-none">
+              <a class="nav-item nav-link px-0 me-xl-6" href="javascript:void(0)" aria-label="Toggle navigation menu">
                 <i class="icon-base bx bx-menu icon-md"></i>
               </a>
             </div>
 
             <a href="{{ route('dashboard') }}" class="mobile-navbar-brand d-xl-none" aria-label="{{ $brandName }} dashboard">
               <span class="mobile-navbar-logo">
-                <img src="{{ $brandLogo }}" alt="">
+                <img src="{{ $brandLogo }}" alt="{{ $brandName }} logo" onerror="this.onerror=null;this.src='{{ asset('logo.png') }}';">
               </span>
             </a>
 
-            <div class="navbar-nav-right d-flex align-items-center justify-content-end" id="navbar-collapse">
+            <div class="navbar-nav-right d-flex align-items-center justify-content-between" id="navbar-collapse">
 
-              <!-- LEFT: Breadcrumbs -->
-              <div class="navbar-nav align-items-center">
+              <!-- LEFT: Breadcrumbs (desktop only to prevent mobile topbar crowding) -->
+              <div class="navbar-nav align-items-center d-none d-lg-flex pms-navbar-breadcrumb">
                 <div class="nav-item">
-                  <span class="fw-bold">Dashboard</span> • Home
+                  <span class="fw-bold">Dashboard</span> <span class="pms-breadcrumb-dot" aria-hidden="true">&bull;</span> <span class="pms-breadcrumb-sub">Home</span>@if(request()->routeIs('notifications.*', 'admin.company-notifications.*')) <span class="pms-breadcrumb-dot" aria-hidden="true">&bull;</span> <span class="pms-breadcrumb-active">Notification Center</span>@elseif(request()->routeIs('my-documents.*')) <span class="pms-breadcrumb-dot" aria-hidden="true">&bull;</span> <span class="pms-breadcrumb-active">My Documents</span>@elseif(request()->routeIs('collaborating-companies.*')) <span class="pms-breadcrumb-dot" aria-hidden="true">&bull;</span> <span class="pms-breadcrumb-active">Collab Companies</span>@elseif(request()->routeIs('organization.*')) <span class="pms-breadcrumb-dot" aria-hidden="true">&bull;</span> <span class="pms-breadcrumb-active">Organization</span>@elseif(request()->routeIs('employees.*')) <span class="pms-breadcrumb-dot" aria-hidden="true">&bull;</span> <span class="pms-breadcrumb-active">Employees</span>@elseif(request()->routeIs('clients.*')) <span class="pms-breadcrumb-dot" aria-hidden="true">&bull;</span> <span class="pms-breadcrumb-active">Clients</span>@elseif(request()->routeIs('leads.contacts.*')) <span class="pms-breadcrumb-dot" aria-hidden="true">&bull;</span> <span class="pms-breadcrumb-active">Lead Contacts</span>@elseif(request()->routeIs('admin.deals.*')) <span class="pms-breadcrumb-dot" aria-hidden="true">&bull;</span> <span class="pms-breadcrumb-active">Deals</span>@elseif(request()->routeIs('events.*')) <span class="pms-breadcrumb-dot" aria-hidden="true">&bull;</span> <span class="pms-breadcrumb-active">Events</span>@elseif(request()->routeIs('projects.tasks.*') || request()->routeIs('tasks.*', 'users.tasks.*')) <span class="pms-breadcrumb-dot" aria-hidden="true">&bull;</span> <span class="pms-breadcrumb-active">Tasks</span>@elseif(request()->routeIs('timelogs.*', 'projects.timelogs.*')) <span class="pms-breadcrumb-dot" aria-hidden="true">&bull;</span> <span class="pms-breadcrumb-active">Timesheet</span>@elseif(request()->routeIs('projects.*')) <span class="pms-breadcrumb-dot" aria-hidden="true">&bull;</span> <span class="pms-breadcrumb-active">Projects</span>@elseif(request()->routeIs('products.*')) <span class="pms-breadcrumb-dot" aria-hidden="true">&bull;</span> <span class="pms-breadcrumb-active">Products</span>@elseif(request()->routeIs('orders.*')) <span class="pms-breadcrumb-dot" aria-hidden="true">&bull;</span> <span class="pms-breadcrumb-active">Orders</span>@endif
                 </div>
               </div>
 
-              <ul class="navbar-nav flex-row align-items-center ms-md-auto">
+              <!-- CENTER: Search -->
+              <div class="nav-item navbar-search-wrapper pms-navbar-search-center d-flex align-items-center mx-auto" title="Search">
+                <i class="bx bx-search icon-md" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#searchModal"></i>
+                <input
+                  type="text"
+                  class="form-control border-0 shadow-none d-none d-md-inline-block"
+                  placeholder="Search..."
+                  data-bs-toggle="modal"
+                  data-bs-target="#searchModal"
+                  readonly
+                  style="cursor: pointer;" />
+              </div>
+
+              <ul class="navbar-nav flex-row align-items-center ms-auto ms-lg-0">
                 <!-- Place this tag where you want the button to render. -->
 
-                <!-- RIGHT: Search + User -->
-                <div class="navbar-nav align-items-center ms-auto d-flex">
-
-                  <!-- Small search -->
-                  <div class="nav-item d-flex align-items-center me-3" style="width: 200px;" title="Saerch">
-                    <i class="bx bx-search icon-md me-2" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#searchModal"></i>
-                    <input
-                      type="text"
-                      class="form-control border-0 shadow-none ps-1 ps-sm-2"
-                      placeholder="Search..."
-                      data-bs-toggle="modal"
-                      data-bs-target="#searchModal"
-                      readonly
-                      style="cursor: pointer; height: 32px; font-size: 14px;" />
-                  </div>
+                <!-- RIGHT: Actions + User -->
+                <div class="navbar-nav align-items-center d-flex">
 
                   <!-- Sticky Note Icon -->
                   <div class="nav-item me-3">
                       <a href="javascript:void(0);" class="d-block header-icon-box sticky-note-trigger" data-bs-toggle="modal" data-bs-target="#addNoteModal" title="Sticky Notes">
-                          <i class="bx bx-note icon-md text-dark"></i>
+                          <i class="bx bx-note icon-md"></i>
                           @if($stickyNotes->count())
                             <span class="sticky-note-count">{{ $stickyNotes->count() }}</span>
                           @endif
@@ -1989,7 +1231,7 @@
                           <!-- Start Timer -->
                           <div class="nav-item me-3">
                           <a href="javascript:void(0);" class="d-block header-icon-box" data-bs-toggle="modal" data-bs-target="#startTimerModal" title="Start Timer">
-                              <i class="bx bx-time-five icon-md text-dark"></i>
+                              <i class="bx bx-time-five icon-md"></i>
                           </a>
                           </div>
                       @endif
@@ -2000,20 +1242,22 @@
                       <li class="nav-item dropdown" data-bs-toggle="tooltip" data-bs-placement="top" title="Create new">
                         <a class="d-block header-icon-box" href="#" id="createNewDropdown" role="button"
                            data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="bx bx-plus-circle icon-md text-dark"></i>
+                            <i class="bx bx-plus-circle icon-md"></i>
                         </a>
 
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="createNewDropdown">
                             <li title="Add Task">
-                                <a class="dropdown-item f-14 text-dark openRightModal" href="{{ route('tasks.create') }}">
+                                <a class="dropdown-item f-14 openRightModal" href="{{ route('tasks.create') }}">
                                     <i class="bx bx-plus me-2"></i> Add Task
                                 </a>
                             </li>
+                            @unless(\App\Support\TicketAccess::hiddenForCurrentUser())
                             <li title="Create Ticket">
-                                <a class="dropdown-item f-14 text-dark openRightModal" href="{{ route('tickets.create') }}">
+                                <a class="dropdown-item f-14 openRightModal" href="{{ route('tickets.create') }}">
                                     <i class="bx bx-plus me-2"></i> Create Ticket
                                 </a>
                             </li>
+                            @endunless
                         </ul>
                     </li>
                   </div>
@@ -2022,15 +1266,15 @@
                       <li class="nav-item dropdown" data-bs-toggle="tooltip" data-bs-placement="top" title="Assigned work">
                         <a class="d-block header-icon-box sticky-note-trigger" href="#" id="assignedWorkDropdown" role="button"
                            data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="bx bx-plus-circle icon-md text-dark"></i>
+                            <i class="bx bx-plus-circle icon-md"></i>
                             @php $assignedWorkCount = $assignedWorkProjects->count() + $assignedWorkTasks->count() + $assignedWorkTickets->count(); @endphp
                             @if($assignedWorkCount)
                               <span class="sticky-note-count">{{ $assignedWorkCount }}</span>
                             @endif
                         </a>
 
-                        <ul class="dropdown-menu dropdown-menu-end p-0" aria-labelledby="assignedWorkDropdown" style="width: 380px; max-height: 520px; overflow-y: auto;">
-                            <li class="px-3 py-2 border-bottom bg-white">
+                        <ul class="dropdown-menu dropdown-menu-end p-0" aria-labelledby="assignedWorkDropdown" style="width: min(380px, calc(100vw - 24px)); max-height: 520px; overflow-y: auto;">
+                            <li class="px-3 py-2 border-bottom">
                                 <p class="mb-0 fw-bold">Assigned Work</p>
                                 <small class="text-muted">Projects, tasks, and tickets assigned to you</small>
                             </li>
@@ -2065,7 +1309,7 @@
                             @forelse($assignedWorkTickets as $ticketItem)
                                 <li class="px-3 py-2">
                                     <div class="d-flex justify-content-between gap-2">
-                                        <a class="text-dark text-decoration-none flex-grow-1" href="{{ route('tickets.show', $ticketItem->id) }}">
+                                        <a class="text-decoration-none flex-grow-1" href="{{ route('tickets.show', $ticketItem->id) }}">
                                             <div class="fw-semibold text-truncate">#{{ $ticketItem->id }} {{ $ticketItem->subject }}</div>
                                             <small class="text-muted">{{ $ticketItem->project?->name ?? 'No project' }} · {{ ucfirst($ticketItem->status) }}</small>
                                         </a>
@@ -2106,7 +1350,8 @@
                       try {
                           $hdrCompany = app(\App\Services\CompanyContext::class)->current();
                           $hdrCompanyId = $hdrCompany?->id ?? auth()->user()?->company_id;
-                          if ($hdrCompanyId && class_exists(\App\Models\Central\CentralNotification::class)) {
+                          $hdrCanSeeCompanyAlerts = in_array(strtolower((string) auth()->user()?->role), ['admin', 'administrator', 'superadmin'], true);
+                          if ($hdrCompanyId && $hdrCanSeeCompanyAlerts && class_exists(\App\Models\Central\CentralNotification::class)) {
                                try {
                                    app(\App\Services\SubscriptionNotificationEngine::class)->scanAndGenerateAlerts($hdrCompanyId);
                                } catch (\Throwable $e) {}
@@ -2133,7 +1378,7 @@
                        <li class="nav-item dropdown" title="New notifications">
                         <a class="nav-link header-icon-box notification-bell {{ $totalHeaderUnread > 0 ? 'has-unread' : '' }}" href="#" id="navbarDropdown"
                            role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="fa fa-bell f-16 text-dark-grey"></i>
+                            <i class="fa fa-bell f-16"></i>
                             @if($totalHeaderUnread > 0)
                                 <span class="badge bg-danger" id="navbarNotificationCount">{{ $totalHeaderUnread }}</span>
                             @endif
@@ -2155,8 +1400,7 @@
 
                                 <li class="notification-dropdown-body">
                            @foreach($headerCentralNotifications as $cntf)
-                             <a href="{{ $cntf->action_url ?: route('notifications.all') }}"
-                                class="notification-card-link {{ !$cntf->is_read ? 'is-unread' : '' }}" style="border-left: 3px solid {{ $cntf->severity === 'CRITICAL' ? '#ef4444' : ($cntf->severity === 'WARNING' ? '#f59e0b' : '#3b82f6') }};">
+                             <div class="notification-card-link {{ !$cntf->is_read ? 'is-unread' : '' }}" style="border-left: 3px solid {{ $cntf->severity === 'CRITICAL' ? '#ef4444' : ($cntf->severity === 'WARNING' ? '#f59e0b' : '#3b82f6') }};">
                                  <span class="notification-avatar-icon color-{{ $cntf->severity === 'CRITICAL' ? 'danger' : ($cntf->severity === 'WARNING' ? 'warning' : 'info') }}">
                                      <i class="fas {{ $cntf->severity === 'CRITICAL' ? 'fa-exclamation-triangle' : ($cntf->severity === 'WARNING' ? 'fa-bell-circle-exclamation' : 'fa-bell') }}"></i>
                                  </span>
@@ -2175,7 +1419,7 @@
                                  @if(!$cntf->is_read)
                                      <span class="notification-unread-dot" style="background: #ef4444;"></span>
                                  @endif
-                             </a>
+                             </div>
                            @endforeach
                            @forelse($navbarNotifications as $notification)
                             @php
@@ -2186,36 +1430,15 @@
                                 $color = data_get($data, 'color', 'info');
                                 $title = data_get($data, 'title', $type);
                                 $message = data_get($data, 'message', '');
-
-                                if ($taskId = data_get($data, 'task_id')) {
-                                    $link = route('tasks.show', $taskId);
-                                } elseif ($ticketId = data_get($data, 'ticket_id')) {
-                                    $link = route('tickets.show', $ticketId);
-                                } elseif ($projectId = data_get($data, 'project_id')) {
-                                    $link = route('projects.show', $projectId);
-                                } elseif ($employeeId = data_get($data, 'employee_id')) {
-                                    $link = route('employees.show', $employeeId);
-                                } else {
-                                    $link = data_get($data, 'url', '#');
-                                }
-                                $isClickable = data_get($data, 'clickable', true) !== false && data_get($data, 'type') !== 'own_password_changed';
                             @endphp
 
-    @if($isClickable)
-        <a href="{{ route('notifications.open', $notification->id) }}"
-           class="notification-card-link {{ $isUnread ? 'is-unread' : '' }}">
-    @else
-        <div class="notification-card-link {{ $isUnread ? 'is-unread' : '' }}" style="cursor: default; opacity: 0.95;">
-    @endif
+        <div class="notification-card-link {{ $isUnread ? 'is-unread' : '' }}">
         <span class="notification-avatar-icon color-{{ $color }}">
             <i class="fas {{ $icon }}"></i>
         </span>
         <span class="flex-grow-1">
             <span class="notification-title d-flex align-items-center justify-content-between">
                 <span>{{ $title }}</span>
-                @if(!$isClickable)
-                    <span class="badge bg-secondary text-white rounded-pill px-2 py-0.5" style="font-size: 0.65rem;">View Only</span>
-                @endif
             </span>
             @if($message)
                 <span class="notification-message">{{ \Illuminate\Support\Str::limit($message, 92) }}</span>
@@ -2225,11 +1448,7 @@
         @if($isUnread)
             <span class="notification-unread-dot"></span>
         @endif
-    @if($isClickable)
-        </a>
-    @else
         </div>
-    @endif
 @empty
     <div class="px-3 py-5 text-center text-muted">
         <i class="fas fa-bell-slash fa-2x mb-2 d-block"></i>
@@ -2239,9 +1458,12 @@
                                 </li>
 
 
-                                <li class="notification-dropdown-foot">
-                                    <a href="{{ route('notifications.all') }}" class="btn btn-sm btn-primary rounded-pill flex-grow-1">View all</a>
+                                @if($canSeeModule('notifications'))
+                                <li class="notification-dropdown-foot d-flex gap-2 p-2.5">
+                                    <a href="{{ route('notifications.all') }}" class="btn btn-sm btn-primary rounded-pill flex-grow-1">View All</a>
+                                    <a href="{{ route('notifications.all', ['filter' => 'unread']) }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">Unread ({{ $navbarUnreadCount }})</a>
                                 </li>
+                                @endif
                             </ul>
                         </li>
 
@@ -2252,13 +1474,19 @@
                 @php
                   use App\Models\User;
                   $user = auth()->user();
-                  $employeeDesignation = $user?->employeeDetail?->designation?->name ?? $user?->designation ?? 'Employee';
+                  $employeeDesignation = $user?->employeeDetail?->designation?->name ?? $user?->designation ?? null;
                   $employeeDepartment = $user?->employeeDetail?->department?->dpt_name ?? null;
+                  $companyStaffRole = $user?->companyStaffRole;
+                  $profileRoleLabel = $companyStaffRole
+                    && (int) $companyStaffRole->company_id === (int) $user?->company_id
+                    && filled($companyStaffRole->name)
+                      ? trim($companyStaffRole->name)
+                      : ucfirst((string) $user?->role);
                 @endphp
 
                 <!-- User -->
                 <li class="nav-item navbar-dropdown dropdown-user dropdown">
-                  <a  class="nav-link dropdown-toggle hide-arrow p-0"
+                  <a  class="nav-link dropdown-toggle hide-arrow p-0 pms-user-pill"
                     href="javascript:void(0);"
                     data-bs-toggle="dropdown">
 
@@ -2270,10 +1498,12 @@
                       </div>
 
                       <div class="d-none d-md-block text-start">
-                        <h6 class="mb-0 text-truncate" style="font-size: 14px;">{{ $user->name }}</h6>
-                        <small class="text-muted d-block text-truncate" style="max-width: 180px;">
-                          {{ $employeeDesignation }}
-                        </small>
+                        <h6 class="mb-0 text-truncate pms-user-pill-name" style="font-size: 13px;">{{ $user->name }}</h6>
+                        @if($employeeDesignation && strtolower($employeeDesignation) !== 'employee')
+                          <small class="text-muted d-block text-truncate" style="max-width: 180px;">
+                            {{ $employeeDesignation }}
+                          </small>
+                        @endif
                         @if($user?->role === 'employee' && $employeeDepartment)
                           <small class="text-muted d-block text-truncate" style="max-width: 180px;">
                             {{ $employeeDepartment }}
@@ -2296,7 +1526,11 @@
 
                           <div class="flex-grow-1">
                               <h6 class="mb-0">{{ $user->name }}</h6>
-                              <small class="text-body-secondary d-block">{{ $employeeDesignation }} ({{ ucfirst($user->role) }})</small>
+                              @if($employeeDesignation && strtolower($employeeDesignation) !== 'employee')
+                                <small class="text-body-secondary d-block">{{ $employeeDesignation }} ({{ $profileRoleLabel }})</small>
+                              @else
+                                <small class="text-body-secondary d-block">{{ $profileRoleLabel }}</small>
+                              @endif
                               @if($user?->role === 'employee' && $employeeDepartment)
                                 <small class="text-body-secondary d-block">Department: {{ $employeeDepartment }}</small>
                               @endif
@@ -2323,15 +1557,9 @@
                     </li>
                     <li>
 
-                      <form method="POST" action="{{ route('logout') }}">
-                            @csrf
-
-                            <x-dropdown-link :href="route('logout')"
-                                    onclick="event.preventDefault();
-                                                this.closest('form').submit();">
-                               <i class="icon-base bx bx-power-off icon-md me-3"></i><span>Log Out</span>
-                            </x-dropdown-link>
-                        </form>
+                      <a class="dropdown-item text-danger" href="{{ route('logout.get') }}">
+                         <i class="icon-base bx bx-power-off icon-md me-3"></i><span>Log Out</span>
+                      </a>
 
                     </li>
                   </ul>
@@ -2481,11 +1709,33 @@
                   bell.addEventListener('shown.bs.dropdown', silentlyMarkBellNotificationsRead);
               }
 
+              // Session ended server-side (e.g. company deleted by Super Admin): leave the workspace immediately
+              function redirectIfSessionEnded(response) {
+                  if (response && (response.status === 401 || response.headers.get('X-Company-Deleted') === '1')) {
+                      window.location.href = @json(route('login'));
+                      return true;
+                  }
+                  return false;
+              }
+
+              if (window.jQuery) {
+                  window.jQuery(document).ajaxError(function (event, xhr) {
+                      if (xhr && (xhr.status === 401 || xhr.getResponseHeader('X-Company-Deleted') === '1')) {
+                          window.location.href = @json(route('login'));
+                      }
+                  });
+              }
+
               function checkNotifications() {
                   fetch('{{ route('notifications.unreadCount') }}', {
                       headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
                   })
-                  .then(response => response.json())
+                  .then(response => {
+                      if (redirectIfSessionEnded(response)) {
+                          return Promise.reject('session-ended');
+                      }
+                      return response.json();
+                  })
                   .then(data => {
                       const count = Number(data.count || 0);
                       if (count > previousUnread) {
@@ -2520,7 +1770,9 @@
                       <div class="mb-3">
                           <label for="type">Search For:</label>
                           <select name="type" id="type" class="form-select">
+                              @unless(\App\Support\TicketAccess::hiddenForCurrentUser())
                               <option value="ticket">Ticket</option>
+                              @endunless
                               <option value="task">Task</option>
                               <option value="project">Project</option>
                               <option value="employee">Employee</option>
@@ -2869,48 +2121,44 @@
               @endphp
 
               @if($bannerIsSuspended)
-                <div class="alert border-0 shadow-sm mb-4 d-flex align-items-center justify-content-between flex-wrap gap-3" style="background: linear-gradient(135deg, #fef2f2 0%, #ffe4e6 100%); border-left: 5px solid #ef4444 !important; border-radius: 14px; color: #991b1b; padding: 16px 20px;">
+                <div class="alert pms-suspended-banner border-0 shadow-sm mb-4 d-flex align-items-center justify-content-between flex-wrap gap-3">
                     <div class="d-flex align-items-center gap-3">
-                        <div style="width: 38px; height: 38px; border-radius: 50%; background: #fee2e2; color: #ef4444; display: flex; align-items: center; justify-content: center; font-size: 20px;" class="flex-shrink-0">
+                        <div class="pms-banner-icon flex-shrink-0">
                             <i class="bx bx-lock-alt"></i>
                         </div>
                         <div>
-                            <div class="fw-bold" style="font-size: 15px;">Account Suspended – Immediate Action Required</div>
-                            <div style="font-size: 13px; opacity: 0.9;">Your organization's subscription has expired and account access is restricted. Renew or upgrade your plan to restore full access.</div>
+                            <div class="fw-bold pms-banner-title">Account Suspended – Immediate Action Required</div>
+                            <div class="pms-banner-text">Your organization's subscription has expired and account access is restricted. Renew or upgrade your plan to restore full access.</div>
                         </div>
                     </div>
-                    <a href="{{ route('subscription.suspended') }}" class="btn btn-danger fw-bold rounded-pill px-4" style="font-size: 13px;">
-                        <i class="bx bx-zap me-1"></i> Reactivate Plan
+                    <a href="{{ route('subscription.suspended') }}" class="btn btn-danger fw-bold rounded-pill px-4 pms-banner-btn">
+                        <i class="bx bxs-zap me-1"></i> Reactivate Plan
                     </a>
                 </div>
               @elseif($showExpiringBanner && $bannerDaysLeft !== null && $bannerDaysLeft <= 7 && $bannerDaysLeft >= 0)
                 @php
-                    $bBg = $bannerDaysLeft <= 3 ? 'linear-gradient(135deg, #fff5f5 0%, #fef2f2 100%)' : 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)';
-                    $bBorder = $bannerDaysLeft <= 3 ? '#ef4444' : '#f59e0b';
-                    $bColor = $bannerDaysLeft <= 3 ? '#991b1b' : '#92400e';
-                    $bIconBg = $bannerDaysLeft <= 3 ? '#fee2e2' : '#fde68a';
-                    $bIconColor = $bannerDaysLeft <= 3 ? '#ef4444' : '#d97706';
+                    $isUrgent = $bannerDaysLeft <= 3;
                     $bPlanName = strtoupper($bannerSub?->plan?->name ?? ($bannerComp?->isOnTrial() ? 'FREE TRIAL' : 'SUBSCRIPTION'));
                 @endphp
-                <div class="alert border-0 shadow-sm mb-4 d-flex align-items-center justify-content-between flex-wrap gap-3" style="background: {{ $bBg }}; border-left: 5px solid {{ $bBorder }} !important; border-radius: 14px; color: {{ $bColor }}; padding: 16px 20px;">
+                <div class="alert pms-expiring-banner {{ $isUrgent ? 'is-urgent' : 'is-warning' }} border-0 shadow-sm mb-4 d-flex align-items-center justify-content-between flex-wrap gap-3">
                     <div class="d-flex align-items-center gap-3">
-                        <div style="width: 38px; height: 38px; border-radius: 50%; background: {{ $bIconBg }}; color: {{ $bIconColor }}; display: flex; align-items: center; justify-content: center; font-size: 20px;" class="flex-shrink-0">
-                            <i class="bx {{ $bannerDaysLeft <= 3 ? 'bx-error-alt' : 'bx-time-five' }}"></i>
+                        <div class="pms-banner-icon flex-shrink-0">
+                            <i class="bx {{ $isUrgent ? 'bx-error-alt' : 'bx-time-five' }}"></i>
                         </div>
                         <div>
-                            <div class="fw-bold" style="font-size: 15px;">
+                            <div class="fw-bold pms-banner-title">
                                 Subscription Warning: Expiring in {{ $bannerDaysLeft == 1 ? '1 Day (Tomorrow)' : $bannerDaysLeft . ' Days' }} – {{ $bPlanName }}
                             </div>
-                            <div style="font-size: 13px; opacity: 0.9;">
+                            <div class="pms-banner-text">
                                 Your {{ $bPlanName }} subscription is scheduled to expire on {{ \Carbon\Carbon::parse($bannerExpiry)->format('d M Y') }}. Renew or upgrade now to avoid suspension.
                             </div>
                         </div>
                     </div>
                     <div class="d-flex align-items-center gap-2">
-                        <a href="{{ route('notifications.all') }}" class="btn btn-outline-dark fw-bold rounded-pill px-3" style="font-size: 12.5px;">
+                        <a href="{{ route('notifications.all') }}" class="btn pms-banner-btn-secondary fw-bold rounded-pill px-3">
                             <i class="bx bx-bell me-1"></i> Notifications
                         </a>
-                        <a href="{{ route('subscription.suspended') }}" class="btn btn-primary fw-bold rounded-pill px-3" style="font-size: 12.5px; background: #2563eb; border-color: #2563eb;">
+                        <a href="{{ route('subscription.suspended') }}" class="btn {{ $isUrgent ? 'btn-danger' : 'btn-primary' }} fw-bold rounded-pill px-3 pms-banner-btn">
                             <i class="bx bx-credit-card me-1"></i> Renew / Upgrade
                         </a>
                     </div>

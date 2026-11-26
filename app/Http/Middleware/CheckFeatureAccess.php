@@ -20,7 +20,12 @@ class CheckFeatureAccess
     public function handle(Request $request, Closure $next, string $feature): Response
     {
         // Platform Super Admin (central guard) bypasses feature checks
-        if (\Illuminate\Support\Facades\Auth::guard('super_admin')->check()) {
+        if (
+            \Illuminate\Support\Facades\Auth::guard('super_admin')->check() ||
+            $request->is('super-admin*') ||
+            $request->is('superadmin*') ||
+            (auth()->check() && in_array(strtolower((string)(auth()->user()->role ?? '')), ['superadmin', 'super-admin', 'super_admin'], true))
+        ) {
             return $next($request);
         }
 
@@ -33,8 +38,9 @@ class CheckFeatureAccess
         if (! $company && auth()->check() && auth()->user()?->company_id) {
             $company = Company::on('central')->find(auth()->user()->company_id) ?? \App\Models\Company::find(auth()->user()->company_id);
         }
+
         if (! $company) {
-            $tenantDb = session('current_company_db') ?: env('DB_DATABASE', 'pms_last');
+            $tenantDb = session('current_company_db') ?: config('database.connections.tenant.database');
             $company = Company::on('central')->where('db_name', $tenantDb)->first();
         }
 

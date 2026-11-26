@@ -10,6 +10,17 @@ class SystemNotificationService
 {
     public const ERP_ROLES = ['admin', 'manager', 'hr', 'employee', 'user'];
 
+    private static function companyId(?int $requested = null): int
+    {
+        $current = TenantScope::companyId();
+        if ($current && $requested && $current !== $requested) {
+            throw new \LogicException('Notifications cannot cross company workspaces.');
+        }
+        $companyId = $current ?: $requested;
+        if (!$companyId) throw new \LogicException('A company is required for tenant notifications.');
+        return $companyId;
+    }
+
     public static function roleUsers(?int $companyId = null): Collection
     {
         return User::query()
@@ -17,9 +28,7 @@ class SystemNotificationService
             ->where(function ($query) {
                 $query->where('is_active', true)->orWhereNull('is_active');
             })
-            ->when($companyId, fn ($query) => $query->where(function ($companyQuery) use ($companyId) {
-                $companyQuery->where('company_id', $companyId)->orWhereNull('company_id');
-            }))
+            ->where('company_id', self::companyId($companyId))
             ->get();
     }
 
@@ -27,9 +36,7 @@ class SystemNotificationService
     {
         return User::query()
             ->whereIn('role', ['admin', 'hr'])
-            ->when($companyId, fn ($query) => $query->where(function ($companyQuery) use ($companyId) {
-                $companyQuery->where('company_id', $companyId)->orWhereNull('company_id');
-            }))
+            ->where('company_id', self::companyId($companyId))
             ->get();
     }
 
@@ -37,9 +44,7 @@ class SystemNotificationService
     {
         return User::query()
             ->whereIn('role', ['admin', 'hr', 'manager'])
-            ->when($companyId, fn ($query) => $query->where(function ($companyQuery) use ($companyId) {
-                $companyQuery->where('company_id', $companyId)->orWhereNull('company_id');
-            }))
+            ->where('company_id', self::companyId($companyId))
             ->get();
     }
 
@@ -47,20 +52,16 @@ class SystemNotificationService
     {
         return User::query()
             ->where('role', 'employee')
-            ->when($companyId, fn ($query) => $query->where(function ($companyQuery) use ($companyId) {
-                $companyQuery->where('company_id', $companyId)->orWhereNull('company_id');
-            }))
+            ->where('company_id', self::companyId($companyId))
             ->get();
     }
 
     public static function admins(?int $companyId = null): Collection
     {
         return User::query()
-            ->where('role', 'admin')
-            ->when($companyId, fn ($query) => $query->where(function ($companyQuery) use ($companyId) {
-                $companyQuery->where('company_id', $companyId)->orWhereNull('company_id');
-            }))
-            ->get();
+            ->whereIn(\Illuminate\Support\Facades\DB::raw('LOWER(role)'), ['admin', 'administrator', 'superadmin'])
+            ->where('company_id', self::companyId($companyId))
+            ->get()->filter(fn (User $user) => WorkforceAccess::isAdmin($user));
     }
 
     public static function notifyAdmins(string $title, string $message, ?string $url = null, array $data = []): void
@@ -73,6 +74,16 @@ class SystemNotificationService
             'icon' => 'fa-user-clock',
             'color' => 'info',
         ]);
+    }
+
+    public static function notifyLeaveReviewers(User $owner, string $title, string $message, ?string $url = null, array $data = []): void
+    {
+        $reviewers = self::admins($owner->company_id);
+        if (! WorkforceAccess::isAuthority($owner)) {
+            $hr = User::where('company_id', self::companyId($owner->company_id))->whereRaw('LOWER(role) = ?', ['hr'])->get();
+            $reviewers = $reviewers->merge($hr);
+        }
+        self::send($reviewers, $title, $message, $url, $data);
     }
 
     public static function notifyEmployees(string $title, string $message, ?string $url = null, array $data = []): void
@@ -89,7 +100,12 @@ class SystemNotificationService
         $actor = auth()->user();
         $companyId ??= $actor?->company_id;
 
-        self::send(self::roleUsers($companyId), $title, $message, $url, $data + [
+        $companyId = self::companyId($companyId);
+        // System/settings updates are not broadcast as notifications.
+        if (NotificationAudience::isSystemUpdate($data)) {
+            return;
+        }
+        self::send(self::roleUsers($companyId), $title, $message, $url, ['company_id' => $companyId] + $data + [
             'type' => 'erp_activity',
             'icon' => 'fa-bell',
             'color' => 'info',
@@ -113,17 +129,32 @@ class SystemNotificationService
 
     public static function send($users, string $title, string $message, ?string $url = null, array $data = []): void
     {
-        collect($users)
-            ->filter()
-            ->unique('id')
-            ->each(function (User $user) use ($title, $message, $url, $data) {
-                $user->notify(new SystemNotification($data + [
-                    'title' => $title,
-                    'message' => $message,
-                    'url' => $url,
-                    'actor_id' => auth()->id(),
-                    'actor_name' => auth()->user()?->name,
-                ]));
-            });
+        $companyId = self::companyId(isset($data['company_id']) ? (int) $data['company_id'] : null);
+        try {
+            if (! \Illuminate\Support\Facades\Schema::connection('tenant')->hasTable('notifications')) {
+                return;
+            }
+
+            collect($users)
+                ->filter()
+                ->filter(fn (User $user) => (int) $user->company_id === $companyId
+                    && $user->getConnection()->getDatabaseName() === \Illuminate\Support\Facades\DB::connection('tenant')->getDatabaseName())
+                ->unique('id')
+                ->each(function (User $user) use ($title, $message, $url, $data, $companyId) {
+                    try {
+                        $user->notify(new SystemNotification(['company_id' => $companyId] + $data + [
+                            'title' => $title,
+                            'message' => $message,
+                            'url' => $url,
+                            'actor_id' => auth()->id(),
+                            'actor_name' => auth()->user()?->name,
+                        ]));
+                    } catch (\Throwable $e) {
+                        \Illuminate\Support\Facades\Log::warning("SystemNotification send failed for user {$user->id}: " . $e->getMessage());
+                    }
+                });
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning("SystemNotificationService::send top-level failed: " . $e->getMessage());
+        }
     }
 }

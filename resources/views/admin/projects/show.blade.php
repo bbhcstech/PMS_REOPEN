@@ -286,7 +286,7 @@
                                 <span class="badge bg-teal text-white">{{ $project->start_date ? \Carbon\Carbon::parse($project->start_date)->format('d M') : 'Start' }} &rarr; {{ $project->deadline ? \Carbon\Carbon::parse($project->deadline)->format('d M Y') : 'Ongoing' }}</span>
                             </div>
                             <div class="progress mb-2" style="height: 10px; border-radius: 6px;">
-                                <div class="progress-bar" style="width: {{ $completionPercent }}%; background: linear-gradient(90deg, #0f744c, #10b981);"></div>
+                                <div class="progress-bar" style="width: {{ $completionPercent }}%; background: linear-gradient(90deg, #2F6BFF, #10b981);"></div>
                             </div>
                             <div class="d-flex justify-content-between text-muted" style="font-size: 0.75rem;">
                                 <span>Planned: {{ $project->start_date ? \Carbon\Carbon::parse($project->start_date)->format('M Y') : 'Start' }}</span>
@@ -438,33 +438,14 @@
                         <div class="d-flex align-items-center gap-2">
                             <div class="header-icon"><i class="fas fa-wallet"></i></div>
                             <h2>Expenses</h2>
-                            <span class="badge bg-light text-dark fw-bold border ms-1">₹{{ number_format($totalExpenses, 2) }}</span>
+                            <span class="badge bg-warning-subtle text-warning-emphasis fw-bold border ms-1">Coming soon</span>
                         </div>
-                        <a href="{{ route('expenses.index', $project->id) }}" class="feature-view-all">
-                            View All <i class="fas fa-arrow-right ms-1"></i>
-                        </a>
                     </div>
                     <div class="overview-card-body">
-                        <div class="mini-item-list">
-                            @forelse($project->expenses ? $project->expenses->sortByDesc('id')->take(3) : [] as $exp)
-                                <div class="mini-list-row">
-                                    <div class="overflow-hidden">
-                                        <strong class="d-block small text-dark text-truncate" title="{{ $exp->item_name }}">{{ $exp->item_name }}</strong>
-                                        <small class="text-muted" style="font-size: 0.72rem;">{{ $exp->purchase_date ? \Carbon\Carbon::parse($exp->purchase_date)->format('d M Y') : '' }}</small>
-                                    </div>
-                                    <div class="text-end flex-shrink-0">
-                                        <strong class="text-dark small">₹{{ number_format($exp->price, 2) }}</strong>
-                                        <span class="badge {{ $exp->status === 'approved' ? 'bg-success' : 'bg-secondary' }} d-block mt-1" style="font-size: 0.65rem;">
-                                            {{ ucfirst($exp->status) }}
-                                        </span>
-                                    </div>
-                                </div>
-                            @empty
-                                <div class="empty-feature text-center py-3">
-                                    <i class="fas fa-wallet text-muted fa-2x mb-1"></i>
-                                    <p class="text-muted mb-0 small">No project expenses recorded yet.</p>
-                                </div>
-                            @endforelse
+                        {{-- Finance features are not released yet (see FinanceComingSoon middleware). --}}
+                        <div class="empty-feature text-center py-3">
+                            <i class="fas fa-wallet text-muted fa-2x mb-1"></i>
+                            <p class="text-muted mb-0 small">Project expenses are coming soon. This finance section is not developed yet.</p>
                         </div>
                     </div>
                 </div>
@@ -549,10 +530,11 @@
             </div>
         </div>
 
-        {{-- Row 6: Burndown & Tickets --}}
+        {{-- Row 6: Burndown & Tickets (tickets are not part of the Admin Workspace) --}}
+        @php $hideProjectTickets = \App\Support\TicketAccess::hiddenForCurrentUser(); @endphp
         <div class="row g-4 mb-4">
             {{-- 10. Burndown Feature Summary --}}
-            <div class="col-lg-6">
+            <div class="{{ $hideProjectTickets ? 'col-12' : 'col-lg-6' }}">
                 <div class="overview-card h-100">
                     <div class="overview-card-header d-flex justify-content-between align-items-center">
                         <div class="d-flex align-items-center gap-2">
@@ -589,6 +571,7 @@
             </div>
 
             {{-- 11. Tickets Feature Summary --}}
+            @unless($hideProjectTickets)
             <div class="col-lg-6">
                 <div class="overview-card h-100">
                     <div class="overview-card-header d-flex justify-content-between align-items-center">
@@ -625,6 +608,7 @@
                     </div>
                 </div>
             </div>
+            @endunless
         </div>
 
         {{-- Employee Update Form (if employee) --}}
@@ -752,8 +736,8 @@
     }
 
     .btn-teal {
-        background: #0f744c;
-        border-color: #0f744c;
+        background: #2F6BFF;
+        border-color: #2F6BFF;
         color: #ffffff;
     }
     .btn-teal:hover {
@@ -763,20 +747,20 @@
     }
 
     .btn-outline-teal {
-        color: #0f744c;
-        border-color: #0f744c;
+        color: #2F6BFF;
+        border-color: #2F6BFF;
         background: transparent;
         font-size: 0.78rem;
         font-weight: 600;
         padding: 4px 10px;
     }
     .btn-outline-teal:hover {
-        background: #0f744c;
+        background: #2F6BFF;
         color: #ffffff;
     }
 
-    .text-teal { color: #0f744c !important; }
-    .bg-teal { background-color: #0f744c !important; }
+    .text-teal { color: #2F6BFF !important; }
+    .bg-teal { background-color: #2F6BFF !important; }
 
     /* Stats Grid */
     .overview-stats-grid {
@@ -890,8 +874,8 @@
     .header-icon {
         width: 32px;
         height: 32px;
-        background: #ecfdf5;
-        color: #0f744c;
+        background: #EEF2FF;
+        color: #2F6BFF;
         border-radius: 8px;
         display: flex;
         align-items: center;
@@ -902,7 +886,7 @@
     .feature-view-all {
         font-size: 0.78rem;
         font-weight: 700;
-        color: #0f744c;
+        color: #2F6BFF;
         text-decoration: none;
         display: inline-flex;
         align-items: center;
@@ -1010,7 +994,7 @@
         width: 34px;
         height: 34px;
         border-radius: 50%;
-        background: #0f744c;
+        background: #2F6BFF;
         color: #ffffff;
         font-weight: 700;
         font-size: 0.85rem;
@@ -1076,7 +1060,7 @@
     }
 
     .mini-row-title:hover {
-        color: #0f744c;
+        color: #2F6BFF;
     }
 
     /* Updates Timeline */
@@ -1109,9 +1093,9 @@
         width: 10px;
         height: 10px;
         border-radius: 50%;
-        background: #0f744c;
+        background: #2F6BFF;
         border: 2px solid #ffffff;
-        box-shadow: 0 0 0 2px #d1fae5;
+        box-shadow: 0 0 0 2px #E0E7FF;
     }
 
     .timeline-content {
@@ -1130,6 +1114,211 @@
         .overview-stats-grid { grid-template-columns: 1fr; }
         .details-dl { grid-template-columns: 1fr; }
         .dl-row.full-width { grid-column: span 1; }
+    }
+
+    /* ===== PROJECT OVERVIEW DARK MODE ===== */
+    html[data-pms-theme="dark"] .project-overview-page {
+        background: #070B1A !important;
+        color: #CBD5E1 !important;
+    }
+    html[data-pms-theme="dark"] .overview-stat-card,
+    html[data-pms-theme="dark"] .overview-card {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+        box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.35) !important;
+    }
+    html[data-pms-theme="dark"] .overview-card-header {
+        background: #141B3D !important;
+        border-bottom-color: rgba(238, 241, 251, 0.1) !important;
+    }
+    html[data-pms-theme="dark"] .overview-card-header h2 {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .stat-label {
+        color: #9AA3C7 !important;
+    }
+    html[data-pms-theme="dark"] .stat-number {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .stat-subtext {
+        color: #9AA3C7 !important;
+    }
+    html[data-pms-theme="dark"] .details-dl dt {
+        color: #9AA3C7 !important;
+    }
+    html[data-pms-theme="dark"] .details-dl dd {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .mini-list-row {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.1) !important;
+        color: #CBD5E1 !important;
+    }
+    html[data-pms-theme="dark"] .mini-row-title {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .timeline-content {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.1) !important;
+        color: #CBD5E1 !important;
+    }
+    html[data-pms-theme="dark"] .mini-gantt-preview {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.1) !important;
+    }
+    html[data-pms-theme="dark"] .btn-outline-teal {
+        background: #141B3D !important;
+        border-color: rgba(47, 107, 255, 0.35) !important;
+        color: #60A5FA !important;
+    }
+    html[data-pms-theme="dark"] .btn-outline-teal:hover {
+        background: #2F6BFF !important;
+        color: #FFFFFF !important;
+        border-color: #2F6BFF !important;
+    }
+
+    /* Stat Icon Wrappers (KPI Cards) */
+    html[data-pms-theme="dark"] .stat-icon-wrapper.icon-tasks {
+        background: rgba(47, 107, 255, 0.18) !important;
+        color: #60A5FA !important;
+        border: 1px solid rgba(47, 107, 255, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .stat-icon-wrapper.icon-progress {
+        background: rgba(47, 107, 255, 0.18) !important;
+        color: #60A5FA !important;
+        border: 1px solid rgba(47, 107, 255, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .stat-icon-wrapper.icon-time {
+        background: rgba(245, 158, 11, 0.18) !important;
+        color: #FBBF24 !important;
+        border: 1px solid rgba(245, 158, 11, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .stat-icon-wrapper.icon-expenses {
+        background: rgba(168, 85, 247, 0.18) !important;
+        color: #C084FC !important;
+        border: 1px solid rgba(168, 85, 247, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .stat-progress-bar {
+        background: #141B3D !important;
+    }
+
+    /* Project Details Badges & Pills */
+    html[data-pms-theme="dark"] .badge-code {
+        background: #141B3D !important;
+        color: #60A5FA !important;
+        border: 1px solid rgba(47, 107, 255, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .project-priority-pill.priority-low {
+        background: rgba(47, 107, 255, 0.18) !important;
+        color: #93C5FD !important;
+        border: 1px solid rgba(47, 107, 255, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .project-priority-pill.priority-medium {
+        background: rgba(245, 158, 11, 0.18) !important;
+        color: #FCD34D !important;
+        border: 1px solid rgba(245, 158, 11, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .project-priority-pill.priority-high {
+        background: rgba(249, 115, 22, 0.18) !important;
+        color: #FDBA74 !important;
+        border: 1px solid rgba(249, 115, 22, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .project-priority-pill.priority-critical {
+        background: rgba(239, 68, 68, 0.22) !important;
+        color: #FCA5A5 !important;
+        border: 1px solid rgba(239, 68, 68, 0.35) !important;
+    }
+
+    html[data-pms-theme="dark"] .project-status-pill.status-completed {
+        background: rgba(47, 107, 255, 0.18) !important;
+        color: #93C5FD !important;
+        border: 1px solid rgba(47, 107, 255, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .project-status-pill.status-in-progress,
+    html[data-pms-theme="dark"] .project-status-pill.status-in_progress {
+        background: rgba(47, 107, 255, 0.18) !important;
+        color: #93C5FD !important;
+        border: 1px solid rgba(47, 107, 255, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .project-status-pill.status-pending,
+    html[data-pms-theme="dark"] .project-status-pill.status-not-started {
+        background: #141B3D !important;
+        color: #EEF1FB !important;
+        border: 1px solid rgba(238, 241, 251, 0.2) !important;
+    }
+    html[data-pms-theme="dark"] .project-status-pill.status-on-hold,
+    html[data-pms-theme="dark"] .project-status-pill.status-delayed {
+        background: rgba(239, 68, 68, 0.18) !important;
+        color: #FCA5A5 !important;
+        border: 1px solid rgba(239, 68, 68, 0.3) !important;
+    }
+
+    /* Members List Cards & Meta */
+    html[data-pms-theme="dark"] .project-member-item {
+        background: #141B3D !important;
+        border: 1px solid rgba(238, 241, 251, 0.09) !important;
+    }
+    html[data-pms-theme="dark"] .project-member-item:hover {
+        background: #1A2247 !important;
+        border-color: rgba(47, 107, 255, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .member-name {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .member-subtext {
+        color: #9AA3C7 !important;
+    }
+    html[data-pms-theme="dark"] .member-avatar-circle {
+        background: #1A2247 !important;
+        color: #60A5FA !important;
+        border: 1px solid rgba(47, 107, 255, 0.25) !important;
+    }
+    html[data-pms-theme="dark"] .member-role-badge .badge {
+        background: #0F1530 !important;
+        color: #CBD5E1 !important;
+        border: 1px solid rgba(238, 241, 251, 0.14) !important;
+    }
+
+    /* Common Card Header Icons & Links */
+    html[data-pms-theme="dark"] .header-icon {
+        background: #141B3D !important;
+        color: #60A5FA !important;
+        border: 1px solid rgba(47, 107, 255, 0.2) !important;
+    }
+    html[data-pms-theme="dark"] .feature-view-all {
+        color: #60A5FA !important;
+    }
+    html[data-pms-theme="dark"] .feature-view-all:hover {
+        color: #93C5FD !important;
+    }
+
+    /* Bootstrap Utility Overrides Inside Page */
+    html[data-pms-theme="dark"] .project-overview-page .bg-light {
+        background-color: #141B3D !important;
+        color: #EEF1FB !important;
+        border-color: rgba(238, 241, 251, 0.1) !important;
+    }
+    html[data-pms-theme="dark"] .project-overview-page .text-dark {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .project-overview-page .badge.bg-light {
+        background-color: #141B3D !important;
+        color: #EEF1FB !important;
+        border-color: rgba(238, 241, 251, 0.14) !important;
+    }
+    html[data-pms-theme="dark"] .project-overview-page .badge.bg-danger-subtle {
+        background-color: rgba(239, 68, 68, 0.2) !important;
+        color: #FCA5A5 !important;
+        border-color: rgba(239, 68, 68, 0.35) !important;
+    }
+    html[data-pms-theme="dark"] .project-overview-page .mini-milestone-box,
+    html[data-pms-theme="dark"] .project-overview-page .mini-gantt-preview {
+        background-color: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.1) !important;
+    }
+    html[data-pms-theme="dark"] .project-overview-page .mini-note-card {
+        background-color: rgba(245, 158, 11, 0.12) !important;
+        border-color: rgba(245, 158, 11, 0.28) !important;
     }
 </style>
 @endsection

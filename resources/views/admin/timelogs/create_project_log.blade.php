@@ -39,8 +39,8 @@
         </ul>
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h4>Time Logs</h4>
-            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addTimeLogModal">
-                Add Time Log
+            <button class="btn btn-primary px-3 text-nowrap flex-shrink-0" data-bs-toggle="modal" data-bs-target="#addTimeLogModal">
+                <i class="fas fa-plus-circle me-1"></i> Add Time Log
             </button>
         </div>
         

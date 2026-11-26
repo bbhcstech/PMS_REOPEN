@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Services\NotificationUrlResolver;
 use App\Services\SidebarNotificationService;
 use App\Services\SystemNotificationService;
 use Illuminate\Notifications\DatabaseNotification;
@@ -11,7 +10,15 @@ use Illuminate\Notifications\DatabaseNotification;
 class NotificationController extends Controller
 {
     /**
-     * Display all notifications
+     * Company-level platform alerts (subscription, billing) are meant for company administrators only.
+     */
+    private function canSeeCompanyAlerts(): bool
+    {
+        return in_array(strtolower((string) auth()->user()?->role), ['admin', 'administrator', 'superadmin'], true);
+    }
+
+    /**
+     * Display all or unread notifications
      */
     public function index(Request $request)
     {
@@ -19,30 +26,41 @@ class NotificationController extends Controller
         $company = app(\App\Services\CompanyContext::class)->current();
         $companyId = $company?->id ?? $user?->company_id;
 
+        $filter = $request->get('filter', 'all');
+        if (! in_array($filter, ['all', 'unread'], true)) {
+            $filter = 'all';
+        }
+
         $centralNotifications = collect();
-        if ($companyId && class_exists(\App\Models\Central\CentralNotification::class)) {
+        if ($companyId && $this->canSeeCompanyAlerts() && class_exists(\App\Models\Central\CentralNotification::class)) {
             try {
-                app(\App\Services\SubscriptionNotificationEngine::class)->scanAndGenerateAlerts($companyId);
-            } catch (\Throwable $e) {}
+                try {
+                    app(\App\Services\SubscriptionNotificationEngine::class)->scanAndGenerateAlerts($companyId);
+                } catch (\Throwable $e) {}
 
-            $query = \App\Models\Central\CentralNotification::on('central')
-                ->with(['company.subscriptions.plan'])
-                ->where('company_id', $companyId)
-                ->whereIn('target_audience', ['company_admin', 'all']);
+                $query = \App\Models\Central\CentralNotification::on('central')
+                    ->with(['company.subscriptions.plan'])
+                    ->where('company_id', $companyId)
+                    ->whereIn('target_audience', ['company_admin', 'all']);
 
-            if ($request->filled('severity')) {
-                $query->where('severity', strtoupper($request->severity));
-            }
-
-            if ($request->filled('status')) {
-                if ($request->status === 'unread') {
-                    $query->where('is_read', false);
-                } elseif ($request->status === 'read') {
-                    $query->where('is_read', true);
+                if ($request->filled('severity')) {
+                    $query->where('severity', strtoupper($request->severity));
                 }
-            }
 
-            $centralNotifications = $query->orderBy('created_at', 'desc')->get();
+                if ($request->filled('status')) {
+                    if ($request->status === 'unread') {
+                        $query->where('is_read', false);
+                    } elseif ($request->status === 'read') {
+                        $query->where('is_read', true);
+                    }
+                } elseif ($filter === 'unread') {
+                    $query->where('is_read', false);
+                }
+
+                $centralNotifications = $query->orderBy('created_at', 'desc')->get();
+            } catch (\Throwable $e) {
+                $centralNotifications = collect();
+            }
         }
 
         $userNotifQuery = $user->notifications();
@@ -52,6 +70,8 @@ class NotificationController extends Controller
             } elseif ($request->status === 'read') {
                 $userNotifQuery->whereNotNull('read_at');
             }
+        } elseif ($filter === 'unread') {
+            $userNotifQuery->whereNull('read_at');
         }
         $userNotifications = $userNotifQuery->orderBy('created_at', 'desc')->get();
 
@@ -67,15 +87,17 @@ class NotificationController extends Controller
             ['path' => $request->url(), 'query' => $request->query()]
         );
 
+        $allCount = $merged->count();
+        $unreadCount = $merged->filter(fn($n) => empty($n->read_at) && empty($n->is_read))->count();
+
         $kpis = [
-            'total'    => $merged->count(),
-            'unread'   => $merged->filter(fn($n) => empty($n->read_at) && empty($n->is_read))->count(),
-            'critical' => $merged->filter(fn($n) => (strtoupper($n->severity ?? '') === 'CRITICAL') && empty($n->read_at) && empty($n->is_read))->count(),
+            'total'    => $allCount,
+            'unread'   => $unreadCount,
+            'critical' => $merged->filter(fn($n) => (strtoupper($n->severity ?? $n->data['severity'] ?? '') === 'CRITICAL') && empty($n->read_at) && empty($n->is_read))->count(),
         ];
 
-        return view('admin.notifications.index', compact('notifications', 'kpis'));
+        return view('admin.notifications.index', compact('notifications', 'kpis', 'filter', 'allCount', 'unreadCount'));
     }
-
 
     /**
      * Mark single notification as read
@@ -85,23 +107,26 @@ class NotificationController extends Controller
         $company = app(\App\Services\CompanyContext::class)->current();
         $companyId = $company?->id ?? auth()->user()?->company_id;
 
-        if ($companyId && class_exists(\App\Models\Central\CentralNotification::class)) {
-            $centralNotif = \App\Models\Central\CentralNotification::on('central')
-                ->where('company_id', $companyId)
-                ->where('id', $id)
-                ->first();
+        if ($companyId && $this->canSeeCompanyAlerts() && class_exists(\App\Models\Central\CentralNotification::class)) {
+            try {
+                $centralNotif =\App\Models\Central\CentralNotification::on('central')
+                    ->where('company_id', $companyId)
+                    ->whereIn('target_audience', ['company_admin', 'all'])
+                    ->where('id', $id)
+                    ->first();
 
-            if ($centralNotif) {
-                $centralNotif->update([
-                    'is_read' => true,
-                    'read_at' => now(),
-                ]);
+                if ($centralNotif) {
+                    $centralNotif->update([
+                        'is_read' => true,
+                        'read_at' => now(),
+                    ]);
 
-                if (request()->expectsJson() || request()->ajax()) {
-                    return response()->json(['status' => 'ok']);
+                    if (request()->expectsJson() || request()->ajax()) {
+                        return response()->json(['status' => 'ok']);
+                    }
+                    return back()->with('success', 'Notification marked as read.');
                 }
-                return back()->with('success', 'Notification marked as read.');
-            }
+            } catch (\Throwable $e) {}
         }
 
         $notification = auth()->user()->notifications()->where('id', $id)->first();
@@ -111,24 +136,23 @@ class NotificationController extends Controller
         }
 
         if (! request()->expectsJson() && ! request()->ajax()) {
-            $url = request('redirect_url') ?: ($notification ? NotificationUrlResolver::resolve($notification) : null);
-            return $url ? redirect($url) : back();
+            return back()->with('success', 'Notification marked as read.');
         }
 
-        return response()->json(['status' => 'ok']);
+        return response()->json([
+            'status' => 'ok',
+            'unread_count' => auth()->user()->unreadNotifications()->count(),
+            'message' => 'Notification marked as read.',
+        ]);
     }
 
     public function open($id)
     {
+        // Notifications are display-only: opening one marks it read and never redirects to the related resource.
         $notification = auth()->user()->notifications()->where('id', $id)->firstOrFail();
         $notification->markAsRead();
 
-        $data = $notification->data ?? [];
-        if (data_get($data, 'clickable') === false || data_get($data, 'type') === 'own_password_changed') {
-            return back()->with('info', 'This notification is view-only.');
-        }
-
-        return redirect(NotificationUrlResolver::resolve($notification));
+        return redirect()->route('notifications.all');
     }
 
     /**
@@ -139,23 +163,30 @@ class NotificationController extends Controller
         $company = app(\App\Services\CompanyContext::class)->current();
         $companyId = $company?->id ?? auth()->user()?->company_id;
 
-        if ($companyId && class_exists(\App\Models\Central\CentralNotification::class)) {
-            \App\Models\Central\CentralNotification::on('central')
-                ->where('company_id', $companyId)
-                ->where('is_read', false)
-                ->update([
-                    'is_read' => true,
-                    'read_at' => now(),
-                ]);
+        if ($companyId && $this->canSeeCompanyAlerts() && class_exists(\App\Models\Central\CentralNotification::class)) {
+            try {
+                \App\Models\Central\CentralNotification::on('central')
+                    ->where('company_id', $companyId)
+                    ->whereIn('target_audience', ['company_admin', 'all'])
+                    ->where('is_read', false)
+                    ->update([
+                        'is_read' => true,
+                        'read_at' => now(),
+                    ]);
+            } catch (\Throwable $e) {}
         }
 
         auth()->user()->unreadNotifications->markAsRead();
 
         if (! request()->expectsJson() && ! request()->ajax()) {
-            return back()->with('success', 'All notifications marked as read.');
+            return back()->with('success', 'All unread notifications marked as read.');
         }
 
-        return response()->json(['status' => 'ok']);
+        return response()->json([
+            'status' => 'ok',
+            'unread_count' => 0,
+            'message' => 'All unread notifications marked as read.',
+        ]);
     }
 
     public function markSectionAsRead(string $section)
@@ -196,8 +227,6 @@ class NotificationController extends Controller
                 'read_at' => $notification->read_at,
                 'created_at' => optional($notification->created_at)->diffForHumans(),
                 'data' => $notification->data,
-                'open_url' => route('notifications.open', $notification->id),
-                'target_url' => NotificationUrlResolver::resolve($notification),
             ]);
 
         return response()->json([
@@ -290,7 +319,8 @@ class NotificationController extends Controller
     {
         $request->validate([
             'user_ids' => 'required|array',
-            'user_ids.*' => 'exists:users,id',
+            'user_ids.*' => ['integer', \Illuminate\Validation\Rule::exists('tenant.users', 'id')
+                ->where('company_id', \App\Services\TenantScope::companyFilter())],
             'title' => 'required|string|max:255',
             'message' => 'required|string',
         ]);
@@ -318,13 +348,105 @@ class NotificationController extends Controller
      */
     public function delete($id)
     {
-        $notification = auth()->user()->notifications()->where('id', $id)->first();
+        $deleted = 0;
+        $company = app(\App\Services\CompanyContext::class)->current();
+        $companyId = $company?->id ?? auth()->user()?->company_id;
 
-        if ($notification) {
-            $notification->delete();
+        if ($companyId && $this->canSeeCompanyAlerts() && ctype_digit((string) $id)
+            && class_exists(\App\Models\Central\CentralNotification::class)) {
+            try {
+                $deleted = \App\Models\Central\CentralNotification::on('central')
+                    ->where('company_id', $companyId)
+                    ->whereIn('target_audience', ['company_admin', 'all'])
+                    ->where('id', (int) $id)
+                    ->delete();
+            } catch (\Throwable $e) {
+                $deleted = 0;
+            }
         }
 
-        return response()->json(['status' => 'ok']);
+        if ($deleted === 0) {
+            $deleted = auth()->user()->notifications()->where('id', $id)->delete();
+        }
+
+        if (request()->expectsJson() || request()->ajax()) {
+            return response()->json([
+                'status' => 'ok',
+                'deleted' => $deleted,
+                'unread_count' => auth()->user()->unreadNotifications()->count(),
+                'message' => 'Notification deleted.',
+            ]);
+        }
+
+        return back()->with('success', $deleted > 0 ? 'Notification deleted.' : 'Notification not found.');
+    }
+
+    /**
+     * Delete multiple selected notifications in batch queries.
+     */
+    public function deleteSelected(Request $request)
+    {
+        $validated = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['required', 'string', 'max:100'],
+        ]);
+
+        $centralIds = [];
+        $userIds = [];
+
+        foreach (array_unique($validated['ids']) as $rawId) {
+            if (str_starts_with($rawId, 'central:')) {
+                $id = substr($rawId, 8);
+                if (ctype_digit($id)) {
+                    $centralIds[] = (int) $id;
+                }
+            } elseif (str_starts_with($rawId, 'user:')) {
+                $id = substr($rawId, 5);
+                if ($id !== '') {
+                    $userIds[] = $id;
+                }
+            } elseif (ctype_digit($rawId)) {
+                $centralIds[] = (int) $rawId;
+            } else {
+                $userIds[] = $rawId;
+            }
+        }
+
+        $deletedCount = 0;
+        $company = app(\App\Services\CompanyContext::class)->current();
+        $companyId = $company?->id ?? auth()->user()?->company_id;
+
+        if (! empty($centralIds) && $companyId && $this->canSeeCompanyAlerts()
+            && class_exists(\App\Models\Central\CentralNotification::class)) {
+            try {
+                $deletedCount += \App\Models\Central\CentralNotification::on('central')
+                    ->where('company_id', $companyId)
+                    ->whereIn('target_audience', ['company_admin', 'all'])
+                    ->whereIn('id', $centralIds)
+                    ->delete();
+            } catch (\Throwable $e) {}
+        }
+
+        if (! empty($userIds)) {
+            $deletedCount += auth()->user()->notifications()
+                ->whereIn('id', $userIds)
+                ->delete();
+        }
+
+        $message = $deletedCount === 1
+            ? '1 notification deleted.'
+            : "{$deletedCount} notifications deleted.";
+
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'status' => 'ok',
+                'deleted' => $deletedCount,
+                'unread_count' => auth()->user()->unreadNotifications()->count(),
+                'message' => $message,
+            ]);
+        }
+
+        return back()->with('success', $message);
     }
 
     private function notificationBelongsToSection(DatabaseNotification $notification, string $section): bool

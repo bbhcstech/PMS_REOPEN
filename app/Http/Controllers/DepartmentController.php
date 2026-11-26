@@ -127,7 +127,7 @@ class DepartmentController extends Controller
                 }
             }
 
-            Department::create([
+            $department = Department::create([
                 'dpt_name'       => $request->dpt_name,
                 'dpt_code'       => $generatedCode,
                 'parent_dpt_id'  => $request->parent_dpt_id,
@@ -136,13 +136,42 @@ class DepartmentController extends Controller
 
             DB::commit();
 
+            if ($request->ajax() || $request->wantsJson() || $request->expectsJson() || $request->isJson() || $request->header('X-Requested-With') === 'XMLHttpRequest' || str_contains((string)$request->header('Accept'), 'json')) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Department created successfully.',
+                    'department' => [
+                        'id' => $department->id,
+                        'dpt_name' => $department->dpt_name,
+                        'dpt_code' => $department->dpt_code,
+                    ],
+                ]);
+            }
+
+            if ($request->filled('return_url') && ! \App\Support\WorkforceSettings::active()) {
+                return redirect($request->return_url)->with('success', 'Department created successfully.');
+            }
+
+            // If submitting from a different page or modal, stay on same page
+            if ($request->header('referer') && !str_contains((string)$request->header('referer'), 'departments/create')) {
+                return redirect()->back()->with('success', 'Department created successfully.');
+            }
+
             return redirect()
-                ->route('departments.index')
+                ->route(\App\Support\WorkforceSettings::name('departments.index'))
                 ->with('success', 'Department created successfully.');
 
         } catch (\Throwable $e) {
 
             DB::rollBack();
+
+            if ($request->ajax() || $request->wantsJson() || $request->expectsJson() || $request->isJson() || $request->header('X-Requested-With') === 'XMLHttpRequest' || str_contains((string)$request->header('Accept'), 'json')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to create department: ' . $e->getMessage(),
+                ], 422);
+            }
+
             return redirect()
                 ->back()
                 ->with('error', 'Failed to create department. Please try again.');
@@ -186,7 +215,7 @@ class DepartmentController extends Controller
         ]);
 
         return redirect()
-            ->route('departments.index')
+            ->route(\App\Support\WorkforceSettings::name('departments.index'))
             ->with('success', 'Department updated.');
     }
 
@@ -223,7 +252,7 @@ class DepartmentController extends Controller
             }
 
             return redirect()
-                ->route('departments.index')
+                ->route(\App\Support\WorkforceSettings::name('departments.index'))
                 ->with('success', 'Sub Department archived successfully');
 
         } catch (\Throwable $e) {
@@ -281,7 +310,7 @@ class DepartmentController extends Controller
             'last_updated_by' => Auth::id(),
         ])->save();
 
-        return redirect()->route('departments.archive')
+        return redirect()->route(\App\Support\WorkforceSettings::name('departments.archive'))
             ->with('success', 'Sub Department restored successfully.');
     }
 
@@ -373,7 +402,7 @@ class DepartmentController extends Controller
                     'deleted_ids'   => $deletableIds,
                     'message'       => $finalMessage,
                 ])
-                : redirect()->route('departments.index')->with('success', $finalMessage);
+                : redirect()->route(\App\Support\WorkforceSettings::name('departments.index'))->with('success', $finalMessage);
 
         } catch (\Throwable $e) {
 

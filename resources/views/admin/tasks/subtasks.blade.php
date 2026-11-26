@@ -1,9 +1,9 @@
-{{-- ðŸ”¹ Sub Tasks Section --}}
-<div class="card shadow-sm mt-4">
-    <div class="card-body">
-        <h5 class="mb-3">Sub Tasks</h5>
+<div class="py-2">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <h6 class="fw-bold text-dark mb-0"><i class="bx bx-list-check me-1 text-primary"></i> Sub Tasks Management</h6>
+    </div>
 
-        {{-- Form to Add Subtask --}}
+    {{-- Form to Add Subtask --}}
        @php
     $agents = \App\Models\User::where('role', 'employee')->get();
 @endphp
@@ -86,6 +86,16 @@
                                 </div>
             
                                 <div class="row mb-3">
+                                    <div class="col-md-4">
+                                        <label class="form-label small fw-bold" for="subtaskStatus{{ $subtask->id }}">Status</label>
+                                        <select name="status" id="subtaskStatus{{ $subtask->id }}" class="form-select">
+                                            <option value="incomplete" @selected(strtolower((string) $subtask->status) !== 'complete')>Incomplete</option>
+                                            <option value="complete" @selected(strtolower((string) $subtask->status) === 'complete')>Complete</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
                                     <div class="col-md-10">
                                         <textarea name="description" class="form-control" rows="2">{{ $subtask->description }}</textarea>
                                     </div>
@@ -142,7 +152,7 @@
                     @if($subtask->assignee)
                         {{ $subtask->assignee->name }}
                         @if($subtask->assignee->id === auth()->id())
-                            <br><small class="text-success">{{ $subtask->assignee->gender == 'female' ? 'Mrs' : 'Mr' }} {{ $subtask->assignee->name }} – It's you</small>
+                            <br><small class="text-success">{{ $subtask->assignee->gender == 'female' ? 'Mrs' : 'Mr' }} {{ $subtask->assignee->name }} ? It's you</small>
                         @endif
                         <br><small class="text-muted">{{ $subtask->assignee->designation ?? '' }}</small>
                     @else
@@ -216,8 +226,9 @@
                     <td>{{ $index + 1 }}</td>
                     <td>{{ $subtask->title }}</td>
                     <td>
-                        <span class="badge bg-{{ $badgeColors[$subtask->status] ?? 'secondary' }}">
-                            {{ $subtask->status }}
+                        @php $subtaskDone = strtolower((string) $subtask->status) === 'complete'; @endphp
+                        <span class="badge bg-{{ $subtaskDone ? 'success' : 'warning' }}">
+                            {{ $subtaskDone ? 'Complete' : 'Incomplete' }}
                         </span>
                     </td>
                     <td>{{ \Carbon\Carbon::parse($subtask->start_date)->format('d-m-Y') ?? '--' }}</td>
@@ -278,5 +289,4 @@
         @else
             <div class="alert alert-warning mt-3 mb-0">No sub-tasks added yet.</div>
         @endif
-    </div>
 </div>

@@ -71,6 +71,14 @@ class ProfileUpdateRequest extends FormRequest
                 'email' => strtolower(trim((string) $this->input('email'))),
             ]);
         }
+
+        if ($this->filled('mobile')) {
+            $rawM = trim((string) $this->input('mobile'));
+            $mCode = $this->input('mobile_country_code', '+91');
+            if (! str_starts_with($rawM, '+')) {
+                $this->merge(['mobile' => $mCode . ' ' . $rawM]);
+            }
+        }
     }
 
     private function normalizeDate($date): ?string

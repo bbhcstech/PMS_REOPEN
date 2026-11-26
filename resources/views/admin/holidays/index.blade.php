@@ -137,6 +137,18 @@
         $monthName = $selectedMonth ? \Carbon\Carbon::create()->month($selectedMonth)->format('F') : 'All Months';
     @endphp
 
+    <style>
+        /* Match the Total Holidays card to its neighboring dark-theme cards. */
+        :is([data-pms-theme="dark"], [data-bs-theme="dark"], [data-theme="dark"], .dark, .dark-mode) .holiday-list-page .stats-grid > .stat-card:first-child {
+            background: #0f1530 !important;
+            border-color: rgba(79, 131, 255, 0.18) !important;
+        }
+        :is([data-pms-theme="dark"], [data-bs-theme="dark"], [data-theme="dark"], .dark, .dark-mode) .holiday-list-page .stats-grid > .stat-card:first-child :is(.stat-label, .stat-value) {
+            color: #ffffff !important;
+            -webkit-text-fill-color: #ffffff !important;
+        }
+    </style>
+
     <!-- Stats Cards -->
     <div class="stats-grid">
         <div class="stat-card">
@@ -407,8 +419,8 @@
     .holiday-list-page {
         padding: 30px 35px;
         min-height: 100vh;
-        background: linear-gradient(135deg, #f0f9f4 0%, #e6f3ec 50%, #f4fbf7 100%);
-        color: #0a2e1f;
+        background: linear-gradient(135deg, #F8FAFC 0%, #EEF2FF 50%, #F8FAFC 100%);
+        color: #0F172A;
         position: relative;
     }
 
@@ -419,8 +431,8 @@
         left: 0;
         right: 0;
         bottom: 0;
-        background: radial-gradient(circle at 0% 0%, rgba(16, 185, 129, 0.03) 0%, transparent 50%),
-                    radial-gradient(circle at 100% 100%, rgba(52, 211, 153, 0.03) 0%, transparent 50%);
+        background: radial-gradient(circle at 0% 0%, rgba(47, 107, 255, 0.03) 0%, transparent 50%),
+                    radial-gradient(circle at 100% 100%, rgba(79, 131, 255, 0.03) 0%, transparent 50%);
         pointer-events: none;
     }
 
@@ -430,9 +442,9 @@
         backdrop-filter: blur(10px);
         padding: 14px 24px;
         border-radius: 16px;
-        border: 1px solid rgba(16, 185, 129, 0.15);
+        border: 1px solid rgba(47, 107, 255, 0.15);
         margin-bottom: 28px;
-        color: #0f744c;
+        color: #2F6BFF;
         font-weight: 600;
         font-size: 0.9rem;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
@@ -443,7 +455,7 @@
 
     .breadcrumb i {
         margin-right: 8px;
-        color: #34d399;
+        color: #60A5FA;
     }
 
     @keyframes fadeDown {
@@ -461,8 +473,8 @@
         justify-content: space-between;
         align-items: center;
         gap: 20px;
-        box-shadow: 0 20px 40px -12px rgba(16, 185, 129, 0.12);
-        border: 1px solid rgba(16, 185, 129, 0.12);
+        box-shadow: 0 20px 40px -12px rgba(47, 107, 255, 0.12);
+        border: 1px solid rgba(47, 107, 255, 0.12);
         margin-bottom: 32px;
         transition: all 0.3s ease;
         position: relative;
@@ -472,8 +484,8 @@
     }
 
     .header-card:hover {
-        box-shadow: 0 24px 48px -16px rgba(16, 185, 129, 0.18);
-        border-color: rgba(16, 185, 129, 0.2);
+        box-shadow: 0 24px 48px -16px rgba(47, 107, 255, 0.18);
+        border-color: rgba(47, 107, 255, 0.2);
         transform: translateY(-2px);
     }
 
@@ -486,15 +498,24 @@
     .header-icon {
         width: 72px;
         height: 72px;
-        background: linear-gradient(145deg, #34d399, #059669);
+        background: linear-gradient(145deg, #4F83FF, #2F6BFF);
         color: white;
         border-radius: 24px;
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 32px;
-        box-shadow: 0 12px 24px -8px rgba(5, 150, 105, 0.3);
+        box-shadow: 0 12px 24px -8px rgba(47, 107, 255, 0.3);
         transition: all 0.3s ease;
+    }
+
+    .header-icon i,
+    .header-icon svg,
+    .header-icon [class*="fa"] {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        opacity: 1 !important;
+        visibility: visible !important;
     }
 
     .header-card:hover .header-icon {
@@ -505,7 +526,7 @@
         font-size: 32px;
         font-weight: 700;
         margin-bottom: 6px;
-        background: linear-gradient(135deg, #0a2e1f, #0f744c);
+        background: linear-gradient(135deg, #0F172A, #1E4FCC);
         background-clip: text;
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
@@ -551,27 +572,27 @@
     }
 
     .btn-primary {
-        background: linear-gradient(145deg, #34d399, #059669);
+        background: linear-gradient(145deg, #4F83FF, #2F6BFF);
         color: white;
-        box-shadow: 0 8px 20px -6px rgba(5, 150, 105, 0.35);
+        box-shadow: 0 8px 20px -6px rgba(47, 107, 255, 0.35);
     }
 
     .btn-primary:hover {
         transform: translateY(-2px);
-        box-shadow: 0 12px 28px -8px rgba(5, 150, 105, 0.45);
+        box-shadow: 0 12px 28px -8px rgba(47, 107, 255, 0.45);
     }
 
     .btn-light {
-        background: #f0f9f4;
-        color: #0f744c;
-        border: 1px solid rgba(16, 185, 129, 0.2);
+        background: #F8FAFC;
+        color: #2F6BFF;
+        border: 1px solid rgba(47, 107, 255, 0.2);
     }
 
     .btn-light:hover {
-        background: #e6f3ec;
+        background: #EEF2FF;
         transform: translateY(-2px);
-        box-shadow: 0 8px 20px -8px rgba(16, 185, 129, 0.25);
-        border-color: #34d399;
+        box-shadow: 0 8px 20px -8px rgba(47, 107, 255, 0.25);
+        border-color: #60A5FA;
     }
 
     .archive-count-badge {
@@ -591,7 +612,7 @@
 
     /* Export Dropdown - Premium Styling */
     .holiday-list-page .dropdown-menu {
-        border: 1px solid rgba(16, 185, 129, 0.18);
+        border: 1px solid rgba(47, 107, 255, 0.18);
         border-radius: 18px;
         padding: 10px;
         background: #fff;
@@ -619,8 +640,8 @@
     }
 
     .holiday-list-page .export-item:hover {
-        background: #ecfdf5;
-        color: #059669;
+        background: #EEF2FF;
+        color: #2F6BFF;
         transform: translateX(4px);
     }
 
@@ -645,7 +666,7 @@
     }
 
     .holiday-list-page .export-item:hover small {
-        color: #059669;
+        color: #2F6BFF;
     }
 
     .holiday-list-page .export-icon {
@@ -666,101 +687,40 @@
 
     .holiday-list-page .export-icon.copy { background: #dbeafe; color: #2563eb; }
     .holiday-list-page .export-icon.csv { background: #dcfce7; color: #16a34a; }
-    .holiday-list-page .export-icon.excel { background: #d1fae5; color: #047857; }
+    .holiday-list-page .export-icon.excel { background: #E0E7FF; color: #2F6BFF; }
     .holiday-list-page .export-icon.pdf { background: #fee2e2; color: #dc2626; }
     .holiday-list-page .export-icon.print { background: #e0f2fe; color: #0284c7; }
 
     .holiday-list-page .dropdown-divider {
         margin: 6px 0;
-        border-color: rgba(16, 185, 129, 0.08);
+        border-color: rgba(47, 107, 255, 0.08);
     }
 
+    /* Hide visible DataTables export toolbar because Export dropdown is in header */
     .holiday-list-page .dataTables_wrapper .dt-buttons {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        flex-wrap: wrap;
-        margin: 0 0 16px;
-        padding: 8px;
-        border: 1px solid rgba(16, 185, 129, 0.14);
-        border-radius: 16px;
-        background: #f7fcf9;
-    }
-
-    .holiday-list-page .dataTables_wrapper .dt-buttons .dt-button {
-        min-height: 42px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 !important;
-        padding: 9px 16px !important;
-        border: 1px solid rgba(16, 185, 129, 0.18) !important;
-        border-radius: 12px !important;
-        background: #fff !important;
-        color: #0f744c !important;
-        box-shadow: 0 4px 12px -10px rgba(5, 150, 105, 0.7);
-        font-size: 0.95rem !important;
-        font-weight: 750 !important;
-        line-height: 1.2 !important;
-        transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .holiday-list-page .dataTables_wrapper .dt-buttons .dt-button span {
-        display: inline-flex;
-        align-items: center;
-    }
-
-    .holiday-list-page .dataTables_wrapper .dt-buttons .dt-button i {
-        width: 20px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1rem;
-        margin-right: 8px;
-    }
-
-    .holiday-list-page .dataTables_wrapper .dt-buttons .dt-button:hover,
-    .holiday-list-page .dataTables_wrapper .dt-buttons .dt-button:focus {
-        border-color: #10b981 !important;
-        background: linear-gradient(145deg, #34d399, #059669) !important;
-        color: #fff !important;
-        box-shadow: 0 9px 20px -12px rgba(5, 150, 105, 0.8);
-        transform: translateY(-1px);
-    }
-
-    .holiday-list-page .dataTables_wrapper .buttons-excel { background: #ecfdf5 !important; }
-    .holiday-list-page .dataTables_wrapper .buttons-csv { background: #f0fdf4 !important; }
-    .holiday-list-page .dataTables_wrapper .buttons-pdf {
-        color: #b91c1c !important;
-        background: #fff7f7 !important;
-        border-color: rgba(239, 68, 68, 0.18) !important;
-    }
-    .holiday-list-page .dataTables_wrapper .buttons-print {
-        color: #315f75 !important;
-        background: #f4fbff !important;
-        border-color: rgba(49, 95, 117, 0.18) !important;
+        display: none !important;
     }
 
     .btn-success {
-        background: linear-gradient(145deg, #34d399, #059669);
+        background: linear-gradient(145deg, #4F83FF, #2F6BFF);
         color: white;
-        box-shadow: 0 8px 20px -6px rgba(5, 150, 105, 0.35);
+        box-shadow: 0 8px 20px -6px rgba(47, 107, 255, 0.35);
     }
 
     .btn-success:hover {
         transform: translateY(-2px);
-        box-shadow: 0 12px 28px -8px rgba(5, 150, 105, 0.45);
+        box-shadow: 0 12px 28px -8px rgba(47, 107, 255, 0.45);
     }
 
     .btn-outline-primary {
         background: transparent;
-        color: #059669;
-        border: 1.5px solid #34d399;
+        color: #2F6BFF;
+        border: 1.5px solid #60A5FA;
     }
 
     .btn-outline-primary:hover {
-        background: #ecfdf5;
-        border-color: #059669;
+        background: #EEF2FF;
+        border-color: #2F6BFF;
         transform: translateY(-2px);
     }
 
@@ -809,7 +769,7 @@
     }
 
     .alert-success {
-        background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+        background: linear-gradient(135deg, #EEF2FF, #E0E7FF);
         color: #065f46;
         border-left: 4px solid #10b981;
     }
@@ -862,7 +822,7 @@
         background: #ffffff !important;
         padding: 24px;
         border-radius: 24px;
-        border: 1px solid rgba(16, 185, 129, 0.1) !important;
+        border: 1px solid rgba(47, 107, 255, 0.1) !important;
         display: flex;
         gap: 18px;
         align-items: center;
@@ -870,7 +830,7 @@
         position: relative;
         overflow: hidden;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02) !important;
-        color: #0a2e1f !important;
+        color: #0F172A !important;
     }
 
     .holiday-list-page .stat-card:first-of-type *,
@@ -880,8 +840,8 @@
 
     .holiday-list-page .stat-card .stat-value,
     .holiday-list-page .stat-card:first-of-type .stat-value {
-        color: #0a2e1f !important;
-        -webkit-text-fill-color: #0a2e1f !important;
+        color: #0F172A !important;
+        -webkit-text-fill-color: #0F172A !important;
     }
 
     .holiday-list-page .stat-card .stat-label,
@@ -901,7 +861,7 @@
         transition: transform 0.3s ease;
     }
 
-    .stat-card:nth-child(1)::after { background: linear-gradient(90deg, #34d399, #059669); }
+    .stat-card:nth-child(1)::after { background: linear-gradient(90deg, #4F83FF, #2F6BFF); }
     .stat-card:nth-child(2)::after { background: linear-gradient(90deg, #3b82f6, #2563eb); }
     .stat-card:nth-child(3)::after { background: linear-gradient(90deg, #f59e0b, #d97706); }
     .stat-card:nth-child(4)::after { background: linear-gradient(90deg, #8b5cf6, #7c3aed); }
@@ -912,8 +872,8 @@
 
     .stat-card:hover {
         transform: translateY(-4px);
-        box-shadow: 0 20px 35px -12px rgba(16, 185, 129, 0.15) !important;
-        border-color: rgba(16, 185, 129, 0.2) !important;
+        box-shadow: 0 20px 35px -12px rgba(47, 107, 255, 0.15) !important;
+        border-color: rgba(47, 107, 255, 0.2) !important;
     }
 
     .stat-icon {
@@ -928,31 +888,63 @@
     }
 
     .stat-icon.total,
-    .holiday-list-page .stat-card:first-of-type .stat-icon.total {
-        background: linear-gradient(145deg, #d1fae5, #a7f3d0) !important;
-        color: #059669 !important;
-        -webkit-text-fill-color: #059669 !important;
+    .stat-icon.total i,
+    .stat-icon.total svg,
+    .stat-icon.total [class*="fa"],
+    .holiday-list-page .stat-card:first-of-type .stat-icon.total,
+    .holiday-list-page .stat-card:first-of-type .stat-icon.total i,
+    .holiday-list-page .stat-card:first-of-type .stat-icon.total svg,
+    .holiday-list-page .stat-card:first-of-type .stat-icon.total [class*="fa"] {
+        background: linear-gradient(145deg, #EEF2FF, #E0E7FF) !important;
+        color: #2F6BFF !important;
+        -webkit-text-fill-color: #2F6BFF !important;
+        opacity: 1 !important;
+        visibility: visible !important;
     }
 
     .stat-icon.weekly,
-    .holiday-list-page .stat-card .stat-icon.weekly {
+    .stat-icon.weekly i,
+    .stat-icon.weekly svg,
+    .stat-icon.weekly [class*="fa"],
+    .holiday-list-page .stat-card .stat-icon.weekly,
+    .holiday-list-page .stat-card .stat-icon.weekly i,
+    .holiday-list-page .stat-card .stat-icon.weekly svg,
+    .holiday-list-page .stat-card .stat-icon.weekly [class*="fa"] {
         background: linear-gradient(145deg, #dbeafe, #bfdbfe) !important;
         color: #2563eb !important;
         -webkit-text-fill-color: #2563eb !important;
+        opacity: 1 !important;
+        visibility: visible !important;
     }
 
     .stat-icon.special,
-    .holiday-list-page .stat-card .stat-icon.special {
+    .stat-icon.special i,
+    .stat-icon.special svg,
+    .stat-icon.special [class*="fa"],
+    .holiday-list-page .stat-card .stat-icon.special,
+    .holiday-list-page .stat-card .stat-icon.special i,
+    .holiday-list-page .stat-card .stat-icon.special svg,
+    .holiday-list-page .stat-card .stat-icon.special [class*="fa"] {
         background: linear-gradient(145deg, #fef3c7, #fde68a) !important;
         color: #d97706 !important;
         -webkit-text-fill-color: #d97706 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
     }
 
     .stat-icon.months,
-    .holiday-list-page .stat-card .stat-icon.months {
+    .stat-icon.months i,
+    .stat-icon.months svg,
+    .stat-icon.months [class*="fa"],
+    .holiday-list-page .stat-card .stat-icon.months,
+    .holiday-list-page .stat-card .stat-icon.months i,
+    .holiday-list-page .stat-card .stat-icon.months svg,
+    .holiday-list-page .stat-card .stat-icon.months [class*="fa"] {
         background: linear-gradient(145deg, #ede9fe, #c4b5fd) !important;
         color: #7c3aed !important;
         -webkit-text-fill-color: #7c3aed !important;
+        opacity: 1 !important;
+        visibility: visible !important;
     }
 
     .stat-label {
@@ -966,7 +958,7 @@
 
     .stat-value {
         display: block;
-        color: #0a2e1f;
+        color: #0F172A;
         font-size: 32px;
         font-weight: 800;
         line-height: 1.2;
@@ -976,7 +968,7 @@
     .toolbar-card {
         background: white;
         border-radius: 24px;
-        border: 1px solid rgba(16, 185, 129, 0.1);
+        border: 1px solid rgba(47, 107, 255, 0.1);
         overflow: hidden;
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
         margin-bottom: 28px;
@@ -993,7 +985,7 @@
     }
 
     .toolbar-card:hover {
-        box-shadow: 0 8px 30px rgba(16, 185, 129, 0.06);
+        box-shadow: 0 8px 30px rgba(47, 107, 255, 0.06);
     }
 
     .toolbar-filter {
@@ -1014,7 +1006,7 @@
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.06em;
-        color: #8ba198;
+        color: #64748B;
     }
 
     .filter-group .form-control {
@@ -1024,15 +1016,15 @@
         border-radius: 12px;
         font-size: 0.9rem;
         font-weight: 500;
-        color: #0a2e1f;
+        color: #0F172A;
         background: #ffffff;
         transition: all 0.2s ease;
         width: 180px;
     }
 
     .filter-group .form-control:focus {
-        border-color: #34d399;
-        box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.08);
+        border-color: #60A5FA;
+        box-shadow: 0 0 0 4px rgba(79, 131, 255, 0.08);
         outline: none;
     }
 
@@ -1076,14 +1068,14 @@
     .upload-card {
         background: white;
         border-radius: 24px;
-        border: 1px solid rgba(16, 185, 129, 0.1);
+        border: 1px solid rgba(47, 107, 255, 0.1);
         padding: 22px;
         transition: all 0.3s ease;
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
     }
 
     .upload-card:hover {
-        box-shadow: 0 8px 30px rgba(16, 185, 129, 0.06);
+        box-shadow: 0 8px 30px rgba(47, 107, 255, 0.06);
         transform: translateY(-2px);
     }
 
@@ -1097,21 +1089,21 @@
 
     .upload-header h6 {
         font-weight: 700;
-        color: #0a2e1f;
+        color: #0F172A;
         margin: 0;
         font-size: 0.95rem;
     }
 
     .upload-header p {
         margin: 4px 0 0;
-        color: #8ba198;
+        color: #64748B;
         font-size: 0.8rem;
         font-weight: 500;
     }
 
     .upload-header i {
         font-size: 2rem;
-        color: #34d399;
+        color: #60A5FA;
         flex-shrink: 0;
     }
 
@@ -1127,15 +1119,15 @@
         border-radius: 12px;
         font-size: 0.9rem;
         font-weight: 500;
-        color: #0a2e1f;
+        color: #0F172A;
         background: #ffffff;
         transition: all 0.2s ease;
         width: 100%;
     }
 
     .upload-form .form-control:focus {
-        border-color: #34d399;
-        box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.08);
+        border-color: #60A5FA;
+        box-shadow: 0 0 0 4px rgba(79, 131, 255, 0.08);
         outline: none;
     }
 
@@ -1152,7 +1144,7 @@
     .upload-check input[type="checkbox"] {
         width: 18px;
         height: 18px;
-        accent-color: #059669;
+        accent-color: #2F6BFF;
         cursor: pointer;
     }
 
@@ -1165,7 +1157,7 @@
     .table-card {
         background: white;
         border-radius: 28px;
-        border: 1px solid rgba(16, 185, 129, 0.1);
+        border: 1px solid rgba(47, 107, 255, 0.1);
         overflow: hidden;
         box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
         transition: all 0.3s ease;
@@ -1175,13 +1167,13 @@
     }
 
     .table-card:hover {
-        box-shadow: 0 12px 40px rgba(16, 185, 129, 0.08);
+        box-shadow: 0 12px 40px rgba(47, 107, 255, 0.08);
     }
 
     .table-header {
         padding: 20px 28px;
-        background: linear-gradient(135deg, #fafefb, #f0f9f4);
-        border-bottom: 1px solid rgba(16, 185, 129, 0.08);
+        background: linear-gradient(135deg, #ffffff, #F8FAFC);
+        border-bottom: 1px solid rgba(47, 107, 255, 0.08);
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -1198,8 +1190,8 @@
     .table-title-icon {
         width: 44px;
         height: 44px;
-        background: linear-gradient(145deg, #d1fae5, #a7f3d0);
-        color: #059669;
+        background: linear-gradient(145deg, #EEF2FF, #E0E7FF);
+        color: #2F6BFF;
         border-radius: 14px;
         display: flex;
         align-items: center;
@@ -1207,15 +1199,24 @@
         font-size: 1.2rem;
     }
 
+    .table-title-icon i,
+    .table-title-icon svg,
+    .table-title-icon [class*="fa"] {
+        color: #2F6BFF !important;
+        -webkit-text-fill-color: #2F6BFF !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
     .table-title h5 {
         font-weight: 700;
-        color: #0a2e1f;
+        color: #0F172A;
         margin: 0;
     }
 
     .table-title .muted {
         font-size: 0.75rem;
-        color: #8ba198;
+        color: #64748B;
         font-weight: 500;
     }
 
@@ -1233,15 +1234,15 @@
         border-radius: 10px;
         font-size: 0.8rem;
         font-weight: 500;
-        color: #0a2e1f;
+        color: #0F172A;
         background: #ffffff;
         transition: all 0.2s ease;
         width: 160px;
     }
 
     .table-actions .form-control:focus {
-        border-color: #34d399;
-        box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.08);
+        border-color: #60A5FA;
+        box-shadow: 0 0 0 4px rgba(79, 131, 255, 0.08);
         outline: none;
     }
 
@@ -1272,27 +1273,27 @@
 
     .holiday-table thead th i {
         margin-right: 6px;
-        color: #34d399;
+        color: #60A5FA;
         font-size: 0.7rem;
     }
 
     .holiday-table tbody td {
         padding: 14px 16px;
         background: white;
-        border-top: 1px solid rgba(16, 185, 129, 0.06);
-        border-bottom: 1px solid rgba(16, 185, 129, 0.06);
+        border-top: 1px solid rgba(47, 107, 255, 0.06);
+        border-bottom: 1px solid rgba(47, 107, 255, 0.06);
         vertical-align: middle;
         color: #1e293b;
         font-weight: 500;
     }
 
     .holiday-table tbody td:first-child {
-        border-left: 1px solid rgba(16, 185, 129, 0.06);
+        border-left: 1px solid rgba(47, 107, 255, 0.06);
         border-radius: 12px 0 0 12px;
     }
 
     .holiday-table tbody td:last-child {
-        border-right: 1px solid rgba(16, 185, 129, 0.06);
+        border-right: 1px solid rgba(47, 107, 255, 0.06);
         border-radius: 0 12px 12px 0;
     }
 
@@ -1301,12 +1302,12 @@
     }
 
     .holiday-table tbody tr:hover td {
-        background: #fafefb;
-        border-color: rgba(16, 185, 129, 0.12);
+        background: #F8FAFC;
+        border-color: rgba(47, 107, 255, 0.12);
     }
 
     .holiday-date {
-        color: #0a2e1f;
+        color: #0F172A;
         font-weight: 700;
     }
 
@@ -1322,12 +1323,12 @@
 
     .holiday-reason {
         font-weight: 700;
-        color: #0a2e1f;
+        color: #0F172A;
     }
 
     .holiday-reason + .text-muted {
         font-size: 0.75rem;
-        color: #8ba198;
+        color: #64748B;
         font-weight: 500;
         display: block;
         margin-top: 2px;
@@ -1342,8 +1343,8 @@
     }
 
     .type-badge.weekly {
-        background: #d1fae5;
-        color: #047857;
+        background: #E0E7FF;
+        color: #2F6BFF;
     }
 
     .type-badge.special {
@@ -1403,8 +1404,8 @@
     }
 
     .form-check-input:checked {
-        background-color: #059669;
-        border-color: #059669;
+        background-color: #2F6BFF;
+        border-color: #2F6BFF;
     }
 
     /* Holiday Check */
@@ -1432,7 +1433,7 @@
     .holiday-check input[type="checkbox"] {
         width: 18px;
         height: 18px;
-        accent-color: #059669;
+        accent-color: #2F6BFF;
         cursor: pointer;
     }
 
@@ -1443,7 +1444,7 @@
         background: rgba(255, 255, 255, 0.85);
         backdrop-filter: blur(8px);
         border-radius: 16px;
-        border: 1px solid rgba(16, 185, 129, 0.1);
+        border: 1px solid rgba(47, 107, 255, 0.1);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -1457,7 +1458,7 @@
     }
 
     .footer-note i {
-        color: #34d399;
+        color: #60A5FA;
         font-size: 1rem;
     }
 
@@ -1468,18 +1469,18 @@
     }
 
     .empty-state i {
-        color: #a7f3d0;
+        color: #C7D2FE;
         margin-bottom: 16px;
     }
 
     .empty-state h5 {
-        color: #0f744c;
+        color: #2F6BFF;
         font-weight: 700;
         margin-bottom: 8px;
     }
 
     .empty-state p {
-        color: #8ba198;
+        color: #64748B;
         margin-bottom: 0;
     }
 
@@ -1493,13 +1494,13 @@
 
     .modal-header {
         padding: 20px 24px;
-        background: linear-gradient(135deg, #fafefb, #f0f9f4);
-        border-bottom: 1px solid rgba(16, 185, 129, 0.08);
+        background: linear-gradient(135deg, #fafefb, #F8FAFC);
+        border-bottom: 1px solid rgba(47, 107, 255, 0.08);
     }
 
     .modal-header .modal-title {
         font-weight: 700;
-        color: #0a2e1f;
+        color: #0F172A;
     }
 
     .modal-body {
@@ -1508,7 +1509,7 @@
 
     .modal-footer {
         padding: 16px 24px;
-        border-top: 1px solid rgba(16, 185, 129, 0.08);
+        border-top: 1px solid rgba(47, 107, 255, 0.08);
         gap: 10px;
     }
 
@@ -1620,14 +1621,6 @@
 
         .table-actions .form-control {
             width: 100%;
-        }
-
-        .holiday-list-page .dataTables_wrapper .dt-buttons {
-            width: 100%;
-        }
-
-        .holiday-list-page .dataTables_wrapper .dt-buttons .dt-button {
-            flex: 1 1 120px;
         }
 
         .holiday-table tbody td {
@@ -1834,188 +1827,177 @@
 <style>
     /* Dark mode support */
     html[data-pms-theme="dark"] .holiday-list-page {
-        background: linear-gradient(135deg, #07130d, #102119);
+        background: linear-gradient(135deg, #070B1A, #0F1530);
     }
 
     html[data-pms-theme="dark"] .breadcrumb {
-        background: rgba(16, 33, 25, 0.85);
-        border-color: rgba(122, 240, 181, 0.15);
-        color: #d9f1e4;
+        background: rgba(15, 21, 48, 0.85);
+        border-color: rgba(79, 131, 255, 0.15);
+        color: #EEF1FB;
     }
 
     html[data-pms-theme="dark"] .breadcrumb i {
-        color: #34d399;
+        color: #60A5FA;
     }
 
     html[data-pms-theme="dark"] .header-card {
-        background: rgba(16, 33, 25, 0.95);
-        border-color: rgba(122, 240, 181, 0.12);
+        background: rgba(15, 21, 48, 0.95);
+        border-color: rgba(79, 131, 255, 0.12);
     }
 
     html[data-pms-theme="dark"] .header-card h1 {
-        background: linear-gradient(135deg, #d9f1e4, #34d399);
+        background: linear-gradient(135deg, #FFFFFF, #60A5FA);
         background-clip: text;
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
     }
 
     html[data-pms-theme="dark"] .header-card p {
-        color: #8ba198;
+        color: #94A3B8;
     }
 
     html[data-pms-theme="dark"] .btn-light {
-        background: #183026;
-        color: #d9f1e4;
-        border-color: rgba(122, 240, 181, 0.15);
+        background: #141B3D;
+        color: #EEF1FB;
+        border-color: rgba(79, 131, 255, 0.15);
     }
 
     html[data-pms-theme="dark"] .btn-light:hover {
-        background: #1f3d30;
-        border-color: #34d399;
+        background: rgba(79, 131, 255, 0.15);
+        border-color: #60A5FA;
     }
 
     html[data-pms-theme="dark"] .holiday-list-page .dropdown-menu {
-        background: #183026;
-        border-color: rgba(122, 240, 181, 0.2);
+        background: #141B3D;
+        border-color: rgba(79, 131, 255, 0.2);
         box-shadow: 0 24px 48px -14px rgba(0, 0, 0, 0.55);
     }
 
     html[data-pms-theme="dark"] .holiday-list-page .export-item {
-        color: #d9f1e4;
+        color: #EEF1FB;
     }
 
     html[data-pms-theme="dark"] .holiday-list-page .export-item:hover {
-        background: #102119;
-        color: #34d399;
+        background: #0F1530;
+        color: #60A5FA;
     }
 
     html[data-pms-theme="dark"] .holiday-list-page .export-item small {
-        color: #8ba198;
+        color: #94A3B8;
     }
 
     html[data-pms-theme="dark"] .holiday-list-page .export-item:hover small {
-        color: #34d399;
-    }
-
-    html[data-pms-theme="dark"] .holiday-list-page .dataTables_wrapper .dt-buttons {
-        border-color: rgba(122, 240, 181, 0.16);
-        background: #142a20;
-    }
-
-    html[data-pms-theme="dark"] .holiday-list-page .dataTables_wrapper .dt-buttons .dt-button {
-        border-color: rgba(122, 240, 181, 0.18) !important;
-        background: #183026 !important;
-        color: #d9f1e4 !important;
+        color: #60A5FA;
     }
 
     html[data-pms-theme="dark"] .stat-card {
-        background: #0d1b14;
-        border-color: rgba(122, 240, 181, 0.08);
+        background: #0F1530;
+        border-color: rgba(79, 131, 255, 0.08);
     }
 
     html[data-pms-theme="dark"] .stat-value {
-        color: #d9f1e4;
+        color: #EEF1FB;
     }
 
     html[data-pms-theme="dark"] .stat-label {
-        color: #8ba198;
+        color: #94A3B8;
     }
 
     html[data-pms-theme="dark"] .toolbar-card {
-        background: #0d1b14;
-        border-color: rgba(122, 240, 181, 0.08);
+        background: #0F1530;
+        border-color: rgba(79, 131, 255, 0.08);
     }
 
     html[data-pms-theme="dark"] .filter-group .form-control {
-        background: #102119;
-        border-color: rgba(122, 240, 181, 0.15);
-        color: #d9f1e4;
+        background: #0F1530;
+        border-color: rgba(79, 131, 255, 0.15);
+        color: #EEF1FB;
     }
 
     html[data-pms-theme="dark"] .filter-group .form-control:focus {
-        border-color: #34d399;
-        box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.08);
+        border-color: #60A5FA;
+        box-shadow: 0 0 0 4px rgba(79, 131, 255, 0.08);
     }
 
     html[data-pms-theme="dark"] .filter-group label {
-        color: #8ba198;
+        color: #94A3B8;
     }
 
     html[data-pms-theme="dark"] .upload-card {
-        background: #0d1b14;
-        border-color: rgba(122, 240, 181, 0.08);
+        background: #0F1530;
+        border-color: rgba(79, 131, 255, 0.08);
     }
 
     html[data-pms-theme="dark"] .upload-header h6 {
-        color: #d9f1e4;
+        color: #EEF1FB;
     }
 
     html[data-pms-theme="dark"] .upload-header p {
-        color: #8ba198;
+        color: #94A3B8;
     }
 
     html[data-pms-theme="dark"] .upload-form .form-control {
-        background: #102119;
-        border-color: rgba(122, 240, 181, 0.15);
-        color: #d9f1e4;
+        background: #0F1530;
+        border-color: rgba(79, 131, 255, 0.15);
+        color: #EEF1FB;
     }
 
     html[data-pms-theme="dark"] .upload-form .form-control:focus {
-        border-color: #34d399;
-        box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.08);
+        border-color: #60A5FA;
+        box-shadow: 0 0 0 4px rgba(79, 131, 255, 0.08);
     }
 
     html[data-pms-theme="dark"] .upload-check {
-        color: #d9f1e4;
+        color: #EEF1FB;
     }
 
     html[data-pms-theme="dark"] .table-card {
-        background: #102119;
-        border-color: rgba(122, 240, 181, 0.08);
+        background: #0F1530;
+        border-color: rgba(79, 131, 255, 0.08);
     }
 
     html[data-pms-theme="dark"] .table-header {
-        background: #0d1b14;
-        border-color: rgba(122, 240, 181, 0.06);
+        background: #141B3D;
+        border-color: rgba(79, 131, 255, 0.06);
     }
 
     html[data-pms-theme="dark"] .table-title h5 {
-        color: #d9f1e4;
+        color: #EEF1FB;
     }
 
     html[data-pms-theme="dark"] .holiday-table thead th {
-        background: #0d1b14 !important;
-        color: #8ba198 !important;
-        border-color: rgba(122, 240, 181, 0.08);
+        background: #141B3D !important;
+        color: #94A3B8 !important;
+        border-color: rgba(79, 131, 255, 0.08);
     }
 
     html[data-pms-theme="dark"] .holiday-table tbody td {
-        background: #0d1b14;
-        border-color: rgba(122, 240, 181, 0.06);
-        color: #d9f1e4;
+        background: #0F1530;
+        border-color: rgba(79, 131, 255, 0.06);
+        color: #EEF1FB;
     }
 
     html[data-pms-theme="dark"] .holiday-table tbody tr:hover td {
-        background: #102119;
-        border-color: rgba(122, 240, 181, 0.12);
+        background: #141B3D;
+        border-color: rgba(79, 131, 255, 0.12);
     }
 
     html[data-pms-theme="dark"] .holiday-date {
-        color: #d9f1e4;
+        color: #EEF1FB;
     }
 
     html[data-pms-theme="dark"] .holiday-reason {
-        color: #d9f1e4;
+        color: #EEF1FB;
     }
 
     html[data-pms-theme="dark"] .day-badge {
-        background: #183026;
-        color: #34d399;
+        background: #141B3D;
+        color: #60A5FA;
     }
 
     html[data-pms-theme="dark"] .type-badge.weekly {
-        background: #183026;
-        color: #34d399;
+        background: #141B3D;
+        color: #60A5FA;
     }
 
     html[data-pms-theme="dark"] .type-badge.special {
@@ -2024,15 +2006,15 @@
     }
 
     html[data-pms-theme="dark"] .action-btn {
-        background: #0d1b14;
-        border-color: rgba(122, 240, 181, 0.1);
-        color: #8ba198;
+        background: #141B3D;
+        border-color: rgba(79, 131, 255, 0.1);
+        color: #94A3B8;
     }
 
     html[data-pms-theme="dark"] .action-btn.btn-outline-secondary:hover {
-        background: #183026;
-        border-color: #34d399;
-        color: #d9f1e4;
+        background: #141B3D;
+        border-color: #60A5FA;
+        color: #EEF1FB;
     }
 
     html[data-pms-theme="dark"] .action-btn.btn-outline-danger:hover {
@@ -2042,96 +2024,96 @@
     }
 
     html[data-pms-theme="dark"] .btn-secondary {
-        background: #183026;
-        color: #d9f1e4;
-        border-color: rgba(122, 240, 181, 0.15);
+        background: #141B3D;
+        color: #EEF1FB;
+        border-color: rgba(79, 131, 255, 0.15);
     }
 
     html[data-pms-theme="dark"] .btn-secondary:hover {
-        background: #1f3d30;
+        background: rgba(79, 131, 255, 0.15);
     }
 
     html[data-pms-theme="dark"] .btn-outline-primary {
-        color: #34d399;
-        border-color: #34d399;
+        color: #60A5FA;
+        border-color: #60A5FA;
     }
 
     html[data-pms-theme="dark"] .btn-outline-primary:hover {
-        background: #183026;
-        color: #6ee7b7;
-        border-color: #6ee7b7;
+        background: #141B3D;
+        color: #93C5FD;
+        border-color: #93C5FD;
     }
 
     html[data-pms-theme="dark"] .footer-note {
-        background: rgba(16, 33, 25, 0.85);
-        border-color: rgba(122, 240, 181, 0.08);
-        color: #8ba198;
+        background: rgba(15, 21, 48, 0.85);
+        border-color: rgba(79, 131, 255, 0.08);
+        color: #94A3B8;
     }
 
     html[data-pms-theme="dark"] .footer-note i {
-        color: #34d399;
+        color: #60A5FA;
     }
 
     html[data-pms-theme="dark"] .modal-content {
-        background: #102119;
+        background: #0F1530;
     }
 
     html[data-pms-theme="dark"] .modal-header {
-        background: #0d1b14;
-        border-color: rgba(122, 240, 181, 0.06);
+        background: #141B3D;
+        border-color: rgba(79, 131, 255, 0.06);
     }
 
     html[data-pms-theme="dark"] .modal-header .modal-title {
-        color: #d9f1e4;
+        color: #EEF1FB;
     }
 
     html[data-pms-theme="dark"] .modal-body .form-control {
-        background: #102119;
-        border-color: rgba(122, 240, 181, 0.15);
-        color: #d9f1e4;
+        background: #0F1530;
+        border-color: rgba(79, 131, 255, 0.15);
+        color: #EEF1FB;
     }
 
     html[data-pms-theme="dark"] .modal-body .form-control:focus {
-        border-color: #34d399;
-        box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.08);
+        border-color: #60A5FA;
+        box-shadow: 0 0 0 4px rgba(79, 131, 255, 0.08);
     }
 
     html[data-pms-theme="dark"] .modal-body .form-label {
-        color: #d9f1e4;
+        color: #EEF1FB;
     }
 
     html[data-pms-theme="dark"] .modal-footer {
-        border-color: rgba(122, 240, 181, 0.06);
+        border-color: rgba(79, 131, 255, 0.06);
     }
 
     html[data-pms-theme="dark"] .holiday-check {
-        background: #0d1b14;
-        border-color: rgba(122, 240, 181, 0.12);
-        color: #d9f1e4;
+        background: #141B3D;
+        border-color: rgba(79, 131, 255, 0.12);
+        color: #EEF1FB;
     }
 
     html[data-pms-theme="dark"] .holiday-check:hover {
-        background: #102119;
-        border-color: #34d399;
+        background: #0F1530;
+        border-color: #60A5FA;
     }
 
     html[data-pms-theme="dark"] .table-actions .form-control {
-        background: #0d1b14;
-        border-color: rgba(122, 240, 181, 0.12);
-        color: #d9f1e4;
+        background: #141B3D;
+        border-color: rgba(79, 131, 255, 0.12);
+        color: #EEF1FB;
     }
 
     html[data-pms-theme="dark"] .table-actions .form-control:focus {
-        border-color: #34d399;
-        box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.08);
+        border-color: #60A5FA;
+        box-shadow: 0 0 0 4px rgba(79, 131, 255, 0.08);
     }
 
     html[data-pms-theme="dark"] .empty-state h5 {
-        color: #34d399;
+        color: #60A5FA;
     }
 
     html[data-pms-theme="dark"] .empty-state p {
-        color: #8ba198;
+        color: #94A3B8;
     }
 </style>
 

@@ -21,12 +21,15 @@ class CommunityMessageController extends Controller
      */
     protected function getCompanyId(): int
     {
+        abort_unless(Auth::check(), 403);
         $contextId = app(CompanyContext::class)->id();
         if ($contextId) {
+            abort_if(! \App\Services\TenantScope::isPlatformAdmin() && (int) Auth::user()->company_id !== (int) $contextId, 403);
             return (int) $contextId;
         }
 
-        return (int) (Auth::user()?->company_id ?? 1);
+        abort_unless(Auth::user()?->company_id, 403);
+        return (int) Auth::user()->company_id;
     }
 
     /**
@@ -101,6 +104,7 @@ class CommunityMessageController extends Controller
         $user = Auth::user();
 
         $afterId = $request->query('after_id');
+        $request->validate(['since' => 'nullable|date', 'after_id' => 'nullable|integer|min:0', 'before_id' => 'nullable|integer|min:1', 'search' => 'nullable|string|max:255']);
         $beforeId = $request->query('before_id');
         $search = trim($request->query('search', ''));
 
@@ -114,9 +118,9 @@ class CommunityMessageController extends Controller
                   ->orWhereHas('user', function ($uq) use ($search) {
                       $uq->where('name', 'like', "%{$search}%");
                   });
-            });
-        } elseif ($afterId) {
-            $query->where('id', '>', (int)$afterId);
+            })->limit(100);
+        } elseif ($request->has('after_id')) {
+            $query->where('id', '>', (int)$afterId)->orderBy('id')->limit(100);
         } elseif ($beforeId) {
             $query->where('id', '<', (int)$beforeId)->orderBy('id', 'desc')->limit(30);
         } else {
@@ -135,12 +139,29 @@ class CommunityMessageController extends Controller
         });
 
         // Mark last read if fetching new messages
-        if ($afterId && $messages->isNotEmpty() && $user) {
+        if ($request->has('after_id') && $messages->isNotEmpty() && $user) {
             $maxId = $messages->max('id');
             CommunityUserState::updateOrCreate(
                 ['company_id' => $companyId, 'user_id' => $user->id],
                 ['last_read_message_id' => $maxId, 'last_read_at' => now()]
             );
+        }
+
+        // Messages already on screen that changed since the last sync (reactions, edits, deletions, pins),
+        // so every client shows them without a page refresh.
+        $syncedAt = now();
+        $updated = collect();
+        if ($request->has('after_id') && $request->filled('since') && empty($search)) {
+            $updated = CommunityMessage::forTenant($companyId)
+                ->withTrashed()
+                ->with(['user', 'parent.user', 'reactions.user'])
+                ->where('id', '<=', (int) $afterId)
+                ->where('updated_at', '>=', \Carbon\Carbon::parse($request->query('since'))->setTimezone(config('app.timezone'))->subSeconds(2))
+                ->orderBy('id')
+                ->limit(200)
+                ->get()
+                ->map(fn ($m) => $this->formatMessage($m, $user))
+                ->values();
         }
 
         // Pinned messages list
@@ -158,6 +179,9 @@ class CommunityMessageController extends Controller
         return response()->json([
             'success' => true,
             'messages' => $formatted,
+            'updated' => $updated,
+            'server_time' => $syncedAt->toIso8601String(),
+            'company_id' => $companyId,
             'pinned_messages' => $pinnedMessages,
             'can_manage' => $this->canManage(),
         ]);
@@ -187,6 +211,10 @@ class CommunityMessageController extends Controller
         $companyId = $this->getCompanyId();
         $user = Auth::user();
 
+        if ($request->filled('parent_id')) {
+            CommunityMessage::forTenant($companyId)->findOrFail($request->input('parent_id'));
+        }
+
         $attachmentPath = null;
         $attachmentName = null;
         $attachmentType = null;
@@ -212,16 +240,8 @@ class CommunityMessageController extends Controller
                 $attachmentType = 'file';
             }
 
-            $filename = 'community_' . time() . '_' . Str::random(8) . '.' . $ext;
-            $uploadDir = "uploads/community/{$companyId}";
-            $destinationPath = public_path($uploadDir);
-
-            if (!file_exists($destinationPath)) {
-                mkdir($destinationPath, 0755, true);
-            }
-
-            $file->move($destinationPath, $filename);
-            $attachmentPath = "{$uploadDir}/{$filename}";
+            $attachmentPath = $file->store("community/{$companyId}", 'local');
+            abort_unless($attachmentPath, 503, 'Attachment storage is unavailable.');
         }
 
         $msg = CommunityMessage::create([
@@ -289,6 +309,24 @@ class CommunityMessageController extends Controller
         ]);
     }
 
+    public function attachment($id)
+    {
+        $companyId = $this->getCompanyId();
+        $msg = CommunityMessage::forTenant($companyId)->findOrFail($id);
+        $path = $msg->attachment_path;
+        abort_unless($path && !str_contains($path, '..'), 404);
+        if (str_starts_with($path, "community/{$companyId}/")) {
+            abort_unless(Storage::disk('local')->exists($path), 404);
+            return response()->file(Storage::disk('local')->path($path), [
+                'Cache-Control' => 'private, no-store', 'X-Content-Type-Options' => 'nosniff',
+                'Content-Security-Policy' => "default-src 'none'; sandbox",
+            ]);
+        }
+        // Existing uploads are served through the same authorization gate.
+        abort_unless(str_starts_with($path, "uploads/community/{$companyId}/") && is_file(public_path($path)), 404);
+        return response()->file(public_path($path), ['Cache-Control' => 'private, no-store', 'X-Content-Type-Options' => 'nosniff', 'Content-Security-Policy' => "default-src 'none'; sandbox"]);
+    }
+
     /**
      * Delete message (Own message OR Admin Moderation)
      */
@@ -300,9 +338,7 @@ class CommunityMessageController extends Controller
         $msg = CommunityMessage::forTenant($companyId)->findOrFail($id);
 
         $isOwner = ($msg->user_id === $user->id);
-        $canManage = $this->canManage();
-
-        if (!$isOwner && !$canManage) {
+        if (! $this->canDeleteMessage($msg, $user)) {
             return response()->json([
                 'success' => false,
                 'error' => 'You do not have permission to delete this message.'
@@ -353,6 +389,8 @@ class CommunityMessageController extends Controller
             ]);
         }
 
+        // Mark the message as changed so other open Community screens pick up the reaction.
+        $msg->touch();
         $msg->load('reactions.user');
 
         return response()->json([
@@ -413,7 +451,7 @@ class CommunityMessageController extends Controller
             : strtoupper(substr($senderName, 0, 2));
 
         $parentData = null;
-        if ($msg->parent) {
+        if ($msg->parent && (int) $msg->parent->company_id === (int) $msg->company_id) {
             $parentData = [
                 'id' => $msg->parent->id,
                 'sender_name' => $msg->parent->user?->name ?? 'User',
@@ -444,8 +482,18 @@ class CommunityMessageController extends Controller
             'date_group' => $msg->formatted_date,
             'created_at_iso' => $msg->created_at ? $msg->created_at->toIso8601String() : '',
             'can_edit' => ($currentUser && $msg->user_id === $currentUser->id && !$isDeleted),
-            'can_delete' => ($currentUser && ($msg->user_id === $currentUser->id || $this->canManage()) && !$isDeleted),
+            'can_delete' => $this->canDeleteMessage($msg, $currentUser),
         ];
+    }
+
+    private function canDeleteMessage(CommunityMessage $message, ?User $user): bool
+    {
+        if (! $user || $message->trashed() || (int) $message->company_id !== (int) $user->company_id) {
+            return false;
+        }
+
+        return (int) $message->user_id === (int) $user->id
+            || \App\Services\WorkforceAccess::isAdmin($user);
     }
 
     /**

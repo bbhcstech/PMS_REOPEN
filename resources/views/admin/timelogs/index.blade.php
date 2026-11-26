@@ -1,7 +1,111 @@
 @extends('admin.layout.app')
 
 @section('content')
-<div class="container-fluid px-4 py-4">
+<style>
+    #timelogTable_wrapper :is(.dataTables_length, .dt-length) select {
+        min-width: 80px;
+        width: auto;
+        padding-left: 12px !important;
+        padding-right: 32px !important;
+        appearance: none;
+        -webkit-appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%2364748b' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round' d='m4 6 4 4 4-4'/%3E%3C/svg%3E") !important;
+        background-repeat: no-repeat !important;
+        background-position: right 10px center !important;
+        background-size: 12px 12px !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode)
+        #timelogTable_wrapper :is(.dataTables_length, .dt-length) select {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%23cbd5e1' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round' d='m4 6 4 4 4-4'/%3E%3C/svg%3E") !important;
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.35rem 0.85rem;
+        font-size: 0.82rem;
+        font-weight: 700;
+        border-radius: 999px;
+        white-space: nowrap;
+        line-height: 1.2;
+        color: #000000 !important;
+    }
+    .status-badge.completed, .status-badge.approved {
+        background-color: #E0E7FF !important;
+        color: #000000 !important;
+        border: 1px solid #86efac !important;
+    }
+    .status-badge.doing, .status-badge.in-progress, .status-badge.inprogress {
+        background-color: #dbeafe !important;
+        color: #000000 !important;
+        border: 1px solid #93c5fd !important;
+    }
+    .status-badge.pending {
+        background-color: #fef08a !important;
+        color: #000000 !important;
+        border: 1px solid #fde047 !important;
+    }
+    .status-badge.to-do, .status-badge.todo {
+        background-color: #e2e8f0 !important;
+        color: #000000 !important;
+        border: 1px solid #cbd5e1 !important;
+    }
+    .status-badge.incomplete, .status-badge.rejected {
+        background-color: #fee2e2 !important;
+        color: #000000 !important;
+        border: 1px solid #fca5a5 !important;
+    }
+    .status-badge.waiting-for-approval {
+        background-color: #ffedd5 !important;
+        color: #000000 !important;
+        border: 1px solid #fdba74 !important;
+    }
+
+    html[data-pms-theme="dark"] .status-badge {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .status-badge.completed,
+    html[data-pms-theme="dark"] .status-badge.approved {
+        background-color: rgba(47, 107, 255, 0.2) !important;
+        color: #93C5FD !important;
+        border: 1px solid rgba(47, 107, 255, 0.4) !important;
+    }
+    html[data-pms-theme="dark"] .status-badge.doing,
+    html[data-pms-theme="dark"] .status-badge.in-progress,
+    html[data-pms-theme="dark"] .status-badge.inprogress {
+        background-color: rgba(47, 107, 255, 0.2) !important;
+        color: #93C5FD !important;
+        border: 1px solid rgba(47, 107, 255, 0.4) !important;
+    }
+    html[data-pms-theme="dark"] .status-badge.pending {
+        background-color: rgba(245, 158, 11, 0.2) !important;
+        color: #FCD34D !important;
+        border: 1px solid rgba(245, 158, 11, 0.4) !important;
+    }
+    html[data-pms-theme="dark"] .status-badge.to-do,
+    html[data-pms-theme="dark"] .status-badge.todo {
+        background-color: rgba(148, 163, 184, 0.2) !important;
+        color: #CBD5E1 !important;
+        border: 1px solid rgba(148, 163, 184, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .status-badge.incomplete,
+    html[data-pms-theme="dark"] .status-badge.rejected {
+        background-color: rgba(239, 68, 68, 0.2) !important;
+        color: #FCA5A5 !important;
+        border: 1px solid rgba(239, 68, 68, 0.4) !important;
+    }
+    html[data-pms-theme="dark"] .status-badge.waiting-for-approval {
+        background-color: rgba(249, 115, 22, 0.2) !important;
+        color: #FDBA74 !important;
+        border: 1px solid rgba(249, 115, 22, 0.4) !important;
+    }
+</style>
+
+@include('admin.timelogs.partials.workspace-styles')
+
+<div id="pms-timelogs-page" class="pms-ts-page">
     @php $canReviewTimeLogs = in_array(strtolower((string) auth()->user()?->role), ['admin', 'hr', 'manager'], true); @endphp
 
     @if($project)
@@ -13,21 +117,25 @@
     @endif
 
     <!-- Top Header -->
-    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
-        <div>
-            <h3 class="fw-bold mb-0 text-dark"><i class="bx bx-time-five text-primary me-2"></i> Employee Timesheet</h3>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item"><a href="{{ route('dashboard') }}" class="text-decoration-none">Dashboard</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Timesheet</li>
-                </ol>
-            </nav>
->>>>>>> 2367e2c (client work timesheet reports ticket)
+    <div class="pms-ts-topbar">
+        <div class="pms-ts-title-wrap">
+            <div class="pms-ts-title-icon" aria-hidden="true">
+                <i class="bx bx-time-five"></i>
+            </div>
+            <div>
+                <h3 class="pms-ts-title">Employee Timesheet</h3>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="{{ route('dashboard') }}" class="text-decoration-none">Dashboard</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Timesheet</li>
+                    </ol>
+                </nav>
+            </div>
         </div>
 
-        <div class="d-flex align-items-center gap-2">
-            <a href="{{ route('timelogs.create') }}" class="btn btn-primary rounded-pill px-4 shadow-sm">
-                <i class="bx bx-plus-circle me-1"></i> Log Time
+        <div class="pms-ts-actions">
+            <a href="{{ route('timelogs.create') }}" class="btn pms-ts-btn-primary">
+                <i class="bx bx-plus-circle"></i> Log Time
             </a>
         </div>
     </div>
@@ -40,15 +148,15 @@
     @endif
 
     <!-- Filters Section -->
-    <div class="card border-0 shadow-sm rounded-4 mb-4">
+    <div class="card pms-ts-card mb-4">
         <div class="card-body p-4">
             <form method="GET" action="{{ route('timelogs.index') }}">
                 <div class="row g-3 align-items-end">
                     <div class="col-lg-4 col-md-5">
-                        <label class="form-label fw-semibold text-dark mb-1">Duration / Date Range</label>
+                        <label class="pms-ts-label">Duration / Date Range</label>
                         <div class="input-group">
-                            <span class="input-group-text bg-white border-end-0"><i class="bx bx-calendar text-primary"></i></span>
-                            <input type="text" name="daterange" id="daterange" class="form-control border-start-0 ps-0 rounded-end"
+                            <span class="input-group-text border-end-0"><i class="bx bx-calendar text-primary"></i></span>
+                            <input type="text" name="daterange" id="daterange" class="form-control border-start-0 ps-0"
                                    value="{{ request('start_date') && request('end_date') ? request('start_date').' To '.request('end_date') : '' }}"
                                    placeholder="Select Date Range">
                         </div>
@@ -57,8 +165,8 @@
                     </div>
 
                     <div class="col-lg-4 col-md-4">
-                        <label class="form-label fw-semibold text-dark mb-1">Filter by Employee</label>
-                        <select name="user_id" class="form-select rounded-3">
+                        <label class="pms-ts-label">Filter by Employee</label>
+                        <select name="user_id" class="form-select">
                             @if($canReviewTimeLogs)
                                 <option value="">All Employees</option>
                             @endif
@@ -78,11 +186,11 @@
                     </div>
 
                     <div class="col-lg-4 col-md-3 d-flex align-items-center gap-2">
-                        <button type="submit" class="btn btn-primary rounded-pill px-4 flex-grow-1 text-nowrap">
-                            <i class="bx bx-filter-alt me-1"></i> Filter
+                        <button type="submit" class="btn pms-ts-btn-primary flex-grow-1 text-nowrap">
+                            <i class="bx bx-filter-alt"></i> Filter
                         </button>
-                        <a href="{{ route('timelogs.index') }}" class="btn btn-outline-secondary rounded-pill px-4 flex-grow-1 text-nowrap">
-                            <i class="bx bx-refresh me-1"></i> Reset
+                        <a href="{{ route('timelogs.index') }}" class="btn pms-ts-btn-secondary flex-grow-1 text-nowrap">
+                            <i class="bx bx-refresh"></i> Reset
                         </a>
                     </div>
                 </div>
@@ -91,277 +199,231 @@
     </div>
 
     <!-- Actions & Views Switcher Toolbar -->
-    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
-        <!-- Bulk Actions -->
-        <div class="d-flex align-items-center gap-2">
-            @if($canReviewTimeLogs)
-                <select id="bulkLogStatus" class="form-select form-select-sm rounded-pill w-auto" disabled>
-                    <option value="">Change Status</option>
-                    <option value="pending">Pending</option>
-                    <option value="approved">Approved</option>
-                    <option value="rejected">Rejected</option>
-                </select>
-                <button id="applyBulkLogStatus" class="btn btn-sm btn-primary rounded-pill px-3" disabled>Apply</button>
-            @endif
+    <div class="pms-ts-switcher-bar">
+        <div class="text-muted small">
+            <i class="bx bx-list-check text-primary me-1"></i> Showing logged task durations and timesheet entries.
         </div>
 
         <!-- View Switcher -->
-        <div class="btn-group" role="group">
-            <a href="{{ route('timelogs.index') }}" class="btn btn-sm btn-outline-primary {{ request()->routeIs('timelogs.index') ? 'active' : '' }}" title="Timesheet List">
-                <i class="bx bx-list-ul me-1"></i> List
+        <div class="pms-ts-switcher" role="group" aria-label="Timesheet views">
+            <a href="{{ route('timelogs.index') }}" class="pms-ts-tab {{ request()->routeIs('timelogs.index') || request()->routeIs('projects.timelogs.index') ? 'active' : '' }}" title="Timesheet List">
+                <i class="bx bx-list-ul"></i> List
             </a>
-            <a href="{{ route('timelogs.calendar') }}" class="btn btn-sm btn-outline-primary {{ request()->routeIs('timelogs.calendar') ? 'active' : '' }}" title="Calendar View">
-                <i class="bx bx-calendar me-1"></i> Calendar
+            <a href="{{ route('timelogs.calendar') }}" class="pms-ts-tab {{ request()->routeIs('timelogs.calendar') ? 'active' : '' }}" title="Calendar View">
+                <i class="bx bx-calendar"></i> Calendar
             </a>
-            <a href="{{ route('timelogs.byEmployee')}}" class="btn btn-sm btn-outline-primary {{ request()->routeIs('timelogs.byEmployee') ? 'active' : '' }}" title="By Employee Summary">
-                <i class="bx bx-user me-1"></i> By Employee
+            <a href="{{ route('timelogs.byEmployee')}}" class="pms-ts-tab {{ request()->routeIs('timelogs.byEmployee') ? 'active' : '' }}" title="By Employee Summary">
+                <i class="bx bx-user"></i> By Employee
             </a>
-            <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#howItWorksModal" title="How It Works">
+            <button type="button" class="pms-ts-tab" data-bs-toggle="modal" data-bs-target="#howItWorksModal" title="How It Works">
                 <i class="bx bx-help-circle"></i>
             </button>
         </div>
     </div>
 
     <!-- Timesheet Table Card -->
-    <div class="card border-0 shadow-sm rounded-4">
+    <div class="card pms-ts-card overflow-hidden">
         <div class="card-body p-4">
-            <div class="table-responsive">
-                <table id="timelogTable" class="table table-hover align-middle w-100">
-                    <thead class="table-light">
+            <table id="timelogTable" class="table table-hover align-middle w-100">
+                    <thead>
                         <tr>
-                            <th style="width: 30px;"><input type="checkbox" id="selectAllLogs" class="form-check-input"></th>
-                            <th style="width: 60px;">ID</th>
-                            <th>Code</th>
-                            <th>Project</th>
-                            <th>Task & Memo</th>
+                            <th style="width: 40px;"><input type="checkbox" id="selectAllLogs"></th>
+                            <th style="width: 50px;">Id</th>
+                            <th style="white-space: nowrap;">Code</th>
+                            <th>Task</th>
                             <th>Employee</th>
-                            <th>Start Time</th>
-                            <th>End Time</th>
-                            <th>Total Hours</th>
+                            <th style="white-space: nowrap;">Start Time</th>
+                            <th style="white-space: nowrap;">End Time</th>
+                            <th style="white-space: nowrap;">Task Duration</th>
                             <th>Status</th>
-                            <th style="width: 80px;" class="text-end">Actions</th>
+                            <th style="width: 80px;" class="text-center">Action</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($logs as $key => $log)
-                        <tr data-id="{{ $log->id }}">
-                            <td><input type="checkbox" class="log-checkbox form-check-input" value="{{ $log->id }}"></td>
-                            <td class="fw-bold">#{{ $key + 1 }}</td>
-                            <td>
-                                <span class="badge bg-light text-dark border font-monospace">
-                                    @php
-                                        $prefix = $log->project->project_code ?? 'LOG';
-                                        $autoNumber = str_pad($log->id, 4, '0', STR_PAD_LEFT);
-                                        echo $prefix . '-' . $autoNumber;
-                                    @endphp
-                                </span>
-                            </td>
-                            <td>
-                                <div class="fw-bold text-dark mb-0">{{ $log->project->name ?? 'General Project' }}</div>
-                            </td>
-                            <td>
-                                <div class="fw-semibold text-dark">{{ $log->task->title ?? 'General Work' }}</div>
-                                @if($log->memo)
-                                    <small class="text-muted text-wrap d-block">{{ Str::limit($log->memo, 40) }}</small>
-                                @endif
-                            </td>
-                            <td>
-                                <div class="d-flex align-items-center gap-2">
-                                    <div class="avatar bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center fw-bold small" style="width: 28px; height: 28px;">
-                                        {{ strtoupper(substr($log->user->name ?? 'E', 0, 2)) }}
+                        @foreach($tasks as $key => $task)
+                            @php
+                                $latestTimer = $task->timers->sortByDesc('id')->first();
+                                $assignedUsers = $task->assignees ?? collect();
+                                if ($assignedUsers->isEmpty() && $task->assigned_to) {
+                                    $ids = explode(',', (string) $task->assigned_to);
+                                    $assignedUsers = \App\Models\User::whereIn('id', $ids)->get();
+                                }
+                                $assignedNames = $assignedUsers->isNotEmpty()
+                                    ? $assignedUsers->pluck('name')->join(', ')
+                                    : ($task->assignee?->name ?? ($latestTimer?->user?->name ?? 'Unassigned'));
+
+                                $estHours = (int) ($task->estimate_hours ?? 0);
+                                $estMins = (int) ($task->estimate_minutes ?? 0);
+                                $hasEst = ($estHours > 0 || $estMins > 0);
+                                $loggedFormatted = $task->total_logged_formatted ?: '00h 00m 00s';
+
+                                $codePrefix = $task->project?->project_code ?? '';
+                                $taskCode = $codePrefix
+                                    ? $codePrefix . str_pad($task->id, 4, '0', STR_PAD_LEFT)
+                                    : ($task->task_short_code ?: 'TASK-' . str_pad($task->id, 4, '0', STR_PAD_LEFT));
+
+                                $startDateStr = $latestTimer?->start_date
+                                    ? \Carbon\Carbon::parse($latestTimer->start_date)->format('d-m-Y') . ($latestTimer->start_time ? ' ' . \Carbon\Carbon::parse($latestTimer->start_time)->format('h:i A') : '')
+                                    : ($task->start_date ? \Carbon\Carbon::parse($task->start_date)->format('d-m-Y') : '--');
+
+                                $endDateStr = $latestTimer?->end_date
+                                    ? \Carbon\Carbon::parse($latestTimer->end_date)->format('d-m-Y') . ($latestTimer->end_time ? ' ' . \Carbon\Carbon::parse($latestTimer->end_time)->format('h:i A') : '')
+                                    : ($task->due_date ? \Carbon\Carbon::parse($task->due_date)->format('d-m-Y') : '--');
+
+                                $statusValue = $latestTimer?->status ?: ($task->status ?: 'To Do');
+                            @endphp
+                            <tr data-id="{{ $task->id }}">
+                                <td>
+                                    <input type="checkbox" class="log-checkbox task-checkbox" value="{{ $task->id }}">
+                                </td>
+                                <td>{{ $key + 1 }}</td>
+
+                                {{-- AUTO-GENERATED CODE --}}
+                                <td style="white-space: nowrap;">
+                                    <span class="badge bg-light text-dark border fw-bold">{{ $taskCode }}</span>
+                                </td>
+
+                                {{-- TASK & PROJECT --}}
+                                <td>
+                                    <div class="d-flex flex-column">
+                                        <a href="{{ route('tasks.show', $task->id) }}" class="fw-bold text-dark text-decoration-none">
+                                            {{ $task->title ?? 'Untitled Task' }}
+                                        </a>
+                                        @if($task->project)
+                                            <small class="text-muted">
+                                                <i class="bi bi-folder2-open me-1 text-primary"></i>{{ $task->project->name }}
+                                            </small>
+                                        @else
+                                            <small class="text-muted">No Project</small>
+                                        @endif
                                     </div>
-                                    <span class="fw-semibold text-dark">{{ $log->user->name ?? 'Employee' }}</span>
-                                </div>
-                            </td>
-                            <td class="text-nowrap small text-muted">
-                                {{ \Carbon\Carbon::parse($log->start_date)->format('d M Y') }}
-                                <div class="fw-semibold text-dark">{{ \Carbon\Carbon::parse($log->start_time)->format('h:i A') }}</div>
-                            </td>
-                            <td class="text-nowrap small text-muted">
-                                {{ \Carbon\Carbon::parse($log->end_date)->format('d M Y') }}
-                                <div class="fw-semibold text-dark">{{ \Carbon\Carbon::parse($log->end_time)->format('h:i A') }}</div>
-                            </td>
-                            <td>
-                                @php
-                                    $rawHours = is_numeric($log->total_hours) ? abs((float)$log->total_hours) : 0;
-                                @endphp
-                                <span class="badge bg-primary-subtle text-primary fw-bold fs-6 px-3 py-1">
-                                    {{ number_format($rawHours, 2) }} hrs
-                                </span>
-                            </td>
-                            <td class="statusCell">
-                                @php
-                                    $st = strtolower((string)($log->status ?? 'pending'));
-                                @endphp
-                                @if($st == 'approved')
-                                    <span class="badge bg-success rounded-pill px-3 py-1">Approved</span>
-                                @elseif($st == 'rejected')
-                                    <span class="badge bg-danger rounded-pill px-3 py-1">Rejected</span>
-                                @else
-                                    <span class="badge bg-warning text-dark rounded-pill px-3 py-1">Pending</span>
-                                @endif
-                            </td>
-                            <td class="text-end">
-                                <div class="dropdown">
-                                    <button class="btn btn-sm btn-light rounded-circle shadow-sm" type="button" data-bs-toggle="dropdown">
-                                        <i class="bx bx-dots-vertical-rounded"></i>
-                                    </button>
-                                    <ul class="dropdown-menu dropdown-menu-end rounded-3 shadow border-0">
-                                        <li>
-                                            <a class="dropdown-item py-2" href="{{ route('timelogs.show', $log->id) }}">
-                                                <i class="bx bx-show me-2 text-primary"></i> View Details
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a class="dropdown-item py-2" href="{{ route('timelogs.edit', $log->id) }}">
-                                                <i class="bx bx-edit me-2 text-info"></i> Edit Log
-                                            </a>
-                                        </li>
-                                        <li><hr class="dropdown-divider"></li>
-                                        <li>
-                                            <form action="{{ route('timelogs.destroy', $log->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this log?');">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="dropdown-item py-2 text-danger">
-                                                    <i class="bx bx-trash me-2"></i> Delete
-                                                </button>
-                                            </form>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </td>
-                        </tr>
+                                </td>
+
+                                {{-- EMPLOYEE --}}
+                                <td>
+                                    <div class="d-flex align-items-center gap-1 flex-wrap">
+                                        <span class="badge bg-label-info text-dark">{{ $assignedNames }}</span>
+                                    </div>
+                                </td>
+
+                                {{-- START TIME --}}
+                                <td style="white-space: nowrap;">{{ $startDateStr }}</td>
+
+                                {{-- END TIME --}}
+                                <td style="white-space: nowrap;">{{ $endDateStr }}</td>
+
+                                {{-- TASK DURATION --}}
+                                <td style="white-space: nowrap;">
+                                    <div class="d-flex flex-column">
+                                        <div class="fw-bold text-success">
+                                            <i class="bi bi-clock-history me-1"></i>{{ $loggedFormatted }}
+                                        </div>
+                                        @if($hasEst)
+                                            <small class="text-muted">
+                                                <i class="bi bi-hourglass-split me-1"></i>Est: {{ $estHours }}h {{ $estMins }}m
+                                            </small>
+                                        @endif
+                                        @if($task->timers->isNotEmpty())
+                                            <small class="text-primary mt-1">
+                                                <i class="bi bi-journal-text me-1"></i>{{ $task->timers->count() }} log{{ $task->timers->count() === 1 ? '' : 's' }} recorded
+                                            </small>
+                                        @endif
+                                    </div>
+                                </td>
+
+                                {{-- STATUS --}}
+                                <td class="statusCell" style="white-space: nowrap;">
+                                    @php
+                                        $normalizedStatus = strtolower(str_replace([' ', '_'], '-', (string) $statusValue));
+                                    @endphp
+                                    <span class="status-badge {{ $normalizedStatus }}">
+                                        {{ ucfirst($statusValue) }}
+                                    </span>
+                                </td>
+
+                                {{-- ACTION --}}
+                                <td class="text-center">
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-light border" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                            <i class="bi bi-three-dots-vertical"></i>
+                                        </button>
+
+                                        <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                                            <li>
+                                                <a class="dropdown-item" href="{{ route('timelogs.create', ['project_id' => $task->project_id, 'task_id' => $task->id]) }}">
+                                                    <i class="bi bi-plus-circle text-primary me-2"></i> Log Time
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item" href="{{ route('tasks.show', $task->id) }}">
+                                                    <i class="bi bi-eye me-2 text-info"></i> View Task
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item" href="{{ route('tasks.edit', $task->id) }}">
+                                                    <i class="bi bi-pencil-square me-2 text-warning"></i> Edit Task
+                                                </a>
+                                            </li>
+
+                                            @if($latestTimer)
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li>
+                                                    <a class="dropdown-item" href="{{ route('timelogs.show', $latestTimer->id) }}">
+                                                        <i class="bi bi-clock me-2"></i> View Latest Log
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a class="dropdown-item" href="{{ route('timelogs.edit', $latestTimer->id) }}">
+                                                        <i class="bi bi-pencil me-2"></i> Edit Latest Log
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <form action="{{ route('timelogs.destroy', $latestTimer->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this time log?');">
+                                                        @csrf @method('DELETE')
+                                                        <button type="submit" class="dropdown-item text-danger">
+                                                            <i class="bi bi-trash me-2"></i> Delete Log
+                                                        </button>
+                                                    </form>
+                                                </li>
+                                            @endif
+                                        </ul>
+                                    </div>
+                                </td>
+                            </tr>
                         @endforeach
                     </tbody>
                 </table>
-            </div>
         </div>
     </div>
 </div>
 
-<!-- Modal: How it works -->
-<div class="modal fade" id="howItWorksModal" tabindex="-1" aria-labelledby="howItWorksLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-centered">
-    <div class="modal-content rounded-4 border-0 shadow">
-      <div class="modal-header border-bottom">
-        <h5 class="modal-title fw-bold" id="howItWorksLabel"><i class="bx bx-info-circle text-primary me-2"></i> Timesheet Lifecycle</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body text-center p-4">
-        <img src="{{ asset('timesheet-lifecycle.png') }}" alt="Timesheet Lifecycle" class="img-fluid rounded-3">
-      </div>
-      <div class="modal-footer border-top">
-        <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Close</button>
-      </div>
-    </div>
-  </div>
-</div>
+@include('admin.timelogs.partials.how-it-works-modal')
 @endsection
 
 @push('js')
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
 
-<style>
-    /* DataTables polish */
-    .dt-buttons .btn {
-        border-radius: 50rem !important;
-        padding: 0.35rem 0.9rem !important;
-        font-size: 0.82rem !important;
-        font-weight: 600 !important;
-        margin-right: 0.35rem !important;
-        background: #ffffff !important;
-        border: 1px solid var(--pms-border, #e5e7eb) !important;
-        color: #374151 !important;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
-    }
-    .dt-buttons .btn:hover {
-        background: var(--pms-primary-soft, #e4f3eb) !important;
-        color: var(--pms-primary, #0f744c) !important;
-    }
-    .dataTables_filter input {
-        border-radius: 50rem !important;
-        padding: 0.35rem 1rem !important;
-        border: 1px solid #d1d5db !important;
-        outline: none !important;
-    }
-    .dataTables_paginate .paginate_button.current {
-        background: var(--pms-primary, #0f744c) !important;
-        color: #ffffff !important;
-        border-radius: 50rem !important;
-        border: none !important;
-    }
-</style>
-
 <script src="https://cdn.jsdelivr.net/npm/moment@2.29.1/moment.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
 
-<!-- DataTables buttons -->
-<script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.3.0-beta.1/pdfmake.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.3.0-beta.1/vfs_fonts.js"></script>
-
 <script>
     $(document).ready(function () {
-        let timelogDatatable = $('#timelogTable').DataTable({
-            dom: '<"d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3"Bf>rt<"d-flex flex-wrap align-items-center justify-content-between gap-3 mt-3"ip>',
-            buttons: [
-                { extend: 'copy', className: 'btn', text: '<i class="bx bx-copy me-1"></i> Copy', exportOptions: { columns: ':not(:first-child):not(:last-child)' } },
-                { extend: 'csv', className: 'btn', text: '<i class="bx bx-file me-1"></i> CSV', exportOptions: { columns: ':not(:first-child):not(:last-child)' } },
-                { extend: 'excel', className: 'btn', text: '<i class="bx bx-spreadsheet me-1"></i> Excel', exportOptions: { columns: ':not(:first-child):not(:last-child)' } },
-                { extend: 'pdf', className: 'btn', text: '<i class="bx bxs-file-pdf me-1"></i> PDF', exportOptions: { columns: ':not(:first-child):not(:last-child)' } },
-                { extend: 'print', className: 'btn', text: '<i class="bx bx-printer me-1"></i> Print', exportOptions: { columns: ':not(:first-child):not(:last-child)' } }
-            ],
-            pageLength: 10,
+        $('#timelogTable').DataTable({
+            dom: '<"d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3"lf><"table-responsive"t><"d-flex flex-wrap align-items-center justify-content-between gap-3 mt-3"ip>',
+            pageLength: 25,
             lengthMenu: [10, 25, 50, 100],
             language: {
                 search: "",
                 searchPlaceholder: "Start typing to search timesheets..."
             },
             columnDefs: [
-                { targets: [0, 10], searchable: false, orderable: false }
+                { targets: [0, 9], searchable: false, orderable: false }
             ]
         });
 
-        // Toggle bulk UI
-        function toggleBulkLogs() {
-            const checked = $('.log-checkbox:checked').length;
-            $('#bulkLogStatus, #applyBulkLogStatus').prop('disabled', checked === 0);
-        }
-
-        $('#timelogTable').on('change', '.log-checkbox', toggleBulkLogs);
+        // Select all
         $('#selectAllLogs').on('click', function () {
             $('.log-checkbox').prop('checked', this.checked);
-            toggleBulkLogs();
-        });
-
-        // Apply bulk status
-        $('#applyBulkLogStatus').on('click', function () {
-            const status = $('#bulkLogStatus').val();
-            const ids = $('.log-checkbox:checked').map((_, el) => $(el).val()).get();
-
-            if (!status) { alert('Please select a status.'); return; }
-            if (ids.length === 0) { alert('Please select at least one log entry.'); return; }
-
-            $.ajax({
-                url: '{{ route("timelogs.bulkStatusUpdate") }}',
-                method: 'POST',
-                data: {
-                    _token: '{{ csrf_token() }}',
-                    status: status,
-                    ids: ids
-                },
-                success: function (res) {
-                    if (res.status === 'success') {
-                        location.reload();
-                    }
-                },
-                error: function () {
-                    alert('Error applying bulk status.');
-                }
-            });
         });
 
         // Daterange picker

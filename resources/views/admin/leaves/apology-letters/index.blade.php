@@ -102,16 +102,18 @@
                             <td><span class="status-badge {{ $letter->status === 'submitted' ? 'pending' : ($letter->status === 'archived' ? 'archived' : 'approved') }}">{{ ucfirst($letter->status) }}</span></td>
                             <td>{{ $letter->created_at?->format('d M Y h:i A') }}</td>
                             <td class="text-end">
-                                <a href="{{ route('leaves.apology-letters.show', $letter->id) }}" class="btn btn-sm btn-light"><i class="fas fa-eye"></i> View</a>
-                                <form method="POST" action="{{ route('leaves.apology-letters.archive.action', $letter->id) }}" class="d-inline" onsubmit="return confirm('Archive this apology letter?');">
-                                    @csrf
-                                    <button class="btn btn-sm btn-secondary" type="submit"><i class="fas fa-box-archive"></i> Archive</button>
-                                </form>
+                                <div class="action-buttons">
+                                    <a href="{{ route('leaves.apology-letters.show', $letter->id) }}" class="btn btn-sm btn-light"><i class="fas fa-eye"></i> View</a>
+                                    <form method="POST" action="{{ route('leaves.apology-letters.archive.action', $letter->id) }}" class="d-inline" onsubmit="return confirm('Archive this apology letter?');">
+                                        @csrf
+                                        <button class="btn btn-sm btn-secondary" type="submit"><i class="fas fa-box-archive"></i> Archive</button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="{{ $isAdmin ? 7 : 6 }}" class="text-center py-5">
+                            <td colspan="100" class="text-center py-5">
                                 <div class="empty-state"><i class="fas fa-envelope"></i><h3>No apology letters found</h3></div>
                             </td>
                         </tr>

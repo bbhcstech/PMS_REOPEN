@@ -22,13 +22,25 @@ Route::prefix('super-admin')->name('super-admin.')->group(function () {
         Route::post('/login', [AuthController::class, 'login']);
     });
 
-    // Authenticated super admin routes (supports super_admin and web auth guards)
-    Route::middleware(['auth:super_admin,web'])->group(function () {
-        Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+    Route::post('/logout', [AuthController::class, 'logout'])
+        ->middleware(['auth:super_admin,web'])
+        ->name('logout');
+
+    // Platform Super Admin only: company users (admin, HR, manager, employee) are tenant users
+    // and must never reach the cross-company management portal.
+    Route::middleware(['auth:super_admin,web', 'platform.superadmin'])->group(function () {
+        Route::get('/assistant', [\App\Http\Controllers\PlatformAiController::class, 'index'])->name('ai.index');
+        Route::post('/assistant', [\App\Http\Controllers\PlatformAiController::class, 'ask'])->middleware('throttle:platform-ai')->name('ai.ask');
+
+        // Super Admin Profile Management
+        Route::get('/profile', [\App\Http\Controllers\SuperAdminController::class, 'profile'])->name('profile');
+        Route::post('/profile', [\App\Http\Controllers\SuperAdminController::class, 'updateProfile'])->name('profile.update');
 
         // Company management & impersonation
         Route::get('/', [CompanyController::class, 'index']);
         Route::get('/companies', [CompanyController::class, 'index'])->name('companies.index');
+        Route::get('/companies/suspended', [\App\Http\Controllers\SuperAdmin\CompanySuspensionController::class, 'index'])->name('companies.suspended');
+        Route::get('/companies/{company}/suspension', [\App\Http\Controllers\SuperAdmin\CompanySuspensionController::class, 'create'])->whereNumber('company')->name('companies.suspension');
         Route::get('/companies/metrics', [CompanyController::class, 'metrics'])->name('companies.metrics');
         Route::get('/plans', [CompanyController::class, 'plans'])->name('plans.index');
         Route::post('/plans', [CompanyController::class, 'storePlan'])->name('plans.store');
@@ -42,14 +54,43 @@ Route::prefix('super-admin')->name('super-admin.')->group(function () {
         Route::post('/subscriptions/{id}/extend', [CompanyController::class, 'extendSubscription'])->name('subscriptions.extend');
         Route::post('/subscriptions/{id}/reduce', [CompanyController::class, 'reduceSubscription'])->name('subscriptions.reduce');
         Route::post('/subscriptions/toggle-override', [CompanyController::class, 'toggleCompanyOverride'])->name('subscriptions.toggle-override');
+        Route::get('/subscriptions/{company}/feature-states', [CompanyController::class, 'companyFeatureStates'])->whereNumber('company')->name('subscriptions.feature-states');
         Route::get('/companies/create', [CompanyController::class, 'create'])->name('companies.create');
-        Route::get('/companies/{company}', [CompanyController::class, 'show'])->name('companies.show');
+        Route::get('/companies/{company}', [CompanyController::class, 'show'])->where('company', '[0-9]+')->name('companies.show');
+        Route::get('/companies/{company}/edit', [CompanyController::class, 'edit'])->where('company', '[0-9]+')->name('companies.edit');
+        Route::match(['PUT', 'PATCH', 'POST'], '/companies/{company}', [CompanyController::class, 'update'])->where('company', '[0-9]+')->name('companies.update');
+        Route::match(['PUT', 'PATCH', 'POST'], '/companies/{company}/update', [CompanyController::class, 'update'])->where('company', '[0-9]+');
         Route::post('/companies', [CompanyController::class, 'store'])->name('companies.store');
-        Route::post('/companies/{company}/enter', [CompanyController::class, 'enter'])->name('companies.enter');
-        Route::post('/companies/{company}/suspend', [CompanyController::class, 'suspend'])->name('companies.suspend');
-        Route::post('/companies/{company}/deactivate', [CompanyController::class, 'deactivate'])->name('companies.deactivate');
-        Route::post('/companies/{company}/activate', [CompanyController::class, 'activate'])->name('companies.activate');
+        Route::post('/companies/{company}/enter', [CompanyController::class, 'enter'])->where('company', '[0-9]+')->name('companies.enter');
+        Route::post('/companies/{company}/suspend', [CompanyController::class, 'suspend'])->where('company', '[0-9]+')->name('companies.suspend');
+        Route::post('/companies/{company}/deactivate', [CompanyController::class, 'deactivate'])->where('company', '[0-9]+')->name('companies.deactivate');
+        Route::post('/companies/{company}/activate', [CompanyController::class, 'activate'])->where('company', '[0-9]+')->name('companies.activate');
         Route::post('/leave-impersonation', [CompanyController::class, 'leaveImpersonation'])->name('leave-impersonation');
+
+        // Clear Cache / Optimize
+        Route::match(['GET', 'POST'], '/clear-cache', function () {
+            try {
+                \Illuminate\Support\Facades\Artisan::call('optimize:clear');
+                \Illuminate\Support\Facades\Artisan::call('route:clear');
+                \Illuminate\Support\Facades\Artisan::call('config:clear');
+                \Illuminate\Support\Facades\Artisan::call('cache:clear');
+                \Illuminate\Support\Facades\Artisan::call('view:clear');
+
+                $cacheDir = base_path('bootstrap/cache');
+                if (is_dir($cacheDir)) {
+                    foreach (['routes-v7.php', 'config.php', 'events.php', 'packages.php', 'services.php'] as $f) {
+                        $p = $cacheDir . DIRECTORY_SEPARATOR . $f;
+                        if (file_exists($p)) {
+                            @unlink($p);
+                        }
+                    }
+                }
+
+                return redirect()->back()->with('success', 'Server cache, routes, config, and views flushed successfully!');
+            } catch (\Throwable $e) {
+                return redirect()->back()->with('error', 'Cache clear error: ' . $e->getMessage());
+            }
+        })->name('clear-cache');
 
         // Migrations management
         Route::get('/migrations', [CompanyController::class, 'migrations'])->name('migrations.index');
@@ -72,11 +113,15 @@ Route::prefix('super-admin')->name('super-admin.')->group(function () {
         Route::get('/activity-logs', [CompanyController::class, 'tenantAudit'])->name('activity-logs.index');
         Route::get('/tenant-audit/event/{id}', [CompanyController::class, 'tenantAuditEvent'])->name('tenant-audit.event');
         Route::get('/tenant-audit/export', [CompanyController::class, 'exportTenantAudit'])->name('tenant-audit.export');
+        Route::get('/activity-logs/export', [CompanyController::class, 'exportTenantAudit'])->name('activity-logs.export');
 
         // Platform System Health Monitoring Center
         Route::get('/system-health', [CompanyController::class, 'systemHealth'])->name('system-health.index');
         Route::get('/system-health/service/{name}', [CompanyController::class, 'systemHealthService'])->name('system-health.service');
         Route::post('/system-health/check', [CompanyController::class, 'runHealthCheck'])->name('system-health.check');
+        Route::post('/system-health/incidents/{incident}/dismiss', [CompanyController::class, 'dismissIncident'])
+            ->where('incident', 'INC-[0-9]+')
+            ->name('system-health.incidents.dismiss');
 
         // Platform Alert & Notification Center
         Route::get('/alerts', [CompanyController::class, 'alerts'])->name('alerts.index');
@@ -112,9 +157,11 @@ Route::prefix('super-admin')->name('super-admin.')->group(function () {
         Route::get('/complaints/export', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'export'])->name('complaints.export');
         Route::get('/complaints/unread-count', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'unreadCount'])->name('complaints.unread-count');
         Route::get('/complaints/{id}', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'show'])->name('complaints.show');
+        Route::get('/complaints/{id}/messages', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'messages'])->name('complaints.messages');
         Route::post('/complaints/{id}/respond', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'respond'])->name('complaints.respond');
-        Route::post('/complaints/{id}/status', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'updateStatus'])->name('complaints.status');
-        Route::post('/complaints/{id}/assign', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'assign'])->name('complaints.assign');
+        Route::post('/complaints/{id}/subscription-decision', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'subscriptionDecision'])->name('complaints.subscription-decision');
+        Route::match(['GET', 'POST', 'PATCH'], '/complaints/{id}/status', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'updateStatus'])->name('complaints.status');
+        Route::match(['GET', 'POST', 'PATCH'], '/complaints/{id}/assign', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'assign'])->name('complaints.assign');
+        Route::get('/complaints/{id}/attachment/{attachmentId}', [\App\Http\Controllers\SuperAdmin\ComplaintController::class, 'downloadAttachment'])->name('complaints.attachment');
     });
 });
-

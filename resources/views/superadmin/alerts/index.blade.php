@@ -15,7 +15,7 @@
         --primary: #2563eb;
         --primary-light: #eff6ff;
         --success: #10b981;
-        --success-light: #ecfdf5;
+        --success-light: #EEF2FF;
         --warning: #f59e0b;
         --warning-light: #fffbeb;
         --danger: #ef4444;
@@ -144,7 +144,7 @@
     .sev-critical { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
     .sev-warning { background: #fffbeb; color: #d97706; border: 1px solid #fde68a; }
     .sev-info { background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; }
-    .sev-success { background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; }
+    .sev-success { background: #EEF2FF; color: #2F6BFF; border: 1px solid #C7D2FE; }
 
     .category-pill {
         background: #f1f5f9;
@@ -326,6 +326,203 @@
         align-items: center;
         justify-content: center;
     }
+
+    /* ============================================================
+       DARK THEME ARCHITECTURE FOR ALERTS CENTER
+       ============================================================ */
+    html[data-pms-theme="dark"],
+    html[data-theme="dark"],
+    html[data-bs-theme="dark"] {
+        --bg-surface: #0F1530;
+        --bg-subtle: #141B3D;
+        --border-color: rgba(238, 241, 251, 0.09);
+        --text-main: #EEF1FB;
+        --text-muted: #CBD5E1;
+        --text-subtle: #9AA3C7;
+        --primary: #2F6BFF;
+        --primary-light: rgba(47, 107, 255, 0.15);
+    }
+
+    html[data-pms-theme="dark"] .kpi-card,
+    html[data-theme="dark"] .kpi-card,
+    html[data-bs-theme="dark"] .kpi-card {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
+    }
+
+    html[data-pms-theme="dark"] .filter-toolbar,
+    html[data-theme="dark"] .filter-toolbar,
+    html[data-bs-theme="dark"] .filter-toolbar {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
+    }
+    html[data-pms-theme="dark"] .filter-select,
+    html[data-theme="dark"] .filter-select,
+    html[data-bs-theme="dark"] .filter-select {
+        background: #141B3D !important;
+        color: #EEF1FB !important;
+        border-color: rgba(238, 241, 251, 0.12) !important;
+    }
+    html[data-pms-theme="dark"] .filter-select option,
+    html[data-theme="dark"] .filter-select option {
+        background: #0F1530 !important;
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .search-box input,
+    html[data-theme="dark"] .search-box input,
+    html[data-bs-theme="dark"] .search-box input {
+        background: #141B3D !important;
+        color: #EEF1FB !important;
+        border-color: rgba(238, 241, 251, 0.12) !important;
+    }
+
+    /* Alert Cards (Screenshot 5 & 6) */
+    html[data-pms-theme="dark"] .alert-card,
+    html[data-theme="dark"] .alert-card,
+    html[data-bs-theme="dark"] .alert-card {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
+    }
+    html[data-pms-theme="dark"] .alert-card:hover,
+    html[data-theme="dark"] .alert-card:hover,
+    html[data-bs-theme="dark"] .alert-card:hover {
+        border-color: rgba(47, 107, 255, 0.4) !important;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
+    }
+    html[data-pms-theme="dark"] .alert-card.is-unread,
+    html[data-theme="dark"] .alert-card.is-unread,
+    html[data-bs-theme="dark"] .alert-card.is-unread {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.12) !important;
+        border-left-color: var(--primary) !important;
+    }
+    html[data-pms-theme="dark"] .alert-card.is-resolved,
+    html[data-theme="dark"] .alert-card.is-resolved,
+    html[data-bs-theme="dark"] .alert-card.is-resolved {
+        background: #0D1333 !important;
+        border-color: rgba(238, 241, 251, 0.08) !important;
+        opacity: 0.88 !important;
+    }
+    html[data-pms-theme="dark"] .alert-card.is-resolved h3,
+    html[data-theme="dark"] .alert-card.is-resolved h3,
+    html[data-bs-theme="dark"] .alert-card.is-resolved h3 {
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .alert-card.is-resolved p,
+    html[data-theme="dark"] .alert-card.is-resolved p,
+    html[data-bs-theme="dark"] .alert-card.is-resolved p {
+        color: #9AA3C7 !important;
+    }
+    html[data-pms-theme="dark"] .sub-intel-box,
+    html[data-theme="dark"] .sub-intel-box,
+    html[data-bs-theme="dark"] .sub-intel-box {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+    }
+
+    /* Alert Icon Badges (Screenshot 5 - Bottom Left) */
+    .alert-icon-critical { background: #fef2f2; color: #dc2626; }
+    .alert-icon-warning { background: #fffbeb; color: #d97706; }
+    .alert-icon-success { background: #EEF2FF; color: #2F6BFF; }
+    .alert-icon-info { background: #eff6ff; color: #2563eb; }
+
+    html[data-pms-theme="dark"] .alert-icon-critical,
+    html[data-theme="dark"] .alert-icon-critical,
+    html[data-bs-theme="dark"] .alert-icon-critical {
+        background: rgba(239, 68, 68, 0.15) !important;
+        color: #f87171 !important;
+        border: 1px solid rgba(248, 113, 113, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .alert-icon-warning,
+    html[data-theme="dark"] .alert-icon-warning,
+    html[data-bs-theme="dark"] .alert-icon-warning {
+        background: rgba(245, 158, 11, 0.15) !important;
+        color: #fbbf24 !important;
+        border: 1px solid rgba(251, 191, 36, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .alert-icon-success,
+    html[data-theme="dark"] .alert-icon-success,
+    html[data-bs-theme="dark"] .alert-icon-success {
+        background: rgba(47, 107, 255, 0.15) !important;
+        color: #60A5FA !important;
+        border: 1px solid rgba(79, 131, 255, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .alert-icon-info,
+    html[data-theme="dark"] .alert-icon-info,
+    html[data-bs-theme="dark"] .alert-icon-info {
+        background: rgba(37, 99, 235, 0.15) !important;
+        color: #60a5fa !important;
+        border: 1px solid rgba(96, 165, 250, 0.3) !important;
+    }
+
+    html[data-pms-theme="dark"] .category-pill,
+    html[data-theme="dark"] .category-pill,
+    html[data-bs-theme="dark"] .category-pill {
+        background: #141B3D !important;
+        color: #9AA3C7 !important;
+        border: 1px solid rgba(238, 241, 251, 0.09) !important;
+    }
+
+    /* Action Buttons (Screenshot 5 - Bottom Right) */
+    html[data-pms-theme="dark"] .btn-action-secondary,
+    html[data-theme="dark"] .btn-action-secondary,
+    html[data-bs-theme="dark"] .btn-action-secondary {
+        background: #141B3D !important;
+        color: #EEF1FB !important;
+        border: 1px solid rgba(238, 241, 251, 0.12) !important;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .btn-action-secondary:hover,
+    html[data-theme="dark"] .btn-action-secondary:hover,
+    html[data-bs-theme="dark"] .btn-action-secondary:hover {
+        background: #1A2247 !important;
+        border-color: rgba(47, 107, 255, 0.4) !important;
+        color: #38bdf8 !important;
+    }
+
+    /* Drawer */
+    html[data-pms-theme="dark"] .drawer-panel,
+    html[data-theme="dark"] .drawer-panel,
+    html[data-bs-theme="dark"] .drawer-panel {
+        background: #0F1530 !important;
+        color: #EEF1FB !important;
+        border-left: 1px solid rgba(238, 241, 251, 0.09);
+    }
+    html[data-pms-theme="dark"] .drawer-header,
+    html[data-theme="dark"] .drawer-header,
+    html[data-bs-theme="dark"] .drawer-header {
+        background: #141B3D !important;
+        border-bottom-color: rgba(238, 241, 251, 0.09) !important;
+    }
+    .alert-drawer-footer {
+        padding: 16px 24px;
+        background: #f8fafc;
+        border-top: 1px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        flex-shrink: 0;
+    }
+    :is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"]) .alert-drawer-footer {
+        background: #141B3D;
+        color: #EEF1FB;
+        border-top-color: #334155;
+    }
+    :is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"]) .alert-drawer-footer .btn-action-primary {
+        background: #2F6BFF;
+        color: #fff;
+        border-color: #2F6BFF;
+    }
+    :is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"]) .alert-drawer-footer .btn-action-primary:hover {
+        background: #1E4FCC;
+        border-color: #1E4FCC;
+    }
+    .alert-drawer-footer button:focus-visible { outline: 3px solid #93c5fd; outline-offset: 3px; }
 </style>
 @endpush
 
@@ -438,11 +635,11 @@
 
         <!-- Resolved Today -->
         <div class="kpi-card" data-filter-type="status" data-filter-val="resolved">
-            <div class="kpi-icon-box" style="background: #ecfdf5; color: #059669;">
+            <div class="kpi-icon-box" style="background: #EEF2FF; color: #2F6BFF;">
                 <i class="fas fa-check-circle"></i>
             </div>
             <div>
-                <div class="kpi-val" style="color: #059669;">{{ $kpis['resolved_today'] }}</div>
+                <div class="kpi-val" style="color: #2F6BFF;">{{ $kpis['resolved_today'] }}</div>
                 <div class="kpi-label">Resolved Today</div>
             </div>
         </div>
@@ -515,6 +712,9 @@
         @foreach($allAlerts as $alert)
             <div class="alert-card {{ $alert['status'] === 'unread' ? 'is-unread' : '' }} {{ $alert['status'] === 'resolved' ? 'is-resolved' : '' }} {{ $alert['severity'] === 'critical' ? 'is-critical' : ($alert['severity'] === 'warning' ? 'is-warning' : '') }}"
                  data-id="{{ $alert['id'] }}"
+                 data-live-key="alert-{{ $alert['alert_key'] }}"
+                 data-alert-key="{{ $alert['alert_key'] }}"
+                 data-timestamp="{{ $alert['timestamp'] ?? '' }}"
                  data-severity="{{ $alert['severity'] }}"
                  data-category="{{ $alert['category'] }}"
                  data-status="{{ $alert['status'] }}"
@@ -527,9 +727,7 @@
                 @endif
 
                 <!-- Severity Icon Badge -->
-                <div style="width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;
-                     background: {{ $alert['severity'] === 'critical' ? '#fef2f2' : ($alert['severity'] === 'warning' ? '#fffbeb' : ($alert['severity'] === 'success' ? '#ecfdf5' : '#eff6ff')) }};
-                     color: {{ $alert['severity'] === 'critical' ? '#dc2626' : ($alert['severity'] === 'warning' ? '#d97706' : ($alert['severity'] === 'success' ? '#059669' : '#2563eb')) }};">
+                <div class="alert-icon-box alert-icon-{{ $alert['severity'] }}" style="width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;">
                     @if($alert['severity'] === 'critical')
                         <i class="fas fa-exclamation-circle"></i>
                     @elseif($alert['severity'] === 'warning')
@@ -572,7 +770,7 @@
 
                     <!-- Affected Company Bar -->
                     <div style="display: flex; align-items: center; gap: 10px; font-size: 12.5px; color: var(--text-muted); font-weight: 600;">
-                        <div style="width: 24px; height: 24px; border-radius: 6px; background: #f1f5f9; color: #334155; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 10.5px; overflow: hidden; border: 1px solid var(--border-color); flex-shrink: 0;">
+                        <div style="width: 24px; height: 24px; border-radius: 6px; background: var(--bg-subtle); color: var(--text-main); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 10.5px; overflow: hidden; border: 1px solid var(--border-color); flex-shrink: 0;">
                             @if(!empty($alert['logo_url']))
                                 <img src="{{ $alert['logo_url'] }}" alt="{{ $alert['company_name'] }}" style="width: 100%; height: 100%; object-fit: cover;" />
                             @else
@@ -580,7 +778,7 @@
                             @endif
                         </div>
                         <span>Company: <strong style="color: var(--text-main);">{{ $alert['company_name'] }}</strong></span>
-                        <span style="font-family: monospace; font-size: 11px; background: #f1f5f9; color: #475569; padding: 1px 6px; border-radius: 4px;">
+                        <span style="font-family: monospace; font-size: 11px; background: var(--bg-subtle); color: var(--text-muted); padding: 1px 6px; border-radius: 4px;">
                             {{ $alert['tenant_code'] ?? 'CENTRAL' }}
                         </span>
                     </div>
@@ -622,8 +820,10 @@
 
                 <!-- Right Card Actions -->
                 <div style="display: flex; flex-direction: column; gap: 6px; align-items: flex-end; flex-shrink: 0;">
-                    <button class="btn-action-secondary inspect-alert-btn"
+                    <button type="button" class="btn-action-secondary inspect-alert-btn"
                             data-id="{{ $alert['id'] }}"
+                            data-alert-key="{{ $alert['alert_key'] }}"
+                            data-status="{{ $alert['status'] }}"
                             data-title="{{ $alert['title'] }}"
                             data-company-id="{{ $alert['company_id'] ?? '' }}"
                             data-company-name="{{ $alert['company_name'] }}"
@@ -639,16 +839,16 @@
                         <i class="fas fa-eye" style="color: var(--primary);"></i> Inspect
                     </button>
                     @if($alert['status'] === 'unread')
-                        <button class="btn-action-secondary mark-read-btn" data-id="{{ $alert['id'] }}" style="padding: 4px 8px; font-size: 11.5px;">
+                        <button type="button" class="btn-action-secondary mark-read-btn" data-id="{{ $alert['id'] }}" data-alert-key="{{ $alert['alert_key'] }}" style="padding: 4px 8px; font-size: 11.5px;">
                             <i class="fas fa-check"></i> Read
                         </button>
                     @endif
                     @if($alert['status'] !== 'resolved')
-                        <button class="btn-action-secondary resolve-alert-btn" data-id="{{ $alert['id'] }}" style="padding: 4px 8px; font-size: 11.5px; color: var(--success);">
+                        <button type="button" class="btn-action-secondary resolve-alert-btn" data-id="{{ $alert['id'] }}" data-alert-key="{{ $alert['alert_key'] }}" style="padding: 4px 8px; font-size: 11.5px; color: var(--success);">
                             <i class="fas fa-check-circle"></i> Resolve
                         </button>
                     @else
-                        <span style="font-size: 11px; color: var(--success); font-weight: 700;"><i class="fas fa-check"></i> Resolved</span>
+                        <span class="resolved-alert-label" style="font-size: 11px; color: var(--success); font-weight: 700;"><i class="fas fa-check"></i> Resolved</span>
                     @endif
                 </div>
             </div>
@@ -741,7 +941,7 @@
         </div>
 
         <!-- Drawer Footer Actions -->
-        <div style="padding: 16px 24px; background: #f8fafc; border-top: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between;">
+        <div class="alert-drawer-footer">
             <button class="btn-action-secondary" id="drawerMarkReadBtn">
                 <i class="fas fa-check"></i> Mark as Read
             </button>
@@ -754,8 +954,8 @@
 
 <!-- 5. NOTIFICATION SETTINGS MODAL -->
 <div class="modal-backdrop" id="notifSettingsModal">
-    <div style="background: #ffffff; border-radius: var(--radius-lg); width: 540px; max-width: 92vw; overflow: hidden; box-shadow: var(--shadow-lg); border: 1px solid var(--border-color);">
-        <div style="padding: 18px 24px; background: #f8fafc; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between;">
+    <div style="background: var(--bg-surface); color: var(--text-main); border-radius: var(--radius-lg); width: 540px; max-width: 92vw; overflow: hidden; box-shadow: var(--shadow-lg); border: 1px solid var(--border-color);">
+        <div style="padding: 18px 24px; background: var(--bg-subtle); border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between;">
             <h3 style="font-size: 16px; font-weight: 800; color: var(--text-main); margin: 0;">
                 <i class="fas fa-sliders-h" style="color: var(--primary);"></i> Alert &amp; Notification Preferences
             </h3>
@@ -793,7 +993,7 @@
             </div>
         </div>
 
-        <div style="padding: 14px 24px; background: #f8fafc; border-top: 1px solid var(--border-color); display: flex; align-items: center; justify-content: flex-end; gap: 10px;">
+        <div style="padding: 14px 24px; background: var(--bg-subtle); border-top: 1px solid var(--border-color); display: flex; align-items: center; justify-content: flex-end; gap: 10px;">
             <button class="btn-action-secondary" id="cancelSettingsBtn">Cancel</button>
             <button class="btn-action-primary" id="saveSettingsBtn">Save Preferences</button>
         </div>
@@ -807,6 +1007,7 @@
 document.addEventListener('DOMContentLoaded', function() {
 
     // 1. Filtering Engine (Severity, Category, Status, Company, Time, Search)
+    // Cards are looked up on every pass because the live-records sync can re-insert them.
     const searchInput = document.getElementById('alertSearchInput');
     const severitySelect = document.getElementById('severityFilterSelect');
     const categorySelect = document.getElementById('categoryFilterSelect');
@@ -816,9 +1017,24 @@ document.addEventListener('DOMContentLoaded', function() {
     const clearFiltersBtn = document.getElementById('clearFiltersBtn');
     const resetEmptyFiltersBtn = document.getElementById('resetEmptyFiltersBtn');
 
-    const alertCards = document.querySelectorAll('.alert-card');
     const filteredEmptyState = document.getElementById('filteredEmptyState');
     const kpiCards = document.querySelectorAll('.kpi-card');
+
+    function currentAlertCards() {
+        return document.querySelectorAll('#alertFeedList .alert-card');
+    }
+
+    function withinTimeRange(card, range) {
+        if (range === 'all') return true;
+        const raw = card.getAttribute('data-timestamp');
+        if (!raw) return true;
+        const created = window.PMSTime.parse(raw);
+        if (isNaN(created.getTime())) return true;
+        const now = new Date();
+        if (range === 'today') return created.toDateString() === now.toDateString();
+        const days = range === '7days' ? 7 : 30;
+        return (now - created) <= days * 86400000;
+    }
 
     function applyFilters() {
         const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
@@ -826,10 +1042,11 @@ document.addEventListener('DOMContentLoaded', function() {
         const category = categorySelect ? categorySelect.value : 'all';
         const status = statusSelect ? statusSelect.value : 'all';
         const company = companySelect ? companySelect.value : 'all';
+        const timeRange = timeSelect ? timeSelect.value : 'all';
 
         let visibleCount = 0;
 
-        alertCards.forEach(card => {
+        currentAlertCards().forEach(card => {
             const cardSearch = card.getAttribute('data-search') || '';
             const cardSev = card.getAttribute('data-severity') || '';
             const cardCat = card.getAttribute('data-category') || '';
@@ -837,18 +1054,20 @@ document.addEventListener('DOMContentLoaded', function() {
             const cardComp = card.getAttribute('data-company-id') || '';
             const cardActionReq = card.getAttribute('data-action-required') === 'true';
 
-            const matchSearch = !query || cardSearch.includes(query);
+            // Every search word must appear somewhere in the alert (title, description, company, code).
+            const matchSearch = !query || query.split(/\s+/).every(word => cardSearch.includes(word));
             const matchSev = (severity === 'all') || (cardSev === severity);
             const matchCat = (category === 'all') || (cardCat === category);
             const matchComp = (company === 'all') || (cardComp === company);
+            const matchTime = withinTimeRange(card, timeRange);
 
             let matchStat = true;
             if (status !== 'all') {
-                if (status === 'action_required') matchStat = cardActionReq;
+                if (status === 'action_required') matchStat = cardActionReq && cardStat !== 'resolved';
                 else matchStat = (cardStat === status);
             }
 
-            if (matchSearch && matchSev && matchCat && matchStat && matchComp) {
+            if (matchSearch && matchSev && matchCat && matchStat && matchComp && matchTime) {
                 card.style.display = 'flex';
                 visibleCount++;
             } else {
@@ -861,12 +1080,16 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    if (searchInput) searchInput.addEventListener('input', applyFilters);
-    if (severitySelect) severitySelect.addEventListener('change', applyFilters);
-    if (categorySelect) categorySelect.addEventListener('change', applyFilters);
-    if (statusSelect) statusSelect.addEventListener('change', applyFilters);
-    if (companySelect) companySelect.addEventListener('change', applyFilters);
-    if (timeSelect) timeSelect.addEventListener('change', applyFilters);
+    if (searchInput) {
+        searchInput.addEventListener('input', applyFilters);
+        searchInput.addEventListener('search', applyFilters);
+        searchInput.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') { e.preventDefault(); applyFilters(); }
+        });
+    }
+    [severitySelect, categorySelect, statusSelect, companySelect, timeSelect].forEach(select => {
+        if (select) select.addEventListener('change', applyFilters);
+    });
 
     function resetFilters() {
         if (searchInput) searchInput.value = '';
@@ -898,77 +1121,123 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // 2. Mark Single Read & Resolve Actions
-    const markReadBtns = document.querySelectorAll('.mark-read-btn');
-    const resolveBtns = document.querySelectorAll('.resolve-alert-btn');
+    // Delegated from the document so buttons keep working after live-records refreshes the feed.
     const markAllReadHeaderBtn = document.getElementById('markAllReadHeaderBtn');
+    const alertCsrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
+    const alertsBaseUrl = @json(url('/super-admin/alerts'));
 
-    markReadBtns.forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            const alertId = this.getAttribute('data-id');
-            const card = this.closest('.alert-card');
+    function postAlertAction(alertKey, action) {
+        return fetch(`${alertsBaseUrl}/${encodeURIComponent(alertKey)}/${action}`, {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': alertCsrfToken
+            }
+        }).then(res => res.json().catch(() => ({})).then(data => {
+            if (!res.ok || !data.success) throw new Error(data.message || 'Action failed. Please try again.');
+            return data;
+        }));
+    }
 
-            fetch(`/super-admin/alerts/${alertId}/read`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                }
-            })
-            .then(res => res.json())
-            .then(data => {
-                card.classList.remove('is-unread');
-                card.setAttribute('data-status', 'read');
-                const dot = card.querySelector('.unread-indicator');
-                if (dot) dot.remove();
-                this.remove();
+    function findAlertCard(alertKey) {
+        return Array.from(currentAlertCards()).find(card => card.getAttribute('data-alert-key') === alertKey) || null;
+    }
+
+    function markCardRead(card) {
+        if (!card) return;
+        card.classList.remove('is-unread');
+        if (card.getAttribute('data-status') === 'unread') card.setAttribute('data-status', 'read');
+        card.querySelectorAll('.unread-indicator, .mark-read-btn').forEach(el => el.remove());
+    }
+
+    function markCardResolved(card) {
+        if (!card) return;
+        markCardRead(card);
+        card.classList.add('is-resolved');
+        card.setAttribute('data-status', 'resolved');
+        const resolveBtns = card.querySelectorAll('.resolve-alert-btn');
+        if (resolveBtns.length && !card.querySelector('.resolved-alert-label')) {
+            const label = document.createElement('span');
+            label.className = 'resolved-alert-label';
+            label.style.cssText = 'font-size: 11px; color: var(--success); font-weight: 700;';
+            label.innerHTML = '<i class="fas fa-check"></i> Resolved';
+            resolveBtns[0].replaceWith(label);
+        }
+        card.querySelectorAll('.resolve-alert-btn').forEach(el => el.remove());
+    }
+
+    // Live refresh keeps old buttons and adds fresh ones; drop duplicates and buttons that no longer apply.
+    function normalizeAlertCards() {
+        currentAlertCards().forEach(card => {
+            ['.inspect-alert-btn', '.mark-read-btn', '.resolve-alert-btn', '.resolved-alert-label'].forEach(selector => {
+                card.querySelectorAll(selector).forEach((el, index) => { if (index > 0) el.remove(); });
             });
+            const status = card.getAttribute('data-status');
+            if (status !== 'unread') markCardRead(card);
+            if (status === 'resolved') markCardResolved(card);
+            else card.classList.remove('is-resolved');
         });
+    }
+
+    document.addEventListener('click', function (e) {
+        const btn = e.target.closest('#alertFeedList .mark-read-btn, #alertFeedList .resolve-alert-btn');
+        if (!btn) return;
+        e.preventDefault();
+        e.stopPropagation();
+        if (btn.disabled) return;
+
+        const card = btn.closest('.alert-card');
+        const alertKey = btn.getAttribute('data-alert-key') || card?.getAttribute('data-alert-key');
+        if (!alertKey) return;
+
+        const isResolve = btn.classList.contains('resolve-alert-btn');
+        const originalHtml = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ' + (isResolve ? 'Resolving...' : 'Saving...');
+
+        postAlertAction(alertKey, isResolve ? 'resolve' : 'read')
+            .then(() => {
+                if (isResolve) markCardResolved(card); else markCardRead(card);
+                applyFilters();
+            })
+            .catch(error => {
+                btn.disabled = false;
+                btn.innerHTML = originalHtml;
+                alert(error.message);
+            });
     });
 
-    resolveBtns.forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            const alertId = this.getAttribute('data-id');
-            const card = this.closest('.alert-card');
-
-            fetch(`/super-admin/alerts/${alertId}/resolve`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                }
-            })
-            .then(res => res.json())
-            .then(data => {
-                card.classList.add('is-resolved');
-                card.setAttribute('data-status', 'resolved');
-                this.innerHTML = '<i class="fas fa-check"></i> Resolved';
-                this.disabled = true;
-            });
-        });
+    document.addEventListener('pms:records-updated', function () {
+        normalizeAlertCards();
+        applyFilters();
     });
+    normalizeAlertCards();
 
     if (markAllReadHeaderBtn) {
         markAllReadHeaderBtn.addEventListener('click', function() {
+            this.disabled = true;
             fetch("{{ Route::has('super-admin.alerts.mark-all-read') ? route('super-admin.alerts.mark-all-read') : (Route::has('superadmin.alerts.mark-all-read') ? route('superadmin.alerts.mark-all-read') : url('/super-admin/alerts/mark-all-read')) }}", {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Accept': 'application/json',
                     'X-CSRF-TOKEN': '{{ csrf_token() }}'
                 }
             })
-            .then(res => res.json())
+            .then(res => {
+                if (!res.ok) throw new Error('Could not mark alerts as read. Please try again.');
+                return res.json();
+            })
             .then(data => {
-                document.querySelectorAll('.alert-card.is-unread').forEach(card => {
-                    card.classList.remove('is-unread');
-                    card.setAttribute('data-status', 'read');
-                    const dot = card.querySelector('.unread-indicator');
-                    if (dot) dot.remove();
-                });
-                document.querySelectorAll('.mark-read-btn').forEach(btn => btn.remove());
-                const headerBadge = document.getElementById('headerUnreadBadgeCount');
-                if (headerBadge) headerBadge.textContent = '0 Active Alerts';
+                if (!data.success) throw new Error(data.message || 'Could not mark alerts as read.');
+                window.location.reload();
+            })
+            .catch(error => {
+                window.alert(error.message);
+                markAllReadHeaderBtn.disabled = false;
             });
         });
     }
@@ -982,85 +1251,140 @@ document.addEventListener('DOMContentLoaded', function() {
             setTimeout(() => {
                 this.disabled = false;
                 this.innerHTML = '<i class="fas fa-sync-alt"></i> Refresh Alerts';
-                document.getElementById('lastUpdatedTimestamp').textContent = new Date().toTimeString().slice(0,8);
+                document.getElementById('lastUpdatedTimestamp').textContent = window.PMSTime.format(window.PMSTime.now(), {hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23'});
             }, 500);
         });
     }
 
-    // 3. Slide-Over Alert Detail Drawer Handler
+    // 3. Slide-Over Alert Detail Drawer Handler (delegated, see section 2)
     const drawerOverlay = document.getElementById('alertDetailDrawer');
     const drawerPanel = document.getElementById('alertDrawerPanel');
     const closeAlertDrawerBtn = document.getElementById('closeAlertDrawerBtn');
-    const inspectBtns = document.querySelectorAll('.inspect-alert-btn');
+    const drawerMarkReadBtn = document.getElementById('drawerMarkReadBtn');
+    const drawerResolveBtn = document.getElementById('drawerResolveBtn');
+    let drawerAlertKey = null;
 
-    inspectBtns.forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            const alertId = this.getAttribute('data-id');
-            const attrTitle = this.getAttribute('data-title');
-            const attrCompName = this.getAttribute('data-company-name');
-            const attrCode = this.getAttribute('data-tenant-code');
-            const attrDomain = this.getAttribute('data-domain');
-            const attrPlan = this.getAttribute('data-plan');
-            const attrDays = this.getAttribute('data-days');
-            const attrDb = this.getAttribute('data-db');
-            const attrSev = this.getAttribute('data-severity');
+    function setDrawerText(id, value) {
+        const el = document.getElementById(id);
+        if (el && value !== undefined && value !== null && value !== '') el.textContent = value;
+    }
 
-            // Set UI elements directly from alert data attributes
-            if (attrTitle) document.getElementById('drawerAlertTitle').textContent = attrTitle;
-            if (attrCompName) document.getElementById('drawerCompanyName').textContent = attrCompName;
-            if (attrCode) document.getElementById('drawerTenantCode').textContent = attrCode;
-            if (attrDomain) document.getElementById('drawerCompanyDomain').textContent = attrDomain;
-            if (attrPlan) document.getElementById('drawerPlanName').textContent = attrPlan;
-            if (attrDays !== null && attrDays !== undefined) document.getElementById('drawerDaysLeft').textContent = attrDays + ' Days';
-            if (attrDb) document.getElementById('drawerDbName').textContent = attrDb;
+    function syncDrawerActions() {
+        const card = drawerAlertKey ? findAlertCard(drawerAlertKey) : null;
+        const status = card ? card.getAttribute('data-status') : 'resolved';
+        if (drawerMarkReadBtn) drawerMarkReadBtn.style.display = status === 'unread' ? '' : 'none';
+        if (drawerResolveBtn) drawerResolveBtn.style.display = status === 'resolved' ? 'none' : '';
+    }
 
-            const drawerSevBadge = document.getElementById('drawerSevBadge');
-            if (drawerSevBadge && attrSev) {
-                drawerSevBadge.className = 'severity-badge sev-' + attrSev;
-                drawerSevBadge.textContent = '● ' + attrSev.toUpperCase();
-            }
+    function closeAlertDrawer() {
+        if (drawerOverlay) drawerOverlay.classList.remove('open');
+        if (drawerPanel) drawerPanel.classList.remove('open');
+    }
 
-            const compId = this.getAttribute('data-company-id') || '1';
-            const link = document.getElementById('drawerCompanyLink');
-            if (link) link.href = `/super-admin/companies/${compId}`;
+    document.addEventListener('click', function (e) {
+        const btn = e.target.closest('#alertFeedList .inspect-alert-btn');
+        if (!btn) return;
+        e.preventDefault();
+        e.stopPropagation();
 
-            drawerOverlay.classList.add('open');
-            drawerPanel.classList.add('open');
+        const card = btn.closest('.alert-card');
+        const alertId = btn.getAttribute('data-id');
+        const attrSev = btn.getAttribute('data-severity');
+        const attrDays = btn.getAttribute('data-days');
+        drawerAlertKey = btn.getAttribute('data-alert-key') || card?.getAttribute('data-alert-key');
 
-            // Query dynamic backend specs
-            fetch(`/super-admin/alerts/details/${alertId}?company_id=${compId}`)
-                .then(res => res.json())
-                .then(data => {
-                    if (data.alert) {
-                        const a = data.alert;
-                        if (a.title) document.getElementById('drawerAlertTitle').textContent = a.title;
-                        if (a.company_name) document.getElementById('drawerCompanyName').textContent = a.company_name;
-                        if (a.tenant_code) document.getElementById('drawerTenantCode').textContent = a.tenant_code;
-                        if (a.domain) document.getElementById('drawerCompanyDomain').textContent = a.domain;
-                        if (a.plan_name) document.getElementById('drawerPlanName').textContent = a.plan_name;
-                        if (a.days_remaining !== undefined) document.getElementById('drawerDaysLeft').textContent = a.days_remaining + ' Days';
-                        if (a.db_name) document.getElementById('drawerDbName').textContent = a.db_name;
-                        if (a.db_health) document.getElementById('drawerDbHealth').textContent = a.db_health;
-                        if (a.storage_usage) document.getElementById('drawerStorageUsage').textContent = a.storage_usage;
-                    }
+        // Fill the drawer from this alert's own data
+        setDrawerText('drawerAlertTitle', btn.getAttribute('data-title'));
+        setDrawerText('drawerCompanyName', btn.getAttribute('data-company-name'));
+        setDrawerText('drawerTenantCode', btn.getAttribute('data-tenant-code'));
+        setDrawerText('drawerCompanyDomain', btn.getAttribute('data-domain'));
+        setDrawerText('drawerPlanName', btn.getAttribute('data-plan'));
+        if (attrDays !== null) setDrawerText('drawerDaysLeft', attrDays + ' Days');
+        setDrawerText('drawerDbName', btn.getAttribute('data-db'));
+
+        const drawerSevBadge = document.getElementById('drawerSevBadge');
+        if (drawerSevBadge && attrSev) {
+            drawerSevBadge.className = 'severity-badge sev-' + attrSev;
+            drawerSevBadge.textContent = '● ' + attrSev.toUpperCase();
+        }
+
+        const timeline = document.getElementById('drawerTimelineList');
+        if (timeline && card) {
+            const createdText = (card.querySelector('.fa-clock')?.parentElement?.textContent || '').trim();
+            const row = document.createElement('div');
+            row.style.cssText = 'display: flex; justify-content: space-between; gap: 12px; padding: 8px 10px; background: var(--bg-subtle); border-radius: 6px; border: 1px solid var(--border-color);';
+            const label = document.createElement('strong');
+            label.style.color = 'var(--text-main)';
+            label.textContent = (btn.getAttribute('data-title') || 'Alert') + ' — alert generated';
+            const when = document.createElement('span');
+            when.style.cssText = 'color: var(--text-subtle); flex-shrink: 0;';
+            when.textContent = createdText;
+            row.append(label, when);
+            timeline.replaceChildren(row);
+        }
+
+        const compId = btn.getAttribute('data-company-id') || '';
+        const link = document.getElementById('drawerCompanyLink');
+        if (link) {
+            link.href = compId ? `{{ url('/super-admin/companies') }}/${encodeURIComponent(compId)}` : '#';
+            link.style.display = compId ? '' : 'none';
+        }
+
+        syncDrawerActions();
+        if (drawerOverlay) drawerOverlay.classList.add('open');
+        if (drawerPanel) drawerPanel.classList.add('open');
+
+        // Live tenant infrastructure details (title and severity stay those of the inspected alert)
+        if (!compId) return;
+        fetch(`${alertsBaseUrl}/details/${encodeURIComponent(alertId)}?company_id=${encodeURIComponent(compId)}`, {
+            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+            credentials: 'same-origin'
+        })
+            .then(res => res.ok ? res.json() : null)
+            .then(data => {
+                if (!data || !data.alert) return;
+                const a = data.alert;
+                setDrawerText('drawerCompanyName', a.company_name);
+                setDrawerText('drawerTenantCode', a.tenant_code);
+                setDrawerText('drawerCompanyDomain', a.domain);
+                setDrawerText('drawerPlanName', a.plan_name);
+                if (a.days_remaining !== undefined) setDrawerText('drawerDaysLeft', a.days_remaining + ' Days');
+                setDrawerText('drawerDbName', a.db_name);
+                setDrawerText('drawerDbHealth', a.db_health);
+                setDrawerText('drawerStorageUsage', a.storage_usage);
+            })
+            .catch(() => {});
+    });
+
+    [[drawerMarkReadBtn, 'read'], [drawerResolveBtn, 'resolve']].forEach(([button, action]) => {
+        if (!button) return;
+        button.addEventListener('click', function () {
+            if (!drawerAlertKey || button.disabled) return;
+            const originalHtml = button.innerHTML;
+            button.disabled = true;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
+            postAlertAction(drawerAlertKey, action)
+                .then(() => {
+                    const card = findAlertCard(drawerAlertKey);
+                    if (action === 'resolve') markCardResolved(card); else markCardRead(card);
+                    applyFilters();
+                    syncDrawerActions();
+                    if (action === 'resolve') closeAlertDrawer();
+                })
+                .catch(error => alert(error.message))
+                .finally(() => {
+                    button.disabled = false;
+                    button.innerHTML = originalHtml;
                 });
         });
     });
 
-    if (closeAlertDrawerBtn) {
-        closeAlertDrawerBtn.addEventListener('click', function() {
-            drawerOverlay.classList.remove('open');
-            drawerPanel.classList.remove('open');
-        });
-    }
+    if (closeAlertDrawerBtn) closeAlertDrawerBtn.addEventListener('click', closeAlertDrawer);
 
     if (drawerOverlay) {
         drawerOverlay.addEventListener('click', function(e) {
-            if (e.target === drawerOverlay) {
-                drawerOverlay.classList.remove('open');
-                drawerPanel.classList.remove('open');
-            }
+            if (e.target === drawerOverlay) closeAlertDrawer();
         });
     }
 

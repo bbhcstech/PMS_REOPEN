@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\AppSetting;
 use App\Models\Department;
+use App\Models\ParentDepartment;
 use App\Models\RecruitmentRequirement;
 use App\Services\SystemNotificationService;
 use Illuminate\Http\Request;
@@ -34,7 +35,18 @@ class RecruitmentController extends Controller
         }
 
         $requirements = $query->get();
-        $departments = Department::orderBy('dpt_name')->get();
+        $departments = \Illuminate\Support\Facades\Schema::hasColumn('departments', 'dpt_name')
+            ? Department::orderBy('dpt_name')->get()
+            : Department::get();
+
+        $parentQuery = ParentDepartment::query();
+        if (\Illuminate\Support\Facades\Schema::hasColumn('parent_departments', 'archived_at')) {
+            $parentQuery->whereNull('archived_at');
+        }
+        if (\Illuminate\Support\Facades\Schema::hasColumn('parent_departments', 'dpt_name')) {
+            $parentQuery->orderBy('dpt_name');
+        }
+        $parentDepartments = $parentQuery->get();
 
         // Metrics Calculation
         $totalOpen = RecruitmentRequirement::where('status', 'open')->count();
@@ -45,14 +57,22 @@ class RecruitmentController extends Controller
         // Auto-Generated Recruitment Policy Card Data
         $policyCard = $this->generatePolicyCard();
 
+        $currencies = \Illuminate\Support\Facades\Schema::hasTable('currencies')
+            ? \App\Models\Currency::all()
+            : collect();
+        $defaultCurrencySymbol = AppSetting::valueFor('loc_currency_symbol', '$');
+
         return view('admin.recruitment.index', compact(
             'requirements',
             'departments',
+            'parentDepartments',
             'totalOpen',
             'totalInProgress',
             'totalPositionsOpen',
             'totalClosed',
-            'policyCard'
+            'policyCard',
+            'currencies',
+            'defaultCurrencySymbol'
         ));
     }
 
@@ -69,10 +89,16 @@ class RecruitmentController extends Controller
             'employment_type' => 'required|string|max:100',
             'experience_required' => 'nullable|string|max:100',
             'salary_range' => 'nullable|string|max:100',
+            'salary_amount' => 'nullable|string|max:100',
+            'salary_currency' => 'nullable|string|max:20',
             'location' => 'nullable|string|max:150',
             'description' => 'nullable|string',
             'requirements_summary' => 'nullable|string',
-        ]);
+            'pdf_header_image' => \App\Support\RecruitmentPdfBranding::rules(\App\Support\RecruitmentPdfBranding::HEADER_HEIGHT),
+            'pdf_footer_image' => \App\Support\RecruitmentPdfBranding::rules(\App\Support\RecruitmentPdfBranding::FOOTER_HEIGHT),
+        ], \App\Support\RecruitmentPdfBranding::messages());
+
+        $this->ensurePdfBrandingColumns();
 
         $departmentName = null;
         if ($request->filled('department_id')) {
@@ -80,7 +106,16 @@ class RecruitmentController extends Controller
             $departmentName = $dept?->dpt_name;
         }
 
+        $salaryRange = $request->salary_range;
+        if (empty($salaryRange) && $request->filled('salary_amount')) {
+            $currencySymbol = $request->input('salary_currency', '$');
+            $salaryRange = trim($currencySymbol . ' ' . $request->salary_amount);
+        }
+
         $user = auth()->user();
+
+        $pdfHeaderImage = $this->storePdfBrandingImage($request->file('pdf_header_image'), 'header');
+        $pdfFooterImage = $this->storePdfBrandingImage($request->file('pdf_footer_image'), 'footer');
 
         $requirement = RecruitmentRequirement::create([
             'company_id' => $user?->company_id,
@@ -90,12 +125,14 @@ class RecruitmentController extends Controller
             'positions' => $request->positions,
             'employment_type' => $request->employment_type,
             'experience_required' => $request->experience_required,
-            'salary_range' => $request->salary_range,
+            'salary_range' => $salaryRange,
             'location' => $request->location ?? 'Headquarters',
             'description' => $request->description,
             'requirements_summary' => $request->requirements_summary,
             'status' => 'open',
             'created_by' => $user?->id,
+            'pdf_header_image' => $pdfHeaderImage,
+            'pdf_footer_image' => $pdfFooterImage,
         ]);
 
         // SHARE NOTIFICATION WITH ALL EMPLOYEES, MANAGERS, AND HR STAFF
@@ -133,7 +170,7 @@ class RecruitmentController extends Controller
         $policyCard = $this->generatePolicyCard();
 
         try {
-            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.recruitment.pdf', compact('requirement', 'policyCard'))
+            $pdf = \App\Services\PdfDocument::loadView('admin.recruitment.pdf', compact('requirement', 'policyCard'))
                 ->setPaper('a4', 'portrait')
                 ->setWarnings(false);
 
@@ -178,6 +215,29 @@ class RecruitmentController extends Controller
             ->with('success', "Requirement removed successfully.");
     }
 
+    /** Tenants that have not run the latest migration still get the header/footer columns. */
+    private function ensurePdfBrandingColumns(): void
+    {
+        if (! \Illuminate\Support\Facades\Schema::hasColumn('recruitment_requirements', 'pdf_header_image')
+            || ! \Illuminate\Support\Facades\Schema::hasColumn('recruitment_requirements', 'pdf_footer_image')) {
+            (require database_path('migrations/tenant/2026_10_10_120000_add_pdf_header_footer_to_recruitment_requirements.php'))->up();
+        }
+    }
+
+    /** Saves an uploaded header/footer image under public/uploads/recruitment and returns its relative path. */
+    private function storePdfBrandingImage(\Illuminate\Http\UploadedFile $file, string $kind): string
+    {
+        $directory = public_path('uploads/recruitment');
+        if (! \Illuminate\Support\Facades\File::exists($directory)) {
+            \Illuminate\Support\Facades\File::makeDirectory($directory, 0755, true, true);
+        }
+        $companyId = (int) (auth()->user()?->company_id ?? 0);
+        $extension = strtolower((string) ($file->guessExtension() ?: $file->getClientOriginalExtension())) === 'png' ? 'png' : 'jpg';
+        $fileName = 'recruitment_' . $kind . '_' . $companyId . '_' . now()->format('YmdHis') . '_' . \Illuminate\Support\Str::random(8) . '.' . $extension;
+        $file->move($directory, $fileName);
+        return 'uploads/recruitment/' . $fileName;
+    }
+
     /**
      * Auto-Generates structured Recruitment Policy Card details dynamically.
      */
@@ -188,14 +248,20 @@ class RecruitmentController extends Controller
         $autoReply = AppSetting::valueFor('recruit_auto_reply', '1');
         $maxResumeSize = AppSetting::valueFor('recruit_max_resume_size', '5');
         $allowedFileTypes = AppSetting::valueFor('recruit_allowed_file_types', 'pdf,doc,docx');
+        
+        $probationMonths = AppSetting::valueFor('recruit_probation_period_months', '3');
+        $slaDays = AppSetting::valueFor('recruit_hiring_sla_days', '30');
+
+        $probationStr = AppSetting::valueFor('recruit_probation_period', $probationMonths . ' Months (' . ($probationMonths * 30) . ' Days standard evaluation)');
+        $hiringSlaStr = AppSetting::valueFor('recruit_hiring_sla', $slaDays . ' Days from Requirement posting to Offer');
 
         return [
             'title' => 'Standard Corporate Recruitment & Talent Acquisition Policy',
             'code' => 'POL-REC-' . date('Y'),
             'generated_at' => now()->format('M d, Y'),
             'status' => 'Auto-Generated & Active',
-            'probation_period' => '90 Days (3 Months standard evaluation)',
-            'hiring_sla' => '14 - 30 Business Days from Requirement posting to Offer',
+            'probation_period' => $probationStr,
+            'hiring_sla' => $hiringSlaStr,
             'job_categories' => explode(',', $jobCategories),
             'pipeline_stages' => explode(',', $pipelineStages),
             'auto_reply_enabled' => $autoReply === '1',

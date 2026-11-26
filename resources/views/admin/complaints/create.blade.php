@@ -18,6 +18,19 @@
     <div class="card-body p-4">
       <form method="POST" action="{{ route('admin.company-complaints.store') }}" enctype="multipart/form-data">
         @csrf
+        @if($plans->isNotEmpty())
+        <div class="mb-3">
+          <label class="form-label fw-bold">Request a lower subscription plan (optional)</label>
+          <select name="requested_plan_id" class="form-select">
+            <option value="">General support ticket — no plan change</option>
+            @foreach($plans as $plan)
+            <option value="{{ $plan->id }}" @selected((string) old('requested_plan_id') === (string) $plan->id)>{{ $plan->name }}</option>
+            @endforeach
+          </select>
+          <div class="form-text">Lower plans, including Free, require Super Admin approval. Your current plan remains unchanged while the request is reviewed.</div>
+          @error('requested_plan_id')<div class="text-danger">{{ $message }}</div>@enderror
+        </div>
+        @endif
 
         <div class="row g-3 mb-3">
           <div class="col-md-8">
@@ -50,7 +63,6 @@
             <label class="form-label fw-bold text-dark">Related Module (Optional)</label>
             <select name="related_module" class="form-select" style="border-radius: 8px;">
               <option value="">None / General</option>
-              <option value="Payroll">Payroll &amp; Payslips</option>
               <option value="HR & Attendance">HR &amp; Attendance</option>
               <option value="Projects & Tasks">Projects &amp; Tasks</option>
               <option value="Subscription & Billing">Subscription &amp; Billing</option>

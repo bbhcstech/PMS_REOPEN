@@ -18,25 +18,58 @@ return Application::configure(basePath: dirname(__DIR__))
         },
     )
     ->withMiddleware(function (Middleware $middleware) {
+        $middleware->redirectTo(
+            guests: '/login',
+            users: function (\Illuminate\Http\Request $request) {
+                $user = auth()->user();
+                if ($user?->company_staff_role_id) return route('dashboard');
+                if ($user && (
+                    (method_exists($user, 'isDeveloper') && $user->isDeveloper()) ||
+                    in_array(strtolower((string) ($user->role ?? '')), ['developer', 'dev'], true) ||
+                    str_contains(strtolower((string) ($user->role ?? '')), 'developer') ||
+                    str_contains(strtolower((string) ($user->designation ?? '')), 'developer') ||
+                    str_contains(strtolower((string) ($user->designation ?? '')), 'engineer')
+                )) {
+                    return route('developer.dashboard');
+                }
+                if ($user && in_array(strtolower((string) ($user->role ?? '')), ['superadmin', 'super-admin', 'super_admin'], true)) {
+                    return route('superadmin.dashboard');
+                }
+                return route('dashboard');
+            }
+        );
+        $middleware->prependToPriorityList(
+            \Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests::class,
+            SetTenantConnection::class
+        );
         $middleware->web(append: [
-            \App\Http\Middleware\EnsureCompanySubscriptionActive::class,
-        ]);
-        $middleware->web(prepend: [
             SetTenantConnection::class,
+            \App\Http\Middleware\ConfigureCompanyMail::class,
+            \App\Http\Middleware\EnsureCompanySubscriptionActive::class,
+            \App\Http\Middleware\NormalizePhoneCountryCodes::class,
+            \App\Http\Middleware\BlockTicketsInAdminWorkspace::class,
+            \App\Http\Middleware\FinanceComingSoon::class,
+            \App\Http\Middleware\ProtectWorkforceRecords::class,
+            \App\Http\Middleware\EnforceRolePermissionToggles::class,
         ]);
         $middleware->alias([
+            'admin' => RoleMiddleware::class,
             'tenant' => SetTenantConnection::class,
             'module.access' => EnsureModuleAccess::class,
             'role' => RoleMiddleware::class,
             'feature' => \App\Http\Middleware\CheckFeatureAccess::class,
             'developer.access' => \App\Http\Middleware\EnsureDeveloperAccess::class,
+            'platform.superadmin' => \App\Http\Middleware\EnsurePlatformSuperAdmin::class,
             'subscription.active' => \App\Http\Middleware\EnsureCompanySubscriptionActive::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\HttpException $e, \Illuminate\Http\Request $request) {
             if ($e->getStatusCode() === 419) {
-                return redirect()->back()->with('error', 'Your session expired. Please refresh and try again.');
+                if ($request->is('logout') || $request->is('*/logout') || $request->routeIs('logout*')) {
+                    return app(\App\Services\AuthenticationSession::class)->logout($request);
+                }
+                return redirect('/login')->with('error', 'Your session expired. Please log in again.');
             }
         });
     })->create();

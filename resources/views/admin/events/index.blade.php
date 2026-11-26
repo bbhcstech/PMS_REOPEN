@@ -3,13 +3,12 @@
 @section('title', 'Events - Company Events & Activities')
 
 @push('styles')
-<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet" />
 <style>
     /* =========================================================================
      | EVENT CARD MODERN DESIGN SYSTEM
      | ========================================================================= */
     .event-card {
-        border: 1px solid rgba(15, 116, 76, 0.12);
+        border: 1px solid rgba(47, 107, 255, 0.12);
         border-radius: 18px;
         transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         background: #ffffff;
@@ -18,19 +17,19 @@
     }
     .event-card:hover {
         transform: translateY(-5px);
-        box-shadow: 0 14px 35px rgba(15, 116, 76, 0.14);
-        border-color: rgba(15, 116, 76, 0.3);
+        box-shadow: 0 14px 35px rgba(47, 107, 255, 0.14);
+        border-color: rgba(47, 107, 255, 0.3);
     }
     .event-banner-img {
         width: 100%;
         height: 175px;
         object-fit: cover;
-        background: linear-gradient(135deg, #0f744c 0%, #094c32 100%);
+        background: linear-gradient(135deg, #4F83FF 0%, #2F6BFF 100%);
     }
     .event-banner-placeholder {
         width: 100%;
         height: 155px;
-        background: linear-gradient(135deg, #0f744c 0%, #15803d 50%, #047857 100%);
+        background: linear-gradient(135deg, #4F83FF 0%, #2F6BFF 50%, #1E3A8A 100%);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -40,9 +39,9 @@
     
     /* Modern Status Badges */
     .badge-status-published {
-        background-color: #ecfdf5 !important;
+        background-color: #EEF2FF !important;
         color: #065f46 !important;
-        border: 1px solid rgba(16, 185, 129, 0.3) !important;
+        border: 1px solid rgba(47, 107, 255, 0.3) !important;
         font-weight: 700 !important;
         padding: 5px 12px !important;
         border-radius: 20px !important;
@@ -150,7 +149,7 @@
         font-size: 1.1rem;
     }
     .btn-action-icon:hover {
-        background: rgba(15, 116, 76, 0.08);
+        background: rgba(47, 107, 255, 0.08);
         transform: translateY(-1px);
     }
     .btn-action-icon.text-primary:hover {
@@ -160,13 +159,13 @@
         background: rgba(239, 68, 68, 0.1);
     }
     .btn-action-icon.text-success:hover {
-        background: rgba(16, 185, 129, 0.1);
+        background: rgba(47, 107, 255, 0.1);
     }
 
     /* KPI Summary Cards */
     .kpi-card {
         border-radius: 16px;
-        border: 1px solid rgba(15, 116, 76, 0.08);
+        border: 1px solid rgba(47, 107, 255, 0.08);
         background: #ffffff;
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
         transition: transform 0.2s ease;
@@ -190,9 +189,9 @@
         font-weight: 800;
         text-transform: uppercase;
         letter-spacing: 0.6px;
-        color: #0f744c;
+        color: #2F6BFF;
         background: #f0fdf4;
-        border-left: 4px solid #0f744c;
+        border-left: 4px solid #2F6BFF;
         padding: 8px 14px;
         border-radius: 8px;
         margin-bottom: 18px;
@@ -218,24 +217,148 @@
         transition: all 0.2s ease !important;
     }
     .premium-input:focus, .premium-select:focus {
-        border-color: #0f744c !important;
-        box-shadow: 0 0 0 4px rgba(15, 116, 76, 0.15) !important;
+        border-color: #2F6BFF !important;
+        box-shadow: 0 0 0 4px rgba(47, 107, 255, 0.15) !important;
         outline: none !important;
     }
 
     #eventCalendar {
         background: #ffffff;
-        padding: 20px;
+        padding: 24px;
         border-radius: 16px;
-        border: 1px solid rgba(15, 116, 76, 0.12);
+        border: 1px solid rgba(47, 107, 255, 0.12);
         box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+        min-height: 720px;
+        box-sizing: border-box;
+    }
+
+    /* FullCalendar Toolbar Header & Gap Spacing */
+    #eventCalendar .fc-header-toolbar {
+        margin-bottom: 1.5rem !important;
+        display: flex !important;
+        flex-wrap: wrap !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 12px !important;
+    }
+
+    #eventCalendar .fc-header-toolbar .fc-toolbar-chunk {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+    }
+
+    #eventCalendar .fc-toolbar-title {
+        font-size: 1.35rem !important;
+        font-weight: 700 !important;
+        color: #1e293b;
+        letter-spacing: -0.02em;
+    }
+
+    /* Distinct Gap between Month, Week, and List buttons, and rounded pill design */
+    #eventCalendar .fc-header-toolbar .fc-button-group {
+        display: inline-flex !important;
+        gap: 8px !important;
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    #eventCalendar .fc-header-toolbar .fc-button {
+        border-radius: 8px !important;
+        margin: 0 !important;
+        padding: 0.45rem 1.1rem !important;
+        font-weight: 600 !important;
+        font-size: 0.85rem !important;
+        line-height: 1.35 !important;
+        text-transform: capitalize !important;
+        border: 1.5px solid #2F6BFF !important;
+        background-color: #2F6BFF !important;
+        color: #ffffff !important;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+        transition: all 0.2s ease !important;
+        cursor: pointer !important;
+    }
+
+    #eventCalendar .fc-header-toolbar .fc-button:hover {
+        background-color: #1e52db !important;
+        border-color: #1e52db !important;
+        transform: translateY(-1px);
+        box-shadow: 0 3px 8px rgba(47, 107, 255, 0.25) !important;
+    }
+
+    #eventCalendar .fc-header-toolbar .fc-button:not(:disabled):is(:active, .fc-button-active) {
+        background-color: #143ca3 !important;
+        border-color: #143ca3 !important;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+    }
+
+    #eventCalendar .fc-header-toolbar .fc-button:disabled {
+        opacity: 0.55 !important;
+        cursor: not-allowed !important;
+    }
+
+    #eventCalendar .fc-header-toolbar .fc-prev-button,
+    #eventCalendar .fc-header-toolbar .fc-next-button {
+        padding: 0.45rem 0.75rem !important;
+    }
+
+    /* Banner previews are confined to events in the month calendar. */
+    #eventCalendar .event-calendar-has-banner {
+        display: block;
+        white-space: normal;
+        overflow: hidden;
+    }
+    #eventCalendar .event-calendar-banner-content {
+        width: 100%;
+        min-width: 0;
+        padding: 3px;
+        box-sizing: border-box;
+    }
+    #eventCalendar .event-calendar-banner {
+        display: block;
+        width: 100%;
+        height: 56px;
+        object-fit: contain;
+        border-radius: 4px;
+        margin-bottom: 4px;
+    }
+    #eventCalendar .event-calendar-banner-label {
+        display: block;
+        font-size: 0.75rem;
+        line-height: 1.3;
+        font-weight: 600;
+        overflow-wrap: anywhere;
+        color: inherit;
+    }
+
+    .event-description-panel, .event-memories-empty {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+    }
+    .event-memories-panel {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+    }
+    .event-memories-empty { border-style: dashed; }
+    .event-description-panel, .event-memories-panel, .rsvp-summary-card { padding: 20px; }
+    .event-description-panel > h6, .rsvp-summary-card > h6 { gap: 8px; }
+    .event-details-actions { flex-wrap: wrap; }
+    .rsvp-stat-going { background: #f0fdf4; border: 1px solid #d1fae5; }
+    .rsvp-stat-maybe { background: #fffbeb; border: 1px solid #fef3c7; }
+    .rsvp-stat-not_going { background: #fef2f2; border: 1px solid #fee2e2; }
+    @media (max-width: 767px) {
+        #eventCalendar { padding: 12px; }
+        #eventCalendar .fc-header-toolbar { flex-wrap: wrap; gap: 12px; }
+        #eventCalendar .fc-toolbar-title { font-size: 1.1rem; }
+        #eventCalendar .event-calendar-banner { height: 42px; }
     }
 
     /* Filter Bar Improvements */
     .events-filter-card {
         border-radius: 16px;
         background: #ffffff;
-        border: 1px solid rgba(15, 116, 76, 0.12);
+        border: 1px solid rgba(47, 107, 255, 0.12);
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
     }
     .events-filter-wrapper {
@@ -287,7 +410,7 @@
     }
     .event-meta-card:hover {
         background: #ffffff;
-        border-color: rgba(15, 116, 76, 0.25);
+        border-color: rgba(47, 107, 255, 0.25);
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
     }
 
@@ -297,15 +420,15 @@
     .gallery-card {
         border-radius: 18px;
         background: #ffffff;
-        border: 1px solid rgba(15, 116, 76, 0.12);
+        border: 1px solid rgba(47, 107, 255, 0.12);
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
         overflow: hidden;
         transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     }
     .gallery-card:hover {
         transform: translateY(-5px);
-        box-shadow: 0 14px 35px rgba(15, 116, 76, 0.14);
-        border-color: rgba(15, 116, 76, 0.3);
+        box-shadow: 0 14px 35px rgba(47, 107, 255, 0.14);
+        border-color: rgba(47, 107, 255, 0.3);
     }
     .gallery-preview-grid {
         display: grid;
@@ -353,7 +476,7 @@
         cursor: pointer;
     }
     .photo-dropzone:hover, .photo-dropzone.dragover {
-        border-color: #0f744c;
+        border-color: #2F6BFF;
         background: #f0fdf4;
     }
     .upload-preview-grid {
@@ -430,7 +553,7 @@
         height: 48px;
         border-radius: 50%;
         background: #ffffff !important;
-        color: #0f744c !important;
+        color: #2F6BFF !important;
         border: 1.5px solid #cbd5e1 !important;
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15) !important;
         display: flex !important;
@@ -443,9 +566,9 @@
         cursor: pointer;
     }
     .lightbox-nav-btn:hover {
-        background: #0f744c !important;
+        background: #2F6BFF !important;
         color: #ffffff !important;
-        border-color: #0f744c !important;
+        border-color: #2F6BFF !important;
         transform: translateY(-50%) scale(1.1) !important;
     }
     .lightbox-nav-btn i {
@@ -569,7 +692,7 @@
         transition: all 0.2s ease !important;
     }
     .photo-action-btn:hover {
-        background: #0f744c !important;
+        background: #2F6BFF !important;
         color: #ffffff !important;
         border-color: #ffffff !important;
         transform: scale(1.08);
@@ -577,30 +700,517 @@
     .photo-action-btn i {
         color: #ffffff !important;
     }
+
+    /* ==========================================================================
+       DARK MODE STYLES FOR EVENTS & EVENT MODAL
+       ========================================================================== */
+    html[data-pms-theme="dark"] .form-section-title,
+    html[data-bs-theme="dark"] .form-section-title,
+    html[data-theme="dark"] .form-section-title {
+        background: rgba(47, 107, 255, 0.12) !important;
+        border: 1px solid rgba(79, 131, 255, 0.25) !important;
+        border-left: 4px solid #60A5FA !important;
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+    }
+
+    html[data-pms-theme="dark"] .form-section-title i,
+    html[data-bs-theme="dark"] .form-section-title i,
+    html[data-theme="dark"] .form-section-title i {
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
+    }
+
+    html[data-pms-theme="dark"] .premium-label,
+    html[data-bs-theme="dark"] .premium-label,
+    html[data-theme="dark"] .premium-label {
+        color: #CBD5E1 !important;
+        -webkit-text-fill-color: #CBD5E1 !important;
+    }
+
+    html[data-pms-theme="dark"] .premium-input,
+    html[data-bs-theme="dark"] .premium-input,
+    html[data-theme="dark"] .premium-input,
+    html[data-pms-theme="dark"] .premium-select,
+    html[data-bs-theme="dark"] .premium-select,
+    html[data-theme="dark"] .premium-select {
+        background-color: #141B3D !important;
+        background: #141B3D !important;
+        border: 1.5px solid rgba(238, 241, 251, 0.16) !important;
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+    }
+
+    html[data-pms-theme="dark"] .premium-input:focus,
+    html[data-bs-theme="dark"] .premium-input:focus,
+    html[data-theme="dark"] .premium-input:focus,
+    html[data-pms-theme="dark"] .premium-select:focus,
+    html[data-bs-theme="dark"] .premium-select:focus,
+    html[data-theme="dark"] .premium-select:focus {
+        border-color: #60A5FA !important;
+        box-shadow: 0 0 0 3px rgba(79, 131, 255, 0.2) !important;
+    }
+
+    html[data-pms-theme="dark"] #eventModal .modal-content,
+    html[data-bs-theme="dark"] #eventModal .modal-content,
+    html[data-theme="dark"] #eventModal .modal-content {
+        background: #0F1530 !important;
+        border: 1px solid rgba(238, 241, 251, 0.12) !important;
+    }
+
+    html[data-pms-theme="dark"] #eventModal .modal-footer,
+    html[data-bs-theme="dark"] #eventModal .modal-footer,
+    html[data-theme="dark"] #eventModal .modal-footer {
+        background: #0B1026 !important;
+        border-top: 1px solid rgba(238, 241, 251, 0.09) !important;
+    }
+
+    html[data-pms-theme="dark"] #eventBannerInput::file-selector-button,
+    html[data-bs-theme="dark"] #eventBannerInput::file-selector-button,
+    html[data-theme="dark"] #eventBannerInput::file-selector-button {
+        background: #1A2247 !important;
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+        border: 1px solid rgba(238, 241, 251, 0.25) !important;
+        border-radius: 8px !important;
+        padding: 4px 12px !important;
+        font-weight: 600 !important;
+    }
+
+    html[data-pms-theme="dark"] #eventBannerInput::-webkit-file-upload-button,
+    html[data-bs-theme="dark"] #eventBannerInput::-webkit-file-upload-button,
+    html[data-theme="dark"] #eventBannerInput::-webkit-file-upload-button {
+        background: #1A2247 !important;
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+        border: 1px solid rgba(238, 241, 251, 0.25) !important;
+        border-radius: 8px !important;
+        padding: 4px 12px !important;
+        font-weight: 600 !important;
+    }
+
+    /* RSVP Box & Segmented Control Dark Mode Support */
+    html[data-pms-theme="dark"] .rsvp-box,
+    html[data-bs-theme="dark"] .rsvp-box,
+    html[data-theme="dark"] .rsvp-box,
+    body.dark-mode .rsvp-box,
+    .dark-mode .rsvp-box {
+        background: #141B3D !important;
+        border: 1px solid rgba(238, 241, 251, 0.12) !important;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25) !important;
+    }
+
+    html[data-pms-theme="dark"] .rsvp-box .text-dark,
+    html[data-bs-theme="dark"] .rsvp-box .text-dark,
+    html[data-theme="dark"] .rsvp-box .text-dark,
+    body.dark-mode .rsvp-box .text-dark,
+    .dark-mode .rsvp-box .text-dark {
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+    }
+
+    html[data-pms-theme="dark"] .rsvp-count-badge,
+    html[data-bs-theme="dark"] .rsvp-count-badge,
+    html[data-theme="dark"] .rsvp-count-badge,
+    body.dark-mode .rsvp-count-badge,
+    .dark-mode .rsvp-count-badge {
+        background: rgba(22, 163, 74, 0.2) !important;
+        color: #4ade80 !important;
+        border: 1px solid rgba(74, 222, 128, 0.3) !important;
+    }
+
+    html[data-pms-theme="dark"] .rsvp-segmented-bar,
+    html[data-bs-theme="dark"] .rsvp-segmented-bar,
+    html[data-theme="dark"] .rsvp-segmented-bar,
+    body.dark-mode .rsvp-segmented-bar,
+    .dark-mode .rsvp-segmented-bar {
+        background: #0B1026 !important;
+        border: 1px solid rgba(238, 241, 251, 0.08) !important;
+    }
+
+    html[data-pms-theme="dark"] .rsvp-segment-btn,
+    html[data-bs-theme="dark"] .rsvp-segment-btn,
+    html[data-theme="dark"] .rsvp-segment-btn,
+    body.dark-mode .rsvp-segment-btn,
+    .dark-mode .rsvp-segment-btn {
+        color: #94A3B8 !important;
+        -webkit-text-fill-color: #94A3B8 !important;
+    }
+
+    html[data-pms-theme="dark"] .rsvp-segment-btn:hover:not(.active-going):not(.active-maybe):not(.active-not_going),
+    html[data-bs-theme="dark"] .rsvp-segment-btn:hover:not(.active-going):not(.active-maybe):not(.active-not_going),
+    html[data-theme="dark"] .rsvp-segment-btn:hover:not(.active-going):not(.active-maybe):not(.active-not_going),
+    body.dark-mode .rsvp-segment-btn:hover:not(.active-going):not(.active-maybe):not(.active-not_going),
+    .dark-mode .rsvp-segment-btn:hover:not(.active-going):not(.active-maybe):not(.active-not_going) {
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
+        background: rgba(255, 255, 255, 0.1) !important;
+    }
+
+    html[data-pms-theme="dark"] .rsvp-segment-btn.active-going,
+    html[data-bs-theme="dark"] .rsvp-segment-btn.active-going,
+    html[data-theme="dark"] .rsvp-segment-btn.active-going,
+    body.dark-mode .rsvp-segment-btn.active-going,
+    .dark-mode .rsvp-segment-btn.active-going {
+        background: #0D6E46 !important;
+        color: #FFFFFF !important;
+        -webkit-text-fill-color: #FFFFFF !important;
+        box-shadow: 0 3px 10px rgba(13, 110, 70, 0.5) !important;
+    }
+
+    html[data-pms-theme="dark"] .rsvp-segment-btn.active-maybe,
+    html[data-bs-theme="dark"] .rsvp-segment-btn.active-maybe,
+    html[data-theme="dark"] .rsvp-segment-btn.active-maybe,
+    body.dark-mode .rsvp-segment-btn.active-maybe,
+    .dark-mode .rsvp-segment-btn.active-maybe {
+        background: #D97706 !important;
+        color: #FFFFFF !important;
+        -webkit-text-fill-color: #FFFFFF !important;
+        box-shadow: 0 3px 10px rgba(217, 119, 6, 0.5) !important;
+    }
+
+    html[data-pms-theme="dark"] .rsvp-segment-btn.active-not_going,
+    html[data-bs-theme="dark"] .rsvp-segment-btn.active-not_going,
+    html[data-theme="dark"] .rsvp-segment-btn.active-not_going,
+    body.dark-mode .rsvp-segment-btn.active-not_going,
+    .dark-mode .rsvp-segment-btn.active-not_going {
+        background: #DC2626 !important;
+        color: #FFFFFF !important;
+        -webkit-text-fill-color: #FFFFFF !important;
+        box-shadow: 0 3px 10px rgba(220, 38, 38, 0.5) !important;
+    }
+
+    html[data-pms-theme="dark"] .rsvp-summary-card,
+    html[data-bs-theme="dark"] .rsvp-summary-card,
+    html[data-theme="dark"] .rsvp-summary-card,
+    body.dark-mode .rsvp-summary-card,
+    .dark-mode .rsvp-summary-card {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.12) !important;
+    }
+
+    html[data-pms-theme="dark"] .rsvp-stat-going,
+    html[data-bs-theme="dark"] .rsvp-stat-going,
+    html[data-theme="dark"] .rsvp-stat-going,
+    body.dark-mode .rsvp-stat-going,
+    .dark-mode .rsvp-stat-going {
+        background-color: rgba(16, 185, 129, 0.12) !important;
+        border-color: rgba(52, 211, 153, 0.25) !important;
+    }
+
+    html[data-pms-theme="dark"] .rsvp-stat-maybe,
+    html[data-bs-theme="dark"] .rsvp-stat-maybe,
+    html[data-theme="dark"] .rsvp-stat-maybe,
+    body.dark-mode .rsvp-stat-maybe,
+    .dark-mode .rsvp-stat-maybe {
+        background-color: rgba(245, 158, 11, 0.12) !important;
+        border-color: rgba(251, 191, 36, 0.25) !important;
+    }
+
+    html[data-pms-theme="dark"] .rsvp-stat-not_going,
+    html[data-bs-theme="dark"] .rsvp-stat-not_going,
+    html[data-theme="dark"] .rsvp-stat-not_going,
+    body.dark-mode .rsvp-stat-not_going,
+    .dark-mode .rsvp-stat-not_going {
+        background-color: rgba(239, 68, 68, 0.12) !important;
+        border-color: rgba(248, 113, 113, 0.25) !important;
+    }
+    /* Keep native Organizer options and role group labels readable in dark mode. */
+    :is([data-pms-theme="dark"], [data-theme="dark"], [data-bs-theme="dark"], .dark, .dark-mode) #eventOrganizerInput {
+        color-scheme: dark;
+    }
+    :is([data-pms-theme="dark"], [data-theme="dark"], [data-bs-theme="dark"], .dark, .dark-mode) #eventOrganizerInput :is(option, optgroup) {
+        background-color: #151c3b !important;
+        color: #eef1fb !important;
+        -webkit-text-fill-color: #eef1fb !important;
+    }
+    :is([data-pms-theme="dark"], [data-theme="dark"], [data-bs-theme="dark"], .dark, .dark-mode) #eventOrganizerInput optgroup {
+        font-weight: 600;
+    }
+    :is([data-pms-theme="dark"], [data-theme="dark"], [data-bs-theme="dark"], .dark, .dark-mode) #eventOrganizerInput option:checked {
+        background-color: #2f6bff !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
+    /* Clean SaaS Workspace Redesign (Scoped to #pms-events-page) */
+    #pms-events-page.pms-events-page {
+        padding: 0 0 2rem !important;
+        margin: 0 !important;
+        background: transparent !important;
+        font-family: 'Inter', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif !important;
+    }
+
+    #pms-events-page .pms-events-topbar {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 16px !important;
+        margin-bottom: 18px !important;
+    }
+
+    #pms-events-page .pms-events-title-wrap {
+        display: flex !important;
+        align-items: center !important;
+        gap: 14px !important;
+    }
+
+    #pms-events-page .pms-events-title-icon {
+        width: 44px !important;
+        height: 44px !important;
+        border-radius: 12px !important;
+        background: #eff6ff !important;
+        border: 1px solid #dbeafe !important;
+        color: #2563eb !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 1.3rem !important;
+        flex-shrink: 0 !important;
+    }
+
+    #pms-events-page .pms-events-title {
+        margin: 0 !important;
+        font-size: 1.35rem !important;
+        font-weight: 700 !important;
+        color: #0f172a !important;
+        letter-spacing: -0.02em !important;
+        line-height: 1.25 !important;
+    }
+
+    #pms-events-page .pms-events-sub {
+        margin: 2px 0 0 !important;
+        font-size: 0.84rem !important;
+        color: #64748b !important;
+    }
+
+    #pms-events-page .pms-events-btn-primary,
+    .events-section .pms-events-btn-primary {
+        background: #2563eb !important;
+        border: 1px solid #2563eb !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        border-radius: 10px !important;
+        height: 38px !important;
+        padding: 0 18px !important;
+        font-size: 0.84rem !important;
+        font-weight: 600 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 7px !important;
+        box-shadow: 0 6px 14px rgba(37, 99, 235, 0.22) !important;
+    }
+
+    #pms-events-page .pms-events-btn-primary:hover {
+        background: #1d4ed8 !important;
+        border-color: #1d4ed8 !important;
+    }
+
+    #pms-events-page .pms-events-btn-primary i {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
+    #pms-events-page .kpi-card {
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 14px !important;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04) !important;
+    }
+
+    #pms-events-page .pms-kpi-label {
+        font-size: 0.68rem !important;
+        font-weight: 700 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.05em !important;
+        color: #64748b !important;
+    }
+
+    #pms-events-page .kpi-card h3 {
+        font-size: 1.55rem !important;
+        font-weight: 800 !important;
+        color: #0f172a !important;
+    }
+
+    #pms-events-page .kpi-icon-box {
+        width: 44px !important;
+        height: 44px !important;
+        border-radius: 12px !important;
+        font-size: 1.25rem !important;
+    }
+
+    #pms-events-page .events-filter-card {
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 14px !important;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04) !important;
+    }
+
+    #pms-events-page .events-filter-card .input-group-text {
+        background: #ffffff !important;
+        border-color: #e2e8f0 !important;
+        color: #64748b !important;
+        border-top-left-radius: 10px !important;
+        border-bottom-left-radius: 10px !important;
+    }
+
+    #pms-events-page .events-filter-card .form-control,
+    #pms-events-page .events-filter-card .form-select {
+        height: 40px !important;
+        border-color: #e2e8f0 !important;
+        background-color: #ffffff !important;
+        font-size: 0.84rem !important;
+        box-shadow: none !important;
+    }
+
+    #pms-events-page .events-filter-card .form-control {
+        border-top-right-radius: 10px !important;
+        border-bottom-right-radius: 10px !important;
+    }
+
+    #pms-events-page .events-filter-card .form-select {
+        border-radius: 10px !important;
+    }
+
+    #pms-events-page .events-filter-card .form-control:focus,
+    #pms-events-page .events-filter-card .form-select:focus {
+        border-color: #2563eb !important;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12) !important;
+    }
+
+    #pms-events-page .pms-events-btn-reset {
+        height: 38px !important;
+        border-radius: 10px !important;
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        color: #0f172a !important;
+        padding: 0 14px !important;
+        font-size: 0.84rem !important;
+        font-weight: 600 !important;
+    }
+
+    #pms-events-page .pms-events-switcher {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 4px !important;
+        padding: 4px !important;
+        background: #f1f5f9 !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 12px !important;
+    }
+
+    #pms-events-page .pms-events-switcher .btn {
+        height: 32px !important;
+        padding: 0 12px !important;
+        border-radius: 8px !important;
+        border: none !important;
+        background: transparent !important;
+        color: #475569 !important;
+        font-size: 0.8rem !important;
+        font-weight: 600 !important;
+        box-shadow: none !important;
+    }
+
+    #pms-events-page .pms-events-switcher .btn.active {
+        background: #2563eb !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25) !important;
+    }
+
+    #pms-events-page .pms-events-switcher .btn.active i {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
+    #pms-events-page .event-card,
+    #pms-events-page .gallery-card,
+    #pms-events-page #eventCalendar,
+    #pms-events-page .pms-events-empty-card {
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 16px !important;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04) !important;
+    }
+
+    #pms-events-page .pms-events-empty-card {
+        background: #ffffff !important;
+        padding: 52px 24px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        text-align: center !important;
+    }
+
+    #pms-events-page .event-empty-icon {
+        width: 58px !important;
+        height: 58px !important;
+        border-radius: 16px !important;
+        background: #eff6ff !important;
+        border: 1px solid #dbeafe !important;
+        color: #2563eb !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        margin: 0 auto 16px !important;
+    }
+
+    #pms-events-page .event-empty-icon i {
+        color: #2563eb !important;
+        font-size: 1.45rem !important;
+    }
+
+    .events-section .form-section-title {
+        color: #2563eb !important;
+        background: #eff6ff !important;
+        border-left-color: #2563eb !important;
+    }
+
+    .events-section .premium-input,
+    .events-section .premium-select {
+        border-radius: 10px !important;
+        border: 1px solid #e2e8f0 !important;
+    }
 </style>
+@include('admin.events.dark-theme')
+@include('admin.events.presentation')
 @endpush
 
 @section('content')
-<div class="container-xxl flex-grow-1 container-p-y">
+<div id="pms-events-page" class="events-section pms-events-page">
 
     {{-- HEADER BLOCK --}}
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
-        <div>
-            <h4 class="fw-bold mb-1 text-dark d-flex align-items-center gap-2">
-                <i class="bx bx-calendar-event text-success fs-3"></i> Events & Memories
-            </h4>
-            <p class="text-muted mb-0 small">Company events, activities, and photo archive</p>
+    <div class="pms-events-topbar">
+        <div class="pms-events-title-wrap">
+            <div class="pms-events-title-icon" aria-hidden="true">
+                <i class="bx bx-calendar-event"></i>
+            </div>
+            <div>
+                <h4 class="pms-events-title">Events &amp; Memories</h4>
+                <p class="pms-events-sub">Company events, activities, and photo archive</p>
+            </div>
         </div>
         @if($canManage)
         <div>
-            <button type="button" class="btn btn-primary d-inline-flex align-items-center gap-2 fw-bold shadow-sm" onclick="openCreateModal()">
-                <i class="bx bx-plus fs-5"></i> Create Event
+            <button type="button" class="btn pms-events-btn-primary" onclick="openCreateModal()">
+                <i class="bx bx-plus"></i> Create Event
             </button>
-        </div>
         @endif
-    </div>
+    </header>
 
     {{-- FLASH MESSAGES --}}
+    @if($errors->any())
+        <div class="alert alert-danger" role="alert">
+            <ul class="mb-0">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
     @if(session('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
             <i class="bx bx-check-circle me-1"></i> {{ session('success') }}
@@ -620,8 +1230,8 @@
             <div class="card kpi-card p-3">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
-                        <span class="text-muted small fw-semibold d-block">Total Events</span>
-                        <h3 class="fw-bold mb-0 text-dark mt-1">{{ number_format($totalEvents) }}</h3>
+                        <span class="pms-kpi-label d-block">Total Events</span>
+                        <h3 class="fw-bold mb-0 mt-1">{{ number_format($totalEvents) }}</h3>
                     </div>
                     <div class="kpi-icon-box bg-label-primary text-primary">
                         <i class="bx bx-calendar-event"></i>
@@ -634,8 +1244,8 @@
             <div class="card kpi-card p-3">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
-                        <span class="text-muted small fw-semibold d-block">Upcoming Events</span>
-                        <h3 class="fw-bold mb-0 text-success mt-1">{{ number_format($upcomingEvents) }}</h3>
+                        <span class="pms-kpi-label d-block">Upcoming Events</span>
+                        <h3 class="fw-bold mb-0 mt-1">{{ number_format($upcomingEvents) }}</h3>
                     </div>
                     <div class="kpi-icon-box bg-label-success text-success">
                         <i class="bx bx-time-five"></i>
@@ -648,8 +1258,8 @@
             <div class="card kpi-card p-3">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
-                        <span class="text-muted small fw-semibold d-block">Today's Events</span>
-                        <h3 class="fw-bold mb-0 text-warning mt-1">{{ number_format($todayEvents) }}</h3>
+                        <span class="pms-kpi-label d-block">Today's Events</span>
+                        <h3 class="fw-bold mb-0 mt-1">{{ number_format($todayEvents) }}</h3>
                     </div>
                     <div class="kpi-icon-box bg-label-warning text-warning">
                         <i class="bx bx-calendar-check"></i>
@@ -662,8 +1272,8 @@
             <div class="card kpi-card p-3">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
-                        <span class="text-muted small fw-semibold d-block">Past Events</span>
-                        <h3 class="fw-bold mb-0 text-secondary mt-1">{{ number_format($pastEvents) }}</h3>
+                        <span class="pms-kpi-label d-block">Past Events</span>
+                        <h3 class="fw-bold mb-0 mt-1">{{ number_format($pastEvents) }}</h3>
                     </div>
                     <div class="kpi-icon-box bg-label-secondary text-secondary">
                         <i class="bx bx-history"></i>
@@ -671,7 +1281,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </dl>
 
     {{-- FILTER BAR & VIEW TOGGLE --}}
     <div class="card events-filter-card border-0 mb-4">
@@ -681,14 +1291,14 @@
                     {{-- Search Input --}}
                     <div class="filter-search-box">
                         <div class="input-group">
-                            <span class="input-group-text bg-light border-end-0"><i class="bx bx-search text-success"></i></span>
-                            <input type="text" name="search" class="form-control border-start-0 bg-light" placeholder="Search title, desc, location..." value="{{ request('search') }}">
+                            <span class="input-group-text border-end-0"><i class="bx bx-search"></i></span>
+                            <input type="text" name="search" class="form-control border-start-0" placeholder="Search title, desc, location..." value="{{ request('search') }}">
                         </div>
                     </div>
 
                     {{-- Event Type Filter --}}
                     <div class="filter-select-box">
-                        <select name="event_type" class="form-select bg-light">
+                        <select name="event_type" class="form-select">
                             <option value="all">All Types</option>
                             @foreach($eventTypes as $type)
                                 <option value="{{ $type }}" {{ request('event_type') == $type ? 'selected' : '' }}>{{ $type }}</option>
@@ -698,7 +1308,7 @@
 
                     {{-- Status Filter --}}
                     <div class="filter-select-box">
-                        <select name="status" class="form-select bg-light">
+                        <select name="status" class="form-select">
                             <option value="all">All Statuses</option>
                             <option value="published" {{ request('status') == 'published' ? 'selected' : '' }}>Published</option>
                             @if($canManage)
@@ -711,7 +1321,7 @@
 
                     {{-- Time Filter --}}
                     <div class="filter-select-box">
-                        <select name="time_filter" class="form-select bg-light">
+                        <select name="time_filter" class="form-select">
                             <option value="">All Time</option>
                             <option value="upcoming" {{ request('time_filter') == 'upcoming' ? 'selected' : '' }}>Upcoming</option>
                             <option value="today" {{ request('time_filter') == 'today' ? 'selected' : '' }}>Today</option>
@@ -721,26 +1331,37 @@
 
                     {{-- Filter Action Buttons --}}
                     <div class="d-flex align-items-center gap-2 flex-wrap ms-auto">
-                        <button type="submit" class="btn btn-primary filter-btn-nowrap">
+                        <button type="submit" class="btn pms-events-btn-primary filter-btn-nowrap">
                             <i class="bx bx-filter-alt"></i> Apply
                         </button>
-                        <a href="{{ route('events.index') }}" class="btn btn-outline-secondary filter-btn-nowrap">
+                        <a href="{{ route('events.index') }}" class="btn pms-events-btn-reset filter-btn-nowrap">
                             <i class="bx bx-reset"></i> Reset
                         </a>
 
                         {{-- ENHANCED VIEW TOGGLE BUTTONS [LIST] [CALENDAR] [GALLERY] --}}
-                        <div class="btn-group filter-btn-group ms-1" role="group">
-                            <button type="button" class="btn btn-outline-primary active" id="btnListView" onclick="switchView('list')">
+                        <div class="pms-events-switcher filter-btn-group ms-1" role="group">
+                            <button type="button" class="btn active" id="btnListView" onclick="switchView('list')">
                                 <i class="bx bx-list-ul"></i> List
                             </button>
-                            <button type="button" class="btn btn-outline-primary" id="btnCalendarView" onclick="switchView('calendar')">
+                            <button type="button" class="btn" id="btnCalendarView" onclick="switchView('calendar')">
                                 <i class="bx bx-calendar"></i> Calendar
                             </button>
-                            <button type="button" class="btn btn-outline-primary" id="btnGalleryView" onclick="switchView('gallery')">
+                            <button type="button" class="btn" id="btnGalleryView" onclick="switchView('gallery')">
                                 <i class="bx bx-images"></i> Gallery
                             </button>
                         </div>
                     </div>
+                </div>
+                <div class="btn-group filter-btn-group" role="group" aria-label="Event view">
+                    <button type="button" class="btn btn-outline-primary active" id="btnListView" aria-controls="eventsListView" onclick="switchView('list')">
+                        <i class="bx bx-list-ul" aria-hidden="true"></i> List
+                    </button>
+                    <button type="button" class="btn btn-outline-primary" id="btnCalendarView" aria-controls="eventsCalendarView" onclick="switchView('calendar')">
+                        <i class="bx bx-calendar" aria-hidden="true"></i> Calendar
+                    </button>
+                    <button type="button" class="btn btn-outline-primary" id="btnGalleryView" aria-controls="eventsGalleryView" onclick="switchView('gallery')">
+                        <i class="bx bx-images" aria-hidden="true"></i> Gallery
+                    </button>
                 </div>
             </form>
         </div>
@@ -749,27 +1370,22 @@
     {{-- LIST VIEW SECTION --}}
     <div id="eventsListView">
         @if($events->count() > 0)
-            <div class="row g-4">
+            <div class="events-card-grid">
                 @foreach($events as $event)
-                <div class="col-lg-4 col-md-6 col-12">
+                <div class="events-card-item">
                     <div class="card event-card h-100 d-flex flex-column">
                         {{-- Banner / Header Image --}}
                         @if($event->banner_url)
                             <img src="{{ $event->banner_url }}" alt="{{ $event->title }}" class="event-banner-img">
                         @else
-                            <div class="event-banner-placeholder">
-                                <i class="bx bx-calendar-event opacity-50 display-1"></i>
-                                <div class="position-absolute bottom-0 start-0 p-3">
-                                    <span class="badge badge-event-type">
-                                        {{ $event->event_type }}
-                                    </span>
-                                </div>
+                            <div class="event-banner-placeholder" aria-hidden="true">
+                                <span class="events-cover-icon"><i class="bx bx-calendar-event"></i></span>
                             </div>
                         @endif
 
-                        <div class="card-body p-4 d-flex flex-column flex-grow-1">
+                        <div class="card-body event-card-content d-flex flex-column flex-grow-1">
                             {{-- Badges Row --}}
-                            <div class="d-flex align-items-center justify-content-between mb-3">
+                            <div class="events-card-tags">
                                 <span class="badge badge-event-type">
                                     {{ $event->event_type }}
                                 </span>
@@ -788,42 +1404,43 @@
                             </div>
 
                             {{-- Title --}}
-                            <h5 class="fw-extrabold text-dark mb-2 text-truncate" style="font-size: 1.15rem;" title="{{ $event->title }}">
+                            <h2 class="events-card-title" title="{{ $event->title }}">
                                 {{ $event->title }}
-                            </h5>
+                            </h2>
 
                             {{-- Date & Time --}}
-                            <div class="small text-muted mb-2 d-flex align-items-center gap-1.5 fw-semibold">
-                                <i class="bx bx-calendar text-success fs-6"></i>
-                                <span class="text-dark fw-bold">{{ $event->start_date->format('d M Y') }}</span>
-                                @if($event->start_time)
-                                    <span>• {{ date('h:i A', strtotime($event->start_time)) }}</span>
-                                @endif
+                            <div class="events-card-meta">
+                                <span class="events-meta-icon" aria-hidden="true"><i class="bx bx-calendar"></i></span>
+                                <span>{{ $event->start_date->format('d M Y') }}
+                                    @if($event->start_time)
+                                        <span class="events-card-time">{{ date('h:i A', strtotime($event->start_time)) }}</span>
+                                    @endif
+                                </span>
                             </div>
 
                             {{-- Location --}}
-                            <div class="small text-muted mb-3 d-flex align-items-center gap-1.5 text-truncate">
+                            <div class="events-card-meta events-card-location">
                                 @if($event->location_type === 'online')
-                                    <i class="bx bx-video text-info fs-6"></i>
-                                    <a href="{{ $event->meeting_url }}" target="_blank" class="text-info text-decoration-none text-truncate fw-semibold">
+                                    <span class="events-meta-icon" aria-hidden="true"><i class="bx bx-video"></i></span>
+                                    <a href="{{ $event->meeting_url }}" target="_blank" class="text-decoration-none text-truncate">
                                         Online Meeting
                                     </a>
                                 @else
-                                    <i class="bx bx-map-pin text-danger fs-6"></i>
-                                    <span class="text-truncate text-dark fw-semibold">{{ $event->location ?: 'Physical Venue' }}</span>
+                                    <span class="events-meta-icon" aria-hidden="true"><i class="bx bx-map-pin"></i></span>
+                                    <span class="text-truncate" title="{{ $event->location }}">{{ $event->location ?: 'Physical Venue' }}</span>
                                 @endif
                             </div>
 
                             {{-- Description snippet --}}
-                            <p class="text-secondary small mb-3 flex-grow-1" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.5;">
+                            <p class="events-card-description flex-grow-1">
                                 {{ Str::limit(strip_tags($event->description), 110) }}
                             </p>
 
                             {{-- EVENT MEMORIES PHOTO COUNT BADGE --}}
                             @if($event->photos_count > 0)
                                 <div class="mb-3">
-                                    <button type="button" class="btn btn-sm text-success fw-bold pill border-0 d-inline-flex align-items-center gap-1.5" onclick="showEventDetails({{ $event->id }})" style="background: #ecfdf5; color: #0f744c; padding: 6px 14px; border-radius: 20px;">
-                                        <i class="bx bx-images fs-5"></i> 📷 {{ $event->photos_count }} Event {{ Str::plural('Photo', $event->photos_count) }}
+                                    <button type="button" class="btn btn-sm event-photos-button" onclick="showEventDetails({{ $event->id }})">
+                                        <i class="bx bx-images" aria-hidden="true"></i> {{ $event->photos_count }} Event {{ Str::plural('Photo', $event->photos_count) }}
                                     </button>
                                 </div>
                             @endif
@@ -832,11 +1449,11 @@
                             @if($event->rsvp_required && $event->status !== 'cancelled')
                                 <div class="rsvp-box">
                                     <div class="d-flex align-items-center justify-content-between">
-                                        <span class="fw-extrabold text-dark d-flex align-items-center gap-1.5" style="font-size: 0.92rem;">
-                                            <i class="bx bx-checkbox-checked text-success fs-5"></i> RSVP:
+                                        <span class="events-rsvp-label">
+                                            <span class="events-meta-icon" aria-hidden="true"><i class="bx bx-checkbox-checked"></i></span> RSVP
                                         </span>
-                                        <span class="badge" style="background: #e8f5e9; color: #16a34a; font-weight: 700; font-size: 0.78rem; padding: 6px 12px; border-radius: 20px;">
-                                            <i class="bx bx-user-check me-1"></i> {{ $event->rsvp_counts['going'] }} Going
+                                        <span class="badge rsvp-count-badge">
+                                            <i class="bx bx-user-check" aria-hidden="true"></i> {{ $event->rsvp_counts['going'] }} Going
                                         </span>
                                     </div>
                                     @php $myRsvp = $event->user_rsvp?->response; @endphp
@@ -855,19 +1472,15 @@
                             @endif
 
                             {{-- CARD FOOTER / ACTIONS --}}
-                            <div class="pt-2.5 border-top d-flex align-items-center justify-content-between mt-auto">
-                                <div class="d-flex align-items-center gap-2">
-                                    <div class="avatar avatar-xs" style="width: 32px; height: 32px;">
-                                        <span class="avatar-initial rounded-circle bg-success text-white fw-bold shadow-sm" style="font-size: 11px; width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #0f744c, #094c32) !important;">
-                                            {{ strtoupper(substr($event->organizer?->name ?? 'C', 0, 2)) }}
-                                        </span>
-                                    </div>
-                                    <span class="small fw-bold text-dark text-truncate" style="max-width: 130px;" title="{{ $event->organizer?->name }}">
+                            <div class="events-card-footer">
+                                <div class="events-organizer">
+                                    <span class="events-organizer-avatar" aria-hidden="true">{{ strtoupper(substr($event->organizer?->name ?? 'C', 0, 2)) }}</span>
+                                    <span class="text-truncate" title="{{ $event->organizer?->name }}">
                                         {{ $event->organizer?->name ?? 'Company' }}
                                     </span>
                                 </div>
 
-                                <div class="d-flex align-items-center gap-1">
+                                <div class="events-card-actions">
                                     <button type="button" class="btn-action-icon text-muted" title="View Memories / Details" onclick="showEventDetails({{ $event->id }})">
                                         <i class="bx bx-show"></i>
                                     </button>
@@ -901,16 +1514,16 @@
             </div>
         @else
             {{-- EMPTY STATE --}}
-            <div class="card border-0 shadow-sm p-5 text-center my-4">
-                <div class="avatar avatar-xl bg-label-success rounded-circle mx-auto mb-3" style="width: 70px; height: 70px; display: flex; align-items: center; justify-content: center;">
-                    <i class="bx bx-calendar-event fs-1 text-success"></i>
+            <div class="card pms-events-empty-card my-4">
+                <div class="event-empty-icon">
+                    <i class="bx bx-calendar-event"></i>
                 </div>
                 <h5 class="fw-bold text-dark mb-1">No upcoming events</h5>
                 <p class="text-muted small mb-4">Company events and activities will appear here.</p>
                 @if($canManage)
                     <div>
-                        <button type="button" class="btn btn-primary px-4 fw-bold" onclick="openCreateModal()">
-                            <i class="bx bx-plus me-1"></i> Create Event
+                        <button type="button" class="btn pms-events-btn-primary" onclick="openCreateModal()">
+                            <i class="bx bx-plus"></i> Create Event
                         </button>
                     </div>
                 @endif
@@ -920,38 +1533,39 @@
 
     {{-- CALENDAR VIEW SECTION --}}
     <div id="eventsCalendarView" class="d-none">
-        <div id="eventCalendar"></div>
+        <div id="eventCalendar" data-pms-export="off"></div>
     </div>
 
     {{-- GALLERY VIEW SECTION (NEW) --}}
     <div id="eventsGalleryView" class="d-none">
-        <div class="mb-4">
-            <h5 class="fw-bold text-dark mb-1 d-flex align-items-center gap-2">
-                <i class="bx bx-images text-success fs-3"></i> Company Event Gallery Archive
-            </h5>
-            <p class="text-muted small mb-0">Browse photo memories of company tours, celebrations, picnics, and annual events.</p>
+        <div class="events-gallery-heading">
+            <span class="events-empty-icon" aria-hidden="true"><i class="bx bx-images"></i></span>
+            <div>
+                <h2>Event Gallery</h2>
+                <p>Photos from company events.</p>
+            </div>
         </div>
 
         @if($events->count() > 0)
-            <div class="row g-4">
+            <div class="events-card-grid">
                 @foreach($events as $event)
-                <div class="col-lg-4 col-md-6 col-12">
+                <div class="events-card-item">
                     <div class="gallery-card h-100 d-flex flex-column cursor-pointer" onclick="showEventDetails({{ $event->id }})">
                         @php
                             $previewPhotos = $event->photos->take(4);
                         @endphp
                         
                         {{-- Photo Matrix Grid --}}
-                        <div class="gallery-preview-grid {{ $previewPhotos->count() <= 1 ? 'single-image' : '' }}">
+                        <div class="gallery-preview-grid {{ $previewPhotos->count() <= 1 ? 'single-image' : '' }} {{ $previewPhotos->count() === 3 ? 'gallery-has-three' : '' }}">
                             @if($previewPhotos->count() > 0)
                                 @foreach($previewPhotos as $p)
                                     <img src="{{ $p->image_url }}" alt="{{ $event->title }}" class="gallery-preview-img">
                                 @endforeach
                             @elseif($event->banner_url)
-                                <img src="{{ $event->banner_url }}" alt="{{ $event->title }}" class="gallery-preview-img" style="grid-column: span 2;">
+                                <img src="{{ $event->banner_url }}" alt="{{ $event->title }}" class="gallery-preview-img">
                             @else
-                                <div class="d-flex align-items-center justify-content-center h-100 bg-secondary text-white w-100" style="grid-column: span 2;">
-                                    <i class="bx bx-images fs-1 opacity-50"></i>
+                                <div class="event-banner-placeholder" aria-hidden="true">
+                                    <span class="events-cover-icon"><i class="bx bx-images"></i></span>
                                 </div>
                             @endif
 
@@ -966,28 +1580,28 @@
                             @endif
                         </div>
 
-                        <div class="p-4 d-flex flex-column flex-grow-1">
-                            <div class="d-flex align-items-center justify-content-between mb-2">
+                        <div class="event-card-content d-flex flex-column flex-grow-1">
+                            <div class="events-card-tags">
                                 <span class="badge badge-event-type">{{ $event->event_type }}</span>
-                                <span class="text-muted small fw-semibold">
-                                    <i class="bx bx-calendar text-success me-1"></i> {{ $event->start_date->format('d M Y') }}
+                                <span class="events-gallery-date">
+                                    <span class="events-meta-icon" aria-hidden="true"><i class="bx bx-calendar"></i></span> {{ $event->start_date->format('d M Y') }}
                                 </span>
                             </div>
 
-                            <h5 class="fw-bold text-dark mb-2 text-truncate" title="{{ $event->title }}">
+                            <h3 class="events-card-title" title="{{ $event->title }}">
                                 {{ $event->title }}
-                            </h5>
+                            </h3>
 
-                            <p class="text-secondary small mb-3 flex-grow-1 text-truncate">
-                                <i class="bx bx-map-pin me-1 text-danger"></i> {{ $event->location ?: 'Company Event' }}
+                            <p class="events-card-meta events-card-location">
+                                <span class="events-meta-icon" aria-hidden="true"><i class="bx bx-map-pin"></i></span> <span class="text-truncate">{{ $event->location ?: 'Company Event' }}</span>
                             </p>
 
-                            <div class="pt-3 border-top d-flex align-items-center justify-content-between mt-auto">
-                                <span class="small fw-semibold text-muted">
+                            <div class="events-card-footer">
+                                <span class="events-organizer events-gallery-organizer">
                                     Organized by <strong class="text-dark">{{ $event->organizer?->name ?? 'Company' }}</strong>
                                 </span>
-                                <button type="button" class="btn btn-primary btn-sm fw-bold px-3 shadow-sm" style="background: linear-gradient(135deg, #0f744c, #094c32); border: none;">
-                                    View Memories
+                                <button type="button" class="btn btn-primary btn-sm events-primary-button">
+                                    View Memories <i class="bx bx-right-arrow-alt" aria-hidden="true"></i>
                                 </button>
                             </div>
                         </div>
@@ -996,10 +1610,19 @@
                 @endforeach
             </div>
         @else
-            <div class="card border-0 shadow-sm p-5 text-center my-4">
-                <i class="bx bx-images fs-1 text-muted mb-2"></i>
-                <h5 class="fw-bold text-dark">No Event Memories</h5>
-                <p class="text-muted small">No event photo memories have been created yet.</p>
+            <div class="card pms-events-empty-card my-4">
+                <div class="event-empty-icon">
+                    <i class="bx bx-images"></i>
+                </div>
+                <h5 class="fw-bold text-dark mb-1">No Event Memories</h5>
+                <p class="text-muted small mb-4">No event photo memories have been created yet.</p>
+                @if($canManage)
+                    <div>
+                        <button type="button" class="btn pms-events-btn-primary" onclick="openCreateModal()">
+                            <i class="bx bx-plus"></i> Create Event
+                        </button>
+                    </div>
+                @endif
             </div>
         @endif
     </div>
@@ -1009,10 +1632,10 @@
 {{-- ========================================================================= --}}
 {{-- CREATE / EDIT EVENT MODAL (PREMIUM DESIGN) --}}
 {{-- ========================================================================= --}}
-<div class="modal fade" id="eventModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade events-section" id="eventModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content border-0" style="border-radius: 20px; overflow: hidden; box-shadow: 0 15px 50px rgba(0,0,0,0.18);">
-            <div class="modal-header py-3.5 px-4 text-white" style="background: linear-gradient(135deg, #0f744c 0%, #094c32 100%);">
+            <div class="modal-header py-3.5 px-4 text-white" style="background: linear-gradient(135deg, #4F83FF 0%, #2F6BFF 100%);">
                 <h5 class="modal-title fw-bold text-white d-flex align-items-center gap-2" id="eventModalTitle">
                     <i class="bx bx-calendar-plus fs-4"></i> Create Company Event
                 </h5>
@@ -1021,7 +1644,7 @@
                 </button>
             </div>
 
-            <form id="eventForm" enctype="multipart/form-data" method="POST" action="{{ route('events.store') }}">
+            <form id="eventForm" enctype="multipart/form-data" method="POST" action="{{ route('events.store') }}" onsubmit="return submitEventForm();">
                 @csrf
                 <input type="hidden" name="_method" id="formMethod" value="POST">
                 <input type="hidden" name="event_id" id="eventId" value="">
@@ -1057,11 +1680,13 @@
                         <div class="col-md-6">
                             <label class="form-label premium-label">Organizer</label>
                             <select name="organizer_id" id="eventOrganizerInput" class="form-select premium-select">
-                                <option value="">Select Organizer</option>
-                                @foreach($users as $usr)
-                                    <option value="{{ $usr->id }}" {{ auth()->id() == $usr->id ? 'selected' : '' }}>
-                                        {{ $usr->name }} ({{ ucfirst($usr->role) }})
-                                    </option>
+                                <option value="">Current HR / Admin</option>
+                                @foreach(['hr' => 'HR', 'admin' => 'ADMIN'] as $organizerRole => $organizerLabel)
+                                    <optgroup label="{{ $organizerLabel }}">
+                                        @foreach($users->filter(fn ($usr) => in_array(strtolower(trim((string) $usr->role)), $organizerRole === 'admin' ? ['admin', 'administrator'] : ['hr'], true)) as $usr)
+                                            <option value="{{ $usr->id }}">{{ $usr->name }} ({{ $organizerLabel }})</option>
+                                        @endforeach
+                                    </optgroup>
                                 @endforeach
                             </select>
                         </div>
@@ -1071,23 +1696,26 @@
                     <div class="form-section-title">
                         <i class="bx bx-time fs-5"></i> SECTION 2: DATE & TIME
                     </div>
-                    <div class="row g-3 mb-4">
+                    <div class="row g-3 mb-2">
                         <div class="col-md-3 col-6">
                             <label class="form-label premium-label">Start Date <span class="text-danger">*</span></label>
-                            <input type="date" name="start_date" id="eventStartDateInput" class="form-control premium-input" required value="{{ date('Y-m-d') }}">
+                            <input type="date" name="start_date" id="eventStartDateInput" class="form-control premium-input" required value="{{ date('Y-m-d') }}" onchange="validateEventDateTime()" oninput="validateEventDateTime()">
                         </div>
                         <div class="col-md-3 col-6">
                             <label class="form-label premium-label">Start Time</label>
-                            <input type="time" name="start_time" id="eventStartTimeInput" class="form-control premium-input" value="09:00">
+                            <input type="time" name="start_time" id="eventStartTimeInput" class="form-control premium-input" value="09:00" onchange="validateEventDateTime()" oninput="validateEventDateTime()">
                         </div>
                         <div class="col-md-3 col-6">
                             <label class="form-label premium-label">End Date</label>
-                            <input type="date" name="end_date" id="eventEndDateInput" class="form-control premium-input" value="{{ date('Y-m-d') }}">
+                            <input type="date" name="end_date" id="eventEndDateInput" class="form-control premium-input" value="{{ date('Y-m-d') }}" onchange="validateEventDateTime()" oninput="validateEventDateTime()">
                         </div>
                         <div class="col-md-3 col-6">
                             <label class="form-label premium-label">End Time</label>
-                            <input type="time" name="end_time" id="eventEndTimeInput" class="form-control premium-input" value="17:00">
+                            <input type="time" name="end_time" id="eventEndTimeInput" class="form-control premium-input" value="17:00" onchange="validateEventDateTime()" oninput="validateEventDateTime()">
                         </div>
+                    </div>
+                    <div id="dateTimeValidationError" class="alert alert-danger py-2 px-3 small mb-4 d-none" style="border-radius: 10px; font-weight: 600;">
+                        <i class="bx bx-error-circle me-1 fs-6 align-middle"></i> <span id="dateTimeValidationErrorText"></span>
                     </div>
 
                     {{-- SECTION 3: LOCATION --}}
@@ -1143,7 +1771,7 @@
 
                 <div class="modal-footer bg-light px-4 py-3 border-top">
                     <button type="button" class="btn btn-label-secondary px-4 fw-semibold" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary px-4 fw-bold shadow-sm" id="btnSubmitForm" style="background: linear-gradient(135deg, #0f744c, #094c32); border: none;">
+                    <button type="submit" class="btn btn-primary px-4 fw-bold shadow-sm" id="btnSubmitForm" style="background: linear-gradient(135deg, #4F83FF, #2F6BFF); border: none;">
                         <i class="bx bx-save me-1"></i> Save Event
                     </button>
                 </div>
@@ -1155,12 +1783,12 @@
 {{-- ========================================================================= --}}
 {{-- EVENT DETAILS & EVENT MEMORIES MODAL --}}
 {{-- ========================================================================= --}}
-<div class="modal fade" id="eventDetailsModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade events-section" id="eventDetailsModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content border-0" style="border-radius: 18px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.15);">
             <div class="modal-header bg-light py-3 border-bottom">
                 <h5 class="modal-title fw-bold text-dark d-flex align-items-center gap-2" id="detailModalTitle">
-                    <i class="bx bx-calendar-event text-success fs-4"></i> Event Details
+                    <i class="bx bx-calendar-event text-primary fs-4"></i> Event Details
                 </h5>
                 <button type="button" class="btn-close-premium" data-bs-dismiss="modal" aria-label="Close">
                     <i class="bx bx-x"></i>
@@ -1180,10 +1808,10 @@
 {{-- ========================================================================= --}}
 {{-- MULTI-PHOTO UPLOADER MODAL (FACEBOOK-LIKE DRAG & DROP) --}}
 {{-- ========================================================================= --}}
-<div class="modal fade" id="photoUploadModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade events-section" id="photoUploadModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content border-0" style="border-radius: 20px; overflow: hidden; box-shadow: 0 15px 50px rgba(0,0,0,0.2);">
-            <div class="modal-header text-white" style="background: linear-gradient(135deg, #0f744c 0%, #094c32 100%);">
+            <div class="modal-header text-white" style="background: linear-gradient(135deg, #4F83FF 0%, #2F6BFF 100%);">
                 <h5 class="modal-title fw-bold text-white d-flex align-items-center gap-2">
                     <i class="bx bx-images fs-4"></i> Add Photos to <span id="uploadEventTitle">Event</span>
                 </h5>
@@ -1239,7 +1867,7 @@
 
                 <div class="modal-footer bg-light px-4 py-3">
                     <button type="button" class="btn btn-label-secondary px-4 fw-semibold" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary px-4 fw-bold shadow-sm" id="btnSubmitUpload" disabled style="background: linear-gradient(135deg, #0f744c, #094c32); border: none;">
+                    <button type="submit" class="btn btn-primary px-4 fw-bold shadow-sm" id="btnSubmitUpload" disabled style="background: linear-gradient(135deg, #4F83FF, #2F6BFF); border: none;">
                         <i class="bx bx-upload me-1"></i> Upload Photos
                     </button>
                 </div>
@@ -1251,7 +1879,7 @@
 {{-- ========================================================================= --}}
 {{-- FULLSCREEN PHOTO LIGHTBOX MODAL --}}
 {{-- ========================================================================= --}}
-<div class="modal fade" id="photoLightboxModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade events-section" id="photoLightboxModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content lightbox-modal-content">
             <div class="modal-header border-bottom py-3 px-4 bg-light">
@@ -1279,7 +1907,7 @@
                 </div>
 
                 {{-- Photo Meta & Caption --}}
-                <div class="mt-3 px-3 py-2.5 rounded-3" style="background: #f8fafc; border: 1px solid #e2e8f0;">
+                <div class="lightbox-photo-meta mt-3 px-3 py-2.5 rounded-3" style="background: #f8fafc; border: 1px solid #e2e8f0;">
                     <p class="text-dark fw-bold small mb-1.5 fs-6" id="lightboxCaption"></p>
                     <div class="d-flex align-items-center justify-content-between text-muted small">
                         <span id="lightboxUploader" class="fw-semibold text-dark"><i class="bx bx-user text-primary me-1"></i> Uploaded by Admin</span>
@@ -1293,9 +1921,17 @@
 @endsection
 
 @section('js')
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+<script src="{{ asset('admin/assets/vendor/libs/fullcalendar/index.global.min.js') }}"></script>
+<script>
+    if (typeof FullCalendar === 'undefined') {
+        document.write('<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"><\/script>');
+    }
+</script>
 <script>
     let calendarInstance = null;
+    let calendarRendered = false;
+    let activeCalendarView = 'dayGridMonth';
+    const eventViewStorageKey = 'events-view:{{ $companyId }}:{{ auth()->id() }}';
     let selectedUploadFiles = [];
     let currentLightboxPhotos = [];
     let currentLightboxIndex = 0;
@@ -1313,6 +1949,26 @@
     document.addEventListener('DOMContentLoaded', function () {
         initCalendar();
         setupDragAndDrop();
+        try {
+            const savedView = sessionStorage.getItem(eventViewStorageKey);
+            if (['list', 'calendar', 'gallery'].includes(savedView)) {
+                switchView(savedView);
+            } else {
+                switchView('list');
+            }
+        } catch (error) {
+            switchView('list');
+        }
+
+        // Window resize ensures FullCalendar grid never collapses
+        window.addEventListener('resize', function() {
+            if (calendarInstance) {
+                const calDiv = document.getElementById('eventsCalendarView');
+                if (calDiv && !calDiv.classList.contains('d-none')) {
+                    calendarInstance.updateSize();
+                }
+            }
+        });
 
         // Keyboard navigation for Lightbox
         document.addEventListener('keydown', function(e) {
@@ -1325,6 +1981,7 @@
     });
 
     function switchView(view) {
+        try { sessionStorage.setItem(eventViewStorageKey, view); } catch (error) {}
         const listDiv = document.getElementById('eventsListView');
         const calDiv = document.getElementById('eventsCalendarView');
         const galDiv = document.getElementById('eventsGalleryView');
@@ -1333,45 +1990,148 @@
         const btnCal = document.getElementById('btnCalendarView');
         const btnGal = document.getElementById('btnGalleryView');
 
-        listDiv.classList.add('d-none');
-        calDiv.classList.add('d-none');
-        galDiv.classList.add('d-none');
+        if (listDiv) listDiv.classList.add('d-none');
+        if (calDiv) calDiv.classList.add('d-none');
+        if (galDiv) galDiv.classList.add('d-none');
 
-        btnList.classList.remove('active');
-        btnCal.classList.remove('active');
-        btnGal.classList.remove('active');
+        if (btnList) btnList.classList.remove('active');
+        if (btnCal) btnCal.classList.remove('active');
+        if (btnGal) btnGal.classList.remove('active');
 
         if (view === 'calendar') {
-            calDiv.classList.remove('d-none');
-            btnCal.classList.add('active');
-            if (calendarInstance) calendarInstance.render();
+            if (calDiv) calDiv.classList.remove('d-none');
+            if (btnCal) btnCal.classList.add('active');
+
+            if (!calendarInstance) {
+                initCalendar();
+            } else {
+                if (!calendarRendered) {
+                    calendarInstance.render();
+                    calendarRendered = true;
+                }
+                calendarInstance.updateSize();
+                calendarInstance.refetchEvents();
+            }
+
+            // Guarantee size recalculation after browser layout cycle
+            setTimeout(function() {
+                if (calendarInstance) calendarInstance.updateSize();
+            }, 50);
+            setTimeout(function() {
+                if (calendarInstance) calendarInstance.updateSize();
+            }, 200);
         } else if (view === 'gallery') {
-            galDiv.classList.remove('d-none');
-            btnGal.classList.add('active');
+            if (galDiv) galDiv.classList.remove('d-none');
+            if (btnGal) btnGal.classList.add('active');
         } else {
-            listDiv.classList.remove('d-none');
-            btnList.classList.add('active');
+            if (listDiv) listDiv.classList.remove('d-none');
+            if (btnList) btnList.classList.add('active');
         }
+    }
+
+    function renderCalendarEventContent(info) {
+        const bannerUrl = info.event.extendedProps.banner_url;
+        if (info.view.type !== 'dayGridMonth' || !bannerUrl) return true;
+
+        const content = document.createElement('div');
+        content.className = 'event-calendar-banner-content';
+
+        const banner = document.createElement('img');
+        banner.className = 'event-calendar-banner';
+        banner.src = bannerUrl;
+        banner.alt = info.event.title;
+        banner.loading = 'lazy';
+        banner.addEventListener('error', function() { banner.remove(); }, { once: true });
+        content.appendChild(banner);
+
+        const label = document.createElement('span');
+        label.className = 'event-calendar-banner-label';
+        const timeText = info.timeText || info.event.extendedProps.display_time || '';
+        label.textContent = (timeText ? timeText + ' ' : '') + info.event.title;
+        content.appendChild(label);
+
+        return { domNodes: [content] };
     }
 
     function initCalendar() {
         const calendarEl = document.getElementById('eventCalendar');
         if (!calendarEl) return;
 
-        calendarInstance = new FullCalendar.Calendar(calendarEl, {
-            initialView: 'dayGridMonth',
-            height: 700,
-            headerToolbar: {
-                left: 'prev,next today',
-                center: 'title',
-                right: 'dayGridMonth,timeGridWeek,listMonth'
-            },
-            events: '{{ route("events.calendar-data") }}',
-            eventClick: function(info) {
-                info.jsEvent.preventDefault();
-                showEventDetails(info.event.id);
+        if (typeof FullCalendar === 'undefined') {
+            setTimeout(initCalendar, 100);
+            return;
+        }
+
+        if (typeof calendarInstance !== 'undefined' && calendarInstance) {
+            calendarInstance.updateSize();
+            return;
+        }
+
+        let initialDate = undefined;
+        try {
+            const storedDate = sessionStorage.getItem(eventViewStorageKey + ':date');
+            if (storedDate && !isNaN(Date.parse(storedDate))) {
+                initialDate = storedDate;
             }
-        });
+        } catch (error) {}
+
+        try {
+            calendarInstance = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                initialDate: initialDate,
+                height: 700,
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,listMonth'
+                },
+                events: {
+                    url: '{{ route("events.calendar-data") }}',
+                    extraParams: function() { return { view: activeCalendarView }; }
+                },
+                datesSet: function(info) {
+                    const changedView = activeCalendarView !== info.view.type;
+                    activeCalendarView = info.view.type;
+                    if (calendarInstance) {
+                        const date = calendarInstance.getDate();
+                        const localDate = date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
+                        try { sessionStorage.setItem(eventViewStorageKey + ':date', localDate); } catch (error) {}
+                        if (changedView) calendarInstance.refetchEvents();
+                    }
+                },
+                eventContent: renderCalendarEventContent,
+                eventClassNames: function(info) {
+                    return info.view.type === 'dayGridMonth' && info.event.extendedProps.banner_url
+                        ? ['event-calendar-has-banner'] : [];
+                },
+                eventClick: function(info) {
+                    info.jsEvent.preventDefault();
+                    showEventDetails(info.event.id);
+                }
+            });
+
+            const calDiv = document.getElementById('eventsCalendarView');
+            if (calDiv && !calDiv.classList.contains('d-none')) {
+                calendarInstance.render();
+                calendarRendered = true;
+                setTimeout(function() {
+                    if (calendarInstance) calendarInstance.updateSize();
+                }, 50);
+            }
+        } catch (err) {
+            console.error('Error initializing FullCalendar:', err);
+        }
+    }
+
+    function submitEventForm() {
+        if (!validateEventDateTime()) return false;
+        if (!document.getElementById('eventsCalendarView').classList.contains('d-none')) {
+            const startDateVal = document.getElementById('eventStartDateInput')?.value;
+            if (startDateVal && !isNaN(Date.parse(startDateVal))) {
+                try { sessionStorage.setItem(eventViewStorageKey + ':date', startDateVal); } catch (error) {}
+            }
+        }
+        return true;
     }
 
     function toggleLocationFields() {
@@ -1391,6 +2151,56 @@
         }
     }
 
+    function validateEventDateTime() {
+        const startDateInput = document.getElementById('eventStartDateInput');
+        const startTimeInput = document.getElementById('eventStartTimeInput');
+        const endDateInput = document.getElementById('eventEndDateInput');
+        const endTimeInput = document.getElementById('eventEndTimeInput');
+        const errorBox = document.getElementById('dateTimeValidationError');
+        const errorText = document.getElementById('dateTimeValidationErrorText');
+        const submitBtn = document.getElementById('btnSubmitForm');
+
+        if (!startDateInput || !endDateInput) return true;
+
+        const startDate = startDateInput.value;
+        const startTime = startTimeInput ? startTimeInput.value : '';
+        const endDate = endDateInput.value;
+        const endTime = endTimeInput ? endTimeInput.value : '';
+
+        // Reset error state
+        if (errorBox) errorBox.classList.add('d-none');
+        if (errorText) errorText.innerText = '';
+        endDateInput.classList.remove('is-invalid');
+        if (endTimeInput) endTimeInput.classList.remove('is-invalid');
+        if (submitBtn) submitBtn.disabled = false;
+
+        // Set min attribute on end_date based on start_date
+        if (startDate) {
+            endDateInput.min = startDate;
+        }
+
+        if (startDate && endDate) {
+            if (endDate < startDate) {
+                if (errorText) errorText.innerText = 'End Date cannot be earlier than Start Date.';
+                if (errorBox) errorBox.classList.remove('d-none');
+                endDateInput.classList.add('is-invalid');
+                if (submitBtn) submitBtn.disabled = true;
+                return false;
+            }
+
+            if (startDate === endDate && startTime && endTime) {
+                if (endTime <= startTime) {
+                    if (errorText) errorText.innerText = 'End Time must be greater than Start Time when event is on the same day.';
+                    if (errorBox) errorBox.classList.remove('d-none');
+                    if (endTimeInput) endTimeInput.classList.add('is-invalid');
+                    if (submitBtn) submitBtn.disabled = true;
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     function openCreateModal() {
         document.getElementById('eventModalTitle').innerHTML = '<i class="bx bx-calendar-plus fs-4"></i> Create Company Event';
         document.getElementById('eventForm').action = '{{ route("events.store") }}';
@@ -1398,6 +2208,7 @@
         document.getElementById('eventId').value = '';
         document.getElementById('eventForm').reset();
         toggleLocationFields();
+        validateEventDateTime();
 
         const modal = new bootstrap.Modal(document.getElementById('eventModal'));
         modal.show();
@@ -1434,6 +2245,7 @@
             document.getElementById('eventRsvpInput').checked = !!e.rsvp_required;
 
             toggleLocationFields();
+            validateEventDateTime();
 
             const modal = new bootstrap.Modal(document.getElementById('eventModal'));
             modal.show();
@@ -1526,7 +2338,7 @@
                 photosHtml += `</div>`;
             } else {
                 photosHtml = `
-                    <div class="text-center py-4 rounded-3" style="background: #f8fafc; border: 1.5px dashed #cbd5e1;">
+                    <div class="event-memories-empty text-center py-4 rounded-3">
                         <i class="bx bx-images fs-2 text-muted mb-1"></i>
                         <p class="text-dark fw-bold small mb-1">No Event Memories Yet</p>
                         <p class="text-muted small mb-3">Upload photographs from this event to preserve the celebration for your team.</p>
@@ -1553,7 +2365,7 @@
                     <div class="col-sm-6">
                         <div class="event-meta-card p-3 rounded-3 d-flex align-items-center gap-3">
                             <div class="avatar avatar-sm flex-shrink-0" style="width: 42px; height: 42px;">
-                                <span class="avatar-initial rounded-circle bg-success text-white fw-bold shadow-sm" style="font-size: 12px; width: 42px; height: 42px; display: inline-flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #0f744c, #094c32) !important;">
+                                <span class="avatar-initial rounded-circle bg-primary text-white fw-bold shadow-sm" style="font-size: 12px; width: 42px; height: 42px; display: inline-flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #4F83FF, #2F6BFF) !important;">
                                     ${organizerInitials}
                                 </span>
                             </div>
@@ -1566,7 +2378,7 @@
 
                     <div class="col-sm-6">
                         <div class="event-meta-card p-3 rounded-3 d-flex align-items-center gap-3">
-                            <div class="meta-icon-box rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 42px; height: 42px; background: #fef2f2; border: 1px solid rgba(239, 68, 68, 0.25);">
+                            <div class="event-venue-icon meta-icon-box rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 42px; height: 42px; background: #fef2f2; border: 1px solid rgba(239, 68, 68, 0.25);">
                                 <i class="${e.location_type === 'online' ? 'bx bx-video text-info' : 'bx bx-map-pin text-danger'} fs-4"></i>
                             </div>
                             <div class="overflow-hidden">
@@ -1578,25 +2390,25 @@
                 </div>
 
                 {{-- ABOUT EVENT DESCRIPTION --}}
-                <div class="mb-4 p-3.5 rounded-3" style="background: #f8fafc; border: 1px solid #e2e8f0;">
+                <div class="event-description-panel mb-4 p-3.5 rounded-3">
                     <h6 class="fw-bold text-dark mb-2 d-flex align-items-center gap-1.5" style="font-size: 0.95rem;">
-                        <i class="bx bx-align-left text-success"></i> About Event
+                        <i class="bx bx-align-left text-primary"></i> About Event
                     </h6>
                     <p class="text-secondary small mb-0" style="white-space: pre-line; line-height: 1.6; font-size: 0.9rem;">${escapeHtml(e.description || 'No detailed description provided.')}</p>
                 </div>
 
                 {{-- EVENT MEMORIES / PHOTO GALLERY SECTION --}}
-                <div class="mb-4 p-3.5 rounded-3" style="background: #ffffff; border: 1px solid #e2e8f0; box-shadow: 0 2px 10px rgba(0,0,0,0.02);">
+                <div class="event-memories-panel mb-4 p-3.5 rounded-3">
                     <div class="d-flex align-items-center justify-content-between mb-3">
                         <div>
                             <h6 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2 fs-6">
-                                <i class="bx bx-images text-success fs-5"></i> Event Memories
+                                <i class="bx bx-images text-primary fs-5"></i> Event Memories
                                 <span class="badge bg-success-subtle text-success rounded-pill fw-bold" style="font-size: 11px;">${photos.length} Photos</span>
                             </h6>
                             <span class="text-muted small">Photos and memories from this event</span>
                         </div>
                         ${canManage ? `
-                        <button type="button" class="btn btn-success btn-sm fw-bold px-3 d-inline-flex align-items-center gap-1 rounded-pill shadow-sm" onclick="openUploadModal(${e.id}, '${escapeHtml(e.title)}')" style="background: linear-gradient(135deg, #0f744c, #094c32); border: none;">
+                        <button type="button" class="btn btn-primary btn-sm fw-bold px-3 d-inline-flex align-items-center gap-1 rounded-pill shadow-sm" onclick="openUploadModal(${e.id}, '${escapeHtml(e.title)}')" style="background: linear-gradient(135deg, #4F83FF, #2F6BFF); border: none;">
                             <i class="bx bx-plus"></i> Add Photos
                         </button>` : ''}
                     </div>
@@ -1606,25 +2418,25 @@
 
                 {{-- RSVP SUMMARY METRICS --}}
                 ${e.rsvp_required ? `
-                <div class="card border-0 p-3.5 mb-3" style="border-radius: 16px; background: #f8fafc; border: 1px solid #e2e8f0 !important;">
+                <div class="card p-3.5 mb-3 rsvp-summary-card" style="border-radius: 16px;">
                     <h6 class="fw-bold text-dark mb-3 d-flex align-items-center gap-1.5" style="font-size: 0.95rem;">
                         <i class="bx bx-pie-chart-alt-2 text-primary"></i> RSVP Summary
                     </h6>
                     <div class="row g-3 text-center">
                         <div class="col-4">
-                            <div class="p-3 rounded-3" style="border: 1px solid #d1fae5; background-color: #f0fdf4 !important;">
+                            <div class="p-3 rounded-3 rsvp-stat-going">
                                 <span class="d-block small text-success fw-bold uppercase-label" style="font-size: 11px; letter-spacing: 0.5px;">Going</span>
                                 <h3 class="fw-extrabold text-success mb-0 mt-1">${rsvp.going}</h3>
                             </div>
                         </div>
                         <div class="col-4">
-                            <div class="p-3 rounded-3" style="border: 1px solid #fef3c7; background-color: #fffbeb !important;">
+                            <div class="p-3 rounded-3 rsvp-stat-maybe">
                                 <span class="d-block small text-warning fw-bold uppercase-label" style="font-size: 11px; letter-spacing: 0.5px;">Maybe</span>
                                 <h3 class="fw-extrabold text-warning mb-0 mt-1">${rsvp.maybe}</h3>
                             </div>
                         </div>
                         <div class="col-4">
-                            <div class="p-3 rounded-3" style="border: 1px solid #fee2e2; background-color: #fef2f2 !important;">
+                            <div class="p-3 rounded-3 rsvp-stat-not_going">
                                 <span class="d-block small text-danger fw-bold uppercase-label" style="font-size: 11px; letter-spacing: 0.5px;">Not Going</span>
                                 <h3 class="fw-extrabold text-danger mb-0 mt-1">${rsvp.not_going}</h3>
                             </div>
@@ -1634,7 +2446,7 @@
 
                 {{-- ACTION BUTTONS --}}
                 ${canManage ? `
-                <div class="d-flex justify-content-end gap-2 pt-3 border-top mt-4">
+                <div class="event-details-actions d-flex justify-content-end gap-2 pt-3 border-top mt-4">
                     <button type="button" class="btn btn-outline-primary btn-sm px-3 fw-bold d-inline-flex align-items-center gap-1" onclick="bootstrap.Modal.getInstance(document.getElementById('eventDetailsModal')).hide(); editEvent(${e.id});">
                         <i class="bx bx-edit"></i> Edit
                     </button>
@@ -1852,7 +2664,7 @@
         }
 
         document.getElementById('lightboxUploader').innerHTML = `<i class="bx bx-user me-1"></i> Uploaded by ${escapeHtml(photo.uploader ? photo.uploader.name : 'Admin')}`;
-        document.getElementById('lightboxDate').innerHTML = `<div class="d-flex align-items-center gap-2"><span><i class="bx bx-calendar text-success me-1"></i> ${new Date(photo.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</span>${deleteBtnHtml}</div>`;
+        document.getElementById('lightboxDate').innerHTML = `<div class="d-flex align-items-center gap-2"><span><i class="bx bx-calendar text-success me-1"></i> ${new Date(photo.created_at).toLocaleDateString('en-GB', { timeZone: 'Asia/Kolkata',  day: '2-digit', month: 'short', year: 'numeric' })}</span>${deleteBtnHtml}</div>`;
     }
 
     function deletePhotoFromLightbox(photoId) {

@@ -5,17 +5,18 @@
 
 <html
   lang="en"
-  class="layout-menu-fixed layout-compact"
+  class="layout-menu-fixed layout-navbar-fixed layout-compact"
   data-assets-path="admin/assets/"
   data-template="vertical-menu-template-free">
   <head>
     <meta charset="utf-8" />
+    @include('partials.timezone')
     <meta
       name="viewport"
       content="width=device-width, initial-scale=1.0" />
 
     @php
-      $companyBrand = $currentCompany?->brand_name ?? 'Bitroxia PMS';
+      $companyBrand = $currentCompany?->brand_name ?? ($currentCompany?->name ?? 'PMS');
       $companyFavicon = $currentCompany?->favicon ? asset($currentCompany->favicon) : asset('admin/assets/img/favicon/favicon.ico');
     @endphp
 
@@ -24,8 +25,13 @@
     <meta name="description" content="" />
     <script>
       (function () {
-        var theme = localStorage.getItem('pms-theme') || 'light';
+        var theme = localStorage.getItem('pms-theme') || localStorage.getItem('bitroxia-theme');
+        if (!theme) {
+          theme = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+        }
         document.documentElement.setAttribute('data-pms-theme', theme);
+        document.documentElement.setAttribute('data-theme', theme);
+        document.documentElement.setAttribute('data-bs-theme', theme);
       })();
     </script>
 
@@ -41,7 +47,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800;900&family=Public+Sans:wght@400;500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800;900&family=Public+Sans:wght@400;500;600;700&display=swap"
       rel="stylesheet" />
 
     <link rel="stylesheet" href="{{ asset('admin/assets/vendor/fonts/iconify-icons.css')}}" />
@@ -52,6 +58,10 @@
     <link rel="stylesheet" href="{{ asset('admin/assets/vendor/css/core.css')}}" />
     <link rel="stylesheet" href="{{ asset('admin/assets/css/demo.css')}}" />
     <link rel="stylesheet" href="{{ asset('admin/assets/css/pms-refresh.css') }}?v={{ $adminRefreshVersion }}" />
+    @php
+      $adminThemeVersion = file_exists(public_path('admin/assets/css/pms-bitroxia-theme.css')) ? filemtime(public_path('admin/assets/css/pms-bitroxia-theme.css')) : time();
+    @endphp
+    <link rel="stylesheet" href="{{ asset('admin/assets/css/pms-bitroxia-theme.css') }}?v={{ $adminThemeVersion }}" />
 
     <!-- Vendors CSS -->
 
@@ -76,6 +86,7 @@
 
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
 <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/frappe-gantt@0.6.1/dist/frappe-gantt.css">
 <!-- Add to <head> -->

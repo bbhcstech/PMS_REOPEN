@@ -23,13 +23,19 @@ class SuperAdmin extends Authenticatable
     protected $fillable = [
         'name', 'email', 'password', 'profile_image',
         'is_active', 'last_login_at', 'last_login_ip',
+        'mobile', 'gender', 'date_of_birth', 'marital_status',
+        'country', 'language', 'address', 'about',
+        'govt_id_card', 'email_notifications', 'google_calendar',
     ];
 
     protected $hidden = ['password', 'remember_token'];
 
     protected $casts = [
-        'is_active'     => 'boolean',
-        'last_login_at' => 'datetime',
+        'is_active'           => 'boolean',
+        'last_login_at'       => 'datetime',
+        'date_of_birth'       => 'date',
+        'email_notifications' => 'boolean',
+        'google_calendar'     => 'boolean',
     ];
 
     public function activityLogs(): HasMany

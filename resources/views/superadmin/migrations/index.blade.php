@@ -438,6 +438,359 @@
     .terminal-window .log-error { color: #f87171; }
     .terminal-window .log-warn { color: #fbbf24; }
     .terminal-window .log-info { color: #94a3b8; }
+
+    /* ============================================================
+       DARK THEME OVERRIDES FOR MIGRATIONS DASHBOARD
+       ============================================================ */
+    html[data-pms-theme="dark"],
+    html[data-theme="dark"],
+    html[data-bs-theme="dark"] {
+        --navy-dark: #070B1A;
+        --navy-surface: #0F1530;
+        --primary: #2F6BFF;
+        --primary-hover: #1E4FCC;
+        --primary-soft: rgba(47, 107, 255, 0.15);
+        --primary-ring: rgba(47, 107, 255, 0.35);
+        
+        --bg-main: #070B1A;
+        --bg-surface: #0F1530;
+        --border-color: rgba(238, 241, 251, 0.09);
+        --border-subtle: rgba(238, 241, 251, 0.06);
+        
+        --text-main: #EEF1FB;
+        --text-muted: #9AA3C7;
+        --text-subtle: #6B739A;
+        
+        --success: #60A5FA;
+        --success-bg: rgba(47, 107, 255, 0.12);
+        --success-border: rgba(79, 131, 255, 0.25);
+        
+        --warning: #fbbf24;
+        --warning-bg: rgba(245, 158, 11, 0.12);
+        --warning-border: rgba(251, 191, 36, 0.25);
+        
+        --danger: #f87171;
+        --danger-bg: rgba(239, 68, 68, 0.12);
+        --danger-border: rgba(248, 113, 113, 0.25);
+    }
+
+    /* Common elements */
+    .tenant-migration-row {
+        transition: background 0.15s ease;
+    }
+    .tenant-migration-row:hover {
+        background: #f8fafc;
+    }
+    .impersonation-code {
+        background: #ffffff;
+        color: var(--text-main);
+        border: 1px solid var(--border-color);
+    }
+    .migration-tenant-code {
+        background: #f1f5f9;
+        color: #0284c7;
+    }
+    .badge-version-current {
+        background: #f1f5f9;
+        color: var(--text-main);
+        border: 1px solid #cbd5e1;
+    }
+    .badge-version-latest {
+        background: #eff6ff;
+        color: #2563eb;
+        border: 1px solid #bfdbfe;
+    }
+    .badge-status-uptodate {
+        background: #f0fdf4;
+        color: #16a34a;
+        border: 1px solid #bbf7d0;
+    }
+    .badge-status-pending {
+        background: #fffbeb;
+        color: #d97706;
+        border: 1px solid #fde68a;
+    }
+    .badge-status-failed {
+        background: #fef2f2;
+        color: #dc2626;
+        border: 1px solid #fecaca;
+    }
+    .badge-status-notinit {
+        background: #f8fafc;
+        color: #64748b;
+        border: 1px solid #cbd5e1;
+    }
+    .table-pagination-footer {
+        background: #f8fafc;
+        border-top: 1px solid var(--border-color);
+    }
+
+    /* Dark Mode Components */
+    html[data-pms-theme="dark"] .header-status-badge,
+    html[data-theme="dark"] .header-status-badge,
+    html[data-bs-theme="dark"] .header-status-badge {
+        background: rgba(47, 107, 255, 0.15) !important;
+        color: #60A5FA !important;
+        border-color: rgba(79, 131, 255, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .header-status-badge .dot,
+    html[data-theme="dark"] .header-status-badge .dot,
+    html[data-bs-theme="dark"] .header-status-badge .dot {
+        background: #60A5FA !important;
+        box-shadow: 0 0 0 2px rgba(79, 131, 255, 0.25) !important;
+    }
+
+    html[data-pms-theme="dark"] .btn-action-secondary,
+    html[data-theme="dark"] .btn-action-secondary,
+    html[data-bs-theme="dark"] .btn-action-secondary {
+        background: #141B3D !important;
+        color: #EEF1FB !important;
+        border-color: rgba(238, 241, 251, 0.12) !important;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    }
+    html[data-pms-theme="dark"] .btn-action-secondary:hover,
+    html[data-theme="dark"] .btn-action-secondary:hover,
+    html[data-bs-theme="dark"] .btn-action-secondary:hover {
+        background: #1A2247 !important;
+        border-color: rgba(47, 107, 255, 0.4) !important;
+        color: #38bdf8 !important;
+    }
+    html[data-pms-theme="dark"] .btn-action-secondary:disabled,
+    html[data-theme="dark"] .btn-action-secondary:disabled,
+    html[data-bs-theme="dark"] .btn-action-secondary:disabled {
+        opacity: 0.4 !important;
+        background: #0F1530 !important;
+        color: #6B739A !important;
+        border-color: rgba(238, 241, 251, 0.06) !important;
+    }
+
+    html[data-pms-theme="dark"] .impersonation-banner,
+    html[data-theme="dark"] .impersonation-banner,
+    html[data-bs-theme="dark"] .impersonation-banner {
+        background: rgba(245, 158, 11, 0.12) !important;
+        border-color: rgba(251, 191, 36, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .impersonation-code,
+    html[data-theme="dark"] .impersonation-code,
+    html[data-bs-theme="dark"] .impersonation-code {
+        background: #141B3D !important;
+        color: #38bdf8 !important;
+        border-color: rgba(238, 241, 251, 0.12) !important;
+    }
+    html[data-pms-theme="dark"] .btn-leave-impersonation,
+    html[data-theme="dark"] .btn-leave-impersonation,
+    html[data-bs-theme="dark"] .btn-leave-impersonation {
+        background: rgba(245, 158, 11, 0.15) !important;
+        color: #fbbf24 !important;
+        border-color: rgba(251, 191, 36, 0.35) !important;
+    }
+    html[data-pms-theme="dark"] .btn-leave-impersonation:hover,
+    html[data-theme="dark"] .btn-leave-impersonation:hover,
+    html[data-bs-theme="dark"] .btn-leave-impersonation:hover {
+        background: rgba(245, 158, 11, 0.25) !important;
+        color: #fef08a !important;
+    }
+
+    html[data-pms-theme="dark"] .kpi-card,
+    html[data-theme="dark"] .kpi-card,
+    html[data-bs-theme="dark"] .kpi-card {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .kpi-card:hover,
+    html[data-theme="dark"] .kpi-card:hover,
+    html[data-bs-theme="dark"] .kpi-card:hover {
+        border-color: rgba(47, 107, 255, 0.35) !important;
+    }
+    html[data-pms-theme="dark"] .icon-pill-total,
+    html[data-theme="dark"] .icon-pill-total { background: rgba(47, 107, 255, 0.15) !important; color: #60a5fa !important; }
+    html[data-pms-theme="dark"] .icon-pill-uptodate,
+    html[data-theme="dark"] .icon-pill-uptodate { background: rgba(47, 107, 255, 0.15) !important; color: #60A5FA !important; }
+    html[data-pms-theme="dark"] .icon-pill-pending,
+    html[data-theme="dark"] .icon-pill-pending { background: rgba(245, 158, 11, 0.15) !important; color: #fbbf24 !important; }
+    html[data-pms-theme="dark"] .icon-pill-failed,
+    html[data-theme="dark"] .icon-pill-failed { background: rgba(239, 68, 68, 0.15) !important; color: #f87171 !important; }
+    html[data-pms-theme="dark"] .icon-pill-lastrun,
+    html[data-theme="dark"] .icon-pill-lastrun { background: rgba(139, 92, 246, 0.15) !important; color: #a78bfa !important; }
+
+    html[data-pms-theme="dark"] .migration-toolbar,
+    html[data-theme="dark"] .migration-toolbar,
+    html[data-bs-theme="dark"] .migration-toolbar {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .search-box input,
+    html[data-theme="dark"] .search-box input,
+    html[data-bs-theme="dark"] .search-box input {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.12) !important;
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .search-box input::placeholder,
+    html[data-theme="dark"] .search-box input::placeholder {
+        color: #6B739A !important;
+    }
+    html[data-pms-theme="dark"] .filter-select,
+    html[data-theme="dark"] .filter-select,
+    html[data-bs-theme="dark"] .filter-select {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.12) !important;
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .filter-select option,
+    html[data-theme="dark"] .filter-select option {
+        background: #0F1530 !important;
+        color: #EEF1FB !important;
+    }
+
+    html[data-pms-theme="dark"] .migration-table-wrap,
+    html[data-theme="dark"] .migration-table-wrap,
+    html[data-bs-theme="dark"] .migration-table-wrap {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .table-header-row,
+    html[data-theme="dark"] .table-header-row,
+    html[data-bs-theme="dark"] .table-header-row {
+        background: #141B3D !important;
+        border-bottom: 2px solid rgba(238, 241, 251, 0.09) !important;
+    }
+    html[data-pms-theme="dark"] .table-header-row th,
+    html[data-theme="dark"] .table-header-row th,
+    html[data-bs-theme="dark"] .table-header-row th {
+        color: #9AA3C7 !important;
+        border-right-color: rgba(238, 241, 251, 0.09) !important;
+    }
+    html[data-pms-theme="dark"] .tenant-migration-row,
+    html[data-theme="dark"] .tenant-migration-row,
+    html[data-bs-theme="dark"] .tenant-migration-row {
+        border-bottom-color: rgba(238, 241, 251, 0.09) !important;
+    }
+    html[data-pms-theme="dark"] .tenant-migration-row td,
+    html[data-theme="dark"] .tenant-migration-row td,
+    html[data-bs-theme="dark"] .tenant-migration-row td {
+        border-right-color: rgba(238, 241, 251, 0.09) !important;
+    }
+    html[data-pms-theme="dark"] .tenant-migration-row:hover,
+    html[data-theme="dark"] .tenant-migration-row:hover,
+    html[data-bs-theme="dark"] .tenant-migration-row:hover {
+        background: #1A2247 !important;
+    }
+    html[data-pms-theme="dark"] .migration-tenant-code,
+    html[data-theme="dark"] .migration-tenant-code {
+        background: #141B3D !important;
+        color: #38bdf8 !important;
+        border: 1px solid rgba(238, 241, 251, 0.09) !important;
+    }
+    html[data-pms-theme="dark"] .badge-version-current,
+    html[data-theme="dark"] .badge-version-current {
+        background: #141B3D !important;
+        color: #EEF1FB !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+    }
+    html[data-pms-theme="dark"] .badge-version-latest,
+    html[data-theme="dark"] .badge-version-latest {
+        background: rgba(47, 107, 255, 0.15) !important;
+        color: #60a5fa !important;
+        border-color: rgba(47, 107, 255, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .badge-status-uptodate,
+    html[data-theme="dark"] .badge-status-uptodate {
+        background: rgba(47, 107, 255, 0.15) !important;
+        color: #60A5FA !important;
+        border-color: rgba(79, 131, 255, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .badge-status-pending,
+    html[data-theme="dark"] .badge-status-pending {
+        background: rgba(245, 158, 11, 0.15) !important;
+        color: #fbbf24 !important;
+        border-color: rgba(251, 191, 36, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .badge-status-failed,
+    html[data-theme="dark"] .badge-status-failed {
+        background: rgba(239, 68, 68, 0.15) !important;
+        color: #f87171 !important;
+        border-color: rgba(248, 113, 113, 0.3) !important;
+    }
+    html[data-pms-theme="dark"] .badge-status-notinit,
+    html[data-theme="dark"] .badge-status-notinit {
+        background: #141B3D !important;
+        color: #9AA3C7 !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+    }
+    html[data-pms-theme="dark"] .table-pagination-footer,
+    html[data-theme="dark"] .table-pagination-footer,
+    html[data-bs-theme="dark"] .table-pagination-footer {
+        background: #141B3D !important;
+        border-top-color: rgba(238, 241, 251, 0.09) !important;
+        color: #9AA3C7 !important;
+    }
+
+    /* History section, drawer & modals */
+    html[data-pms-theme="dark"] #historySection,
+    html[data-theme="dark"] #historySection {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+    }
+    html[data-pms-theme="dark"] #historySearchInput,
+    html[data-theme="dark"] #historySearchInput {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] #migrationHistoryTable thead tr,
+    html[data-theme="dark"] #migrationHistoryTable thead tr {
+        background: #141B3D !important;
+        border-bottom-color: rgba(238, 241, 251, 0.09) !important;
+    }
+    html[data-pms-theme="dark"] #migrationHistoryTable th,
+    html[data-theme="dark"] #migrationHistoryTable th {
+        color: #9AA3C7 !important;
+    }
+    html[data-pms-theme="dark"] #migrationHistoryTable tr,
+    html[data-theme="dark"] #migrationHistoryTable tr {
+        border-bottom-color: rgba(238, 241, 251, 0.09) !important;
+    }
+    html[data-pms-theme="dark"] .drawer-panel,
+    html[data-theme="dark"] .drawer-panel {
+        background: #0F1530 !important;
+        color: #EEF1FB !important;
+        border-left: 1px solid rgba(238, 241, 251, 0.09);
+    }
+    html[data-pms-theme="dark"] .drawer-header,
+    html[data-theme="dark"] .drawer-header {
+        background: #141B3D !important;
+        border-bottom-color: rgba(238, 241, 251, 0.09) !important;
+    }
+    html[data-pms-theme="dark"] .drawer-footer,
+    html[data-theme="dark"] .drawer-footer {
+        background: #141B3D !important;
+        border-top-color: rgba(238, 241, 251, 0.09) !important;
+    }
+    html[data-pms-theme="dark"] .drawer-card-subtle,
+    html[data-theme="dark"] .drawer-card-subtle {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+    }
+    html[data-pms-theme="dark"] .drawer-card-surface,
+    html[data-theme="dark"] .drawer-card-surface {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+    }
+    html[data-pms-theme="dark"] .modal-box,
+    html[data-theme="dark"] .modal-box {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.16) !important;
+        color: #EEF1FB !important;
+    }
+    html[data-pms-theme="dark"] .modal-subtle-box,
+    html[data-theme="dark"] .modal-subtle-box {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+    }
 </style>
 
 <!-- 1. PREMIUM PAGE HEADER -->
@@ -467,19 +820,19 @@
 </div>
 
 @if(session('current_company_db'))
-<div style="background: var(--warning-bg); border: 1px solid var(--warning-border); border-radius: var(--radius-lg); padding: 14px 20px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between;">
+<div class="impersonation-banner" style="background: var(--warning-bg); border: 1px solid var(--warning-border); border-radius: var(--radius-lg); padding: 14px 20px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between;">
     <div style="display: flex; align-items: center; gap: 12px;">
         <i class="fas fa-triangle-exclamation" style="font-size: 18px; color: var(--warning);"></i>
         <div>
             <strong style="color: var(--warning); font-size: 13.5px;">Active Tenant Impersonation Session</strong>
             <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">
-                Current Session Database: <code style="background: #fff; padding: 2px 6px; border-radius: 4px; font-family: monospace;">{{ session('current_company_db') }}</code>
+                Current Session Database: <code class="impersonation-code" style="padding: 2px 6px; border-radius: 4px; font-family: monospace;">{{ session('current_company_db') }}</code>
             </div>
         </div>
     </div>
     <form method="POST" action="{{ route('super-admin.leave-impersonation') }}" style="margin: 0;">
         @csrf
-        <button type="submit" class="btn-action-secondary" style="color: var(--warning); border-color: var(--warning-border);">
+        <button type="submit" class="btn-action-secondary btn-leave-impersonation" style="color: var(--warning); border-color: var(--warning-border);">
             <i class="fas fa-arrow-left"></i> Leave Impersonation
         </button>
     </form>
@@ -492,7 +845,7 @@
     <div class="kpi-card">
         <div class="card-head">
             <span class="card-label">Total Tenants</span>
-            <div class="icon-pill" style="background: #eff6ff; color: #2563eb;"><i class="fas fa-building"></i></div>
+            <div class="icon-pill icon-pill-total" style="background: #eff6ff; color: #2563eb;"><i class="fas fa-building"></i></div>
         </div>
         <div class="metric-val">{{ number_format($kpi['total_tenants']) }}</div>
         <div class="metric-foot positive">
@@ -504,7 +857,7 @@
     <div class="kpi-card">
         <div class="card-head">
             <span class="card-label">Up to Date</span>
-            <div class="icon-pill" style="background: #f0fdf4; color: #16a34a;"><i class="fas fa-circle-check"></i></div>
+            <div class="icon-pill icon-pill-uptodate" style="background: #f0fdf4; color: #16a34a;"><i class="fas fa-circle-check"></i></div>
         </div>
         <div class="metric-val">{{ number_format($kpi['up_to_date']) }}</div>
         <div class="metric-foot positive">
@@ -516,7 +869,7 @@
     <div class="kpi-card">
         <div class="card-head">
             <span class="card-label">Pending Migrations</span>
-            <div class="icon-pill" style="background: #fffbeb; color: #d97706;"><i class="fas fa-clock-rotate-left"></i></div>
+            <div class="icon-pill icon-pill-pending" style="background: #fffbeb; color: #d97706;"><i class="fas fa-clock-rotate-left"></i></div>
         </div>
         <div class="metric-val">{{ number_format($kpi['pending_migrations']) }}</div>
         <div class="metric-foot {{ $kpi['pending_migrations'] > 0 ? 'warning' : 'muted' }}">
@@ -528,7 +881,7 @@
     <div class="kpi-card">
         <div class="card-head">
             <span class="card-label">Failed Migrations</span>
-            <div class="icon-pill" style="background: #fef2f2; color: #dc2626;"><i class="fas fa-triangle-exclamation"></i></div>
+            <div class="icon-pill icon-pill-failed" style="background: #fef2f2; color: #dc2626;"><i class="fas fa-triangle-exclamation"></i></div>
         </div>
         <div class="metric-val">{{ number_format($kpi['failed_migrations']) }}</div>
         <div class="metric-foot {{ $kpi['failed_migrations'] > 0 ? 'danger' : 'muted' }}">
@@ -540,11 +893,12 @@
     <div class="kpi-card">
         <div class="card-head">
             <span class="card-label">Last Migration Run</span>
-            <div class="icon-pill" style="background: #f5f3ff; color: #7c3aed;"><i class="fas fa-calendar-check"></i></div>
+            <div class="icon-pill icon-pill-lastrun" style="background: #f5f3ff; color: #7c3aed;"><i class="fas fa-calendar-check"></i></div>
         </div>
-        <div class="metric-val" style="font-size: 20px; margin-top: 16px;">{{ $kpi['last_run'] }}</div>
+        <div class="metric-val" style="font-size: 20px; margin-top: 16px;"
+             @if(!empty($kpi['last_run_iso'])) data-relative-time="{{ $kpi['last_run_iso'] }}" title="{{ $kpi['last_run_at'] }}" @endif>{{ $kpi['last_run'] }}</div>
         <div class="metric-foot muted">
-            Global schema batch
+            {{ !empty($kpi['last_run_at']) ? $kpi['last_run_at'] : 'No migration run recorded yet' }}
         </div>
     </div>
 </div>
@@ -584,33 +938,33 @@
     </div>
 
     <div style="display: flex; align-items: center; gap: 10px;">
-        <button class="btn-action-secondary" id="resetFiltersBtn">
+        <button type="button" class="btn-action-secondary" id="resetFiltersBtn">
             <i class="fas fa-filter-circle-xmark"></i> Reset
         </button>
-        <button class="btn-action-secondary" id="exportMigrationsBtn">
+        <button type="button" class="btn-action-secondary" id="exportMigrationsBtn">
             <i class="fas fa-download"></i> Export
         </button>
     </div>
 </div>
 
 <!-- 4. TENANT MIGRATION STATUS TABLE -->
-<div style="background: var(--bg-surface); border-radius: var(--radius-lg); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); overflow: hidden; margin-bottom: 24px;">
+<div class="migration-table-wrap" style="background: var(--bg-surface); border-radius: var(--radius-lg); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); overflow: hidden; margin-bottom: 24px;">
     <div style="overflow-x: auto;">
         <table style="width: 100%; border-collapse: collapse; font-size: 13px; min-width: 1050px;" id="tenantMigrationsTable">
             <thead>
-                <tr style="background: #f8fafc; border-bottom: 2px solid #e2e8f0;">
+                <tr class="table-header-row" style="background: #f8fafc; border-bottom: 2px solid #e2e8f0;">
                     <th style="border-right: 1px solid #e2e8f0; padding: 12px 10px; text-align: center; width: 42px;">
                         <input type="checkbox" id="selectAllMigrationsCheckbox" style="cursor: pointer; width: 16px; height: 16px; accent-color: #2563eb;">
                     </th>
-                    <th style="padding: 12px 14px; text-align: left; font-size: 11px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.5px;">Company</th>
-                    <th style="padding: 12px 14px; text-align: left; font-size: 11px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.5px;">Tenant ID</th>
-                    <th style="padding: 12px 14px; text-align: left; font-size: 11px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.5px;">Database</th>
-                    <th style="padding: 12px 14px; text-align: center; font-size: 11px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.5px;">Current Version</th>
-                    <th style="padding: 12px 14px; text-align: center; font-size: 11px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.5px;">Latest Version</th>
-                    <th style="padding: 12px 14px; text-align: center; font-size: 11px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.5px;">Migration Status</th>
-                    <th style="padding: 12px 14px; text-align: left; font-size: 11px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.5px;">Last Migration</th>
-                    <th style="padding: 12px 14px; text-align: right; font-size: 11px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.5px;">Execution Time</th>
-                    <th style="padding: 12px 14px; text-align: right; font-size: 11px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.5px;">Actions</th>
+                    <th style="padding: 12px 14px; text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Company</th>
+                    <th style="padding: 12px 14px; text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Tenant ID</th>
+                    <th style="padding: 12px 14px; text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Database</th>
+                    <th style="padding: 12px 14px; text-align: center; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Current Version</th>
+                    <th style="padding: 12px 14px; text-align: center; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Latest Version</th>
+                    <th style="padding: 12px 14px; text-align: center; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Migration Status</th>
+                    <th style="padding: 12px 14px; text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Last Migration</th>
+                    <th style="padding: 12px 14px; text-align: right; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Execution Time</th>
+                    <th style="padding: 12px 14px; text-align: right; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -624,9 +978,7 @@
                     data-current="{{ $item['current_version'] }}"
                     data-latest="{{ $item['latest_version'] }}"
                     data-pending="{{ $item['pending_count'] }}"
-                    style="border-bottom: 1px solid #e2e8f0; transition: background 0.15s;"
-                    onmouseover="this.style.background='#f8fafc'" 
-                    onmouseout="this.style.background='transparent'">
+                    style="border-bottom: 1px solid #e2e8f0;">
                     
                     <td style="border-right: 1px solid #e2e8f0; padding: 12px 10px; text-align: center;">
                         <input type="checkbox" class="row-checkbox" value="{{ $item['id'] }}" style="cursor: pointer; width: 16px; height: 16px; accent-color: #2563eb;">
@@ -640,7 +992,7 @@
 
                     <!-- TENANT ID -->
                     <td style="padding: 12px 14px; font-weight: 600; color: var(--text-muted); white-space: nowrap;">
-                        <code style="background: #f1f5f9; padding: 3px 8px; border-radius: 6px; font-size: 12px; color: #0284c7; font-family: monospace;">{{ $item['company_code'] }}</code>
+                        <code class="migration-tenant-code" style="padding: 3px 8px; border-radius: 6px; font-size: 12px; font-family: monospace;">{{ $item['company_code'] }}</code>
                     </td>
 
                     <!-- DATABASE -->
@@ -650,14 +1002,14 @@
 
                     <!-- CURRENT VERSION -->
                     <td style="padding: 12px 14px; text-align: center; white-space: nowrap;">
-                        <span style="background: #f1f5f9; color: var(--text-main); padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 11.5px; border: 1px solid #cbd5e1;">
+                        <span class="badge-version-current" style="padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 11.5px;">
                             {{ $item['current_version'] }}
                         </span>
                     </td>
 
                     <!-- LATEST VERSION -->
                     <td style="padding: 12px 14px; text-align: center; white-space: nowrap;">
-                        <span style="background: #eff6ff; color: #2563eb; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 11.5px; border: 1px solid #bfdbfe;">
+                        <span class="badge-version-latest" style="padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 11.5px;">
                             {{ $item['latest_version'] }}
                         </span>
                     </td>
@@ -665,19 +1017,19 @@
                     <!-- MIGRATION STATUS -->
                     <td style="padding: 12px 14px; text-align: center; white-space: nowrap;">
                         @if($item['status'] === 'up_to_date')
-                            <span style="background: #f0fdf4; color: #16a34a; padding: 4px 12px; border-radius: 20px; font-size: 11.5px; font-weight: 700; border: 1px solid #bbf7d0; display: inline-flex; align-items: center; gap: 5px;">
+                            <span class="badge-status-uptodate" style="padding: 4px 12px; border-radius: 20px; font-size: 11.5px; font-weight: 700; display: inline-flex; align-items: center; gap: 5px;">
                                 <span style="width: 6px; height: 6px; border-radius: 50%; background: #16a34a;"></span> Up to Date
                             </span>
                         @elseif($item['status'] === 'pending')
-                            <span style="background: #fffbeb; color: #d97706; padding: 4px 12px; border-radius: 20px; font-size: 11.5px; font-weight: 700; border: 1px solid #fde68a; display: inline-flex; align-items: center; gap: 5px;">
+                            <span class="badge-status-pending" style="padding: 4px 12px; border-radius: 20px; font-size: 11.5px; font-weight: 700; display: inline-flex; align-items: center; gap: 5px;">
                                 <span style="width: 6px; height: 6px; border-radius: 50%; background: #d97706;"></span> {{ $item['pending_count'] }} Pending
                             </span>
                         @elseif($item['status'] === 'failed')
-                            <span style="background: #fef2f2; color: #dc2626; padding: 4px 12px; border-radius: 20px; font-size: 11.5px; font-weight: 700; border: 1px solid #fecaca; display: inline-flex; align-items: center; gap: 5px;">
+                            <span class="badge-status-failed" style="padding: 4px 12px; border-radius: 20px; font-size: 11.5px; font-weight: 700; display: inline-flex; align-items: center; gap: 5px;">
                                 <span style="width: 6px; height: 6px; border-radius: 50%; background: #dc2626;"></span> Failed
                             </span>
                         @else
-                            <span style="background: #f8fafc; color: #64748b; padding: 4px 12px; border-radius: 20px; font-size: 11.5px; font-weight: 700; border: 1px solid #cbd5e1; display: inline-flex; align-items: center; gap: 5px;">
+                            <span class="badge-status-notinit" style="padding: 4px 12px; border-radius: 20px; font-size: 11.5px; font-weight: 700; display: inline-flex; align-items: center; gap: 5px;">
                                 <span style="width: 6px; height: 6px; border-radius: 50%; background: #64748b;"></span> Not Initialized
                             </span>
                         @endif
@@ -685,7 +1037,7 @@
 
                     <!-- LAST MIGRATION -->
                     <td style="padding: 12px 14px; font-size: 12px; color: var(--text-muted); white-space: nowrap;">
-                        <i class="far fa-clock" style="margin-right: 4px; color: var(--text-subtle);"></i> {{ $item['last_migration'] }}
+                        <i class="far fa-clock" style="margin-right: 4px; color: var(--text-subtle);"></i> <span @if(!empty($item['last_migration_iso'])) data-relative-title="{{ $item['last_migration_iso'] }}" @endif>{{ $item['last_migration'] }}</span>
                     </td>
 
                     <!-- EXECUTION TIME -->
@@ -744,7 +1096,7 @@
     </div>
 
     <!-- Table Pagination Footer -->
-    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 14px 20px; background: #f8fafc; border-top: 1px solid var(--border-color); font-size: 13px;">
+    <div class="table-pagination-footer" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 14px 20px; font-size: 13px;">
         <div style="color: var(--text-muted); font-weight: 500;">
             Showing 1 to {{ count($tenantMigrationData) }} of {{ count($tenantMigrationData) }} tenant environments
         </div>
@@ -762,7 +1114,7 @@
         <div class="drawer-header">
             <div>
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <div style="width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, #0f744c, #10b981); color: #ffffff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 15px;">
+                    <div style="width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, #2F6BFF, #10b981); color: #ffffff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 15px;">
                         <i class="fas fa-building"></i>
                     </div>
                     <div>
@@ -778,7 +1130,7 @@
 
         <div class="drawer-body">
             <!-- DATABASE INFO CARD -->
-            <div style="background: #f8fafc; border-radius: 12px; border: 1px solid var(--border-color); padding: 16px;">
+            <div class="drawer-card-subtle" style="background: #f8fafc; border-radius: 12px; border: 1px solid var(--border-color); padding: 16px;">
                 <div style="font-size: 11px; font-weight: 700; color: var(--text-subtle); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px;">
                     DATABASE CONNECTION &amp; VERSIONS
                 </div>
@@ -819,7 +1171,7 @@
             </div>
 
             <!-- TENANT HEALTH METRICS -->
-            <div style="background: #ffffff; border: 1px solid var(--border-color); border-radius: 12px; padding: 16px;">
+            <div class="drawer-card-surface" style="background: #ffffff; border: 1px solid var(--border-color); border-radius: 12px; padding: 16px;">
                 <div style="font-size: 11px; font-weight: 700; color: var(--text-subtle); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px;">
                     TENANT INFRASTRUCTURE HEALTH
                 </div>
@@ -875,7 +1227,7 @@
         </div>
 
         <!-- Pre-Execution Checklist -->
-        <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: 10px; padding: 12px 16px; margin-bottom: 20px; font-size: 12.5px;">
+        <div class="modal-subtle-box" style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: 10px; padding: 12px 16px; margin-bottom: 20px; font-size: 12.5px;">
             <div style="font-weight: 700; color: var(--text-main); margin-bottom: 8px;">Pre-Execution Checklist:</div>
             <div style="display: flex; flex-direction: column; gap: 6px; color: var(--text-muted);">
                 <div><i class="fas fa-circle-check" style="color: var(--success); margin-right: 6px;"></i> Database connection verified</div>
@@ -921,11 +1273,7 @@
         </div>
 
         <div class="terminal-window" id="terminalLogsContent">
-            <div>10:32:01 <span class="log-success">✓ Database connection established</span></div>
-            <div>10:32:02 <span class="log-success">✓ Backup verification completed</span></div>
-            <div>10:32:03 <span class="log-info">✓ Migration process started</span></div>
-            <div>10:32:04 <span class="log-success">✓ Schema tables verified up to date</span></div>
-            <div>10:32:05 <span class="log-success">✓ Verification completed successfully</span></div>
+            <div><span class="log-info">Loading logs…</span></div>
         </div>
 
         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 18px;">
@@ -936,7 +1284,7 @@
                 <button class="btn-action-secondary" id="copyLogsBtn">
                     <i class="fas fa-copy"></i> Copy Logs
                 </button>
-                <button class="btn-action-secondary" id="downloadLogsBtn">
+                <button type="button" class="btn-action-secondary" id="downloadLogsBtn">
                     <i class="fas fa-download"></i> Download Logs
                 </button>
             </div>
@@ -981,13 +1329,13 @@
         <table style="width: 100%; border-collapse: collapse; font-size: 13px;" id="migrationHistoryTable">
             <thead>
                 <tr style="background: #f8fafc; border-bottom: 2px solid #e2e8f0;">
-                    <th style="padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 700; color: #475569; text-transform: uppercase;">Company</th>
-                    <th style="padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 700; color: #475569; text-transform: uppercase;">Migration</th>
-                    <th style="padding: 10px 14px; text-align: center; font-size: 11px; font-weight: 700; color: #475569; text-transform: uppercase;">Version</th>
-                    <th style="padding: 10px 14px; text-align: center; font-size: 11px; font-weight: 700; color: #475569; text-transform: uppercase;">Status</th>
-                    <th style="padding: 10px 14px; text-align: right; font-size: 11px; font-weight: 700; color: #475569; text-transform: uppercase;">Execution Time</th>
-                    <th style="padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 700; color: #475569; text-transform: uppercase;">Executed At</th>
-                    <th style="padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 700; color: #475569; text-transform: uppercase;">Executed By</th>
+                    <th style="padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase;">Company</th>
+                    <th style="padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase;">Migration</th>
+                    <th style="padding: 10px 14px; text-align: center; font-size: 11px; font-weight: 700; text-transform: uppercase;">Version</th>
+                    <th style="padding: 10px 14px; text-align: center; font-size: 11px; font-weight: 700; text-transform: uppercase;">Status</th>
+                    <th style="padding: 10px 14px; text-align: right; font-size: 11px; font-weight: 700; text-transform: uppercase;">Execution Time</th>
+                    <th style="padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase;">Executed At</th>
+                    <th style="padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase;">Executed By</th>
                 </tr>
             </thead>
             <tbody>
@@ -996,12 +1344,12 @@
                     <td style="padding: 12px 14px; font-weight: 700; color: var(--text-main);">{{ $hist['company_name'] }}</td>
                     <td style="padding: 12px 14px; font-family: monospace; font-size: 12px; color: var(--text-muted);">{{ $hist['migration'] }}</td>
                     <td style="padding: 12px 14px; text-align: center;">
-                        <span style="background: #eff6ff; color: #2563eb; padding: 2px 8px; border-radius: 6px; font-weight: 700; font-size: 11px;">
+                        <span class="badge-version-latest" style="padding: 2px 8px; border-radius: 6px; font-weight: 700; font-size: 11px;">
                             {{ $hist['version'] }}
                         </span>
                     </td>
                     <td style="padding: 12px 14px; text-align: center;">
-                        <span style="background: #f0fdf4; color: #16a34a; padding: 2px 10px; border-radius: 20px; font-weight: 700; font-size: 11px;">
+                        <span class="badge-status-uptodate" style="padding: 2px 10px; border-radius: 20px; font-weight: 700; font-size: 11px;">
                             ✓ Success
                         </span>
                     </td>
@@ -1024,59 +1372,45 @@
 @endsection
 
 @push('scripts')
+<script src="{{ asset('admin/assets/js/pms-migration-table.js') }}?v={{ filemtime(public_path('admin/assets/js/pms-migration-table.js')) }}" defer></script>
 <script>
+// Real wall-clock time for the live migration console.
+function migrationClock() {
+    return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+}
+
+// "x min ago" text that keeps ticking without a reload; exact time stays in the tooltip.
+function migrationRelativeTime(iso) {
+    const seconds = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 1000));
+    if (!Number.isFinite(seconds)) return '';
+    if (seconds < 45) return 'Just now';
+    const units = [['year', 31536000], ['month', 2592000], ['week', 604800], ['day', 86400], ['hour', 3600], ['minute', 60]];
+    for (const [unit, size] of units) {
+        const value = Math.floor(seconds / size);
+        if (value >= 1) return `${value} ${unit === 'minute' ? 'min' : unit}${value > 1 && unit !== 'minute' ? 's' : ''} ago`;
+    }
+    return 'Just now';
+}
+
+function refreshMigrationTimes() {
+    document.querySelectorAll('[data-relative-time]').forEach(el => {
+        const text = migrationRelativeTime(el.dataset.relativeTime);
+        if (text) el.textContent = text;
+    });
+    document.querySelectorAll('[data-relative-title]').forEach(el => {
+        el.title = migrationRelativeTime(el.dataset.relativeTitle);
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    refreshMigrationTimes();
+    setInterval(refreshMigrationTimes, 30000);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshMigrationTimes(); });
+});
+
 document.addEventListener('DOMContentLoaded', function() {
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
 
-    // 1. Table Search & Filtering
-    const searchInput = document.getElementById('migrationSearchInput');
-    const filterStatus = document.getElementById('filterStatus');
-    const filterTenant = document.getElementById('filterTenant');
-    const filterVersion = document.getElementById('filterVersion');
-    const resetFiltersBtn = document.getElementById('resetFiltersBtn');
-
-    function filterTableRows() {
-        const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
-        const statusVal = filterStatus ? filterStatus.value : 'all';
-        const tenantVal = filterTenant ? filterTenant.value : 'all';
-        const versionVal = filterVersion ? filterVersion.value : 'all';
-
-        const rows = document.querySelectorAll('.tenant-migration-row');
-        rows.forEach(row => {
-            const name = row.getAttribute('data-name')?.toLowerCase() || '';
-            const code = row.getAttribute('data-code')?.toLowerCase() || '';
-            const db = row.getAttribute('data-db')?.toLowerCase() || '';
-            const status = row.getAttribute('data-status') || '';
-            const id = row.getAttribute('data-id') || '';
-            const pending = parseInt(row.getAttribute('data-pending') || '0', 10);
-
-            let matchesSearch = !query || name.includes(query) || code.includes(query) || db.includes(query);
-            let matchesStatus = statusVal === 'all' || status === statusVal;
-            let matchesTenant = tenantVal === 'all' || id === tenantVal;
-            let matchesVersion = versionVal === 'all' || (versionVal === 'latest' && pending === 0) || (versionVal === 'outdated' && pending > 0);
-
-            if (matchesSearch && matchesStatus && matchesTenant && matchesVersion) {
-                row.style.display = '';
-            } else {
-                row.style.display = 'none';
-            }
-        });
-    }
-
-    if (searchInput) searchInput.addEventListener('input', filterTableRows);
-    if (filterStatus) filterStatus.addEventListener('change', filterTableRows);
-    if (filterTenant) filterTenant.addEventListener('change', filterTableRows);
-    if (filterVersion) filterVersion.addEventListener('change', filterTableRows);
-
-    if (resetFiltersBtn) {
-        resetFiltersBtn.addEventListener('click', function() {
-            if (searchInput) searchInput.value = '';
-            if (filterStatus) filterStatus.value = 'all';
-            if (filterTenant) filterTenant.value = 'all';
-            if (filterVersion) filterVersion.value = 'all';
-            filterTableRows();
-        });
-    }
 
     // 2. Refresh Status Button
     const refreshStatusBtn = document.getElementById('refreshStatusBtn');
@@ -1231,9 +1565,9 @@ document.addEventListener('DOMContentLoaded', function() {
             confirmSingleMigrateBtn.style.display = 'none';
 
             progressConsole.innerHTML = `
-                <div>[10:32:01] <span class="log-info">Connecting to tenant database...</span></div>
-                <div>[10:32:02] <span class="log-info">Verifying database structure &amp; backup checkpoint...</span></div>
-                <div>[10:32:03] <span class="log-warn">Executing Artisan migrate command...</span></div>
+                <div>[${migrationClock()}] <span class="log-info">Connecting to tenant database...</span></div>
+                <div>[${migrationClock()}] <span class="log-info">Verifying database structure &amp; backup checkpoint...</span></div>
+                <div>[${migrationClock()}] <span class="log-warn">Executing Artisan migrate command...</span></div>
             `;
 
             fetch('{{ route("super-admin.migrations.run") }}', {
@@ -1249,8 +1583,8 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(data => {
                 if (data.success) {
                     progressConsole.innerHTML += `
-                        <div>[10:32:04] <span class="log-success">✔ ${data.message}</span></div>
-                        <div>[10:32:05] <span class="log-success">✔ Schema tables updated to ${data.current_version} in ${data.execution_time}</span></div>
+                        <div>[${migrationClock()}] <span class="log-success">✔ ${data.message}</span></div>
+                        <div>[${migrationClock()}] <span class="log-success">✔ Schema tables updated to ${data.current_version} in ${data.execution_time}</span></div>
                     `;
                     setTimeout(() => {
                         singleMigrateModal.classList.remove('open');
@@ -1258,14 +1592,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     }, 1200);
                 } else {
                     progressConsole.innerHTML += `
-                        <div>[10:32:04] <span class="log-error">✖ ${data.message}</span></div>
+                        <div>[${migrationClock()}] <span class="log-error">✖ ${data.message}</span></div>
                         <div class="log-error">${data.output || ''}</div>
                     `;
                 }
             })
             .catch(err => {
                 progressConsole.innerHTML += `
-                    <div>[10:32:04] <span class="log-error">✖ Request failed: ${err.message}</span></div>
+                    <div>[${migrationClock()}] <span class="log-error">✖ Request failed: ${err.message}</span></div>
                 `;
             });
         });
@@ -1372,7 +1706,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         terminal.appendChild(line);
                     });
                 } else {
-                    terminal.innerHTML = '<div>10:32:01 <span class="log-info">No execution errors recorded. All schema tables compliant.</span></div>';
+                    terminal.innerHTML = '<div><span class="log-info">No migration runs recorded for this tenant yet.</span></div>';
                 }
 
                 migrationLogsModal.classList.add('open');
@@ -1386,6 +1720,30 @@ document.addEventListener('DOMContentLoaded', function() {
     if (closeLogsModalBtn && migrationLogsModal) {
         closeLogsModalBtn.addEventListener('click', function() {
             migrationLogsModal.classList.remove('open');
+        });
+    }
+
+    // Download the complete log currently displayed for the selected tenant.
+    const downloadLogsBtn = document.getElementById('downloadLogsBtn');
+    if (downloadLogsBtn) {
+        downloadLogsBtn.addEventListener('click', function() {
+            const title = document.getElementById('logsModalTitle').innerText;
+            const subtitle = document.getElementById('logsModalSubtitle').innerText;
+            const text = document.getElementById('terminalLogsContent').innerText;
+            const database = subtitle.replace(/^(Tenant )?Database:\s*/i, '').trim()
+                .replace(/[^a-zA-Z0-9_-]/g, '_') || 'tenant';
+            const blob = new Blob([title + '\n' + subtitle + '\n\n' + text + '\n'], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'migration-logs-' + database + '.txt';
+            document.body.appendChild(link);
+            try {
+                link.click();
+            } finally {
+                link.remove();
+                setTimeout(() => URL.revokeObjectURL(url), 1000);
+            }
         });
     }
 

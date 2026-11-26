@@ -112,7 +112,12 @@
     @include('frontend.layouts-frontend.header')
 
     <!-- Main Content -->
+    @include('partials.page-back-navigation')
+    @auth
+    <div data-live-records data-live-identity="@include('partials.live-records-identity')" style="display:contents">
+    @endauth
     @yield('content')
+    @auth </div> @endauth
 
     <!-- Footer -->
     @include('frontend.layouts-frontend.footer')
@@ -128,6 +133,11 @@
     <script src="{{ asset('frontend/js/leads.js') }}?v={{ file_exists(public_path('frontend/js/leads.js')) ? filemtime(public_path('frontend/js/leads.js')) : time() }}"></script>
     <script src="{{ asset('frontend/js/main.js') }}?v={{ file_exists(public_path('frontend/js/main.js')) ? filemtime(public_path('frontend/js/main.js')) : time() }}" defer></script>
 
-    @stack('scripts')
+    @include('admin.layout.toasts')
+
+    @include('partials.phone-fields')
+@stack('scripts')
+    @auth <script src="{{ asset('admin/assets/js/pms-live-records.js') }}?v={{ @filemtime(public_path('admin/assets/js/pms-live-records.js')) }}" data-session-url="{{ route('company.session-status') }}" data-login-url="{{ route('login') }}" defer></script> @endauth
+@include('partials.responsive-workspace', ['responsiveShell' => 'public'])
 </body>
 </html>

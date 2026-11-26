@@ -2,7 +2,59 @@
 @section('title', 'Awards List')
 
 @section('content')
-<div class="container py-4">
+@php($canCreateRecognition = auth()->user()?->hasModulePermission('awards', 'create') ?? false)
+<style>
+    /* Hide duplicate visible DataTables button bar */
+    .dataTables_wrapper .dt-buttons {
+        display: none !important;
+    }
+
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(.dark-mode):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .awards-page {
+        --awards-surface: #ffffff;
+        --awards-muted-surface: #f8fafc;
+        --awards-border: #cbd5e1;
+        --awards-text: #334155;
+    }
+
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(.dark-mode):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .awards-page #awardTable_wrapper .dataTables_empty {
+        background: var(--awards-muted-surface) !important;
+        color: var(--awards-text) !important;
+        padding: 32px 16px !important;
+        box-shadow: none !important;
+    }
+
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(.dark-mode):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .awards-page #awardTable input[type="checkbox"] {
+        appearance: auto !important;
+        -webkit-appearance: checkbox !important;
+        width: 18px !important;
+        height: 18px !important;
+        min-width: 18px;
+        margin: 0;
+        vertical-align: middle;
+        accent-color: #2563eb;
+    }
+
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(.dark-mode):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .awards-page #awardTable_wrapper .dataTables_filter input,
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(.dark-mode):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .awards-page #datatableRange {
+        background: var(--awards-surface) !important;
+        color: var(--awards-text) !important;
+        border-color: var(--awards-border) !important;
+    }
+
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(.dark-mode):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .awards-page #bulkAction:disabled,
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(.dark-mode):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .awards-page #applyAction:disabled,
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(.dark-mode):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .awards-page #bulkDeleteBtn:disabled,
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(.dark-mode):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .awards-page #awardTable_wrapper .paginate_button.disabled {
+        background: var(--awards-muted-surface) !important;
+        color: var(--awards-text) !important;
+        border-color: var(--awards-border) !important;
+        -webkit-text-fill-color: var(--awards-text) !important;
+        opacity: 1;
+        cursor: not-allowed;
+        box-shadow: none !important;
+    }
+</style>
+<div class="container py-4 awards-page">
 
     <!-- ===================== ADMIN VIEW ===================== -->
     @if(auth()->user()->role === 'admin')
@@ -23,10 +75,10 @@
     @endif
 
     <div class="d-flex align-items-center mb-3
-        @if(auth()->user()->role === 'admin') justify-content-between @else justify-content-end @endif">
+        @if($canCreateRecognition) justify-content-between @else justify-content-end @endif">
 
         <!-- Left side: Add Appreciation button (only for admin) -->
-        @if(auth()->user()->role === 'admin')
+        @if($canCreateRecognition)
             <div>
                 <a href="{{ route('awards.create') }}" class="btn btn-primary">
                     <i class="bi bi-plus-circle"></i> &nbsp; Assign Award
@@ -37,23 +89,23 @@
         <!-- Right side: Filters / Icon buttons -->
         <div class="d-flex align-items-center gap-3">
             @if(auth()->user()->role === 'admin')
-                <div class="btn-group align-items-center" role="group">
+                <div class="d-flex align-items-center gap-2">
                     <!-- Main bulk action -->
-                    <select id="bulkAction" class="form-select form-select-sm" disabled>
+                    <select id="bulkAction" class="form-select form-select-sm" disabled style="width: auto;">
                         <option value="">No Action</option>
                         <option value="status">Change Status</option>
                         <option value="delete">Delete</option>
                     </select>
 
                     <!-- Hidden status select -->
-                    <select id="statusSelect" class="form-select form-select-sm ms-2" style="display:none;">
+                    <select id="statusSelect" class="form-select form-select-sm" style="display:none; width: auto;">
                         <option value="">Select Status</option>
                         <option value="active">Active</option>
                         <option value="inactive">Inactive</option>
                     </select>
 
                     <!-- Apply button -->
-                    <button id="applyAction" class="btn btn-primary btn-sm ms-2" disabled>Apply</button>
+                    <button id="applyAction" class="btn btn-primary btn-sm text-nowrap" style="white-space: nowrap; flex-shrink: 0; min-width: max-content;" disabled>Apply</button>
                 </div>
             @endif
 

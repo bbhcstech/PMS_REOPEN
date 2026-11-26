@@ -27,6 +27,10 @@ class SecuritySettingsController extends Controller
 
     public function update(Request $request)
     {
+        if (auth()->user()?->role !== 'admin') {
+            abort(403, 'Unauthorized. Only administrators can update security settings.');
+        }
+
         $request->validate([
             'min_password_length' => 'required|numeric|min:6|max:32',
             'session_timeout_mins' => 'required|numeric|min:5|max:1440',
@@ -58,6 +62,19 @@ class SecuritySettingsController extends Controller
                 ]
             );
         }
+
+        // Broadcast notification to Admin, HR, Manager, and Employees
+        \App\Services\SystemNotificationService::notifyAllRoles(
+            'Security Policies Updated',
+            'System authentication, password complexity, and session timeout policies have been updated by ' . (auth()->user()?->name ?? 'Admin') . '.',
+            route('admin.settings.security'),
+            [
+                'type' => 'setting_update',
+                'setting_module' => 'security-settings',
+                'icon' => 'fa-shield-halved',
+                'color' => 'danger',
+            ]
+        );
 
         return back()->with('success', 'Security settings updated successfully!');
     }

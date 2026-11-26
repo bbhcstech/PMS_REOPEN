@@ -1,0 +1,334 @@
+/* Shared phone layout. Desktop styles, record values and export/print layouts stay unchanged. */
+@media screen and (max-width: 767.98px) {
+  html[data-pms-shell] {
+    scroll-padding-top: 88px;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  html[data-pms-shell] body {
+    overflow-x: clip;
+  }
+
+  html[data-pms-shell] :is(.layout-page, .content-wrapper, .content, .main, .dev-main-content,
+    .dev-body-content, .industry-panel, .content-card, .table-card, .filter-panel, .card,
+    .header-left, .header-left-box, .header-title, .form-group, .filter-group, .input-group,
+    .saas-money-card, .stat-card) {
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  html[data-pms-shell] :is(.content-wrapper .container-fluid, .content-wrapper .container-xxl) {
+    width: 100%;
+    max-width: 100%;
+    padding-inline: 12px !important;
+  }
+
+  html[data-pms-shell] :is([data-live-records] > [class*="-page"], .container-xxl > [class*="-page"],
+    .dev-body-content, .main > .content) {
+    padding-inline: 12px !important;
+    max-width: 100%;
+  }
+
+  html[data-pms-shell] [data-pms-mobile-grid="stack"] {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  html[data-pms-shell] [data-pms-mobile-grid="stack"] > * {
+    min-width: 0;
+    grid-column: auto !important;
+    max-width: 100%;
+  }
+
+  html[data-pms-shell] [data-pms-mobile-fluid] {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  html[data-pms-shell] [data-pms-mobile-flex="wrap"] {
+    flex-wrap: wrap !important;
+    max-width: 100%;
+  }
+
+  html[data-pms-shell] [data-pms-mobile-flex="wrap"] > * {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  html[data-pms-shell="platform"] .main,
+  html[data-pms-shell="developer"] .dev-main-wrapper {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+  }
+
+  html[data-pms-shell] :is(.stat-info, .loc-stat-info, .header-title, .designation-node-copy,
+    .detail-item, .file-input-wrapper, .file-name, .saas-module-card, .saas-module-head) {
+    min-width: 0;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+
+  html[data-pms-shell] .stat-card .stat-info { flex: 1 1 0; }
+  html[data-pms-shell] .file-label { max-width: 100%; flex-wrap: wrap; }
+
+  html[data-pms-shell] :is(.calendar-legend, .chart-legend, .pagination, .archive-pagination,
+    .header-controls, .header-right, .chat-header, .community-header, .avatar-upload-wrap,
+    .table-pagination-bar, .leave-breadcrumb) {
+    flex-wrap: wrap !important;
+    gap: 10px;
+    max-width: 100%;
+  }
+
+  html[data-pms-shell] :is(.calendar-legend, .chart-legend) > * { max-width: 100%; }
+  html[data-pms-shell] .avatar-upload-wrap > div:not(.avatar-preview) { min-width: 0; max-width: 100%; }
+  html[data-pms-shell] .table-pagination-bar :is(div, span, strong) { min-width: 0; max-width: 100%; overflow-wrap: anywhere; }
+  html[data-pms-shell] .industry-analytics-card .industry-bar { grid-template-columns: minmax(0, 1fr) 72px !important; gap: 8px; }
+  html[data-pms-shell] .industry-analytics-card .industry-bar label { max-width: 100%; overflow-wrap: anywhere; }
+  html[data-pms-shell] canvas { max-width: 100% !important; }
+  html[data-pms-shell] .btn { max-width: 100%; white-space: normal !important; }
+
+  html[data-pms-shell] :is(.section-tabs, .tabs-bar, .nav-tabs-container, .tab-nav-container) {
+    max-width: 100%;
+    overflow-x: auto;
+    flex-wrap: nowrap !important;
+  }
+
+  html[data-pms-shell] :is(.header-card, .header-card-elevated, .branches-header, .leave-hero,
+    .employee-holiday-hero, .page-header, .form-header, .preview-header) {
+    flex-wrap: wrap !important;
+    gap: 16px !important;
+    padding: 16px !important;
+    max-width: 100%;
+  }
+
+  html[data-pms-shell] :is(.header-left, .header-left-box, .header-card .header-title) {
+    width: 100%;
+    gap: 12px !important;
+    flex: 1 1 auto;
+  }
+
+  html[data-pms-shell] :is(.header-card h1, .header-title h1, .leave-hero h1, .page-header h1,
+    .employee-holiday-hero h1) {
+    font-size: clamp(22px, 6vw, 28px) !important;
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+
+  html[data-pms-shell] :is(.header-card p, .header-title p, .leave-hero p, .page-header p) {
+    font-size: 14px !important;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+  }
+
+  html[data-pms-shell] :is(.header-icon, .header-icon-badge, .leave-hero-icon) {
+    width: 48px !important;
+    height: 48px !important;
+    min-width: 48px;
+    flex-shrink: 0;
+    font-size: 24px !important;
+  }
+
+  html[data-pms-shell] :is(.breadcrumb, .breadcrumb-custom) {
+    flex-wrap: wrap;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    font-size: 13px !important;
+    padding: 12px !important;
+    gap: 6px;
+  }
+
+  html[data-pms-shell] :is(.header-actions, .filter-actions, .toolbar, .toolbar-left, .toolbar-right,
+    .table-header, .card-header, .form-footer, .modal-footer, .page-header-actions) {
+    flex-wrap: wrap !important;
+    gap: 10px !important;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  html[data-pms-shell] :is(.header-actions, .filter-actions, .toolbar-left, .toolbar-right) {
+    width: 100%;
+  }
+
+  html[data-pms-shell] :is(.header-actions, .filter-actions, .form-footer, .modal-footer, .toolbar) :is(.btn, button, a[class*="btn"]) {
+    min-height: 44px;
+    max-width: 100%;
+    white-space: normal !important;
+    overflow-wrap: anywhere;
+  }
+
+  html[data-pms-shell] :is(.header-actions, .filter-actions, .form-footer) .btn-group {
+    flex-wrap: wrap;
+    max-width: 100%;
+  }
+
+  html[data-pms-shell] :is(.form-control, .form-select, .input-control,
+    input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]), select, textarea) {
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+    font-size: 16px !important;
+  }
+
+  html[data-pms-shell] :is(.form-group, .filter-group) > :is(input, select, textarea, .select2-container) {
+    width: 100% !important;
+  }
+
+  html[data-pms-shell] .input-group > :is(.form-control, .form-select) {
+    width: 1% !important;
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  html[data-pms-shell] .select2-container { max-width: 100%; }
+  html[data-pms-shell] .select2-selection__rendered { overflow-wrap: anywhere; }
+
+  html[data-pms-shell] :is(.industry-panel, .dev-card, .filter-panel, .form-body) {
+    padding: 16px !important;
+    max-width: 100%;
+  }
+
+  html[data-pms-shell] :is(.stat-card strong, .saas-money-card strong, .metric-value,
+    .company-switch-meta strong, .project-info-name, .employee-name) {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+
+  html[data-pms-shell] img:not(:where([class*="avatar"] img, [class*="logo"] img,
+    [class*="avatar"], [class*="logo"], .app-brand img, .brand img, .user-profile-btn img)) {
+    max-width: 100%;
+    height: auto;
+  }
+
+  html[data-pms-shell] :is(video, iframe) { max-width: 100%; }
+
+  html[data-pms-shell] [data-pms-mobile-scroll] {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: auto !important;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  html[data-pms-shell] [data-pms-mobile-scroll="tabs"] {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+  }
+  html[data-pms-shell] [data-pms-mobile-scroll="tabs"] > * { flex-shrink: 0; }
+
+  html[data-pms-shell] :is(.dataTables_wrapper, .dt-container) {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  html[data-pms-shell] :is(.dataTables_length, .dataTables_filter, .dt-length, .dt-search) {
+    float: none !important;
+    text-align: left !important;
+    margin: 8px 0;
+    max-width: 100%;
+  }
+
+  html[data-pms-shell] :is(.dataTables_length, .dt-length) select {
+    min-width: 76px;
+    padding-right: 28px;
+  }
+
+  html[data-pms-shell] :is(.dataTables_filter, .dt-search) input {
+    width: min(100%, 240px) !important;
+  }
+
+  html[data-pms-shell] :is(.pms-project-nav-bar, .nav-tabs-wrapper, .project-task-tabs, .tab-nav, .nav-tabs) {
+    max-width: 100%;
+    flex-wrap: nowrap !important;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  html[data-pms-shell] :is(.pms-project-nav-bar, .nav-tabs-wrapper, .project-task-tabs, .tab-nav, .nav-tabs) > * {
+    flex-shrink: 0;
+  }
+
+  html[data-pms-shell] .modal-dialog {
+    width: calc(100% - 20px) !important;
+    max-width: calc(100% - 20px) !important;
+    margin: 10px auto !important;
+  }
+
+  html[data-pms-shell] .modal-content {
+    max-height: calc(100dvh - 20px);
+    min-width: 0;
+  }
+
+  html[data-pms-shell] .modal-body { overflow-y: auto; min-height: 0; }
+  html[data-pms-shell] :is(.modal-header, .modal-footer) { flex-shrink: 0; }
+  html[data-pms-shell] :is(.drawer, .drawer-panel, .offcanvas, .modal-container, .swal2-popup) {
+    max-width: calc(100vw - 20px) !important;
+    box-sizing: border-box;
+  }
+
+  html[data-pms-shell] :is(.notif-dropdown, .profile-dropdown, .user-dropdown-menu) {
+    position: fixed !important;
+    top: calc(var(--pms-mobile-header-bottom, 68px) + 8px) !important;
+    right: 12px !important;
+    left: auto !important;
+    width: min(360px, calc(100vw - 24px)) !important;
+    max-width: calc(100vw - 24px) !important;
+    max-height: calc(100dvh - var(--pms-mobile-header-bottom, 68px) - 32px);
+    overflow-y: auto;
+  }
+
+  html[data-pms-shell] .fc .fc-header-toolbar {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  html[data-pms-shell] .fc .fc-toolbar-chunk {
+    max-width: 100%;
+    flex-wrap: wrap;
+  }
+
+  html[data-pms-shell] .fc .fc-button { font-size: 13px; padding: 8px 10px; }
+}
+
+@media screen and (max-width: 1199.98px) {
+  html[data-pms-shell="admin"] #layout-menu {
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    touch-action: pan-y;
+    overscroll-behavior-y: contain;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  html[data-pms-shell="admin"].layout-menu-expanded,
+  html[data-pms-shell="admin"] body.layout-menu-expanded { touch-action: auto !important; }
+}
+
+@media screen and (max-width: 991.98px) {
+  html[data-pms-shell] :is(.sidebar, .dev-sidebar) {
+    width: min(300px, 86vw) !important;
+    max-width: 86vw !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+  }
+  html[data-pms-shell] body[data-pms-drawer-open] { overflow: hidden !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-pms-shell] :is(.layout-menu, .sidebar, .dev-sidebar) { transition: none !important; }
+}
+
+@media screen and (max-width:767.98px) {
+  html[data-pms-shell] .industry-analytics-card .industry-bars { grid-template-columns:minmax(0,1fr)!important; }
+  html[data-pms-shell] .industry-analytics-card .industry-bar { width:100%;min-width:0; }
+  html[data-pms-shell] .audit-safeguard-box > div { min-width:0;max-width:100%;flex-wrap:wrap; }
+  html[data-pms-shell] .audit-safeguard-box > div > div { min-width:0;max-width:100%;flex-wrap:wrap; }
+  html[data-pms-shell] .slide-drawer { max-width:calc(100vw - 20px)!important;height:100dvh; }
+}
+
+@media screen and (max-width:767.98px) {
+  html[data-pms-shell] .bulk-actions-bar { width:calc(100vw - 24px);max-width:calc(100vw - 24px);box-sizing:border-box;flex-wrap:wrap;justify-content:center;padding:12px;gap:10px;border-radius:16px;bottom:max(12px,env(safe-area-inset-bottom)); }
+  html[data-pms-shell] .bulk-actions-bar > * { min-width:0;max-width:100%; }
+  html[data-pms-shell] .tasks-page .header-actions { flex-direction:row !important;align-items:center; }
+}

@@ -1,0 +1,35 @@
+<!doctype html><html><head><meta charset="utf-8"></head><body>
+<div class="pms-phone-group"><select data-phone-field="whatsapp"><option value="+91">IN (+91)</option><option value="+44">GB (+44)</option><option value="+9988">ZZ (+9988)</option></select><input name="whatsapp" value="+9988 12345"></div>
+<input id="business" type="tel" value="+44 2012345678">
+<script type="application/json" id="pms-phone-countries">{"India":{"dial_code":"+91","iso":"in","min_digits":10,"max_digits":10},"United Kingdom":{"dial_code":"+44","iso":"gb","min_digits":10,"max_digits":11},"Database Custom":{"dial_code":"+9988","iso":"zz","min_digits":5,"max_digits":9}}</script>
+<script src="../../public/admin/assets/js/pms-phone-fields.js"></script>
+<pre id="result">RUNNING</pre>
+<script>
+try {
+ const check = (ok, reason) => { if (!ok) throw Error(reason); };
+ const input = document.querySelector('[name="whatsapp"]'), select = input.parentElement.querySelector('select');
+ check(select.value === '+9988' && input.value === '12345', 'Saved country prefix was not restored');
+ input.value = '+44 2012345678'; input.dispatchEvent(new Event('input'));
+ check(select.value === '+44' && input.value === '2012345678', 'Pasted international number duplicated its prefix');
+ input.value = '+9988 67890'; PmsPhoneFields.scan();
+ check(select.value === '+9988' && input.value === '67890', 'Programmatically loaded edit number lost its country code');
+ const business = document.getElementById('business');
+ const api = PmsPhoneFields.attach(business, { initialCountry:'in' });
+ check(business.previousElementSibling.tagName === 'SELECT', 'Country selector was not placed before the number');
+ check(business.previousElementSibling.options.length === 3, 'Non-database countries were added');
+ check(api.getNumber() === '+442012345678' && api.isValidNumber(), 'International business number did not load/validate');
+ api.setCountry('zz'); business.value = '12345';
+ check(api.getNumber() === '+998812345' && api.isValidNumber(), 'Custom database dial code was ignored');
+ business.value = '1234'; check(!api.isValidNumber() && api.getValidationError() === 2, 'Database digit length was ignored');
+ business.value = 'letters'; check(!api.isValidNumber(), 'Invalid phone text accepted');
+ api.setCountry('in'); business.value = '9198765432';
+ check(api.getNumber() === '+919198765432', 'National digits were truncated');
+ check(PmsPhoneFields.attach(business) === api && document.querySelectorAll('#business').length === 1, 'Repeated initialization duplicated controls');
+ business.value = ''; check(api.getNumber() === '', 'Empty optional number acquired a country-only value');
+ const dynamic = document.createElement('div'); dynamic.className = 'pms-phone-group';
+ dynamic.innerHTML = '<select data-phone-field="phone"><option value="+91">IN</option><option value="+44">GB</option></select><input value="+44 2012345678">';
+ document.body.append(dynamic); PmsPhoneFields.scan();
+ check(dynamic.querySelector('select').value === '+44' && dynamic.querySelector('input').value === '2012345678', 'Dynamic form did not initialize');
+ document.getElementById('result').textContent = 'PASS: database-only options, selector placement, custom codes, saved/pasted values, dynamic forms, digit validation and no duplicate controls.';
+} catch (error) { document.getElementById('result').textContent = 'FAIL: ' + error.message; }
+</script></body></html>

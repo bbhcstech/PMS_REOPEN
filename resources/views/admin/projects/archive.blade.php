@@ -16,7 +16,7 @@
         <div class="header-card">
             <div class="header-left">
                 <div class="header-icon">
-                    <i class="fas fa-archive"></i>
+                    <svg class="archive-summary-icon" viewBox="0 0 24 24" aria-hidden="true"><rect style="fill: none !important; stroke: currentColor !important; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;" fill="none" stroke="currentColor" x="3" y="3" width="18" height="5" rx="1"/><path style="fill: none !important; stroke: currentColor !important; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;" fill="none" stroke="currentColor" d="M5 8v12h14V8M9 12h6"/></svg>
                 </div>
                 <div>
                     <h1>Archived Projects</h1>
@@ -36,7 +36,7 @@
         <!-- Stats Cards -->
         <div class="stats-grid">
             <div class="stat-card">
-                <div class="stat-icon"><i class="fas fa-archive"></i></div>
+                <div class="stat-icon"><svg class="archive-summary-icon" viewBox="0 0 24 24" aria-hidden="true"><rect style="fill: none !important; stroke: currentColor !important; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;" fill="none" stroke="currentColor" x="3" y="3" width="18" height="5" rx="1"/><path style="fill: none !important; stroke: currentColor !important; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;" fill="none" stroke="currentColor" d="M5 8v12h14V8M9 12h6"/></svg></div>
                 <div>
                     <h3>{{ $projects->count() }}</h3>
                     <span>Archived Projects</span>
@@ -44,7 +44,7 @@
                 </div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+                <div class="stat-icon"><svg class="archive-summary-icon" viewBox="0 0 24 24" aria-hidden="true"><circle style="fill: none !important; stroke: currentColor !important; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;" fill="none" stroke="currentColor" cx="12" cy="12" r="9"/><path style="fill: none !important; stroke: currentColor !important; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;" fill="none" stroke="currentColor" d="m8 12 3 3 5-6"/></svg></div>
                 <div>
                     <h3>{{ $projects->where('status', 'completed')->count() }}</h3>
                     <span>Completed</span>
@@ -52,7 +52,7 @@
                 </div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon"><i class="fas fa-clock"></i></div>
+                <div class="stat-icon"><svg class="archive-summary-icon" viewBox="0 0 24 24" aria-hidden="true"><circle style="fill: none !important; stroke: currentColor !important; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;" fill="none" stroke="currentColor" cx="12" cy="12" r="9"/><path style="fill: none !important; stroke: currentColor !important; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;" fill="none" stroke="currentColor" d="M12 7v5l3 2"/></svg></div>
                 <div>
                     <h3>{{ $projects->where('status', '!=', 'completed')->count() }}</h3>
                     <span>Incomplete</span>
@@ -60,7 +60,7 @@
                 </div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon"><i class="fas fa-calendar-alt"></i></div>
+                <div class="stat-icon"><svg class="archive-summary-icon" viewBox="0 0 24 24" aria-hidden="true"><rect style="fill: none !important; stroke: currentColor !important; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;" fill="none" stroke="currentColor" x="3" y="5" width="18" height="16" rx="2"/><path style="fill: none !important; stroke: currentColor !important; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;" fill="none" stroke="currentColor" d="M7 3v4M17 3v4M3 10h18M7 14h2M15 14h2M7 17h2"/></svg></div>
                 <div>
                     <h3>{{ $projects->where('updated_at', '>=', now()->subDays(30))->count() }}</h3>
                     <span>Recent</span>
@@ -96,7 +96,7 @@
                             <th><i class="fas fa-tag"></i> Project Name</th>
                             <th><i class="fas fa-users"></i> Members</th>
                             <th><i class="fas fa-calendar-times"></i> Deadline</th>
-                            <th><i class="fas fa-building"></i> Client</th>
+                            <th><i class="fas fa-building"></i> Client/Home</th>
                             <th><i class="fas fa-chart-simple"></i> Completion</th>
                             <th><i class="fas fa-circle"></i> Status</th>
                             <th class="action-cell"><i class="fas fa-cog"></i> Actions</th>
@@ -141,12 +141,21 @@
                                     </div>
                                 </td>
                                 <td>
-                                    <div class="client-cell">
-                                        <div class="client-avatar">
-                                            {{ strtoupper(mb_substr($project->client->name ?? 'N', 0, 1)) }}
+                                    @if($project->project_type === 'home' || (!$project->client_id && !$project->client))
+                                        <div class="client-cell">
+                                            <div class="client-avatar" style="background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe;">
+                                                <i class="fas fa-home" style="font-size: 13px;"></i>
+                                            </div>
+                                            <span class="fw-bold" style="color: #1e40af;">Home</span>
                                         </div>
-                                        <span>{{ $project->client->name ?? 'No Client' }}</span>
-                                    </div>
+                                    @else
+                                        <div class="client-cell">
+                                            <div class="client-avatar">
+                                                {{ strtoupper(mb_substr($project->client->name ?? 'N', 0, 1)) }}
+                                            </div>
+                                            <span>{{ $project->client->name ?? 'No Client' }}</span>
+                                        </div>
+                                    @endif
                                 </td>
                                 <td>
                                     <div class="progress-cell">
@@ -247,12 +256,77 @@
 </div>
 
 <style>
+    .archived-projects-page .archive-summary-icon,
+    .archived-projects-page .archive-summary-icon * {
+        fill: none !important;
+        stroke: currentColor !important;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    .archived-projects-page .archive-summary-icon {
+        width: 24px;
+        height: 24px;
+        flex-shrink: 0;
+    }
+
+    /* pms-refresh.css gives every ".stat-icon svg" a white colour AND white background, which turned
+       these outline icons into solid white squares. Keep the SVG transparent and drawn in the tile's
+       own icon colour (blue tile -> white icon in light mode, #60A5FA on dark tiles in dark mode). */
+    .archived-projects-page .stats-grid .stat-icon svg.archive-summary-icon {
+        background: transparent !important;
+        background-color: transparent !important;
+        color: inherit !important;
+        fill: none !important;
+        opacity: 1 !important;
+    }
+
+    .archived-projects-page .header-icon .archive-summary-icon {
+        width: 32px;
+        height: 32px;
+        color: #ffffff !important;
+    }
+
+    html:not([data-pms-theme="dark"]) .archived-projects-page .stats-grid > .stat-card:first-child {
+        background: linear-gradient(145deg, #1e4fcc, #2f6bff) !important;
+    }
+
+    html:not([data-pms-theme="dark"]) .archived-projects-page .stats-grid .stat-icon {
+        background: #2f6bff !important;
+        color: #ffffff !important;
+        flex-shrink: 0;
+    }
+
+    html:not([data-pms-theme="dark"]) .archived-projects-page .stats-grid > .stat-card:first-child .stat-icon {
+        background: rgba(255, 255, 255, .22) !important;
+        border: 1px solid rgba(255, 255, 255, .4);
+    }
+
+    html:not([data-pms-theme="dark"]) .archived-projects-page .stats-grid > .stat-card:not(:first-child) h3 {
+        color: #0f172a !important;
+        -webkit-text-fill-color: #0f172a !important;
+    }
+
+    html:not([data-pms-theme="dark"]) .archived-projects-page .stats-grid > .stat-card:not(:first-child) span,
+    html:not([data-pms-theme="dark"]) .archived-projects-page .stats-grid > .stat-card:not(:first-child) .stat-sub {
+        color: #475569 !important;
+        -webkit-text-fill-color: #475569 !important;
+    }
+
+    html:not([data-pms-theme="dark"]) .archived-projects-page .stat-card:first-child h3,
+    html:not([data-pms-theme="dark"]) .archived-projects-page .stat-card:first-child span,
+    html:not([data-pms-theme="dark"]) .archived-projects-page .stat-card:first-child .stat-sub {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
     /* ===== PREMIUM ARCHIVED PROJECTS PAGE - GREEN/TEAL THEME ===== */
     .archived-projects-page {
         padding: 30px 0;
         min-height: 100vh;
         background: linear-gradient(145deg, #f7fbf9, #eef7f2);
-        color: #07130d;
+        color: #070B1A;
     }
 
     /* Breadcrumb */
@@ -261,21 +335,21 @@
         backdrop-filter: blur(10px);
         padding: 16px 26px;
         border-radius: 18px;
-        border: 1px solid rgba(15, 116, 76, .12);
+        border: 1px solid rgba(47, 107, 255, .12);
         margin-bottom: 28px;
-        color: #0f744c;
+        color: #2F6BFF;
         font-weight: 600;
         font-size: 1.05rem;
     }
 
     .breadcrumb i {
         margin-right: 12px;
-        color: #34d399;
+        color: #60A5FA;
         font-size: 1.1rem;
     }
 
     .breadcrumb strong {
-        color: #07130d;
+        color: #070B1A;
     }
 
     /* Header Card */
@@ -287,8 +361,8 @@
         justify-content: space-between;
         align-items: center;
         gap: 24px;
-        box-shadow: 0 18px 45px rgba(15, 116, 76, .09);
-        border: 1px solid rgba(15, 116, 76, .12);
+        box-shadow: 0 18px 45px rgba(47, 107, 255, .09);
+        border: 1px solid rgba(47, 107, 255, .12);
         margin-bottom: 28px;
     }
 
@@ -301,21 +375,21 @@
     .header-icon {
         width: 70px;
         height: 70px;
-        background: linear-gradient(145deg, #34d399, #10b981);
+        background: linear-gradient(145deg, #60A5FA, #10b981);
         color: white;
         border-radius: 20px;
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 32px;
-        box-shadow: 0 10px 25px rgba(16, 185, 129, .2);
+        box-shadow: 0 10px 25px rgba(47, 107, 255, .2);
     }
 
     .header-card h1 {
         font-size: 34px;
         font-weight: 700;
         margin-bottom: 6px;
-        color: #07130d;
+        color: #070B1A;
     }
 
     .header-card p {
@@ -347,26 +421,26 @@
 
     .btn-outline {
         background: transparent;
-        border: 1px solid rgba(15, 116, 76, .2);
-        color: #0f744c;
+        border: 1px solid rgba(47, 107, 255, .2);
+        color: #2F6BFF;
     }
 
     .btn-outline:hover {
         background: #edf8f2;
-        border-color: #34d399;
+        border-color: #60A5FA;
         transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(15, 116, 76, .1);
+        box-shadow: 0 8px 20px rgba(47, 107, 255, .1);
     }
 
     .btn-primary {
-        background: linear-gradient(145deg, #34d399, #10b981);
+        background: linear-gradient(145deg, #60A5FA, #10b981);
         color: white;
-        box-shadow: 0 8px 20px rgba(16, 185, 129, .25);
+        box-shadow: 0 8px 20px rgba(47, 107, 255, .25);
     }
 
     .btn-primary:hover {
         transform: translateY(-2px);
-        box-shadow: 0 12px 28px rgba(16, 185, 129, .35);
+        box-shadow: 0 12px 28px rgba(47, 107, 255, .35);
     }
 
     /* Stats Grid */
@@ -381,8 +455,8 @@
         background: white;
         padding: 22px;
         border-radius: 22px;
-        border: 1px solid rgba(15, 116, 76, .12);
-        box-shadow: 0 14px 35px rgba(15, 116, 76, .06);
+        border: 1px solid rgba(47, 107, 255, .12);
+        box-shadow: 0 14px 35px rgba(47, 107, 255, .06);
         display: flex;
         gap: 16px;
         align-items: center;
@@ -391,7 +465,7 @@
 
     .stat-card:hover {
         transform: translateY(-3px);
-        box-shadow: 0 20px 40px rgba(15, 116, 76, .12);
+        box-shadow: 0 20px 40px rgba(47, 107, 255, .12);
     }
 
     .stat-icon {
@@ -402,8 +476,8 @@
         align-items: center;
         justify-content: center;
         font-size: 22px;
-        background: #d1fae5;
-        color: #0f744c;
+        background: #E0E7FF;
+        color: #2F6BFF;
     }
 
     .stat-card h3 {
@@ -431,8 +505,8 @@
     .content-card {
         background: white;
         border-radius: 24px;
-        border: 1px solid rgba(15, 116, 76, .12);
-        box-shadow: 0 18px 45px rgba(15, 116, 76, .08);
+        border: 1px solid rgba(47, 107, 255, .12);
+        box-shadow: 0 18px 45px rgba(47, 107, 255, .08);
         overflow: hidden;
     }
 
@@ -440,7 +514,7 @@
     .table-header {
         padding: 22px 28px;
         background: linear-gradient(135deg, #ffffff, #f5fbf7);
-        border-bottom: 1px solid rgba(15, 116, 76, .1);
+        border-bottom: 1px solid rgba(47, 107, 255, .1);
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -458,7 +532,7 @@
         width: 48px;
         height: 48px;
         background: #e7f5ee;
-        color: #0f744c;
+        color: #2F6BFF;
         border-radius: 14px;
         display: flex;
         align-items: center;
@@ -470,12 +544,12 @@
         font-size: 1.3rem;
         font-weight: 700;
         margin: 0;
-        color: #07130d;
+        color: #070B1A;
     }
 
     .table-title .muted {
         font-size: 0.95rem;
-        color: #8ba198;
+        color: #64748B;
         display: block;
         margin-top: 2px;
     }
@@ -493,7 +567,7 @@
     .search-box input {
         padding: 12px 18px 12px 44px;
         border-radius: 40px;
-        border: 1px solid rgba(15, 116, 76, .18);
+        border: 1px solid rgba(47, 107, 255, .18);
         outline: none;
         font-weight: 500;
         font-size: 1rem;
@@ -503,8 +577,8 @@
     }
 
     .search-box input:focus {
-        border-color: #34d399;
-        box-shadow: 0 0 0 3px rgba(16, 185, 129, .1);
+        border-color: #60A5FA;
+        box-shadow: 0 0 0 3px rgba(47, 107, 255, .1);
     }
 
     .search-box i {
@@ -512,7 +586,7 @@
         left: 16px;
         top: 50%;
         transform: translateY(-50%);
-        color: #0f744c;
+        color: #2F6BFF;
         font-size: 1.1rem;
     }
 
@@ -538,39 +612,39 @@
         text-transform: uppercase;
         letter-spacing: 0.06em;
         background: transparent;
-        border-bottom: 2px solid rgba(15, 116, 76, .1);
+        border-bottom: 2px solid rgba(47, 107, 255, .1);
         white-space: nowrap;
     }
 
     .archive-table thead th i {
         margin-right: 8px;
-        color: #34d399;
+        color: #60A5FA;
         font-size: 0.9rem;
     }
 
     .archive-table tbody td {
         background: #ffffff;
         padding: 16px 18px;
-        border-top: 1px solid rgba(15, 116, 76, .06);
-        border-bottom: 1px solid rgba(15, 116, 76, .06);
+        border-top: 1px solid rgba(47, 107, 255, .06);
+        border-bottom: 1px solid rgba(47, 107, 255, .06);
         vertical-align: middle;
         transition: all 0.2s ease;
         font-size: 0.95rem;
     }
 
     .archive-table tbody td:first-child {
-        border-left: 1px solid rgba(15, 116, 76, .06);
+        border-left: 1px solid rgba(47, 107, 255, .06);
         border-radius: 14px 0 0 14px;
     }
 
     .archive-table tbody td:last-child {
-        border-right: 1px solid rgba(15, 116, 76, .06);
+        border-right: 1px solid rgba(47, 107, 255, .06);
         border-radius: 0 14px 14px 0;
     }
 
     .archive-table tbody tr:hover td {
         background: #fafefb;
-        border-color: rgba(15, 116, 76, .12);
+        border-color: rgba(47, 107, 255, .12);
     }
 
     .action-cell {
@@ -589,8 +663,8 @@
         width: 40px;
         height: 40px;
         border-radius: 10px;
-        background: #d1fae5;
-        color: #0f744c;
+        background: #E0E7FF;
+        color: #2F6BFF;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -599,13 +673,13 @@
 
     .project-name {
         font-weight: 600;
-        color: #07130d;
+        color: #070B1A;
         font-size: 0.95rem;
     }
 
     .project-code {
         font-size: 0.75rem;
-        color: #8ba198;
+        color: #64748B;
         display: block;
     }
 
@@ -625,8 +699,8 @@
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        background: #d1fae5;
-        color: #0f744c;
+        background: #E0E7FF;
+        color: #2F6BFF;
         font-weight: 700;
         font-size: 0.75rem;
         overflow: hidden;
@@ -639,13 +713,13 @@
     }
 
     .member-avatar.more {
-        background: #0f744c;
+        background: #2F6BFF;
         color: white;
         font-size: 0.7rem;
     }
 
     .empty-text {
-        color: #8ba198;
+        color: #64748B;
         font-size: 0.85rem;
     }
 
@@ -659,7 +733,7 @@
     }
 
     .date-cell i {
-        color: #0f744c;
+        color: #2F6BFF;
         font-size: 0.9rem;
     }
 
@@ -674,8 +748,8 @@
         width: 32px;
         height: 32px;
         border-radius: 50%;
-        background: #d1fae5;
-        color: #0f744c;
+        background: #E0E7FF;
+        color: #2F6BFF;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -685,7 +759,7 @@
 
     .client-cell span {
         font-weight: 500;
-        color: #07130d;
+        color: #070B1A;
         font-size: 0.9rem;
     }
 
@@ -709,14 +783,14 @@
     .progress-bar div {
         height: 100%;
         border-radius: inherit;
-        background: linear-gradient(90deg, #34d399, #10b981);
+        background: linear-gradient(90deg, #60A5FA, #10b981);
         transition: width 0.6s ease;
     }
 
     .progress-text {
         font-weight: 700;
         font-size: 0.85rem;
-        color: #07130d;
+        color: #070B1A;
         min-width: 40px;
     }
 
@@ -747,8 +821,8 @@
         height: 38px;
         border-radius: 10px;
         border: none;
-        background: #f0f9f4;
-        color: #0f744c;
+        background: #F8FAFC;
+        color: #2F6BFF;
         cursor: pointer;
         display: inline-flex;
         align-items: center;
@@ -762,8 +836,8 @@
     }
 
     .action-btn.restore-btn:hover {
-        background: #d1fae5;
-        color: #059669;
+        background: #E0E7FF;
+        color: #2F6BFF;
     }
 
     .action-btn.delete-btn {
@@ -780,7 +854,7 @@
     .table-footer {
         padding: 18px 28px;
         background: #fafefb;
-        border-top: 1px solid rgba(15, 116, 76, .08);
+        border-top: 1px solid rgba(47, 107, 255, .08);
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -794,7 +868,7 @@
     }
 
     .footer-info i {
-        color: #0f744c;
+        color: #2F6BFF;
         margin-right: 8px;
         font-size: 1rem;
     }
@@ -804,7 +878,7 @@
         align-items: center;
         gap: 12px;
         font-size: 0.9rem;
-        color: #8ba198;
+        color: #64748B;
     }
 
     .status-dot {
@@ -828,19 +902,19 @@
 
     .empty-state i {
         font-size: 4rem;
-        color: #a7f3d0;
+        color: #C7D2FE;
         margin-bottom: 18px;
     }
 
     .empty-state h5 {
-        color: #0f744c;
+        color: #2F6BFF;
         font-weight: 700;
         font-size: 1.3rem;
         margin-bottom: 10px;
     }
 
     .empty-state p {
-        color: #8ba198;
+        color: #64748B;
         font-size: 1rem;
         margin-bottom: 20px;
     }
@@ -856,8 +930,8 @@
         align-items: center;
         flex-wrap: wrap;
         gap: 16px;
-        border: 1px solid rgba(15, 116, 76, .1);
-        box-shadow: 0 8px 25px rgba(15, 116, 76, .04);
+        border: 1px solid rgba(47, 107, 255, .1);
+        box-shadow: 0 8px 25px rgba(47, 107, 255, .04);
     }
 
     .status-item {
@@ -874,7 +948,7 @@
 
     .status-item span {
         font-weight: 700;
-        color: #07130d;
+        color: #070B1A;
         margin-right: 4px;
         font-size: 1.05rem;
     }
@@ -943,109 +1017,184 @@
         }
     }
 
-    /* Dark Mode Support */
+    /* Dark Mode Support (Bitroxia Design System) */
     html[data-pms-theme="dark"] .archived-projects-page {
-        background: linear-gradient(145deg, #07130d, #102119);
+        background: #070B1A !important;
+        color: #CBD5E1 !important;
     }
 
-    html[data-pms-theme="dark"] .breadcrumb,
+    html[data-pms-theme="dark"] .breadcrumb {
+        background: transparent !important;
+        border-color: rgba(238, 241, 251, 0.08) !important;
+        color: #9AA3C7 !important;
+    }
+
     html[data-pms-theme="dark"] .header-card,
     html[data-pms-theme="dark"] .content-card,
     html[data-pms-theme="dark"] .stat-card,
     html[data-pms-theme="dark"] .status-bar {
-        background: #102119;
-        border-color: rgba(122, 240, 181, .18);
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+        box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.35) !important;
     }
 
     html[data-pms-theme="dark"] .header-card h1,
     html[data-pms-theme="dark"] .table-title h4,
     html[data-pms-theme="dark"] .project-name,
     html[data-pms-theme="dark"] .stat-card h3,
-    html[data-pms-theme="dark"] .client-cell span {
-        color: #ffffff;
+    html[data-pms-theme="dark"] .client-cell span,
+    html[data-pms-theme="dark"] .client-cell .client-name {
+        color: #EEF1FB !important;
+    }
+
+    html[data-pms-theme="dark"] .header-card p,
+    html[data-pms-theme="dark"] .stat-card span,
+    html[data-pms-theme="dark"] .stat-sub,
+    html[data-pms-theme="dark"] .table-title .muted {
+        color: #9AA3C7 !important;
+    }
+
+    html[data-pms-theme="dark"] .stat-icon {
+        background: #141B3D !important;
+        color: #60A5FA !important;
+    }
+
+    html[data-pms-theme="dark"] .header-actions .btn-outline {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.16) !important;
+        color: #CBD5E1 !important;
+    }
+
+    html[data-pms-theme="dark"] .header-actions .btn-outline:hover {
+        background: #1A2247 !important;
+        color: #FFFFFF !important;
+        border-color: #2F6BFF !important;
+    }
+
+    html[data-pms-theme="dark"] .archive-table th {
+        background: #141B3D !important;
+        color: #9AA3C7 !important;
+        border-bottom: 2px solid rgba(238, 241, 251, 0.1) !important;
+    }
+
+    html[data-pms-theme="dark"] .archive-table th i {
+        color: #60A5FA !important;
     }
 
     html[data-pms-theme="dark"] .archive-table tbody td {
-        background: #102119;
-        border-color: rgba(122, 240, 181, .08);
+        background: #0F1530 !important;
+        border-top: 1px solid rgba(238, 241, 251, 0.08) !important;
+        border-bottom: 1px solid rgba(238, 241, 251, 0.08) !important;
+        color: #CBD5E1 !important;
+    }
+
+    html[data-pms-theme="dark"] .archive-table tbody td:first-child {
+        border-left: 1px solid rgba(238, 241, 251, 0.08) !important;
+        border-radius: 14px 0 0 14px !important;
+    }
+
+    html[data-pms-theme="dark"] .archive-table tbody td:last-child {
+        border-right: 1px solid rgba(238, 241, 251, 0.08) !important;
+        border-radius: 0 14px 14px 0 !important;
     }
 
     html[data-pms-theme="dark"] .archive-table tbody tr:hover td {
-        background: #183026;
-        border-color: rgba(122, 240, 181, .16);
+        background: #141B3D !important;
+        border-color: rgba(47, 107, 255, 0.35) !important;
     }
 
     html[data-pms-theme="dark"] .search-box input {
-        background: #183026;
-        color: #ffffff;
-        border-color: rgba(122, 240, 181, .18);
+        background: #141B3D !important;
+        color: #EEF1FB !important;
+        border-color: rgba(238, 241, 251, 0.16) !important;
+    }
+
+    html[data-pms-theme="dark"] .search-box i {
+        color: #60A5FA !important;
     }
 
     html[data-pms-theme="dark"] .table-header,
     html[data-pms-theme="dark"] .table-footer {
-        background: #142a20;
-        border-color: rgba(122, 240, 181, .16);
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.1) !important;
     }
 
     html[data-pms-theme="dark"] .project-icon {
-        background: rgba(122, 240, 181, .15);
-        color: #7af0b5;
+        background: #141B3D !important;
+        color: #60A5FA !important;
+        border: 1px solid rgba(47, 107, 255, 0.25) !important;
     }
 
-    html[data-pms-theme="dark"] .member-avatar {
-        background: rgba(122, 240, 181, .15);
-        color: #7af0b5;
+    html[data-pms-theme="dark"] .project-code {
+        color: #9AA3C7 !important;
     }
 
+    html[data-pms-theme="dark"] .member-avatar,
     html[data-pms-theme="dark"] .client-avatar {
-        background: rgba(122, 240, 181, .15);
-        color: #7af0b5;
+        background: #141B3D !important;
+        color: #60A5FA !important;
+        border: 1px solid rgba(47, 107, 255, 0.25) !important;
     }
 
     html[data-pms-theme="dark"] .action-btn {
-        background: #183026;
-        color: #7af0b5;
+        background: #141B3D !important;
+        color: #EEF1FB !important;
+        border: 1px solid rgba(238, 241, 251, 0.12) !important;
+    }
+
+    html[data-pms-theme="dark"] .action-btn:hover {
+        background: #1A2247 !important;
+        color: #60A5FA !important;
+        border-color: #2F6BFF !important;
     }
 
     html[data-pms-theme="dark"] .action-btn.delete-btn {
-        background: rgba(239, 68, 68, .15);
-        color: #f87171;
+        background: rgba(239, 68, 68, 0.18) !important;
+        color: #FCA5A5 !important;
+        border: 1px solid rgba(239, 68, 68, 0.3) !important;
     }
 
     html[data-pms-theme="dark"] .action-btn.delete-btn:hover {
-        background: rgba(239, 68, 68, .25);
-    }
-
-    html[data-pms-theme="dark"] .archive-table thead th {
-        color: #b7d5c4;
+        background: rgba(239, 68, 68, 0.28) !important;
     }
 
     html[data-pms-theme="dark"] .progress-bar {
-        background: #183026;
+        background: #141B3D !important;
     }
 </style>
 
 @push('scripts')
 <script>
 $(document).ready(function () {
-    // Initialize DataTable
-    $('#archive-projects-table').DataTable({
-        dom: 'Bfrtip',
-        buttons: ['excel'],
-        responsive: true,
-        pageLength: 10,
-        lengthMenu: [10, 25, 50, 100],
-        language: {
-            search: "_INPUT_",
-            searchPlaceholder: "Search archived projects..."
-        }
-    });
+    if (window.jQuery && jQuery.fn && jQuery.fn.dataTable) {
+        jQuery.fn.dataTable.ext.errMode = 'none';
+    }
+
+    const $archiveTable = $('#archive-projects-table');
+    const hasDataRows = $archiveTable.find('tbody tr').length > 0 && !$archiveTable.find('tbody tr td[colspan]').length;
+
+    // Initialize DataTable only when valid data rows exist
+    if (hasDataRows) {
+        $archiveTable.DataTable({
+            dom: 'Bfrtip',
+            buttons: ['excel'],
+            responsive: true,
+            pageLength: 10,
+            lengthMenu: [10, 25, 50, 100],
+            language: {
+                search: "_INPUT_",
+                searchPlaceholder: "Search archived projects..."
+            }
+        });
+    }
 
     // Custom search handler
     const searchInput = document.getElementById('archiveSearch');
     if (searchInput) {
         searchInput.addEventListener('keyup', function() {
-            $('#archive-projects-table').DataTable().search(this.value).draw();
+            if ($.fn.DataTable && $.fn.DataTable.isDataTable('#archive-projects-table')) {
+                $('#archive-projects-table').DataTable().search(this.value).draw();
+            }
         });
     }
 });

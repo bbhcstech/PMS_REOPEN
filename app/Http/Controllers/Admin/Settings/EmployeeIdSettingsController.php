@@ -23,6 +23,10 @@ class EmployeeIdSettingsController extends Controller
 
     public function update(Request $request)
     {
+        if (auth()->user()?->role !== 'admin') {
+            abort(403, 'Unauthorized. Only administrators can update employee ID settings.');
+        }
+
         $request->validate([
             'prefix' => 'required|string',
             'start_number' => 'required|numeric',
@@ -51,6 +55,19 @@ class EmployeeIdSettingsController extends Controller
                 ]
             );
         }
+
+        // Broadcast notification to Admin, HR, Manager, and Employees
+        \App\Services\SystemNotificationService::notifyAllRoles(
+            'Employee ID Generation Rules Updated',
+            'Employee identification number sequence and prefix rules have been updated by ' . (auth()->user()?->name ?? 'Admin') . '.',
+            route('admin.settings.employee-id'),
+            [
+                'type' => 'setting_update',
+                'setting_module' => 'employee-id',
+                'icon' => 'fa-id-card',
+                'color' => 'primary',
+            ]
+        );
 
         return back()->with('success', 'Employee ID settings updated successfully!');
     }

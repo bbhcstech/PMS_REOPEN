@@ -16,7 +16,7 @@ return [
     |
     */
 
-    'default' => env('DB_CONNECTION', 'sqlite'),
+    'default' => env('DB_CONNECTION', 'mysql'),
 
     /*
     |--------------------------------------------------------------------------
@@ -44,10 +44,36 @@ return [
 
         'mysql' => [
             'driver' => 'mysql',
+            'timezone' => env('DB_TIMEZONE', '+05:30'),
             'url' => env('DB_URL'),
             'host' => env('DB_HOST', '127.0.0.1'),
             'port' => env('DB_PORT', '3306'),
-            'database' => env('DB_DATABASE', 'laravel'),
+            'database' => env('DB_DATABASE', 'pms_last'),
+            'username' => env('DB_USERNAME', 'root'),
+            'password' => env('DB_PASSWORD', ''),
+            'unix_socket' => env('DB_SOCKET', ''),
+            'charset' => env('DB_CHARSET', 'utf8mb4'),
+            'collation' => env('DB_COLLATION', 'utf8mb4_unicode_ci'),
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'strict' => true,
+            'engine' => null,
+            'options' => extension_loaded('pdo_mysql') ? array_filter([
+                (defined('Pdo\Mysql::ATTR_SSL_CA') ? Pdo\Mysql::ATTR_SSL_CA : PDO::MYSQL_ATTR_SSL_CA) => env('MYSQL_ATTR_SSL_CA'),
+            ]) : [],
+        ],
+
+        // ---------------------------------------------------------------
+        // DEDICATED SESSION CONNECTION — points permanently to primary DB
+        // so dynamic tenant database switching does NOT orphan or lose sessions.
+        // ---------------------------------------------------------------
+        'session_db' => [
+            'driver' => 'mysql',
+            'timezone' => env('DB_TIMEZONE', '+05:30'),
+            'url' => env('DB_URL'),
+            'host' => env('DB_HOST', '127.0.0.1'),
+            'port' => env('DB_PORT', '3306'),
+            'database' => env('DB_DATABASE', 'thesmart_lara319'),
             'username' => env('DB_USERNAME', 'root'),
             'password' => env('DB_PASSWORD', ''),
             'unix_socket' => env('DB_SOCKET', ''),
@@ -70,6 +96,7 @@ return [
         // ---------------------------------------------------------------
         'central' => [
             'driver'    => 'mysql',
+            'timezone'  => env('DB_TIMEZONE', '+05:30'),
             'host'      => env('CENTRAL_DB_HOST', env('DB_HOST', '127.0.0.1')),
             'port'      => env('CENTRAL_DB_PORT', env('DB_PORT', '3306')),
             'database'  => env('CENTRAL_DB_DATABASE', 'pms_central'),
@@ -95,9 +122,10 @@ return [
         // ---------------------------------------------------------------
         'tenant' => [
             'driver'    => 'mysql',
+            'timezone'  => env('DB_TIMEZONE', '+05:30'),
             'host'      => env('TENANT_DB_HOST', env('DB_HOST', '127.0.0.1')),
             'port'      => env('TENANT_DB_PORT', env('DB_PORT', '3306')),
-            'database'  => env('DB_DATABASE', 'pms_last'),
+            'database'  => env('TENANT_DB_DATABASE', env('DB_DATABASE', 'pms_last')),
             'username'  => env('TENANT_DB_USERNAME', env('DB_USERNAME', 'root')),
             'password'  => env('TENANT_DB_PASSWORD', env('DB_PASSWORD', '')),
             'unix_socket' => env('TENANT_DB_SOCKET', ''),
@@ -114,6 +142,7 @@ return [
 
         'mariadb' => [
             'driver' => 'mariadb',
+            'timezone' => env('DB_TIMEZONE', '+05:30'),
             'url' => env('DB_URL'),
             'host' => env('DB_HOST', '127.0.0.1'),
             'port' => env('DB_PORT', '3306'),

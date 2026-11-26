@@ -10,6 +10,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class Leave extends TenantModel
 {
     use HasFactory;
+    use \App\Models\Concerns\HasWorkforceRecords;
+    public function getAttachmentAttribute($value)
+    {
+        return $value && str_starts_with($value, 'authority-leave/') ? route('leaves.attachment', $this->id) : $value;
+    }
 
     protected $fillable = [
         'user_id',
@@ -24,7 +29,6 @@ class Leave extends TenantModel
         'paid_days',
         'unpaid_days',
         'reason',
-        'files',
         'attachment',
         'apology_note',
         'emergency_flag',
@@ -39,7 +43,6 @@ class Leave extends TenantModel
         'rejection_reason',
         'is_paid',
         'is_unpaid',
-        'paid',
         'payroll_deduction_flag',
         'admin_note',
         'leave_year',
@@ -57,7 +60,6 @@ class Leave extends TenantModel
         'half_day_flag' => 'boolean',
         'is_paid' => 'boolean',
         'is_unpaid' => 'boolean',
-        'paid' => 'boolean',
         'payroll_deduction_flag' => 'boolean',
         'approved_at' => 'datetime',
         'rejected_at' => 'datetime',
@@ -94,9 +96,52 @@ class Leave extends TenantModel
         return $this->belongsTo(User::class, 'rejected_by');
     }
 
+    protected static function booted(): void
+    {
+        static::saving(function (Leave $leave) {
+            if (empty($leave->attributes['start_date']) && !empty($leave->attributes['date'])) {
+                $leave->attributes['start_date'] = $leave->attributes['date'];
+            }
+            if (empty($leave->attributes['end_date'])) {
+                $leave->attributes['end_date'] = $leave->attributes['start_date'] ?? ($leave->attributes['date'] ?? null);
+            }
+            if (empty($leave->attributes['date']) && !empty($leave->attributes['start_date'])) {
+                $leave->attributes['date'] = $leave->attributes['start_date'];
+            }
+        });
+    }
+
+    public function getStartDateAttribute($value)
+    {
+        $raw = $value ?: ($this->attributes['date'] ?? null);
+        return $raw ? \Carbon\Carbon::parse($raw)->startOfDay() : null;
+    }
+
+    public function getEndDateAttribute($value)
+    {
+        $raw = $value ?: ($this->attributes['start_date'] ?? ($this->attributes['date'] ?? null));
+        return $raw ? \Carbon\Carbon::parse($raw)->startOfDay() : null;
+    }
+
+    public function getDateAttribute($value)
+    {
+        $raw = $value ?: ($this->attributes['start_date'] ?? null);
+        return $raw ? \Carbon\Carbon::parse($raw)->startOfDay() : null;
+    }
+
+    public function getFilesAttribute(): ?string
+    {
+        return $this->attachment ?: ($this->attributes['files'] ?? null);
+    }
+
+    public function getPaidAttribute(): bool
+    {
+        return (bool) ($this->attributes['paid'] ?? $this->is_paid);
+    }
+
     public function getAttachmentPathAttribute(): ?string
     {
-        return $this->attachment ?: $this->files;
+        return $this->attachment ?: ($this->attributes['files'] ?? null);
     }
 
     public function getTypeLabelAttribute(): string

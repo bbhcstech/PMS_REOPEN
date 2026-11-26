@@ -3,6 +3,7 @@
 @section('title', isset($designation) ? 'Edit Designation' : 'Add Designation')
 
 @section('content')
+@include('admin.settings.partials.workforce-navigation')
 
 <div class="designation-form-page {{ isset($designation) ? 'designation-edit-mode' : 'designation-add-mode' }}">
     <!-- Breadcrumb -->
@@ -23,7 +24,7 @@
             </div>
         </div>
         <div class="btn-group">
-            <a href="{{ route('designations.index') }}" class="btn btn-light">
+            <a href="{{ \App\Support\WorkforceSettings::route('designations.index') }}" class="btn btn-light">
                 <i class="fas fa-arrow-left"></i> Back to List
             </a>
         </div>
@@ -70,14 +71,14 @@
         @endif
 
         <form method="POST" class="form-content"
-              action="{{ isset($designation) ? route('designations.update', $designation) : route('designations.store') }}">
+              action="{{ isset($designation) ? \App\Support\WorkforceSettings::route('designations.update', $designation) : \App\Support\WorkforceSettings::route('designations.store') }}">
             @csrf
             @if(isset($designation))
                 @method('PUT')
             @endif
 
             <!-- Unique Code Field -->
-            <div class="form-field">
+            <div class="form-field field-code">
                 <div class="field-icon">
                     <i class="fas fa-qrcode"></i>
                 </div>
@@ -140,7 +141,7 @@
             </div>
 
             <!-- Designation Name Field -->
-            <div class="form-field">
+            <div class="form-field field-name">
                 <div class="field-icon">
                     <i class="fas fa-user-tag"></i>
                 </div>
@@ -164,8 +165,51 @@
                 </div>
             </div>
 
+            <!-- Parent Designation Field -->
+            <div class="form-field field-parent">
+                <div class="field-icon">
+                    <i class="fas fa-sitemap"></i>
+                </div>
+                <div class="field-content">
+                    <label for="parent_id">
+                        Parent Designation
+                        <span class="text-muted small">(Optional - select reporting hierarchy)</span>
+                    </label>
+                    <select
+                        id="parent_id"
+                        name="parent_id"
+                        class="form-control @error('parent_id') is-invalid @enderror"
+                    >
+                        <option value="" data-level="-1">-- None (Top-Level Designation) --</option>
+                        @foreach($designations as $parentDesig)
+                            @php
+                                $pLevel = (int) ($parentDesig->level ?? 0);
+                                $isL6 = $pLevel >= \App\Services\DesignationLevels::maximum();
+                            @endphp
+                            <option value="{{ $parentDesig->id }}"
+                                data-level="{{ $pLevel }}"
+                                {{ (string) old('parent_id', $designation->parent_id ?? '') === (string) $parentDesig->id ? 'selected' : '' }}
+                                {{ $isL6 ? 'disabled class=text-muted' : '' }}>
+                                {{ $parentDesig->name }}
+                                @if(!empty($parentDesig->unique_code))
+                                    ({{ $parentDesig->unique_code }})
+                                @endif
+                                - Level {{ $pLevel }}
+                                @if($isL6)
+                                    [Max Level {{ \App\Services\DesignationLevels::maximum() }} - cannot have subordinates]
+                                @endif
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('parent_id')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                    <span class="field-hint" id="parent-field-hint">Select parent designation (Level 0-{{ \App\Services\DesignationLevels::maximum() - 1 }} only; Level {{ \App\Services\DesignationLevels::maximum() }} is the max organizational limit)</span>
+                </div>
+            </div>
+
             <!-- Level Field -->
-            <div class="form-field">
+            <div class="form-field field-level">
                 <div class="field-icon">
                     <i class="fas fa-layer-group"></i>
                 </div>
@@ -179,10 +223,11 @@
                         class="form-control @error('level') is-invalid @enderror"
                         required
                     >
-                        <option value="">Select Level</option>
-                        @for($i = 0; $i <= 6; $i++)
+                        <option value="">Select Level (0 - {{ \App\Services\DesignationLevels::maximum() }})</option>
+                        @for($i = 0; $i <= \App\Services\DesignationLevels::maximum(); $i++)
                             <option value="{{ $i }}"
-                                {{ old('level', $designation->level ?? '') == $i ? 'selected' : '' }}>
+                                data-level="{{ $i }}"
+                                {{ (string) old('level', $designation->level ?? '') === (string) $i ? 'selected' : '' }}>
                                 Level {{ $i }}
                             </option>
                         @endfor
@@ -190,13 +235,13 @@
                     @error('level')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
-                    <span class="field-hint">Organizational hierarchy level (0-6)</span>
+                    <span class="field-hint" id="level-field-hint">Organizational hierarchy level (strictly Level 0 to Level {{ \App\Services\DesignationLevels::maximum() }})</span>
                 </div>
             </div>
 
             <!-- Form Actions -->
             <div class="form-actions">
-                <a href="{{ route('designations.index') }}" class="btn btn-secondary">
+                <a href="{{ \App\Support\WorkforceSettings::route('designations.index') }}" class="btn btn-secondary">
                     <i class="fas fa-times"></i> Cancel
                 </a>
                 <button type="submit" class="btn btn-primary">
@@ -213,8 +258,8 @@
     .designation-form-page {
         padding: 30px 35px;
         min-height: 100vh;
-        background: linear-gradient(135deg, #f0f9f4 0%, #e6f3ec 50%, #f4fbf7 100%);
-        color: #0a2e1f;
+        background: linear-gradient(135deg, #F8FAFC 0%, #EEF2FF 50%, #F8FAFC 100%);
+        color: #0F172A;
         position: relative;
     }
 
@@ -225,8 +270,8 @@
         left: 0;
         right: 0;
         bottom: 0;
-        background: radial-gradient(circle at 0% 0%, rgba(16, 185, 129, 0.03) 0%, transparent 50%),
-                    radial-gradient(circle at 100% 100%, rgba(52, 211, 153, 0.03) 0%, transparent 50%);
+        background: radial-gradient(circle at 0% 0%, rgba(47, 107, 255, 0.03) 0%, transparent 50%),
+                    radial-gradient(circle at 100% 100%, rgba(79, 131, 255, 0.03) 0%, transparent 50%);
         pointer-events: none;
     }
 
@@ -236,9 +281,9 @@
         backdrop-filter: blur(10px);
         padding: 14px 24px;
         border-radius: 16px;
-        border: 1px solid rgba(16, 185, 129, 0.15);
+        border: 1px solid rgba(47, 107, 255, 0.15);
         margin-bottom: 28px;
-        color: #0f744c;
+        color: #2F6BFF;
         font-weight: 600;
         font-size: 0.9rem;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
@@ -248,7 +293,7 @@
 
     .breadcrumb i {
         margin-right: 8px;
-        color: #34d399;
+        color: #60A5FA;
     }
 
     /* Header Card */
@@ -261,8 +306,8 @@
         justify-content: space-between;
         align-items: center;
         gap: 20px;
-        box-shadow: 0 20px 40px -12px rgba(16, 185, 129, 0.12);
-        border: 1px solid rgba(16, 185, 129, 0.12);
+        box-shadow: 0 20px 40px -12px rgba(47, 107, 255, 0.12);
+        border: 1px solid rgba(47, 107, 255, 0.12);
         margin-bottom: 32px;
         transition: all 0.3s ease;
         position: relative;
@@ -270,8 +315,8 @@
     }
 
     .header-card:hover {
-        box-shadow: 0 24px 48px -16px rgba(16, 185, 129, 0.18);
-        border-color: rgba(16, 185, 129, 0.2);
+        box-shadow: 0 24px 48px -16px rgba(47, 107, 255, 0.18);
+        border-color: rgba(47, 107, 255, 0.2);
     }
 
     .header-left {
@@ -288,12 +333,12 @@
         align-items: center;
         justify-content: center;
         font-size: 32px;
-        box-shadow: 0 12px 24px -8px rgba(5, 150, 105, 0.3);
+        box-shadow: 0 12px 24px -8px rgba(47, 107, 255, 0.3);
         transition: all 0.3s ease;
     }
 
     .designation-add-mode .header-icon {
-        background: linear-gradient(145deg, #34d399, #059669);
+        background: linear-gradient(145deg, #4F83FF, #2F6BFF);
         color: white;
     }
 
@@ -311,14 +356,14 @@
         font-size: 32px;
         font-weight: 700;
         margin-bottom: 6px;
-        background: linear-gradient(135deg, #0a2e1f, #0f744c);
+        background: linear-gradient(135deg, #0F172A, #1E4FCC);
         background-clip: text;
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
     }
 
     .designation-edit-mode .header-card h1 {
-        background: linear-gradient(135deg, #0a2e1f, #d97706);
+        background: linear-gradient(135deg, #0F172A, #d97706);
         background-clip: text;
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
@@ -357,23 +402,23 @@
     }
 
     .btn-light {
-        background: #f0f9f4;
-        color: #0f744c;
-        border: 1px solid rgba(16, 185, 129, 0.2);
+        background: #F8FAFC;
+        color: #2F6BFF;
+        border: 1px solid rgba(47, 107, 255, 0.2);
     }
 
     .btn-light:hover {
-        background: #e6f3ec;
+        background: #EEF2FF;
         transform: translateY(-2px);
-        box-shadow: 0 8px 20px -8px rgba(16, 185, 129, 0.25);
-        border-color: #34d399;
+        box-shadow: 0 8px 20px -8px rgba(47, 107, 255, 0.25);
+        border-color: #60A5FA;
     }
 
     /* Form Card */
     .form-card {
         background: white;
         border-radius: 28px;
-        border: 1px solid rgba(16, 185, 129, 0.1);
+        border: 1px solid rgba(47, 107, 255, 0.1);
         overflow: hidden;
         box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
         transition: all 0.3s ease;
@@ -382,7 +427,7 @@
     }
 
     .form-card:hover {
-        box-shadow: 0 12px 40px rgba(16, 185, 129, 0.08);
+        box-shadow: 0 12px 40px rgba(47, 107, 255, 0.08);
     }
 
     /* Alerts */
@@ -398,7 +443,7 @@
     }
 
     .alert-success {
-        background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+        background: linear-gradient(135deg, #EEF2FF, #E0E7FF);
         color: #065f46;
         border-left: 4px solid #10b981;
     }
@@ -437,7 +482,7 @@
     .form-field {
         padding: 22px;
         margin-bottom: 20px;
-        border: 1px solid rgba(16, 185, 129, 0.08);
+        border: 1px solid rgba(47, 107, 255, 0.08);
         border-radius: 20px;
         display: flex;
         gap: 18px;
@@ -447,8 +492,8 @@
     }
 
     .form-field:focus-within {
-        border-color: rgba(16, 185, 129, 0.3);
-        box-shadow: 0 8px 24px rgba(16, 185, 129, 0.06);
+        border-color: rgba(47, 107, 255, 0.3);
+        box-shadow: 0 8px 24px rgba(47, 107, 255, 0.06);
         transform: translateY(-2px);
     }
 
@@ -459,18 +504,39 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.2rem;
+        font-size: 1.25rem;
         flex-shrink: 0;
         transition: all 0.3s ease;
     }
 
-    .form-field:nth-child(1) .field-icon { background: linear-gradient(145deg, #d1fae5, #a7f3d0); color: #059669; }
+    .form-field .field-icon i {
+        display: inline-block;
+        line-height: 1;
+    }
+
+    .form-field.field-code .field-icon,
+    .form-field:nth-child(1) .field-icon { background: linear-gradient(145deg, #EEF2FF, #E0E7FF); color: #2F6BFF; }
+    .form-field.field-name .field-icon,
     .form-field:nth-child(2) .field-icon { background: linear-gradient(145deg, #dbeafe, #bfdbfe); color: #2563eb; }
+    .form-field.field-parent .field-icon,
     .form-field:nth-child(3) .field-icon { background: linear-gradient(145deg, #fef3c7, #fde68a); color: #d97706; }
+    .form-field.field-level .field-icon,
+    .form-field:nth-child(4) .field-icon { background: linear-gradient(145deg, #ede9fe, #ddd6fe); color: #7c3aed; }
 
     .form-field:hover .field-icon {
         transform: scale(1.05);
     }
+
+    /* Theme-wide icon colour rules must not repaint these icons (a blue "+" vanished on the blue header tile). */
+    .designation-form-page .header-card .header-icon i {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        opacity: 1 !important;
+        filter: none !important;
+        background: none !important;
+    }
+    /* Field icons take their tile's colour (set per field, with its own dark-mode colours). */
+    .designation-form-page .form-field .field-icon i { color: inherit !important; -webkit-text-fill-color: currentColor !important; opacity: 1 !important; filter: none !important; background: none !important; }
 
     .field-content {
         flex: 1;
@@ -484,13 +550,13 @@
         flex-wrap: wrap;
         font-size: 0.85rem;
         font-weight: 700;
-        color: #0a2e1f;
+        color: #0F172A;
         margin-bottom: 8px;
     }
 
     .field-content label .text-muted {
         font-weight: 400;
-        color: #8ba198;
+        color: #64748B;
         font-size: 0.75rem;
     }
 
@@ -504,7 +570,7 @@
         border: 1.5px solid #e2e8f0;
         border-radius: 13px;
         background: #ffffff;
-        color: #0a2e1f;
+        color: #0F172A;
         font-size: 1rem;
         font-weight: 500;
         width: 100%;
@@ -512,14 +578,14 @@
     }
 
     .form-control:focus {
-        border-color: #34d399;
-        box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.1);
+        border-color: #60A5FA;
+        box-shadow: 0 0 0 4px rgba(79, 131, 255, 0.1);
         outline: none;
     }
 
     .form-control[readonly],
     .form-control:disabled {
-        background: #f0f9f4;
+        background: #F8FAFC;
         color: #5a6e63;
         cursor: not-allowed;
     }
@@ -572,24 +638,24 @@
     }
 
     .code-mode-option:hover {
-        border-color: #34d399;
-        background: #f0f9f4;
+        border-color: #60A5FA;
+        background: #F8FAFC;
     }
 
     .code-mode-option input[type="radio"] {
-        accent-color: #059669;
+        accent-color: #2F6BFF;
         width: 16px;
         height: 16px;
         cursor: pointer;
     }
 
     .code-mode-option input[type="radio"]:checked + span {
-        color: #059669;
+        color: #2F6BFF;
     }
 
     .code-mode-option:has(input[type="radio"]:checked) {
-        border-color: #059669;
-        background: #ecfdf5;
+        border-color: #2F6BFF;
+        background: #EEF2FF;
     }
 
     .code-mode-option span i {
@@ -605,13 +671,13 @@
         gap: 14px;
         padding-top: 24px;
         margin-top: 8px;
-        border-top: 1px solid rgba(16, 185, 129, 0.1);
+        border-top: 1px solid rgba(47, 107, 255, 0.1);
     }
 
     .btn-primary {
-        background: linear-gradient(145deg, #34d399, #059669);
+        background: linear-gradient(145deg, #4F83FF, #2F6BFF);
         color: white;
-        box-shadow: 0 8px 20px -6px rgba(5, 150, 105, 0.35);
+        box-shadow: 0 8px 20px -6px rgba(47, 107, 255, 0.35);
         border: none;
         padding: 12px 28px;
         min-height: 48px;
@@ -628,7 +694,7 @@
 
     .btn-primary:hover {
         transform: translateY(-2px);
-        box-shadow: 0 12px 28px -8px rgba(5, 150, 105, 0.45);
+        box-shadow: 0 12px 28px -8px rgba(47, 107, 255, 0.45);
     }
 
     .btn-secondary {
@@ -829,138 +895,419 @@
 </style>
 
 <style>
-    /* Dark mode support */
-    html[data-pms-theme="dark"] .designation-form-page {
-        background: linear-gradient(135deg, #07130d, #102119);
+    /* ==========================================================================
+       CREATE / EDIT DESIGNATION FORM - COMPREHENSIVE DARK MODE SYSTEM
+       ========================================================================== */
+    html[data-pms-theme="dark"] .designation-form-page,
+    html[data-bs-theme="dark"] .designation-form-page,
+    html[data-theme="dark"] .designation-form-page,
+    html.dark .designation-form-page,
+    body[data-pms-theme="dark"] .designation-form-page,
+    body[data-bs-theme="dark"] .designation-form-page,
+    body[data-theme="dark"] .designation-form-page,
+    body.dark .designation-form-page,
+    [data-pms-theme="dark"] .designation-form-page,
+    [data-bs-theme="dark"] .designation-form-page,
+    [data-theme="dark"] .designation-form-page,
+    .dark .designation-form-page {
+        background: #070B1A !important;
+        color: #EEF1FB !important;
     }
 
-    html[data-pms-theme="dark"] .breadcrumb {
-        background: rgba(16, 33, 25, 0.85);
-        border-color: rgba(122, 240, 181, 0.15);
-        color: #d9f1e4;
+    html[data-pms-theme="dark"] .designation-form-page .breadcrumb,
+    html[data-bs-theme="dark"] .designation-form-page .breadcrumb,
+    html[data-theme="dark"] .designation-form-page .breadcrumb,
+    html.dark .designation-form-page .breadcrumb,
+    body[data-pms-theme="dark"] .designation-form-page .breadcrumb,
+    [data-pms-theme="dark"] .designation-form-page .breadcrumb,
+    .dark .designation-form-page .breadcrumb {
+        background: #0F1530 !important;
+        border: 1px solid rgba(79, 131, 255, 0.2) !important;
+        color: #60A5FA !important;
     }
 
-    html[data-pms-theme="dark"] .breadcrumb i {
-        color: #34d399;
+    html[data-pms-theme="dark"] .designation-form-page .header-card,
+    html[data-bs-theme="dark"] .designation-form-page .header-card,
+    html[data-theme="dark"] .designation-form-page .header-card,
+    html.dark .designation-form-page .header-card,
+    body[data-pms-theme="dark"] .designation-form-page .header-card,
+    [data-pms-theme="dark"] .designation-form-page .header-card,
+    .dark .designation-form-page .header-card {
+        background: #0F1530 !important;
+        border: 1px solid rgba(79, 131, 255, 0.2) !important;
     }
 
-    html[data-pms-theme="dark"] .header-card {
-        background: rgba(16, 33, 25, 0.95);
-        border-color: rgba(122, 240, 181, 0.12);
+    html[data-pms-theme="dark"] .designation-form-page .header-card h1,
+    html[data-bs-theme="dark"] .designation-form-page .header-card h1,
+    html[data-theme="dark"] .designation-form-page .header-card h1,
+    html.dark .designation-form-page .header-card h1,
+    body[data-pms-theme="dark"] .designation-form-page .header-card h1,
+    [data-pms-theme="dark"] .designation-form-page .header-card h1,
+    .dark .designation-form-page .header-card h1 {
+        background: linear-gradient(135deg, #ffffff 0%, #60A5FA 100%) !important;
+        background-clip: text !important;
+        -webkit-background-clip: text !important;
+        -webkit-text-fill-color: transparent !important;
+        color: #ffffff !important;
     }
 
-    html[data-pms-theme="dark"] .header-card h1 {
-        background: linear-gradient(135deg, #d9f1e4, #34d399);
-        background-clip: text;
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+    html[data-pms-theme="dark"] .designation-form-page.designation-edit-mode .header-card h1,
+    html[data-bs-theme="dark"] .designation-form-page.designation-edit-mode .header-card h1,
+    html[data-theme="dark"] .designation-form-page.designation-edit-mode .header-card h1,
+    html.dark .designation-form-page.designation-edit-mode .header-card h1 {
+        background: linear-gradient(135deg, #ffffff 0%, #fbbf24 100%) !important;
+        background-clip: text !important;
+        -webkit-background-clip: text !important;
+        -webkit-text-fill-color: transparent !important;
     }
 
-    html[data-pms-theme="dark"] .designation-edit-mode .header-card h1 {
-        background: linear-gradient(135deg, #d9f1e4, #fbbf24);
-        background-clip: text;
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+    html[data-pms-theme="dark"] .designation-form-page .header-card p,
+    html[data-bs-theme="dark"] .designation-form-page .header-card p,
+    html[data-theme="dark"] .designation-form-page .header-card p,
+    html.dark .designation-form-page .header-card p {
+        color: #94A3B8 !important;
+        -webkit-text-fill-color: #94A3B8 !important;
     }
 
-    html[data-pms-theme="dark"] .header-card p {
-        color: #8ba198;
+    html[data-pms-theme="dark"] .designation-form-page .btn-light,
+    html[data-bs-theme="dark"] .designation-form-page .btn-light,
+    html[data-theme="dark"] .designation-form-page .btn-light,
+    html.dark .designation-form-page .btn-light {
+        background: rgba(47, 107, 255, 0.12) !important;
+        border: 1px solid rgba(79, 131, 255, 0.35) !important;
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
     }
 
-    html[data-pms-theme="dark"] .btn-light {
-        background: #183026;
-        color: #d9f1e4;
-        border-color: rgba(122, 240, 181, 0.15);
+    html[data-pms-theme="dark"] .designation-form-page .btn-light:hover,
+    html[data-bs-theme="dark"] .designation-form-page .btn-light:hover,
+    html[data-theme="dark"] .designation-form-page .btn-light:hover,
+    html.dark .designation-form-page .btn-light:hover {
+        background: rgba(79, 131, 255, 0.25) !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
     }
 
-    html[data-pms-theme="dark"] .btn-light:hover {
-        background: #1f3d30;
-        border-color: #34d399;
+    /* Form Card Container in Dark Mode */
+    html[data-pms-theme="dark"] .form-card,
+    html[data-bs-theme="dark"] .form-card,
+    html[data-theme="dark"] .form-card,
+    html.dark .form-card,
+    body[data-pms-theme="dark"] .form-card,
+    body[data-bs-theme="dark"] .form-card,
+    body[data-theme="dark"] .form-card,
+    body.dark .form-card,
+    [data-pms-theme="dark"] .form-card,
+    [data-bs-theme="dark"] .form-card,
+    [data-theme="dark"] .form-card,
+    .dark .form-card,
+    html[data-pms-theme="dark"] .designation-form-page .form-card,
+    html[data-bs-theme="dark"] .designation-form-page .form-card,
+    html[data-theme="dark"] .designation-form-page .form-card,
+    html.dark .designation-form-page .form-card,
+    body[data-pms-theme="dark"] .designation-form-page .form-card,
+    body[data-bs-theme="dark"] .designation-form-page .form-card,
+    body[data-theme="dark"] .designation-form-page .form-card,
+    body.dark .designation-form-page .form-card,
+    [data-pms-theme="dark"] .designation-form-page .form-card,
+    [data-bs-theme="dark"] .designation-form-page .form-card,
+    [data-theme="dark"] .designation-form-page .form-card,
+    .dark .designation-form-page .form-card {
+        background: #0F1530 !important;
+        border: 1px solid rgba(79, 131, 255, 0.2) !important;
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4) !important;
+        color: #EEF1FB !important;
     }
 
-    html[data-pms-theme="dark"] .form-card {
-        background: #102119;
-        border-color: rgba(122, 240, 181, 0.08);
+    /* Form Content Area in Dark Mode */
+    html[data-pms-theme="dark"] .form-content,
+    html[data-bs-theme="dark"] .form-content,
+    html[data-theme="dark"] .form-content,
+    html.dark .form-content,
+    body[data-pms-theme="dark"] .form-content,
+    [data-pms-theme="dark"] .form-content,
+    .dark .form-content {
+        background: transparent !important;
+        color: #EEF1FB !important;
     }
 
-    html[data-pms-theme="dark"] .form-field {
-        background: #0d1b14;
-        border-color: rgba(122, 240, 181, 0.06);
+    /* Form Fields in Dark Mode */
+    html[data-pms-theme="dark"] .form-field,
+    html[data-bs-theme="dark"] .form-field,
+    html[data-theme="dark"] .form-field,
+    html.dark .form-field,
+    body[data-pms-theme="dark"] .form-field,
+    body[data-bs-theme="dark"] .form-field,
+    body[data-theme="dark"] .form-field,
+    body.dark .form-field,
+    [data-pms-theme="dark"] .form-field,
+    [data-bs-theme="dark"] .form-field,
+    [data-theme="dark"] .form-field,
+    .dark .form-field,
+    html[data-pms-theme="dark"] .designation-form-page .form-field,
+    html[data-bs-theme="dark"] .designation-form-page .form-field,
+    html[data-theme="dark"] .designation-form-page .form-field,
+    html.dark .designation-form-page .form-field,
+    body[data-pms-theme="dark"] .designation-form-page .form-field,
+    body[data-bs-theme="dark"] .designation-form-page .form-field,
+    body[data-theme="dark"] .designation-form-page .form-field,
+    body.dark .designation-form-page .form-field,
+    [data-pms-theme="dark"] .designation-form-page .form-field,
+    [data-bs-theme="dark"] .designation-form-page .form-field,
+    [data-theme="dark"] .designation-form-page .form-field,
+    .dark .designation-form-page .form-field {
+        background: #141B3D !important;
+        border: 1px solid rgba(79, 131, 255, 0.15) !important;
+        color: #EEF1FB !important;
     }
 
-    html[data-pms-theme="dark"] .form-field:focus-within {
-        border-color: rgba(122, 240, 181, 0.15);
+    html[data-pms-theme="dark"] .form-field:focus-within,
+    html[data-bs-theme="dark"] .form-field:focus-within,
+    [data-pms-theme="dark"] .form-field:focus-within {
+        border-color: rgba(79, 131, 255, 0.35) !important;
+        box-shadow: 0 8px 24px rgba(79, 131, 255, 0.08) !important;
     }
 
-    html[data-pms-theme="dark"] .field-content label {
-        color: #d9f1e4;
+    /* Field Labels in Dark Mode */
+    html[data-pms-theme="dark"] .form-card label,
+    html[data-bs-theme="dark"] .form-card label,
+    html[data-theme="dark"] .form-card label,
+    html.dark .form-card label,
+    body[data-pms-theme="dark"] .form-card label,
+    body[data-bs-theme="dark"] .form-card label,
+    body[data-theme="dark"] .form-card label,
+    body.dark .form-card label,
+    [data-pms-theme="dark"] .form-card label,
+    [data-bs-theme="dark"] .form-card label,
+    [data-theme="dark"] .form-card label,
+    .dark .form-card label,
+    html[data-pms-theme="dark"] .field-content label,
+    html[data-bs-theme="dark"] .field-content label,
+    html[data-theme="dark"] .field-content label,
+    html.dark .field-content label,
+    body[data-pms-theme="dark"] .field-content label,
+    body[data-bs-theme="dark"] .field-content label,
+    body[data-theme="dark"] .field-content label,
+    body.dark .field-content label,
+    [data-pms-theme="dark"] .field-content label,
+    [data-bs-theme="dark"] .field-content label,
+    [data-theme="dark"] .field-content label,
+    .dark .field-content label {
+        color: #CBD5E1 !important;
+        -webkit-text-fill-color: #CBD5E1 !important;
     }
 
-    html[data-pms-theme="dark"] .form-control {
-        background: #102119;
-        border-color: rgba(122, 240, 181, 0.15);
-        color: #d9f1e4;
+    /* Hints and Muted Texts in Dark Mode */
+    html[data-pms-theme="dark"] .field-hint,
+    html[data-bs-theme="dark"] .field-hint,
+    html[data-theme="dark"] .field-hint,
+    html.dark .field-hint,
+    body[data-pms-theme="dark"] .field-hint,
+    body[data-bs-theme="dark"] .field-hint,
+    body[data-theme="dark"] .field-hint,
+    body.dark .field-hint,
+    [data-pms-theme="dark"] .field-hint,
+    [data-bs-theme="dark"] .field-hint,
+    [data-theme="dark"] .field-hint,
+    .dark .field-hint,
+    html[data-pms-theme="dark"] .field-content .text-muted,
+    html[data-bs-theme="dark"] .field-content .text-muted,
+    html[data-theme="dark"] .field-content .text-muted,
+    html.dark .field-content .text-muted,
+    body[data-pms-theme="dark"] .field-content .text-muted,
+    body[data-bs-theme="dark"] .field-content .text-muted,
+    body[data-theme="dark"] .field-content .text-muted,
+    body.dark .field-content .text-muted,
+    [data-pms-theme="dark"] .field-content .text-muted,
+    [data-bs-theme="dark"] .field-content .text-muted,
+    [data-theme="dark"] .field-content .text-muted,
+    .dark .field-content .text-muted {
+        color: #94A3B8 !important;
+        -webkit-text-fill-color: #94A3B8 !important;
     }
 
-    html[data-pms-theme="dark"] .form-control:focus {
-        border-color: #34d399;
-        box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.1);
+    /* Radio Code Generation Option Pills in Dark Mode */
+    html[data-pms-theme="dark"] .code-mode-option,
+    html[data-bs-theme="dark"] .code-mode-option,
+    html[data-theme="dark"] .code-mode-option,
+    html.dark .code-mode-option,
+    body[data-pms-theme="dark"] .code-mode-option,
+    body[data-bs-theme="dark"] .code-mode-option,
+    body[data-theme="dark"] .code-mode-option,
+    body.dark .code-mode-option,
+    [data-pms-theme="dark"] .code-mode-option,
+    [data-bs-theme="dark"] .code-mode-option,
+    [data-theme="dark"] .code-mode-option,
+    .dark .code-mode-option {
+        background: #141B3D !important;
+        border: 1px solid rgba(79, 131, 255, 0.3) !important;
+        color: #60A5FA !important;
+    }
+
+    html[data-pms-theme="dark"] .code-mode-option span,
+    html[data-bs-theme="dark"] .code-mode-option span,
+    html[data-theme="dark"] .code-mode-option span,
+    html.dark .code-mode-option span,
+    body[data-pms-theme="dark"] .code-mode-option span,
+    [data-pms-theme="dark"] .code-mode-option span,
+    .dark .code-mode-option span {
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
+    }
+
+    html[data-pms-theme="dark"] .code-mode-option:hover,
+    html[data-bs-theme="dark"] .code-mode-option:hover,
+    html[data-pms-theme="dark"] .code-mode-option:has(input[type="radio"]:checked),
+    html[data-bs-theme="dark"] .code-mode-option:has(input[type="radio"]:checked) {
+        border-color: #2F6BFF !important;
+        background: rgba(79, 131, 255, 0.22) !important;
+        color: #ffffff !important;
+    }
+
+    html[data-pms-theme="dark"] .code-mode-option input[type="radio"]:checked + span,
+    html[data-bs-theme="dark"] .code-mode-option input[type="radio"]:checked + span {
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
+    }
+
+    /* Form Controls & Select Inputs in Dark Mode */
+    html[data-pms-theme="dark"] .form-control,
+    html[data-bs-theme="dark"] .form-control,
+    html[data-theme="dark"] .form-control,
+    html.dark .form-control,
+    body[data-pms-theme="dark"] .form-control,
+    body[data-bs-theme="dark"] .form-control,
+    body[data-theme="dark"] .form-control,
+    body.dark .form-control,
+    [data-pms-theme="dark"] .form-control,
+    [data-bs-theme="dark"] .form-control,
+    [data-theme="dark"] .form-control,
+    .dark .form-control,
+    html[data-pms-theme="dark"] .form-select,
+    html[data-bs-theme="dark"] .form-select,
+    html[data-theme="dark"] .form-select,
+    html.dark .form-select,
+    body[data-pms-theme="dark"] .form-select,
+    body[data-bs-theme="dark"] .form-select,
+    body[data-theme="dark"] .form-select,
+    body.dark .form-select,
+    [data-pms-theme="dark"] .form-select,
+    [data-bs-theme="dark"] .form-select,
+    [data-theme="dark"] .form-select,
+    .dark .form-select {
+        background: #141B3D !important;
+        border: 1px solid rgba(79, 131, 255, 0.35) !important;
+        color: #FFFFFF !important;
+        -webkit-text-fill-color: #FFFFFF !important;
+    }
+
+    html[data-pms-theme="dark"] select option,
+    html[data-bs-theme="dark"] select option,
+    html[data-theme="dark"] select option,
+    html.dark select option,
+    body[data-pms-theme="dark"] select option,
+    [data-pms-theme="dark"] select option,
+    .dark select option {
+        background-color: #0F1530 !important;
+        color: #EEF1FB !important;
+    }
+
+    html[data-pms-theme="dark"] .form-control:focus,
+    html[data-bs-theme="dark"] .form-control:focus,
+    html[data-theme="dark"] .form-control:focus,
+    html.dark .form-control:focus {
+        border-color: #2F6BFF !important;
+        box-shadow: 0 0 0 4px rgba(79, 131, 255, 0.15) !important;
     }
 
     html[data-pms-theme="dark"] .form-control[readonly],
-    html[data-pms-theme="dark"] .form-control:disabled {
-        background: #0d1b14;
-        color: #6b7280;
+    html[data-pms-theme="dark"] .form-control:disabled,
+    html[data-bs-theme="dark"] .form-control[readonly],
+    html[data-bs-theme="dark"] .form-control:disabled,
+    body[data-pms-theme="dark"] .form-control[readonly],
+    body[data-pms-theme="dark"] .form-control:disabled,
+    [data-pms-theme="dark"] .form-control[readonly],
+    [data-pms-theme="dark"] .form-control:disabled {
+        background: #0F1530 !important;
+        color: #94A3B8 !important;
+        -webkit-text-fill-color: #94A3B8 !important;
     }
 
-    html[data-pms-theme="dark"] .field-hint {
-        color: #6b7280;
+    /* Field Icons in Dark Mode */
+    html[data-pms-theme="dark"] .form-field.field-code .field-icon,
+    html[data-bs-theme="dark"] .form-field.field-code .field-icon,
+    [data-pms-theme="dark"] .form-field.field-code .field-icon,
+    html[data-pms-theme="dark"] .form-field:nth-child(1) .field-icon,
+    html[data-bs-theme="dark"] .form-field:nth-child(1) .field-icon,
+    [data-pms-theme="dark"] .form-field:nth-child(1) .field-icon {
+        background: rgba(47, 107, 255, 0.22) !important;
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
+        border: 1px solid rgba(79, 131, 255, 0.4) !important;
     }
 
-    html[data-pms-theme="dark"] .code-mode-option {
-        background: #0d1b14;
-        border-color: rgba(122, 240, 181, 0.15);
-        color: #8ba198;
+    html[data-pms-theme="dark"] .form-field.field-name .field-icon,
+    html[data-bs-theme="dark"] .form-field.field-name .field-icon,
+    [data-pms-theme="dark"] .form-field.field-name .field-icon,
+    html[data-pms-theme="dark"] .form-field:nth-child(2) .field-icon,
+    html[data-bs-theme="dark"] .form-field:nth-child(2) .field-icon,
+    [data-pms-theme="dark"] .form-field:nth-child(2) .field-icon {
+        background: rgba(56, 189, 248, 0.22) !important;
+        color: #38bdf8 !important;
+        -webkit-text-fill-color: #38bdf8 !important;
+        border: 1px solid rgba(56, 189, 248, 0.4) !important;
     }
 
-    html[data-pms-theme="dark"] .code-mode-option:hover {
-        border-color: #34d399;
-        background: #102119;
+    html[data-pms-theme="dark"] .form-field.field-parent .field-icon,
+    html[data-bs-theme="dark"] .form-field.field-parent .field-icon,
+    [data-pms-theme="dark"] .form-field.field-parent .field-icon,
+    html[data-pms-theme="dark"] .form-field:nth-child(3) .field-icon,
+    html[data-bs-theme="dark"] .form-field:nth-child(3) .field-icon,
+    [data-pms-theme="dark"] .form-field:nth-child(3) .field-icon {
+        background: rgba(245, 158, 11, 0.22) !important;
+        color: #fbbf24 !important;
+        -webkit-text-fill-color: #fbbf24 !important;
+        border: 1px solid rgba(245, 158, 11, 0.4) !important;
     }
 
-    html[data-pms-theme="dark"] .code-mode-option:has(input[type="radio"]:checked) {
-        border-color: #34d399;
-        background: #183026;
+    html[data-pms-theme="dark"] .form-field.field-level .field-icon,
+    html[data-bs-theme="dark"] .form-field.field-level .field-icon,
+    [data-pms-theme="dark"] .form-field.field-level .field-icon,
+    html[data-pms-theme="dark"] .form-field:nth-child(4) .field-icon,
+    html[data-bs-theme="dark"] .form-field:nth-child(4) .field-icon,
+    [data-pms-theme="dark"] .form-field:nth-child(4) .field-icon {
+        background: rgba(168, 85, 247, 0.22) !important;
+        color: #c084fc !important;
+        -webkit-text-fill-color: #c084fc !important;
+        border: 1px solid rgba(168, 85, 247, 0.4) !important;
     }
 
-    html[data-pms-theme="dark"] .code-mode-option input[type="radio"]:checked + span {
-        color: #34d399;
+    html[data-pms-theme="dark"] .btn-secondary,
+    html[data-bs-theme="dark"] .btn-secondary,
+    html[data-theme="dark"] .btn-secondary,
+    html.dark .btn-secondary {
+        background: rgba(47, 107, 255, 0.12) !important;
+        color: #60A5FA !important;
+        border: 1px solid rgba(79, 131, 255, 0.35) !important;
     }
 
-    html[data-pms-theme="dark"] .btn-secondary {
-        background: #183026;
-        color: #d9f1e4;
-        border-color: rgba(122, 240, 181, 0.15);
+    html[data-pms-theme="dark"] .form-actions,
+    html[data-bs-theme="dark"] .form-actions {
+        border-top: 1px solid rgba(79, 131, 255, 0.15) !important;
     }
 
-    html[data-pms-theme="dark"] .btn-secondary:hover {
-        background: #1f3d30;
+    html[data-pms-theme="dark"] .alert-success,
+    html[data-bs-theme="dark"] .alert-success {
+        background: rgba(16, 185, 129, 0.14) !important;
+        color: #10B981 !important;
+        border-left: 4px solid #10B981 !important;
     }
 
-    html[data-pms-theme="dark"] .form-actions {
-        border-color: rgba(122, 240, 181, 0.06);
-    }
-
-    html[data-pms-theme="dark"] .alert-success {
-        background: #0d1b14;
-        color: #34d399;
-        border-left-color: #34d399;
-    }
-
-    html[data-pms-theme="dark"] .alert-danger {
-        background: #1a0d0d;
-        color: #fca5a5;
-        border-left-color: #ef4444;
+    html[data-pms-theme="dark"] .alert-danger,
+    html[data-bs-theme="dark"] .alert-danger {
+        background: #1a0d0d !important;
+        color: #fca5a5 !important;
+        border-left: 4px solid #ef4444 !important;
     }
 </style>
 
@@ -969,12 +1316,13 @@
 document.addEventListener('DOMContentLoaded', function () {
     const codeInput = document.getElementById('unique_code');
     const modeInputs = document.querySelectorAll('input[name="code_generation_mode"]');
-
-    if (!codeInput || !modeInputs.length) {
-        return;
-    }
+    const parentSelect = document.getElementById('parent_id');
+    const levelSelect = document.getElementById('level');
+    const levelHint = document.getElementById('level-field-hint');
+    const form = document.querySelector('.form-content');
 
     function syncCodeMode() {
+        if (!codeInput || !modeInputs.length) return;
         const selectedMode = document.querySelector('input[name="code_generation_mode"]:checked')?.value || 'auto';
 
         if (selectedMode === 'custom') {
@@ -999,6 +1347,85 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     syncCodeMode();
+
+    // Strict 0-6 hierarchy level synchronization
+    function syncParentAndLevel() {
+        if (!parentSelect || !levelSelect) return;
+
+        const selectedOption = parentSelect.options[parentSelect.selectedIndex];
+        const parentLevel = selectedOption ? parseInt(selectedOption.getAttribute('data-level'), 10) : -1;
+
+        if (parentLevel >= 0) {
+            // Parent is selected. Child level must be between (parentLevel + 1) and 6.
+            const minChildLevel = parentLevel + 1;
+
+            Array.from(levelSelect.options).forEach(opt => {
+                const val = parseInt(opt.value, 10);
+                if (opt.value === '') return;
+
+                if (val < minChildLevel || val > {{ \App\Services\DesignationLevels::maximum() }}) {
+                    opt.disabled = true;
+                    opt.classList.add('text-muted');
+                } else {
+                    opt.disabled = false;
+                    opt.classList.remove('text-muted');
+                }
+            });
+
+            const currentLevel = parseInt(levelSelect.value, 10);
+            if (isNaN(currentLevel) || currentLevel < minChildLevel || currentLevel > {{ \App\Services\DesignationLevels::maximum() }}) {
+                if (minChildLevel <= {{ \App\Services\DesignationLevels::maximum() }}) {
+                    levelSelect.value = String(minChildLevel);
+                }
+            }
+
+            if (levelHint) {
+                levelHint.innerHTML = `<span style="color: #2F6BFF; font-weight: 600;"><i class="fas fa-info-circle"></i> Reports to Level ${parentLevel}: Subordinate level must be between Level ${minChildLevel} and Level {{ \App\Services\DesignationLevels::maximum() }}.</span>`;
+            }
+        } else {
+            // Top-Level (no parent selected)
+            Array.from(levelSelect.options).forEach(opt => {
+                opt.disabled = false;
+                opt.classList.remove('text-muted');
+            });
+
+            if (levelHint) {
+                levelHint.textContent = 'Top-level designation: Organizational hierarchy level (strictly Level 0 to Level {{ \App\Services\DesignationLevels::maximum() }}).';
+            }
+        }
+    }
+
+    if (parentSelect && levelSelect) {
+        parentSelect.addEventListener('change', syncParentAndLevel);
+        syncParentAndLevel();
+    }
+
+    // Client-side validation to guarantee 0-6 rule
+    if (form) {
+        form.addEventListener('submit', function (e) {
+            const lvl = parseInt(levelSelect?.value, 10);
+            if (isNaN(lvl) || lvl < 0 || lvl > {{ \App\Services\DesignationLevels::maximum() }}) {
+                e.preventDefault();
+                alert('Designation level must be strictly between 0 and {{ \App\Services\DesignationLevels::maximum() }}.');
+                return false;
+            }
+
+            const selectedOption = parentSelect?.options[parentSelect.selectedIndex];
+            const pLevel = selectedOption ? parseInt(selectedOption.getAttribute('data-level'), 10) : -1;
+
+            if (pLevel >= {{ \App\Services\DesignationLevels::maximum() }}) {
+                e.preventDefault();
+                alert('A Level {{ \App\Services\DesignationLevels::maximum() }} designation cannot have subordinate designations as Level {{ \App\Services\DesignationLevels::maximum() }} is the maximum organizational level allowed.');
+                return false;
+            }
+
+            if (pLevel >= 0 && lvl <= pLevel) {
+                e.preventDefault();
+                alert(`Subordinate designation level (${lvl}) must be greater than parent designation level (${pLevel}). Minimum allowed level is ${pLevel + 1}.`);
+                return false;
+            }
+        });
+    }
 });
 </script>
 @endpush

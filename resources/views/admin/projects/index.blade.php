@@ -4,8 +4,10 @@
 
 @section('content')
 @php
-    $isAdmin = in_array(strtolower((string) auth()->user()?->role), ['admin', 'manager', 'hr'], true);
-    $isEmployee = auth()->user()?->role === 'employee';
+    $userRole = strtolower((string) auth()->user()?->role);
+    $isAdmin = in_array($userRole, ['admin', 'manager', 'hr'], true);
+    $isEmployee = $userRole === 'employee';
+    $canManageProjectTemplates = in_array($userRole, ['admin', 'hr'], true);
     $statusOptions = [
         'pending' => 'Pending',
         'not started' => 'Not Started',
@@ -30,14 +32,8 @@
     ];
 @endphp
 
-<main class="projects-page">
+<main id="projects-list-page" class="projects-page">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-
-    <!-- Breadcrumb -->
-    <div class="breadcrumb">
-        <i class="fas fa-folder-open"></i>
-        <span>Dashboard / <strong>Projects</strong></span>
-    </div>
 
     <!-- Header Card -->
     <div class="header-card">
@@ -51,20 +47,22 @@
             </div>
         </div>
         <div class="header-actions">
-            <button type="button" class="btn-icon" data-project-search-focus title="Search">
-                <i class="fas fa-search"></i>
+            <button type="button" class="btn-icon pms-header-search-btn" data-project-search-focus title="Search">
+                <svg class="project-toolbar-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg>
             </button>
-            <a href="{{ route('projects.index') }}" class="btn-icon active" title="List View" aria-label="List View">
-                <i class="fas fa-list-ul"></i>
-            </a>
-            <a href="{{ route('projects.calendar') }}" class="btn-icon" title="Calendar">
-                <i class="fas fa-calendar-alt"></i>
-            </a>
-            @if($isAdmin)
-                <a href="{{ route('projects.archive') }}" class="btn-icon" title="Archive">
-                    <i class="fas fa-archive"></i>
+            <div class="pms-header-view-group">
+                <a href="{{ route('projects.index') }}" class="btn-icon active" title="List View" aria-label="List View">
+                    <svg class="project-toolbar-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5h12M9 12h12M9 19h12M3 5h1M3 12h1M3 19h1"/></svg>
                 </a>
-            @endif
+                <a href="{{ route('projects.calendar') }}" class="btn-icon" title="Calendar">
+                    <svg class="project-toolbar-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18M7 14h2M15 14h2M7 17h2"/></svg>
+                </a>
+                @if($isAdmin)
+                    <a href="{{ route('projects.archive') }}" class="btn-icon" title="Archive">
+                        <svg class="project-toolbar-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="5" rx="1"/><path d="M5 8v12h14V8M9 12h6"/></svg>
+                    </a>
+                @endif
+            </div>
         </div>
     </div>
 
@@ -125,11 +123,14 @@
             </div>
             <div class="filter-group">
                 <label><i class="fas fa-chart-line"></i> Progress</label>
-                <select name="progress[]" class="form-select" multiple>
+                <div class="pms-progress-checklist" role="group" aria-label="Progress filter">
                     @foreach($progressOptions as $value => $label)
-                        <option value="{{ $value }}" @selected(in_array($value, request('progress', []), true))>{{ $label }}</option>
+                        <label class="pms-progress-option">
+                            <input type="checkbox" name="progress[]" value="{{ $value }}" @checked(in_array($value, request('progress', []), true))>
+                            <span>{{ $label }}</span>
+                        </label>
                     @endforeach
-                </select>
+                </div>
             </div>
             @if($isAdmin)
                 <div class="filter-group">
@@ -142,16 +143,18 @@
                     </select>
                 </div>
             @endif
-            <div class="filter-group search-group">
-                <label><i class="fas fa-search"></i> Search</label>
-                <div class="search-box">
-                    <i class="fas fa-search"></i>
-                    <input type="text" name="search" id="projectSearchInput" class="form-control" value="{{ request('search') }}" placeholder="Search projects...">
+            <div class="pms-filter-bottom-row">
+                <div class="filter-group search-group">
+                    <label><i class="fas fa-search"></i> Search</label>
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" name="search" id="projectSearchInput" class="form-control" value="{{ request('search') }}" placeholder="Search projects...">
+                    </div>
                 </div>
-            </div>
-            <div class="filter-actions">
-                <button class="btn btn-primary"><i class="fas fa-filter"></i> Apply Filters</button>
-                <a href="{{ route('projects.index') }}" class="btn btn-outline"><i class="fas fa-undo"></i> Reset</a>
+                <div class="filter-actions">
+                    <button class="btn btn-primary"><i class="fas fa-filter"></i> Apply Filters</button>
+                    <a href="{{ route('projects.index') }}" class="btn btn-outline"><i class="fas fa-undo"></i> Reset</a>
+                </div>
             </div>
         </form>
     </div>
@@ -163,9 +166,11 @@
                 <a href="{{ route('projects.create') }}" class="btn btn-primary">
                     <i class="fas fa-plus-circle"></i> Add Project
                 </a>
-                <button type="button" class="btn btn-outline" data-bs-toggle="modal" data-bs-target="#projectTemplateModal">
-                    <i class="fas fa-copy"></i> Project Template
-                </button>
+                @if($canManageProjectTemplates)
+                    <button type="button" class="btn btn-outline" data-bs-toggle="modal" data-bs-target="#projectTemplateModal">
+                        <i class="fas fa-copy"></i> Project Template
+                    </button>
+                @endif
                 <button type="button" class="btn btn-outline" data-bs-toggle="modal" data-bs-target="#projectImportModal">
                     <i class="fas fa-file-import"></i> Import
                 </button>
@@ -173,6 +178,11 @@
             <button type="button" id="exportProjectsCsv" class="btn btn-outline">
                 <i class="fas fa-file-export"></i> Export
             </button>
+            @if($isAdmin)
+                <button type="button" id="bulkArchiveProjects" class="btn btn-outline" disabled>
+                    <i class="fas fa-archive"></i> Archive
+                </button>
+            @endif
         </div>
 
         <div class="toolbar-right">
@@ -191,8 +201,8 @@
     </div>
 
     <!-- Table -->
-    <div class="table-card">
-        <div class="table-header">
+    <div id="projects-list-card" class="table-card">
+        <div id="projects-list-header" class="table-header">
             <div class="table-title">
                 <div class="table-title-icon">
                     <i class="fas fa-list"></i>
@@ -202,10 +212,15 @@
                     <span class="muted">{{ $projects->count() }} projects found</span>
                 </div>
             </div>
+            <div class="pms-table-meta">
+                <span>Sorted by: <strong>Created Date</strong></span>
+                <i class="fas fa-chevron-down" aria-hidden="true"></i>
+            </div>
         </div>
 
-        <div class="table-wrapper">
-            <table id="projectTable" class="project-table">
+        <div id="projects-table-tools" data-live-preserve></div>
+        <div id="projects-table-wrapper" class="table-wrapper">
+            <table id="projectTable" class="project-table" data-pms-toolbar-host="projects-table-tools">
                 <thead>
                     <tr>
                         @if($isAdmin)
@@ -219,7 +234,7 @@
                         <th><i class="fas fa-calendar-plus"></i> Start Date</th>
                         <th><i class="fas fa-calendar-times"></i> Deadline</th>
                         @if($isAdmin)
-                            <th><i class="fas fa-building"></i> Client</th>
+                            <th><i class="fas fa-building"></i> Client/Home</th>
                         @endif
                         <th><i class="fas fa-bolt"></i> Priority</th>
                         <th><i class="fas fa-circle"></i> Status</th>
@@ -289,15 +304,27 @@
                             </td>
                             @if($isAdmin)
                                 <td>
-                                    <div class="client-cell">
-                                        <div class="client-avatar">
-                                            {{ strtoupper(mb_substr(optional($project->client)->name ?? optional($project->client)->company_name ?? 'C', 0, 1)) }}
+                                    @if($project->project_type === 'home' || (!$project->client_id && !$project->client))
+                                        <div class="client-cell">
+                                            <div class="client-avatar" style="background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe;">
+                                                <i class="fas fa-home" style="font-size: 13px;"></i>
+                                            </div>
+                                            <div>
+                                                <div class="client-name fw-bold" style="color: #1e40af;">Home</div>
+                                                <small class="text-muted">In-House</small>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <div class="client-name">{{ optional($project->client)->name ?? 'No Client' }}</div>
-                                            <small>{{ optional($project->client)->company_name ?? '' }}</small>
+                                    @else
+                                        <div class="client-cell">
+                                            <div class="client-avatar">
+                                                {{ strtoupper(mb_substr(optional($project->client)->name ?? optional($project->client)->company_name ?? 'C', 0, 1)) }}
+                                            </div>
+                                            <div>
+                                                <div class="client-name">{{ optional($project->client)->name ?? 'No Client' }}</div>
+                                                <small>{{ optional($project->client)->company_name ?? '' }}</small>
+                                            </div>
                                         </div>
-                                    </div>
+                                    @endif
                                 </td>
                             @endif
                             <td>
@@ -328,8 +355,8 @@
                                 </div>
                             </td>
                             <td class="action-cell">
-                                <div class="dropdown project-action-dropdown">
-                                    <button class="action-btn" type="button" data-bs-toggle="dropdown" data-bs-boundary="viewport" data-bs-display="dynamic" aria-expanded="false">
+                                <div class="dropdown project-action-dropdown" data-live-preserve>
+                                    <button class="action-btn" type="button" data-project-action-toggle aria-label="Project actions" aria-haspopup="menu" aria-expanded="false">
                                         <i class="fas fa-ellipsis-v"></i>
                                     </button>
                                     <ul class="dropdown-menu dropdown-menu-end">
@@ -375,9 +402,21 @@
                         <tr>
                             <td colspan="{{ $isAdmin ? 12 : 10 }}">
                                 <div class="empty-state">
-                                    <i class="fas fa-project-diagram"></i>
-                                    <h5>{{ $isEmployee ? 'No assigned projects found' : 'No projects found' }}</h5>
-                                    <p>{{ $isEmployee ? 'Only projects assigned to you will appear here.' : 'Try changing the filters or create the first project.' }}</p>
+                                    <div class="pms-empty-icon-box" aria-hidden="true">
+                                        <i class="fas fa-folder"></i>
+                                    </div>
+                                    <h5>{{ $isEmployee ? 'No assigned projects found' : 'No projects found in this view' }}</h5>
+                                    <p>{{ $isEmployee ? 'Only projects assigned to you will appear here.' : 'No matching records found for the selected filter parameters. Try clearing your filters or create a new project.' }}</p>
+                                    @if($isAdmin)
+                                        <div class="pms-empty-actions">
+                                            <a href="{{ route('projects.create') }}" class="btn btn-primary">
+                                                <i class="fas fa-plus"></i> Add First Project
+                                            </a>
+                                            <a href="{{ route('projects.index') }}" class="btn btn-outline">
+                                                <i class="fas fa-undo"></i> Clear All Filters
+                                            </a>
+                                        </div>
+                                    @endif
                                 </div>
                             </td>
                         </tr>
@@ -387,7 +426,7 @@
         </div>
 
         <!-- Table Footer -->
-        <div class="table-footer">
+        <div id="projects-list-footer" class="table-footer">
             <div class="footer-info">
                 <i class="fas fa-info-circle"></i>
                 Showing {{ $projects->count() }} project(s)
@@ -614,6 +653,7 @@
     <!-- Duplicate Modals -->
     @foreach($projects as $project)
         @if($isAdmin)
+            @php($projectMembersById = $project->users->keyBy('id'))
             <div class="modal fade" id="duplicateProjectModal{{ $project->id }}" tabindex="-1" aria-hidden="true">
                 <div class="modal-dialog modal-lg modal-dialog-centered">
                     <div class="modal-content">
@@ -660,7 +700,7 @@
                                         <label class="form-label">Members</label>
                                         <select name="user_id[]" class="form-select" multiple>
                                             @foreach($users as $user)
-                                                <option value="{{ $user->id }}" @selected($project->users->contains('id', $user->id))>{{ $user->name }}{{ $user->employeeDetail?->employee_id ? ' (' . $user->employeeDetail->employee_id . ')' : '' }}</option>
+                                                <option value="{{ $user->id }}" @selected($projectMembersById->has($user->id))>{{ $user->name }}{{ $user->employeeDetail?->employee_id ? ' (' . $user->employeeDetail->employee_id . ')' : '' }}</option>
                                             @endforeach
                                         </select>
                                     </div>
@@ -678,7 +718,7 @@
     @endforeach
 
     <!-- Template Modal -->
-    @if($isAdmin)
+    @if($canManageProjectTemplates)
         <div class="modal fade" id="projectTemplateModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-lg modal-dialog-centered">
                 <div class="modal-content">
@@ -738,29 +778,29 @@
     @endif
 
     <!-- Status Bar -->
-    <div class="status-bar">
-        <div class="status-item">
+    <div id="projects-summary" class="status-bar">
+        <div class="status-item" data-live-key="total">
             <i class="fas fa-project-diagram text-primary"></i>
             <span>{{ $projects->count() }}</span> Total Projects
         </div>
-        <div class="status-item">
+        <div class="status-item" data-live-key="completed">
             <i class="fas fa-check-circle text-success"></i>
             <span>{{ $projects->where('status', 'completed')->count() }}</span> Completed
         </div>
-        <div class="status-item">
+        <div class="status-item" data-live-key="in-progress">
             <i class="fas fa-spinner text-primary"></i>
             <span>{{ $projects->where('status', 'in progress')->count() }}</span> In Progress
         </div>
-        <div class="status-item">
+        <div class="status-item" data-live-key="pending">
             <i class="fas fa-clock text-warning"></i>
             <span>{{ $projects->whereIn('status', ['pending', 'not started'])->count() }}</span> Pending
         </div>
-        <div class="status-item">
+        <div class="status-item" data-live-key="delayed">
             <i class="fas fa-triangle-exclamation text-danger"></i>
             <span>{{ $projects->filter(fn($p) => $p->status === 'delayed' || ($p->deadline && \Carbon\Carbon::parse($p->deadline)->isPast() && $p->status !== 'completed'))->count() }}</span> Delayed
         </div>
         @if($isAdmin)
-            <div class="status-item">
+            <div class="status-item" data-live-key="assigned">
                 <i class="fas fa-user-check text-primary"></i>
                 <span>{{ $projects->flatMap(fn($project) => $project->users->pluck('id'))->unique()->count() }}</span> Employees Assigned
             </div>
@@ -769,12 +809,29 @@
 </main>
 
 <style>
+    #projects-summary {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    #projects-summary > .status-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        white-space: nowrap;
+    }
+
+    #projects-table-tools:empty { display: none; }
+
     /* ===== PREMIUM PROJECTS PAGE - ENLARGED TEXT ===== */
     .projects-page {
         padding: 30px 0;
         min-height: 100vh;
         background: linear-gradient(145deg, #f7fbf9, #eef7f2);
-        color: #07130d;
+        color: #070B1A;
     }
 
     /* Breadcrumb */
@@ -783,21 +840,21 @@
         backdrop-filter: blur(10px);
         padding: 16px 26px;
         border-radius: 18px;
-        border: 1px solid rgba(15, 116, 76, .12);
+        border: 1px solid rgba(47, 107, 255, .12);
         margin-bottom: 28px;
-        color: #0f744c;
+        color: #2F6BFF;
         font-weight: 600;
         font-size: 1.05rem;
     }
 
     .breadcrumb i {
         margin-right: 12px;
-        color: #34d399;
+        color: #60A5FA;
         font-size: 1.1rem;
     }
 
     .breadcrumb strong {
-        color: #07130d;
+        color: #070B1A;
     }
 
     /* Header Card */
@@ -809,8 +866,8 @@
         justify-content: space-between;
         align-items: center;
         gap: 24px;
-        box-shadow: 0 18px 45px rgba(15, 116, 76, .09);
-        border: 1px solid rgba(15, 116, 76, .12);
+        box-shadow: 0 18px 45px rgba(47, 107, 255, .09);
+        border: 1px solid rgba(47, 107, 255, .12);
         margin-bottom: 28px;
     }
 
@@ -823,21 +880,21 @@
     .header-icon {
         width: 70px;
         height: 70px;
-        background: linear-gradient(145deg, #34d399, #10b981);
+        background: linear-gradient(145deg, #60A5FA, #10b981);
         color: white;
         border-radius: 20px;
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 32px;
-        box-shadow: 0 10px 25px rgba(16, 185, 129, .2);
+        box-shadow: 0 10px 25px rgba(47, 107, 255, .2);
     }
 
     .header-card h1 {
         font-size: 34px;
         font-weight: 700;
         margin-bottom: 6px;
-        color: #07130d;
+        color: #070B1A;
     }
 
     .header-card p {
@@ -855,9 +912,9 @@
         width: 48px;
         height: 48px;
         border-radius: 14px;
-        border: 1px solid rgba(15, 116, 76, .15);
+        border: 1px solid rgba(47, 107, 255, .15);
         background: #ffffff;
-        color: #0f744c;
+        color: #2F6BFF;
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -869,9 +926,9 @@
 
     .btn-icon:hover {
         background: #edf8f2;
-        border-color: #34d399;
+        border-color: #60A5FA;
         transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(15, 116, 76, .1);
+        box-shadow: 0 8px 20px rgba(47, 107, 255, .1);
     }
 
     /* Alerts */
@@ -885,7 +942,7 @@
     }
 
     .alert-success {
-        background: #ecfdf5;
+        background: #EEF2FF;
         color: #065f46;
         border-left: 4px solid #10b981;
     }
@@ -900,10 +957,10 @@
     .filter-panel {
         background: white;
         border-radius: 20px;
-        border: 1px solid rgba(15, 116, 76, .12);
+        border: 1px solid rgba(47, 107, 255, .12);
         padding: 24px 28px;
         margin-bottom: 22px;
-        box-shadow: 0 8px 25px rgba(15, 116, 76, .04);
+        box-shadow: 0 8px 25px rgba(47, 107, 255, .04);
     }
 
     .filter-grid {
@@ -929,13 +986,13 @@
 
     .filter-group label i {
         margin-right: 6px;
-        color: #34d399;
+        color: #60A5FA;
         font-size: 0.9rem;
     }
 
     .form-control, .form-select {
         border-radius: 12px;
-        border: 1px solid rgba(15, 116, 76, .18);
+        border: 1px solid rgba(47, 107, 255, .18);
         padding: 12px 16px;
         font-weight: 500;
         font-size: 1rem;
@@ -945,8 +1002,8 @@
     }
 
     .form-control:focus, .form-select:focus {
-        border-color: #34d399;
-        box-shadow: 0 0 0 3px rgba(16, 185, 129, .1);
+        border-color: #60A5FA;
+        box-shadow: 0 0 0 3px rgba(47, 107, 255, .1);
     }
 
     select[multiple].form-select {
@@ -968,7 +1025,7 @@
         left: 16px;
         top: 50%;
         transform: translateY(-50%);
-        color: #0f744c;
+        color: #2F6BFF;
         font-size: 1.1rem;
     }
 
@@ -1000,27 +1057,27 @@
     }
 
     .btn-primary {
-        background: linear-gradient(145deg, #34d399, #10b981);
+        background: linear-gradient(145deg, #60A5FA, #10b981);
         color: white;
-        box-shadow: 0 8px 20px rgba(16, 185, 129, .25);
+        box-shadow: 0 8px 20px rgba(47, 107, 255, .25);
     }
 
     .btn-primary:hover {
         transform: translateY(-2px);
-        box-shadow: 0 12px 28px rgba(16, 185, 129, .35);
+        box-shadow: 0 12px 28px rgba(47, 107, 255, .35);
     }
 
     .btn-outline {
         background: transparent;
-        border: 1px solid rgba(15, 116, 76, .2);
-        color: #0f744c;
+        border: 1px solid rgba(47, 107, 255, .2);
+        color: #2F6BFF;
     }
 
     .btn-outline:hover {
         background: #edf8f2;
-        border-color: #34d399;
+        border-color: #60A5FA;
         transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(15, 116, 76, .1);
+        box-shadow: 0 8px 20px rgba(47, 107, 255, .1);
     }
 
     .btn-danger {
@@ -1050,7 +1107,7 @@
     .toolbar {
         background: white;
         border-radius: 20px;
-        border: 1px solid rgba(15, 116, 76, .12);
+        border: 1px solid rgba(47, 107, 255, .12);
         padding: 18px 26px;
         display: flex;
         justify-content: space-between;
@@ -1058,7 +1115,7 @@
         flex-wrap: wrap;
         gap: 16px;
         margin-bottom: 22px;
-        box-shadow: 0 8px 25px rgba(15, 116, 76, .04);
+        box-shadow: 0 8px 25px rgba(47, 107, 255, .04);
     }
 
     .toolbar-left, .toolbar-right {
@@ -1071,7 +1128,7 @@
     .view-toggle {
         display: flex;
         gap: 4px;
-        background: #f0f9f4;
+        background: #F8FAFC;
         padding: 4px;
         border-radius: 12px;
     }
@@ -1093,12 +1150,12 @@
     }
 
     .view-btn:hover {
-        background: #d1fae5;
-        color: #0f744c;
+        background: #E0E7FF;
+        color: #2F6BFF;
     }
 
     .view-btn.active {
-        background: #0f744c;
+        background: #2F6BFF;
         color: white;
     }
 
@@ -1106,15 +1163,15 @@
     .table-card {
         background: white;
         border-radius: 24px;
-        border: 1px solid rgba(15, 116, 76, .12);
-        box-shadow: 0 18px 45px rgba(15, 116, 76, .08);
+        border: 1px solid rgba(47, 107, 255, .12);
+        box-shadow: 0 18px 45px rgba(47, 107, 255, .08);
         overflow: hidden;
     }
 
     .table-header {
         padding: 22px 28px;
         background: linear-gradient(135deg, #ffffff, #f5fbf7);
-        border-bottom: 1px solid rgba(15, 116, 76, .1);
+        border-bottom: 1px solid rgba(47, 107, 255, .1);
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -1130,7 +1187,7 @@
         width: 48px;
         height: 48px;
         background: #e7f5ee;
-        color: #0f744c;
+        color: #2F6BFF;
         border-radius: 14px;
         display: flex;
         align-items: center;
@@ -1142,12 +1199,12 @@
         font-size: 1.3rem;
         font-weight: 700;
         margin: 0;
-        color: #07130d;
+        color: #070B1A;
     }
 
     .table-title .muted {
         font-size: 0.95rem;
-        color: #8ba198;
+        color: #64748B;
         display: block;
         margin-top: 2px;
     }
@@ -1174,39 +1231,39 @@
         text-transform: uppercase;
         letter-spacing: 0.06em;
         background: transparent;
-        border-bottom: 2px solid rgba(15, 116, 76, .1);
+        border-bottom: 2px solid rgba(47, 107, 255, .1);
         white-space: nowrap;
     }
 
     .project-table thead th i {
         margin-right: 8px;
-        color: #34d399;
+        color: #60A5FA;
         font-size: 0.9rem;
     }
 
     .project-table tbody td {
         background: #ffffff;
         padding: 16px 18px;
-        border-top: 1px solid rgba(15, 116, 76, .06);
-        border-bottom: 1px solid rgba(15, 116, 76, .06);
+        border-top: 1px solid rgba(47, 107, 255, .06);
+        border-bottom: 1px solid rgba(47, 107, 255, .06);
         vertical-align: middle;
         transition: all 0.2s ease;
         font-size: 0.95rem;
     }
 
     .project-table tbody td:first-child {
-        border-left: 1px solid rgba(15, 116, 76, .06);
+        border-left: 1px solid rgba(47, 107, 255, .06);
         border-radius: 14px 0 0 14px;
     }
 
     .project-table tbody td:last-child {
-        border-right: 1px solid rgba(15, 116, 76, .06);
+        border-right: 1px solid rgba(47, 107, 255, .06);
         border-radius: 0 14px 14px 0;
     }
 
     .project-table tbody tr:hover td {
         background: #fafefb;
-        border-color: rgba(15, 116, 76, .12);
+        border-color: rgba(47, 107, 255, .12);
     }
 
     .check-cell {
@@ -1223,13 +1280,13 @@
         width: 20px;
         height: 20px;
         border-radius: 5px;
-        border: 2px solid #a7f3d0;
+        border: 2px solid #C7D2FE;
         cursor: pointer;
     }
 
     .form-check-input:checked {
-        background-color: #0f744c;
-        border-color: #0f744c;
+        background-color: #2F6BFF;
+        border-color: #2F6BFF;
     }
 
     /* Code Cell */
@@ -1237,7 +1294,7 @@
         display: inline-block;
         padding: 6px 16px;
         background: #e7f5ee;
-        color: #0f744c;
+        color: #2F6BFF;
         border-radius: 20px;
         font-size: 0.85rem;
         font-weight: 700;
@@ -1250,7 +1307,7 @@
     }
 
     .project-name {
-        color: #07130d;
+        color: #070B1A;
         font-weight: 700;
         font-size: 1rem;
         text-decoration: none;
@@ -1258,12 +1315,12 @@
     }
 
     .project-name:hover {
-        color: #0f744c;
+        color: #2F6BFF;
     }
 
     .sub-text {
         font-size: 0.85rem;
-        color: #8ba198;
+        color: #64748B;
         margin-top: 3px;
     }
 
@@ -1281,8 +1338,8 @@
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        background: #d1fae5;
-        color: #0f744c;
+        background: #E0E7FF;
+        color: #2F6BFF;
         font-weight: 700;
         font-size: 0.85rem;
         margin-left: -6px;
@@ -1300,13 +1357,13 @@
     }
 
     .avatar.more {
-        background: #0f744c;
+        background: #2F6BFF;
         color: white;
         font-size: 0.8rem;
     }
 
     .empty-text {
-        color: #8ba198;
+        color: #64748B;
         font-size: 0.9rem;
     }
 
@@ -1320,7 +1377,7 @@
     }
 
     .date-cell i {
-        color: #0f744c;
+        color: #2F6BFF;
         font-size: 0.9rem;
     }
 
@@ -1350,8 +1407,8 @@
         width: 40px;
         height: 40px;
         border-radius: 50%;
-        background: #d1fae5;
-        color: #0f744c;
+        background: #E0E7FF;
+        color: #2F6BFF;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -1361,13 +1418,13 @@
 
     .client-name {
         font-weight: 600;
-        color: #07130d;
+        color: #070B1A;
         font-size: 0.95rem;
     }
 
     .client-cell small {
         font-size: 0.8rem;
-        color: #8ba198;
+        color: #64748B;
         display: block;
     }
 
@@ -1375,7 +1432,7 @@
     .status-select {
         padding: 8px 14px;
         border-radius: 20px;
-        border: 1px solid rgba(15, 116, 76, .2);
+        border: 1px solid rgba(47, 107, 255, .2);
         font-weight: 600;
         font-size: 0.85rem;
         min-width: 140px;
@@ -1386,8 +1443,8 @@
     }
 
     .status-select:focus {
-        border-color: #34d399;
-        box-shadow: 0 0 0 3px rgba(16, 185, 129, .1);
+        border-color: #60A5FA;
+        box-shadow: 0 0 0 3px rgba(47, 107, 255, .1);
     }
 
     .status-pill {
@@ -1429,12 +1486,12 @@
     }
 
     .latest-update-cell strong {
-        color: #07130d;
+        color: #070B1A;
         font-size: 0.9rem;
     }
 
     .latest-update-cell span {
-        color: #8ba198;
+        color: #64748B;
         font-size: 0.85rem;
     }
 
@@ -1457,14 +1514,14 @@
     .progress-bar div {
         height: 100%;
         border-radius: inherit;
-        background: linear-gradient(90deg, #34d399, #10b981);
+        background: linear-gradient(90deg, #60A5FA, #10b981);
         transition: width 0.6s ease;
     }
 
     .progress-text {
         font-weight: 700;
         font-size: 0.9rem;
-        color: #07130d;
+        color: #070B1A;
         min-width: 44px;
     }
 
@@ -1474,8 +1531,8 @@
         height: 40px;
         border-radius: 12px;
         border: none;
-        background: #f0f9f4;
-        color: #0f744c;
+        background: #F8FAFC;
+        color: #2F6BFF;
         cursor: pointer;
         display: inline-flex;
         align-items: center;
@@ -1485,14 +1542,14 @@
     }
 
     .action-btn:hover {
-        background: #d1fae5;
+        background: #E0E7FF;
         transform: scale(1.05);
     }
 
     /* Dropdown */
     .dropdown-menu {
         background: white;
-        border: 1px solid rgba(15, 116, 76, .15);
+        border: 1px solid rgba(47, 107, 255, .15);
         border-radius: 16px;
         padding: 8px;
         box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
@@ -1500,11 +1557,11 @@
     }
 
     .dropdown-header {
-        color: #07130d;
+        color: #070B1A;
         font-weight: 700;
         font-size: 0.95rem;
         padding: 10px 14px 12px;
-        border-bottom: 1px solid rgba(15, 116, 76, .08);
+        border-bottom: 1px solid rgba(47, 107, 255, .08);
     }
 
     .dropdown-item {
@@ -1530,8 +1587,8 @@
     }
 
     .dropdown-item:hover {
-        background: #ecfdf5;
-        color: #059669;
+        background: #EEF2FF;
+        color: #2F6BFF;
     }
 
     .dropdown-item.text-danger:hover {
@@ -1548,7 +1605,7 @@
     .table-footer {
         padding: 18px 28px;
         background: #fafefb;
-        border-top: 1px solid rgba(15, 116, 76, .08);
+        border-top: 1px solid rgba(47, 107, 255, .08);
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -1562,7 +1619,7 @@
     }
 
     .footer-info i {
-        color: #0f744c;
+        color: #2F6BFF;
         margin-right: 8px;
         font-size: 1rem;
     }
@@ -1572,7 +1629,7 @@
         align-items: center;
         gap: 12px;
         font-size: 0.9rem;
-        color: #8ba198;
+        color: #64748B;
     }
 
     .status-dot {
@@ -1599,8 +1656,8 @@
         align-items: center;
         flex-wrap: wrap;
         gap: 16px;
-        border: 1px solid rgba(15, 116, 76, .1);
-        box-shadow: 0 8px 25px rgba(15, 116, 76, .04);
+        border: 1px solid rgba(47, 107, 255, .1);
+        box-shadow: 0 8px 25px rgba(47, 107, 255, .04);
     }
 
     .status-item {
@@ -1617,7 +1674,7 @@
 
     .status-item span {
         font-weight: 700;
-        color: #07130d;
+        color: #070B1A;
         margin-right: 4px;
         font-size: 1.05rem;
     }
@@ -1628,41 +1685,41 @@
         padding: 60px 20px;
     }
 
-    .empty-state i {
+    .empty-state > i {
         font-size: 4rem;
-        color: #a7f3d0;
+        color: #C7D2FE;
         margin-bottom: 18px;
     }
 
     .empty-state h5 {
-        color: #0f744c;
+        color: #2F6BFF;
         font-weight: 700;
         font-size: 1.3rem;
         margin-bottom: 10px;
     }
 
     .empty-state p {
-        color: #8ba198;
+        color: #64748B;
         font-size: 1rem;
     }
 
     /* Modal */
     .modal-content {
         border-radius: 20px;
-        border: 1px solid rgba(15, 116, 76, .12);
+        border: 1px solid rgba(47, 107, 255, .12);
         overflow: hidden;
     }
 
     .modal-header {
         background: linear-gradient(135deg, #ffffff, #f5fbf7);
-        border-bottom: 1px solid rgba(15, 116, 76, .1);
+        border-bottom: 1px solid rgba(47, 107, 255, .1);
         padding: 22px 28px;
     }
 
     .modal-header .modal-title {
         font-weight: 700;
         font-size: 1.2rem;
-        color: #07130d;
+        color: #070B1A;
     }
 
     .modal-body {
@@ -1671,7 +1728,7 @@
 
     .modal-footer {
         background: #fafefb;
-        border-top: 1px solid rgba(15, 116, 76, .08);
+        border-top: 1px solid rgba(47, 107, 255, .08);
         padding: 18px 28px;
     }
 
@@ -1687,8 +1744,8 @@
         gap: 10px;
         padding: 10px 18px;
         border-radius: 12px;
-        background: #f0f9f4;
-        border: 1px solid rgba(15, 116, 76, .1);
+        background: #F8FAFC;
+        border: 1px solid rgba(47, 107, 255, .1);
         font-weight: 600;
         font-size: 0.95rem;
         cursor: pointer;
@@ -1696,12 +1753,12 @@
     }
 
     .copy-options label:hover {
-        background: #d1fae5;
-        border-color: #34d399;
+        background: #E0E7FF;
+        border-color: #60A5FA;
     }
 
     .copy-options label i {
-        color: #0f744c;
+        color: #2F6BFF;
         font-size: 1rem;
     }
 
@@ -1716,38 +1773,38 @@
         justify-content: space-between;
         padding: 16px 20px;
         border-radius: 14px;
-        background: #f0f9f4;
-        border: 1px solid rgba(15, 116, 76, .08);
+        background: #F8FAFC;
+        border: 1px solid rgba(47, 107, 255, .08);
         transition: all 0.2s;
     }
 
     .template-item:hover {
-        background: #d1fae5;
-        border-color: #34d399;
+        background: #E0E7FF;
+        border-color: #60A5FA;
     }
 
     .template-item strong {
         display: block;
-        color: #07130d;
+        color: #070B1A;
         font-weight: 700;
         font-size: 1rem;
     }
 
     .template-item span {
         font-size: 0.9rem;
-        color: #8ba198;
+        color: #64748B;
     }
 
     .import-note {
         font-size: 0.9rem;
-        color: #8ba198;
+        color: #64748B;
         margin-top: 10px;
     }
 
     .form-label {
         font-weight: 600;
         font-size: 0.95rem;
-        color: #07130d;
+        color: #070B1A;
         margin-bottom: 6px;
     }
 
@@ -1880,8 +1937,8 @@
 
     .projects-page .filter-actions .btn-outline {
         background: #fff !important;
-        border: 1px solid rgba(15, 116, 76, 0.18) !important;
-        color: #0f744c !important;
+        border: 1px solid rgba(47, 107, 255, 0.18) !important;
+        color: #2F6BFF !important;
     }
 
     .projects-page .stat-card h3,
@@ -1937,7 +1994,7 @@
     .projects-page .view-toggle .view-btn {
         align-items: center !important;
         aspect-ratio: 1 / 1;
-        border: 1px solid rgba(15, 116, 76, 0.14) !important;
+        border: 1px solid rgba(47, 107, 255, 0.14) !important;
         display: inline-flex !important;
         flex: 0 0 auto;
         height: 44px !important;
@@ -1959,15 +2016,15 @@
 
     .projects-page .header-actions .btn-icon.active,
     .projects-page .view-toggle .view-btn.active {
-        background: linear-gradient(145deg, #0f744c, #10b981) !important;
+        background: linear-gradient(145deg, #2F6BFF, #4F83FF) !important;
         border-color: transparent !important;
         color: #fff !important;
-        box-shadow: 0 10px 22px rgba(16, 185, 129, 0.22);
+        box-shadow: 0 10px 22px rgba(47, 107, 255, 0.22);
     }
 
     .projects-page .view-toggle {
         align-items: center;
-        border: 1px solid rgba(15, 116, 76, 0.1);
+        border: 1px solid rgba(47, 107, 255, 0.1);
         display: inline-flex !important;
         flex: 0 0 auto;
         padding: 4px !important;
@@ -1998,7 +2055,7 @@
     }
 
     .projects-page .project-action-dropdown .dropdown-menu {
-        border: 1px solid rgba(15, 116, 76, 0.14) !important;
+        border: 1px solid rgba(47, 107, 255, 0.14) !important;
         border-radius: 14px !important;
         box-shadow: 0 22px 55px rgba(15, 23, 42, 0.18) !important;
         max-height: min(60vh, 440px);
@@ -2009,7 +2066,7 @@
 
     body > .project-floating-action-menu {
         position: fixed !important;
-        border: 1px solid rgba(15, 116, 76, 0.16) !important;
+        border: 1px solid rgba(47, 107, 255, 0.16) !important;
         border-radius: 14px !important;
         box-shadow: 0 22px 55px rgba(15, 23, 42, 0.22) !important;
         max-height: min(60vh, 440px);
@@ -2020,11 +2077,13 @@
         z-index: 99999 !important;
     }
 
-    .projects-page .project-action-dropdown .dropdown-menu.show {
+    .projects-page .project-action-dropdown .dropdown-menu.show,
+    body > .project-floating-action-menu.show {
         display: block !important;
     }
 
-    .projects-page .project-action-dropdown .dropdown-item {
+    .projects-page .project-action-dropdown .dropdown-item,
+    body > .project-floating-action-menu .dropdown-item {
         align-items: center;
         border-radius: 10px;
         display: flex;
@@ -2033,10 +2092,960 @@
         white-space: normal;
     }
 
-    .projects-page .project-action-dropdown .dropdown-item i {
+    .projects-page .project-action-dropdown .dropdown-item i,
+    body > .project-floating-action-menu .dropdown-item i {
         flex: 0 0 18px;
         margin: 0 !important;
         text-align: center;
+    }
+
+    body > .project-floating-action-menu .dropdown-header {
+        color: var(--bx-text-heading, #0f172a) !important;
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+
+    /* ===== PROJECTS INDEX & MODALS DARK MODE ===== */
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page {
+        background: #070B1A !important;
+        color: #CBD5E1 !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .breadcrumb {
+        background: transparent !important;
+        border-color: rgba(238, 241, 251, 0.08) !important;
+        color: #9AA3C7 !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .header-card,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .filter-panel,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .table-card,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .stat-card,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .status-bar,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .toolbar {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+        box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.35) !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .header-card h1 {
+        color: #EEF1FB !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .header-card p {
+        color: #9AA3C7 !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .header-actions .btn-icon,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .view-toggle .view-btn {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.14) !important;
+        color: #CBD5E1 !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .header-actions .btn-icon:hover,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .view-toggle .view-btn:hover,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .view-toggle .view-btn.active {
+        background: #1A2247 !important;
+        border-color: #2F6BFF !important;
+        color: #60A5FA !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .view-toggle {
+        background: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.09) !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .filter-group label,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .form-label {
+        color: #EEF1FB !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .filter-group .form-control,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .filter-group .form-select,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .status-select,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .modal-content .form-control,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .modal-content .form-select {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.16) !important;
+        color: #EEF1FB !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .form-select option {
+        background: #141B3D !important;
+        color: #EEF1FB !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .filter-actions .btn-outline {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.16) !important;
+        color: #CBD5E1 !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .filter-actions .btn-outline:hover {
+        background: #1A2247 !important;
+        color: #FFFFFF !important;
+        border-color: #2F6BFF !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .stat-card h3,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .status-bar span,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .status-item span {
+        color: #EEF1FB !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .stat-card span,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .status-item,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .progress-text {
+        color: #9AA3C7 !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .table-header {
+        background: #141B3D !important;
+        border-bottom-color: rgba(238, 241, 251, 0.1) !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .table-title h4 {
+        color: #EEF1FB !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .project-table th {
+        background: #141B3D !important;
+        color: #9AA3C7 !important;
+        border-bottom: 2px solid rgba(238, 241, 251, 0.1) !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .project-table th i {
+        color: #60A5FA !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .project-table tbody td {
+        background: #0F1530 !important;
+        border-top: 1px solid rgba(238, 241, 251, 0.08) !important;
+        border-bottom: 1px solid rgba(238, 241, 251, 0.08) !important;
+        color: #CBD5E1 !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .project-table tbody td:first-child {
+        border-left: 1px solid rgba(238, 241, 251, 0.08) !important;
+        border-radius: 14px 0 0 14px !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .project-table tbody td:last-child {
+        border-right: 1px solid rgba(238, 241, 251, 0.08) !important;
+        border-radius: 0 14px 14px 0 !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .project-table tbody tr:hover td {
+        background: #141B3D !important;
+        border-color: rgba(47, 107, 255, 0.35) !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .project-name {
+        color: #EEF1FB !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .project-name:hover {
+        color: #60A5FA !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .sub-text,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .empty-text {
+        color: #9AA3C7 !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .date-cell {
+        color: #CBD5E1 !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .date-cell i {
+        color: #60A5FA !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .date-cell.overdue {
+        color: #FCA5A5 !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .overdue-badge {
+        background: rgba(239, 68, 68, 0.18) !important;
+        color: #FCA5A5 !important;
+        border: 1px solid rgba(239, 68, 68, 0.35) !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .client-cell .client-avatar {
+        background: #141B3D !important;
+        color: #60A5FA !important;
+        border: 1px solid rgba(47, 107, 255, 0.25) !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .client-cell .client-name {
+        color: #EEF1FB !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .client-cell small,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .client-cell .text-muted {
+        color: #9AA3C7 !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .members-cell .avatar {
+        background: #141B3D !important;
+        color: #EEF1FB !important;
+        border: 2px solid #0F1530 !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .members-cell .avatar.more {
+        background: #1A2247 !important;
+        color: #60A5FA !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .project-desc {
+        color: #9AA3C7 !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .code-badge,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .project-code {
+        background: #141B3D !important;
+        color: #60A5FA !important;
+        border: 1px solid rgba(47, 107, 255, 0.3) !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .project-action-dropdown .dropdown-menu,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .dropdown-menu,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) body > .project-floating-action-menu {
+        background: #0F1530 !important;
+        border: 1px solid rgba(238, 241, 251, 0.14) !important;
+        box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6) !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .dropdown-header {
+        color: #EEF1FB !important;
+        border-bottom: 1px solid rgba(238, 241, 251, 0.08) !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .dropdown-divider {
+        border-top: 1px solid rgba(238, 241, 251, 0.08) !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .project-action-dropdown .dropdown-item,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .dropdown-item,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) body > .project-floating-action-menu .dropdown-item {
+        color: #CBD5E1 !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .project-action-dropdown .dropdown-item:hover,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .dropdown-item:hover,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) body > .project-floating-action-menu .dropdown-item:hover {
+        background: #141B3D !important;
+        color: #EEF1FB !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .dropdown-item i,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) body > .project-floating-action-menu .dropdown-item i {
+        color: #60A5FA !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .action-btn {
+        background: #141B3D !important;
+        color: #EEF1FB !important;
+        border: 1px solid rgba(238, 241, 251, 0.12) !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .action-btn:hover {
+        background: #1A2247 !important;
+        color: #60A5FA !important;
+        border-color: #2F6BFF !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .progress-bar {
+        background: #141B3D !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .progress-text {
+        color: #EEF1FB !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .latest-update-cell strong {
+        color: #EEF1FB !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .latest-update-cell span {
+        color: #9AA3C7 !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .priority-pill.low {
+        background: rgba(59, 130, 246, 0.18) !important;
+        color: #93C5FD !important;
+        border: 1px solid rgba(59, 130, 246, 0.3) !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .priority-pill.medium {
+        background: rgba(245, 158, 11, 0.18) !important;
+        color: #FCD34D !important;
+        border: 1px solid rgba(245, 158, 11, 0.3) !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .priority-pill.high {
+        background: rgba(249, 115, 22, 0.18) !important;
+        color: #FDBA74 !important;
+        border: 1px solid rgba(249, 115, 22, 0.3) !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .priority-pill.critical {
+        background: rgba(239, 68, 68, 0.18) !important;
+        color: #FCA5A5 !important;
+        border: 1px solid rgba(239, 68, 68, 0.3) !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .client-cell [style*="color: #1e40af"] {
+        color: #EEF1FB !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .client-cell [style*="background: #eff6ff"] {
+        background: #141B3D !important;
+        color: #60A5FA !important;
+        border-color: rgba(47, 107, 255, 0.25) !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .form-check-input,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page .pms-table-select__input,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .projects-page input[type="checkbox"] {
+        background-color: #141B3D !important;
+        border: 2px solid rgba(238, 241, 251, 0.25) !important;
+    }
+
+    /* ===== MODALS DARK MODE FIX (TEMPLATES, DUPLICATE, IMPORT) ===== */
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .modal-content {
+        background-color: #0F1530 !important;
+        border-color: rgba(238, 241, 251, 0.14) !important;
+        color: #EEF1FB !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .modal-header {
+        background: #141B3D !important;
+        border-bottom-color: rgba(238, 241, 251, 0.1) !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .modal-header .modal-title {
+        color: #EEF1FB !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .modal-header .btn-close {
+        filter: invert(1) grayscale(100%) brightness(200%) !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .modal-footer {
+        background: #141B3D !important;
+        border-top-color: rgba(238, 241, 251, 0.1) !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .template-item {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.12) !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .template-item:hover {
+        background: #1A2247 !important;
+        border-color: #2F6BFF !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .template-item strong {
+        color: #EEF1FB !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .template-item span {
+        color: #9AA3C7 !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .copy-options label {
+        background: #141B3D !important;
+        border-color: rgba(238, 241, 251, 0.12) !important;
+        color: #EEF1FB !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .copy-options label:hover {
+        background: #1A2247 !important;
+        border-color: #2F6BFF !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .copy-options label i {
+        color: #60A5FA !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .import-note {
+        color: #9AA3C7 !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .empty-state h5 {
+        color: #60A5FA !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) .empty-state p {
+        color: #9AA3C7 !important;
+    }
+    html body .projects-page .header-actions .btn-icon .project-toolbar-icon {
+        width: 22px !important;
+        height: 22px !important;
+        fill: none !important;
+        stroke: currentColor !important;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        background: transparent !important;
+        filter: none !important;
+    }
+
+    :is([data-pms-theme="dark"], [data-bs-theme="dark"], [data-theme="dark"], .dark, .dark-mode) .projects-page .header-actions .btn-icon .project-toolbar-icon {
+        color: #93c5fd !important;
+    }
+
+    /* Keep glyphs transparent and follow the button's state color. */
+    html body .projects-page :is(.header-actions .btn-icon, .view-toggle .view-btn) > i,
+    html body .projects-page :is(.header-actions .btn-icon, .view-toggle .view-btn) > i::before {
+        background: transparent !important;
+        background-image: none !important;
+        color: inherit !important;
+        -webkit-text-fill-color: currentColor !important;
+        box-shadow: none !important;
+    }
+
+    /* Clean SaaS Workspace Redesign (Scoped to #projects-list-page) */
+    #projects-list-page.projects-page {
+        padding: 0 0 2rem !important;
+        margin: 0 !important;
+        min-height: 0 !important;
+        background: transparent !important;
+        font-family: 'Inter', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 16px !important;
+    }
+
+    /* Header Card */
+    #projects-list-page .header-card {
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 16px !important;
+        padding: 20px 24px !important;
+        margin: 0 !important;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04), 0 8px 20px rgba(15, 23, 42, 0.03) !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 16px !important;
+    }
+
+    #projects-list-page .header-card::before,
+    #projects-list-page .header-card::after {
+        display: none !important;
+    }
+
+    #projects-list-page .header-left {
+        display: flex !important;
+        align-items: center !important;
+        gap: 16px !important;
+    }
+
+    #projects-list-page .header-icon {
+        width: 48px !important;
+        height: 48px !important;
+        border-radius: 12px !important;
+        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
+        color: #ffffff !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 1.25rem !important;
+        box-shadow: 0 8px 18px rgba(37, 99, 235, 0.22) !important;
+        flex-shrink: 0 !important;
+    }
+
+    #projects-list-page .header-icon i {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        background: transparent !important;
+    }
+
+    #projects-list-page .header-left h1 {
+        margin: 0 !important;
+        font-size: 1.35rem !important;
+        font-weight: 700 !important;
+        color: #0f172a !important;
+        letter-spacing: -0.02em !important;
+        line-height: 1.25 !important;
+    }
+
+    #projects-list-page .header-left p {
+        margin: 3px 0 0 !important;
+        font-size: 0.85rem !important;
+        color: #64748b !important;
+    }
+
+    #projects-list-page .header-actions {
+        display: flex !important;
+        align-items: center !important;
+        gap: 10px !important;
+    }
+
+    #projects-list-page .header-actions .pms-header-search-btn {
+        width: 38px !important;
+        height: 38px !important;
+        border-radius: 10px !important;
+        border: 1px solid #e2e8f0 !important;
+        background: #ffffff !important;
+        color: #475569 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04) !important;
+    }
+
+    #projects-list-page .header-actions .pms-header-search-btn:hover {
+        background: #f8fafc !important;
+        border-color: #cbd5e1 !important;
+        color: #0f172a !important;
+    }
+
+    #projects-list-page .pms-header-view-group {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 4px !important;
+        padding: 4px !important;
+        border-radius: 12px !important;
+        background: #f1f5f9 !important;
+        border: 1px solid #e2e8f0 !important;
+    }
+
+    #projects-list-page .pms-header-view-group .btn-icon {
+        width: 32px !important;
+        height: 32px !important;
+        border-radius: 8px !important;
+        border: none !important;
+        background: transparent !important;
+        color: #64748b !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        box-shadow: none !important;
+        transition: all 0.16s ease !important;
+    }
+
+    #projects-list-page .pms-header-view-group .btn-icon:hover {
+        background: #ffffff !important;
+        color: #0f172a !important;
+    }
+
+    #projects-list-page .pms-header-view-group .btn-icon.active {
+        background: #2563eb !important;
+        color: #ffffff !important;
+        box-shadow: 0 2px 6px rgba(37, 99, 235, 0.28) !important;
+    }
+
+    #projects-list-page .header-actions .project-toolbar-icon {
+        width: 16px !important;
+        height: 16px !important;
+        stroke: currentColor !important;
+        fill: none !important;
+        stroke-width: 2 !important;
+    }
+
+    /* Filter Panel */
+    #projects-list-page .filter-panel {
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 16px !important;
+        padding: 20px 24px !important;
+        margin: 0 !important;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04) !important;
+    }
+
+    #projects-list-page .filter-grid {
+        display: grid !important;
+        grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+        gap: 16px !important;
+        align-items: start !important;
+    }
+
+    #projects-list-page .filter-group {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 6px !important;
+        margin: 0 !important;
+    }
+
+    #projects-list-page .filter-group > label {
+        font-size: 0.7rem !important;
+        font-weight: 700 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.05em !important;
+        color: #334155 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+        margin: 0 !important;
+    }
+
+    #projects-list-page .filter-group > label i {
+        color: #2563eb !important;
+        font-size: 0.72rem !important;
+        width: 13px !important;
+        text-align: center !important;
+    }
+
+    #projects-list-page .filter-panel .form-control,
+    #projects-list-page .filter-panel .form-select {
+        height: 40px !important;
+        border-radius: 10px !important;
+        border: 1px solid #e2e8f0 !important;
+        background-color: #ffffff !important;
+        color: #0f172a !important;
+        font-size: 0.85rem !important;
+        padding: 0 12px !important;
+        box-shadow: none !important;
+    }
+
+    #projects-list-page .filter-panel .form-select {
+        padding-right: 32px !important;
+    }
+
+    #projects-list-page .filter-panel .form-control:focus,
+    #projects-list-page .filter-panel .form-select:focus {
+        border-color: #2563eb !important;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12) !important;
+    }
+
+    #projects-list-page .pms-progress-checklist {
+        max-height: 112px !important;
+        overflow-y: auto !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 10px !important;
+        background: #ffffff !important;
+        padding: 8px 12px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 6px !important;
+    }
+
+    #projects-list-page .pms-progress-option {
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        font-size: 0.82rem !important;
+        font-weight: 500 !important;
+        color: #1e293b !important;
+        cursor: pointer !important;
+        margin: 0 !important;
+        text-transform: none !important;
+        letter-spacing: 0 !important;
+    }
+
+    #projects-list-page .pms-progress-option input[type="checkbox"] {
+        width: 14px !important;
+        height: 14px !important;
+        accent-color: #2563eb !important;
+        margin: 0 !important;
+        cursor: pointer !important;
+    }
+
+    #projects-list-page .pms-filter-bottom-row {
+        grid-column: 1 / -1 !important;
+        display: flex !important;
+        align-items: flex-end !important;
+        justify-content: space-between !important;
+        gap: 16px !important;
+        padding-top: 2px !important;
+        flex-wrap: wrap !important;
+    }
+
+    #projects-list-page .pms-filter-bottom-row .search-group {
+        flex: 1 1 320px !important;
+        max-width: 520px !important;
+    }
+
+    #projects-list-page .search-box {
+        position: relative !important;
+    }
+
+    #projects-list-page .search-box > i {
+        position: absolute !important;
+        left: 12px !important;
+        top: 50% !important;
+        transform: translateY(-50%) !important;
+        color: #94a3b8 !important;
+        font-size: 0.82rem !important;
+        pointer-events: none !important;
+    }
+
+    #projects-list-page .search-box .form-control {
+        padding-left: 36px !important;
+    }
+
+    #projects-list-page .filter-actions {
+        display: flex !important;
+        align-items: center !important;
+        gap: 10px !important;
+        margin: 0 !important;
+    }
+
+    /* Uniform Rectangular Buttons (Override pms-refresh pill rules) */
+    #projects-list-page .btn,
+    #projects-list-page .filter-actions .btn,
+    #projects-list-page .toolbar .btn,
+    #projects-list-page .pms-empty-actions .btn {
+        border-radius: 10px !important;
+        height: 38px !important;
+        padding: 0 16px !important;
+        font-size: 0.84rem !important;
+        font-weight: 600 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 8px !important;
+        box-shadow: none !important;
+        transition: all 0.16s ease !important;
+    }
+
+    #projects-list-page .btn-primary {
+        background: #2563eb !important;
+        border: 1px solid #2563eb !important;
+        color: #ffffff !important;
+    }
+
+    #projects-list-page .btn-primary:hover {
+        background: #1d4ed8 !important;
+        border-color: #1d4ed8 !important;
+        color: #ffffff !important;
+        transform: translateY(-1px) !important;
+        box-shadow: 0 6px 14px rgba(37, 99, 235, 0.24) !important;
+    }
+
+    #projects-list-page .btn-outline {
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        color: #0f172a !important;
+    }
+
+    #projects-list-page .btn-outline:hover:not(:disabled) {
+        background: #f8fafc !important;
+        border-color: #cbd5e1 !important;
+        color: #0f172a !important;
+    }
+
+    #projects-list-page .btn-outline:disabled {
+        opacity: 0.55 !important;
+        cursor: not-allowed !important;
+    }
+
+    /* Toolbar */
+    #projects-list-page .toolbar {
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 14px !important;
+        padding: 14px 18px !important;
+        margin: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 12px !important;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04) !important;
+    }
+
+    #projects-list-page .toolbar-left {
+        display: flex !important;
+        align-items: center !important;
+        flex-wrap: wrap !important;
+        gap: 10px !important;
+    }
+
+    #projects-list-page .toolbar-right .view-toggle {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+        background: transparent !important;
+        padding: 0 !important;
+        border: none !important;
+    }
+
+    #projects-list-page .toolbar-right .view-btn {
+        width: 36px !important;
+        height: 36px !important;
+        border-radius: 10px !important;
+        border: 1px solid #e2e8f0 !important;
+        background: #ffffff !important;
+        color: #475569 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        box-shadow: none !important;
+        text-decoration: none !important;
+    }
+
+    #projects-list-page .toolbar-right .view-btn:hover {
+        background: #f8fafc !important;
+        border-color: #cbd5e1 !important;
+        color: #0f172a !important;
+    }
+
+    #projects-list-page .toolbar-right .view-btn.active {
+        background: #2563eb !important;
+        border-color: #2563eb !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 10px rgba(37, 99, 235, 0.24) !important;
+    }
+
+    /* Project List Card & Table */
+    #projects-list-page #projects-list-card.table-card {
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 16px !important;
+        margin: 0 !important;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04) !important;
+        overflow: hidden !important;
+    }
+
+    #projects-list-page #projects-list-header.table-header {
+        background: #ffffff !important;
+        padding: 16px 22px !important;
+        border-bottom: 1px solid #f1f5f9 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 12px !important;
+    }
+
+    #projects-list-page .table-title {
+        display: flex !important;
+        align-items: center !important;
+        gap: 12px !important;
+    }
+
+    #projects-list-page .table-title-icon {
+        width: 36px !important;
+        height: 36px !important;
+        border-radius: 10px !important;
+        background: #eff6ff !important;
+        color: #2563eb !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 0.92rem !important;
+    }
+
+    #projects-list-page .table-title-icon i {
+        color: #2563eb !important;
+    }
+
+    #projects-list-page .table-title h4 {
+        margin: 0 !important;
+        font-size: 1rem !important;
+        font-weight: 700 !important;
+        color: #0f172a !important;
+    }
+
+    #projects-list-page .table-title .muted {
+        font-size: 0.78rem !important;
+        color: #64748b !important;
+    }
+
+    #projects-list-page .pms-table-meta {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+        font-size: 0.8rem !important;
+        color: #64748b !important;
+    }
+
+    #projects-list-page .pms-table-meta strong {
+        color: #0f172a !important;
+        font-weight: 600 !important;
+    }
+
+    #projects-list-page .pms-table-meta i {
+        font-size: 0.7rem !important;
+        color: #64748b !important;
+    }
+
+    #projects-list-page #projectTable thead th {
+        background: #f8fafc !important;
+        color: #475569 !important;
+        font-size: 0.72rem !important;
+        font-weight: 700 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.04em !important;
+        border-bottom: 1px solid #e2e8f0 !important;
+        padding: 12px 14px !important;
+    }
+
+    #projects-list-page #projectTable tbody td {
+        border-bottom: 1px solid #f1f5f9 !important;
+        vertical-align: middle !important;
+        padding: 14px !important;
+    }
+
+    /* Empty State */
+    #projects-list-page .empty-state {
+        padding: 52px 24px !important;
+        text-align: center !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+
+    #projects-list-page .empty-state .pms-empty-icon-box {
+        width: 58px !important;
+        height: 58px !important;
+        border-radius: 16px !important;
+        background: #eff6ff !important;
+        color: #2563eb !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 1.45rem !important;
+        margin-bottom: 16px !important;
+        box-shadow: inset 0 0 0 1px rgba(37, 99, 235, 0.12) !important;
+    }
+
+    #projects-list-page .empty-state .pms-empty-icon-box i {
+        margin: 0 !important;
+        color: #2563eb !important;
+        font-size: 1.4rem !important;
+    }
+
+    #projects-list-page .empty-state h5 {
+        margin: 0 0 8px !important;
+        font-size: 1.05rem !important;
+        font-weight: 700 !important;
+        color: #0f172a !important;
+    }
+
+    #projects-list-page .empty-state p {
+        margin: 0 0 20px !important;
+        max-width: 440px !important;
+        font-size: 0.84rem !important;
+        line-height: 1.5 !important;
+        color: #64748b !important;
+    }
+
+    #projects-list-page .pms-empty-actions {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        flex-wrap: wrap !important;
+        gap: 10px !important;
+    }
+
+    #projects-list-page .pms-empty-actions .btn i {
+        font-size: 0.85rem !important;
+        line-height: 1 !important;
+        margin: 0 !important;
+        color: inherit !important;
+    }
+
+    /* Dark Mode Overrides */
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) #projects-list-page .header-card,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) #projects-list-page .filter-panel,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) #projects-list-page .toolbar,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) #projects-list-page #projects-list-card.table-card,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) #projects-list-page #projects-list-header.table-header {
+        background: #0f172a !important;
+        border-color: rgba(148, 163, 184, 0.2) !important;
+        box-shadow: 0 10px 26px rgba(2, 6, 23, 0.35) !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) #projects-list-page .header-left h1,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) #projects-list-page .table-title h4,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) #projects-list-page .pms-table-meta strong,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) #projects-list-page .empty-state h5 {
+        color: #f8fafc !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) #projects-list-page .filter-group > label,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) #projects-list-page .pms-progress-option {
+        color: #cbd5e1 !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) #projects-list-page .filter-panel .form-control,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) #projects-list-page .filter-panel .form-select,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) #projects-list-page .pms-progress-checklist,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) #projects-list-page .btn-outline,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) #projects-list-page .header-actions .pms-header-search-btn,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) #projects-list-page .toolbar-right .view-btn:not(.active) {
+        background-color: #1e293b !important;
+        border-color: rgba(148, 163, 184, 0.25) !important;
+        color: #e2e8f0 !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) #projects-list-page .pms-header-view-group {
+        background: #1e293b !important;
+        border-color: rgba(148, 163, 184, 0.25) !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) #projects-list-page .table-title-icon,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) #projects-list-page .empty-state .pms-empty-icon-box {
+        background: rgba(37, 99, 235, 0.16) !important;
+        color: #60a5fa !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) #projects-list-page #projectTable thead th {
+        background: #1e293b !important;
+        color: #cbd5e1 !important;
+        border-color: rgba(148, 163, 184, 0.2) !important;
+    }
+
+    @media (max-width: 1100px) {
+        #projects-list-page .filter-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        }
+    }
+
+    @media (max-width: 640px) {
+        #projects-list-page .header-card,
+        #projects-list-page .toolbar,
+        #projects-list-page #projects-list-header.table-header {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+        }
+        #projects-list-page .filter-grid {
+            grid-template-columns: 1fr !important;
+        }
+        #projects-list-page .pms-filter-bottom-row {
+            flex-direction: column !important;
+            align-items: stretch !important;
+        }
+        #projects-list-page .pms-filter-bottom-row .search-group {
+            max-width: none !important;
+        }
     }
 </style>
 
@@ -2048,6 +3057,28 @@ document.addEventListener('DOMContentLoaded', function () {
     const bulkStatus = document.getElementById('bulkProjectStatus');
     const bulkApply = document.getElementById('applyBulkProjectStatus');
     const bulkDelete = document.getElementById('bulkDeleteProjects');
+    const bulkArchive = document.getElementById('bulkArchiveProjects');
+
+    if (bulkArchive) {
+        bulkArchive.addEventListener('click', async function () {
+            const ids = selectedIds();
+            if (!ids.length || !confirm('Archive selected projects?')) return;
+            bulkArchive.disabled = true;
+            try {
+                const response = await fetch("{{ route('projects.bulk-archive') }}", {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': csrf },
+                    body: JSON.stringify({ ids })
+                });
+                const result = await response.json();
+                if (!response.ok || !result.success) throw new Error(result.message || 'Unable to archive selected projects.');
+                window.location.reload();
+            } catch (error) {
+                alert(error.message || 'Unable to archive selected projects.');
+                refreshBulkControls();
+            }
+        });
+    }
 
     function selectedIds() {
         return checkboxes().filter(box => box.checked).map(box => box.value);
@@ -2058,6 +3089,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (bulkStatus) bulkStatus.disabled = selected.length === 0;
         if (bulkApply) bulkApply.disabled = selected.length === 0;
         if (bulkDelete) bulkDelete.disabled = selected.length === 0;
+        if (bulkArchive) bulkArchive.disabled = selected.length === 0;
 
         if (!selectAll) return;
         const all = checkboxes();
@@ -2170,22 +3202,48 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    document.querySelectorAll('[data-copy-url]').forEach(button => {
-        button.addEventListener('click', function () {
-            const url = this.dataset.copyUrl;
-            const oldText = this.innerHTML;
+    document.addEventListener('click', function (e) {
+        const button = e.target.closest('[data-copy-url]');
+        if (!button) return;
 
-            function done() {
-                button.innerHTML = '<i class="fas fa-check"></i> Copied';
-                setTimeout(() => button.innerHTML = oldText, 1400);
-            }
+        e.preventDefault();
+        const url = button.getAttribute('data-copy-url');
+        if (!url) return;
 
-            if (navigator.clipboard && window.isSecureContext) {
-                navigator.clipboard.writeText(url).then(done).catch(() => prompt('Copy this link:', url));
-            } else {
-                prompt('Copy this link:', url);
+        const oldText = button.innerHTML;
+
+        function showSuccess() {
+            button.innerHTML = '<i class="fas fa-check text-success"></i> Copied!';
+            setTimeout(() => button.innerHTML = oldText, 2000);
+        }
+
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(url).then(showSuccess).catch(() => fallbackCopy(url));
+        } else {
+            fallbackCopy(url);
+        }
+
+        function fallbackCopy(text) {
+            try {
+                const textArea = document.createElement("textarea");
+                textArea.value = text;
+                textArea.style.position = "fixed";
+                textArea.style.left = "-999999px";
+                textArea.style.top = "-999999px";
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                const successful = document.execCommand('copy');
+                document.body.removeChild(textArea);
+                if (successful) {
+                    showSuccess();
+                } else {
+                    prompt('Copy this link:', text);
+                }
+            } catch (err) {
+                prompt('Copy this link:', text);
             }
-        });
+        }
     });
 
     document.getElementById('exportProjectsCsv')?.addEventListener('click', function () {
@@ -2222,80 +3280,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     document.querySelector('.show-pinned')?.addEventListener('click', function () {
         alert('Pinned projects view is ready for a pin data field. No pinned project flag exists yet.');
-    });
-
-    document.querySelectorAll('.project-action-dropdown').forEach(dropdown => {
-        const button = dropdown.querySelector('[data-bs-toggle="dropdown"]');
-        const menu = dropdown.querySelector('.dropdown-menu');
-
-        if (!button || !menu) return;
-
-        let originalParent = null;
-        let originalNextSibling = null;
-
-        function positionFloatingMenu() {
-            const rect = button.getBoundingClientRect();
-            const menuWidth = 240;
-            const menuHeight = Math.min(menu.offsetHeight || 320, window.innerHeight * 0.6);
-            const viewportGap = 12;
-
-            let left = rect.right - menuWidth;
-            if (left < viewportGap) left = viewportGap;
-            if (left + menuWidth > window.innerWidth - viewportGap) {
-                left = window.innerWidth - menuWidth - viewportGap;
-            }
-
-            const spaceBelow = window.innerHeight - rect.bottom;
-            const spaceAbove = rect.top;
-            let top;
-
-            if (spaceBelow < menuHeight && spaceAbove > spaceBelow) {
-                top = Math.max(viewportGap, rect.top - menuHeight - 6);
-            } else {
-                top = Math.min(window.innerHeight - menuHeight - viewportGap, rect.bottom + 6);
-            }
-
-            menu.style.position = 'fixed';
-            menu.style.top = top + 'px';
-            menu.style.left = left + 'px';
-            menu.style.right = 'auto';
-            menu.style.bottom = 'auto';
-            menu.style.transform = 'none';
-            menu.style.zIndex = '99999';
-        }
-
-        dropdown.addEventListener('show.bs.dropdown', function () {
-            originalParent = menu.parentNode;
-            originalNextSibling = menu.nextSibling;
-            document.body.appendChild(menu);
-            menu.classList.add('project-floating-action-menu');
-            positionFloatingMenu();
-        });
-
-        dropdown.addEventListener('shown.bs.dropdown', function () {
-            positionFloatingMenu();
-        });
-
-        dropdown.addEventListener('hide.bs.dropdown', function () {
-            menu.classList.remove('project-floating-action-menu');
-            menu.removeAttribute('style');
-
-            if (originalParent) {
-                originalParent.insertBefore(menu, originalNextSibling);
-            }
-        });
-
-        window.addEventListener('resize', function () {
-            if (menu.classList.contains('project-floating-action-menu')) {
-                positionFloatingMenu();
-            }
-        });
-
-        window.addEventListener('scroll', function () {
-            if (menu.classList.contains('project-floating-action-menu')) {
-                positionFloatingMenu();
-            }
-        }, true);
     });
 
     document.querySelectorAll('[data-template-project]').forEach(button => {
@@ -2394,6 +3378,95 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     refreshBulkControls();
+});
+</script>
+<script>
+// Keep project row menus outside every table overflow and stacking context.
+document.addEventListener('DOMContentLoaded', function () {
+    let active = null;
+    function closeMenu(restoreFocus = false) {
+        if (!active) return;
+        const { button, menu, marker } = active;
+        active = null;
+        menu.classList.remove('show', 'project-floating-action-menu');
+        menu.removeAttribute('style');
+        marker.replaceWith(menu);
+        button.setAttribute('aria-expanded', 'false');
+        if (restoreFocus) button.focus();
+    }
+    function positionMenu() {
+        if (!active) return;
+        const { button, menu } = active;
+        const rect = button.getBoundingClientRect();
+        const gap = 12;
+        const width = Math.min(260, window.innerWidth - gap * 2);
+        const below = Math.max(0, window.innerHeight - rect.bottom - gap - 6);
+        const above = Math.max(0, rect.top - gap - 6);
+        const upwards = above > below;
+        const height = Math.max(1, Math.min(440, upwards ? above : below));
+        menu.style.setProperty('min-width', '0', 'important');
+        menu.style.setProperty('width', width + 'px', 'important');
+        menu.style.setProperty('max-height', height + 'px', 'important');
+        menu.style.setProperty('transform', 'none', 'important');
+        menu.style.setProperty('right', 'auto', 'important');
+        menu.style.setProperty('bottom', 'auto', 'important');
+        menu.style.setProperty('left', Math.max(gap, Math.min(rect.right - width, window.innerWidth - width - gap)) + 'px', 'important');
+        const top = upwards ? rect.top - menu.offsetHeight - 6 : rect.bottom + 6;
+        menu.style.setProperty('top', Math.max(gap, Math.min(top, window.innerHeight - menu.offsetHeight - gap)) + 'px', 'important');
+    }
+    function openMenu(button) {
+        if (active && active.button === button) { closeMenu(); return; }
+        const menu = button.parentElement.querySelector('.dropdown-menu');
+        if (!menu) return;
+            closeMenu();
+            const marker = document.createComment('project action menu');
+            menu.replaceWith(marker);
+            document.body.appendChild(menu);
+            active = { button, menu, marker };
+            menu.classList.add('project-floating-action-menu', 'show');
+            button.setAttribute('aria-expanded', 'true');
+            positionMenu();
+    }
+    // Delegate to include rows inserted by the live record refresh.
+    document.addEventListener('click', function (event) {
+        const button = event.target.closest('[data-project-action-toggle]');
+        if (button) {
+            event.preventDefault();
+            openMenu(button);
+        }
+    });
+    document.addEventListener('keydown', function (event) {
+        const button = event.target.closest('[data-project-action-toggle]');
+        if (button && event.key === 'ArrowDown') {
+            event.preventDefault();
+            if (!active || active.button !== button) openMenu(button);
+            active?.menu.querySelector('.dropdown-item')?.focus();
+        }
+    });
+    document.addEventListener('click', function (event) {
+        if (!active || active.button.contains(event.target)) return;
+        if (!active.menu.contains(event.target)) { closeMenu(); return; }
+        if (event.target.closest('.dropdown-item')) {
+            // Allow delegated modal, copy-link and form handlers to finish first.
+            setTimeout(() => closeMenu(), 0);
+        }
+    });
+    document.addEventListener('keydown', function (event) {
+        if (!active) return;
+        if (event.key === 'Escape') { event.preventDefault(); closeMenu(true); return; }
+        if (!active.menu.contains(event.target) || !['ArrowDown', 'ArrowUp'].includes(event.key)) return;
+        event.preventDefault();
+        const items = Array.from(active.menu.querySelectorAll('.dropdown-item:not(:disabled)'));
+        const index = items.indexOf(document.activeElement);
+        items[(index + (event.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length]?.focus();
+    });
+    document.addEventListener('focusin', function (event) {
+        if (active && !active.menu.contains(event.target) && !active.button.contains(event.target)) closeMenu();
+    });
+    window.addEventListener('resize', positionMenu);
+    window.addEventListener('scroll', function (event) {
+        if (active && !active.menu.contains(event.target)) positionMenu();
+    }, true);
 });
 </script>
 @endsection

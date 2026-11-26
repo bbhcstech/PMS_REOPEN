@@ -173,8 +173,8 @@
     .holiday-edit-page {
         padding: 30px 35px;
         min-height: 100vh;
-        background: linear-gradient(135deg, #f0f9f4 0%, #e6f3ec 50%, #f4fbf7 100%);
-        color: #0a2e1f;
+        background: linear-gradient(135deg, #F8FAFC 0%, #EEF2FF 50%, #F8FAFC 100%);
+        color: #0F172A;
         position: relative;
     }
 
@@ -185,8 +185,8 @@
         left: 0;
         right: 0;
         bottom: 0;
-        background: radial-gradient(circle at 0% 0%, rgba(16, 185, 129, 0.03) 0%, transparent 50%),
-                    radial-gradient(circle at 100% 100%, rgba(52, 211, 153, 0.03) 0%, transparent 50%);
+        background: radial-gradient(circle at 0% 0%, rgba(47, 107, 255, 0.03) 0%, transparent 50%),
+                    radial-gradient(circle at 100% 100%, rgba(79, 131, 255, 0.03) 0%, transparent 50%);
         pointer-events: none;
     }
 
@@ -196,9 +196,9 @@
         backdrop-filter: blur(10px);
         padding: 14px 24px;
         border-radius: 16px;
-        border: 1px solid rgba(16, 185, 129, 0.15);
+        border: 1px solid rgba(47, 107, 255, 0.15);
         margin-bottom: 28px;
-        color: #0f744c;
+        color: #2F6BFF;
         font-weight: 600;
         font-size: 0.9rem;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
@@ -209,7 +209,7 @@
 
     .breadcrumb i {
         margin-right: 8px;
-        color: #34d399;
+        color: #60A5FA;
     }
 
     @keyframes fadeDown {
@@ -227,8 +227,8 @@
         justify-content: space-between;
         align-items: center;
         gap: 20px;
-        box-shadow: 0 20px 40px -12px rgba(16, 185, 129, 0.12);
-        border: 1px solid rgba(16, 185, 129, 0.12);
+        box-shadow: 0 20px 40px -12px rgba(47, 107, 255, 0.12);
+        border: 1px solid rgba(47, 107, 255, 0.12);
         margin-bottom: 32px;
         transition: all 0.3s ease;
         position: relative;
@@ -237,8 +237,8 @@
     }
 
     .header-card:hover {
-        box-shadow: 0 24px 48px -16px rgba(16, 185, 129, 0.18);
-        border-color: rgba(16, 185, 129, 0.2);
+        box-shadow: 0 24px 48px -16px rgba(47, 107, 255, 0.18);
+        border-color: rgba(47, 107, 255, 0.2);
         transform: translateY(-2px);
     }
 
@@ -262,6 +262,15 @@
         transition: all 0.3s ease;
     }
 
+    .header-icon i,
+    .header-icon svg,
+    .header-icon [class*="fa"] {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
     .header-card:hover .header-icon {
         transform: scale(1.02);
     }
@@ -270,7 +279,7 @@
         font-size: 32px;
         font-weight: 700;
         margin-bottom: 6px;
-        background: linear-gradient(135deg, #0a2e1f, #d97706);
+        background: linear-gradient(135deg, #0F172A, #d97706);
         background-clip: text;
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
@@ -320,16 +329,16 @@
     }
 
     .btn-light {
-        background: #f0f9f4;
-        color: #0f744c;
-        border: 1px solid rgba(16, 185, 129, 0.2);
+        background: #F8FAFC;
+        color: #2F6BFF;
+        border: 1px solid rgba(47, 107, 255, 0.2);
     }
 
     .btn-light:hover {
-        background: #e6f3ec;
+        background: #EEF2FF;
         transform: translateY(-2px);
-        box-shadow: 0 8px 20px -8px rgba(16, 185, 129, 0.25);
-        border-color: #34d399;
+        box-shadow: 0 8px 20px -8px rgba(47, 107, 255, 0.25);
+        border-color: #60A5FA;
     }
 
     .btn-secondary {
@@ -384,7 +393,7 @@
     }
 
     .alert-success {
-        background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+        background: linear-gradient(135deg, #EEF2FF, #E0E7FF);
         color: #065f46;
         border-left: 4px solid #10b981;
     }
@@ -413,7 +422,7 @@
     .form-card {
         background: white;
         border-radius: 28px;
-        border: 1px solid rgba(16, 185, 129, 0.1);
+        border: 1px solid rgba(47, 107, 255, 0.1);
         overflow: hidden;
         box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
         transition: all 0.3s ease;
@@ -423,7 +432,7 @@
     }
 
     .form-card:hover {
-        box-shadow: 0 12px 40px rgba(16, 185, 129, 0.08);
+        box-shadow: 0 12px 40px rgba(47, 107, 255, 0.08);
     }
 
     @keyframes fadeUp {
@@ -440,7 +449,7 @@
     .form-section {
         margin-bottom: 28px;
         padding-bottom: 24px;
-        border-bottom: 1px solid rgba(16, 185, 129, 0.08);
+        border-bottom: 1px solid rgba(47, 107, 255, 0.08);
     }
 
     .form-section:last-of-type {
@@ -458,7 +467,7 @@
     }
 
     .section-header i {
-        color: #34d399;
+        color: #60A5FA;
         font-size: 1.1rem;
         width: 24px;
     }
@@ -466,14 +475,14 @@
     .section-header h6 {
         margin: 0;
         font-weight: 700;
-        color: #0a2e1f;
+        color: #0F172A;
         font-size: 1rem;
     }
 
     .section-badge {
         padding: 4px 14px;
-        background: #f0f9f4;
-        color: #059669;
+        background: #F8FAFC;
+        color: #2F6BFF;
         border-radius: 20px;
         font-size: 0.75rem;
         font-weight: 600;
@@ -495,15 +504,15 @@
         padding: 16px 18px;
         border-radius: 16px;
         background: #f8fafc;
-        border: 1px solid rgba(16, 185, 129, 0.08);
+        border: 1px solid rgba(47, 107, 255, 0.08);
         transition: all 0.3s ease;
         animation: itemFade 0.3s ease;
     }
 
     .holiday-item:hover {
-        background: #f0f9f4;
-        border-color: rgba(16, 185, 129, 0.15);
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.05);
+        background: #F8FAFC;
+        border-color: rgba(47, 107, 255, 0.15);
+        box-shadow: 0 4px 12px rgba(47, 107, 255, 0.05);
     }
 
     @keyframes itemFade {
@@ -533,7 +542,7 @@
         border-radius: 12px;
         font-size: 0.9rem;
         font-weight: 500;
-        color: #0a2e1f;
+        color: #0F172A;
         background: #ffffff;
         transition: all 0.2s ease;
         width: 100%;
@@ -617,7 +626,7 @@
         border-radius: 12px;
         font-size: 0.9rem;
         font-weight: 500;
-        color: #0a2e1f;
+        color: #0F172A;
         background: #ffffff;
         transition: all 0.2s ease;
         width: 100%;
@@ -666,7 +675,7 @@
         padding: 8px 14px !important;
         font-size: 0.9rem !important;
         font-weight: 500 !important;
-        color: #0a2e1f !important;
+        color: #0F172A !important;
         background: #ffffff !important;
     }
 
@@ -706,7 +715,7 @@
         gap: 14px;
         padding-top: 24px;
         margin-top: 24px;
-        border-top: 1px solid rgba(16, 185, 129, 0.08);
+        border-top: 1px solid rgba(47, 107, 255, 0.08);
     }
 
     .form-actions .btn {
@@ -913,78 +922,78 @@
 <style>
     /* Dark mode support */
     html[data-pms-theme="dark"] .holiday-edit-page {
-        background: linear-gradient(135deg, #07130d, #102119);
+        background: linear-gradient(135deg, #070B1A, #0F1530);
     }
 
     html[data-pms-theme="dark"] .breadcrumb {
-        background: rgba(16, 33, 25, 0.85);
-        border-color: rgba(122, 240, 181, 0.15);
-        color: #d9f1e4;
+        background: rgba(15, 21, 48, 0.85);
+        border-color: rgba(79, 131, 255, 0.15);
+        color: #EEF1FB;
     }
 
     html[data-pms-theme="dark"] .breadcrumb i {
-        color: #34d399;
+        color: #60A5FA;
     }
 
     html[data-pms-theme="dark"] .header-card {
-        background: rgba(16, 33, 25, 0.95);
-        border-color: rgba(122, 240, 181, 0.12);
+        background: rgba(15, 21, 48, 0.95);
+        border-color: rgba(79, 131, 255, 0.12);
     }
 
     html[data-pms-theme="dark"] .header-card h1 {
-        background: linear-gradient(135deg, #d9f1e4, #fbbf24);
+        background: linear-gradient(135deg, #ffffff, #fbbf24);
         background-clip: text;
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
     }
 
     html[data-pms-theme="dark"] .header-card p {
-        color: #8ba198;
+        color: #94A3B8;
     }
 
     html[data-pms-theme="dark"] .btn-light {
-        background: #183026;
-        color: #d9f1e4;
-        border-color: rgba(122, 240, 181, 0.15);
+        background: #141B3D;
+        color: #EEF1FB;
+        border-color: rgba(79, 131, 255, 0.15);
     }
 
     html[data-pms-theme="dark"] .btn-light:hover {
-        background: #1f3d30;
-        border-color: #34d399;
+        background: rgba(79, 131, 255, 0.15);
+        border-color: #60A5FA;
     }
 
     html[data-pms-theme="dark"] .form-card {
-        background: #102119;
-        border-color: rgba(122, 240, 181, 0.08);
+        background: #0F1530;
+        border-color: rgba(79, 131, 255, 0.08);
     }
 
     html[data-pms-theme="dark"] .form-section {
-        border-color: rgba(122, 240, 181, 0.06);
+        border-color: rgba(79, 131, 255, 0.06);
     }
 
     html[data-pms-theme="dark"] .section-header h6 {
-        color: #d9f1e4;
+        color: #EEF1FB;
     }
 
     html[data-pms-theme="dark"] .section-badge {
-        background: #183026;
-        color: #34d399;
+        background: #141B3D;
+        color: #60A5FA;
     }
 
     html[data-pms-theme="dark"] .holiday-item {
-        background: #0d1b14;
-        border-color: rgba(122, 240, 181, 0.06);
+        background: #141B3D;
+        border-color: rgba(79, 131, 255, 0.06);
     }
 
     html[data-pms-theme="dark"] .holiday-item:hover {
-        background: #102119;
-        border-color: rgba(122, 240, 181, 0.12);
+        background: #0F1530;
+        border-color: rgba(79, 131, 255, 0.12);
     }
 
     html[data-pms-theme="dark"] .holiday-field .form-control {
-        background: #102119;
-        border-color: rgba(122, 240, 181, 0.15);
-        color: #d9f1e4;
+        background: #0F1530;
+        border-color: rgba(79, 131, 255, 0.15);
+        color: #EEF1FB;
     }
 
     html[data-pms-theme="dark"] .holiday-field .form-control:focus {
@@ -997,13 +1006,13 @@
     }
 
     html[data-pms-theme="dark"] .holiday-field .form-label {
-        color: #8ba198;
+        color: #94A3B8;
     }
 
     html[data-pms-theme="dark"] .filter-group .form-control {
-        background: #102119;
-        border-color: rgba(122, 240, 181, 0.15);
-        color: #d9f1e4;
+        background: #0F1530;
+        border-color: rgba(79, 131, 255, 0.15);
+        color: #EEF1FB;
     }
 
     html[data-pms-theme="dark"] .filter-group .form-control:focus {
@@ -1012,21 +1021,21 @@
     }
 
     html[data-pms-theme="dark"] .filter-group .form-label {
-        color: #8ba198;
+        color: #94A3B8;
     }
 
     html[data-pms-theme="dark"] .form-actions {
-        border-color: rgba(122, 240, 181, 0.06);
+        border-color: rgba(79, 131, 255, 0.06);
     }
 
     html[data-pms-theme="dark"] .btn-secondary {
-        background: #183026;
-        color: #d9f1e4;
-        border-color: rgba(122, 240, 181, 0.15);
+        background: #141B3D;
+        color: #EEF1FB;
+        border-color: rgba(79, 131, 255, 0.15);
     }
 
     html[data-pms-theme="dark"] .btn-secondary:hover {
-        background: #1f3d30;
+        background: rgba(79, 131, 255, 0.15);
     }
 
     html[data-pms-theme="dark"] .btn-outline-primary {
@@ -1035,7 +1044,7 @@
     }
 
     html[data-pms-theme="dark"] .btn-outline-primary:hover {
-        background: #183026;
+        background: #141B3D;
         color: #fde68a;
         border-color: #fde68a;
     }
@@ -1052,12 +1061,12 @@
     }
 
     html[data-pms-theme="dark"] .select2-container--default .select2-selection--multiple {
-        background: #102119 !important;
-        border-color: rgba(122, 240, 181, 0.15) !important;
+        background: #0F1530 !important;
+        border-color: rgba(79, 131, 255, 0.15) !important;
     }
 
     html[data-pms-theme="dark"] .select2-container--default .select2-selection--multiple .select2-selection__choice {
-        background: #183026 !important;
+        background: #141B3D !important;
         border-color: #fbbf24 !important;
         color: #fbbf24 !important;
     }
@@ -1067,22 +1076,22 @@
     }
 
     html[data-pms-theme="dark"] .bootstrap-select .dropdown-toggle {
-        background: #102119 !important;
-        border-color: rgba(122, 240, 181, 0.15) !important;
-        color: #d9f1e4 !important;
+        background: #0F1530 !important;
+        border-color: rgba(79, 131, 255, 0.15) !important;
+        color: #EEF1FB !important;
     }
 
     html[data-pms-theme="dark"] .bootstrap-select .dropdown-menu {
-        background: #102119 !important;
-        border-color: rgba(122, 240, 181, 0.15) !important;
+        background: #0F1530 !important;
+        border-color: rgba(79, 131, 255, 0.15) !important;
     }
 
     html[data-pms-theme="dark"] .bootstrap-select .dropdown-menu .dropdown-item {
-        color: #d9f1e4 !important;
+        color: #EEF1FB !important;
     }
 
     html[data-pms-theme="dark"] .bootstrap-select .dropdown-menu .dropdown-item:hover {
-        background: #183026 !important;
+        background: #141B3D !important;
         color: #fbbf24 !important;
     }
 
@@ -1098,9 +1107,9 @@
     }
 
     html[data-pms-theme="dark"] .alert-success {
-        background: #0d1b14;
-        color: #34d399;
-        border-left-color: #34d399;
+        background: rgba(47, 107, 255, 0.15);
+        color: #60A5FA;
+        border-left-color: #60A5FA;
     }
 </style>
 

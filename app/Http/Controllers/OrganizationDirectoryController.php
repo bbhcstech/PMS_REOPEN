@@ -7,95 +7,201 @@ use App\Models\Designation;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 
 class OrganizationDirectoryController extends Controller
 {
+    public function deleteEmployees(Request $request)
+    {
+        $actor = $request->user();
+        abort_unless($actor && in_array($actor->normalizedRole(), ['admin', 'hr'], true)
+            && $actor->hasModulePermission('employees', 'delete'), 403);
+        $data = $request->validate([
+            'employee_ids' => 'required|array|min:1|max:500',
+            'employee_ids.*' => 'required|integer|distinct',
+        ]);
+        $companyId = (int) $actor->company_id;
+        abort_unless($companyId > 0, 403);
+
+        $count = \Illuminate\Support\Facades\DB::connection('tenant')->transaction(function () use ($data, $companyId, $actor) {
+            $employees = User::where('company_id', $companyId)->where('role', 'employee')
+                ->whereNull('archived_at')->whereIn('id', $data['employee_ids'])->lockForUpdate()->get();
+            abort_unless($employees->count() === count($data['employee_ids'])
+                && ! $employees->contains('id', $actor->id), 403, 'The selection contains employees you cannot delete.');
+
+            // Reject the whole selection rather than deleting only some employees.
+            if (\App\Models\EmployeeDetail::whereIn('reporting_to', $employees->modelKeys())->exists()) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'employee_ids' => 'Reassign reporting employees before deleting their manager. No employees were deleted.',
+                ]);
+            }
+            User::whereIn('id', $employees->modelKeys())->where('company_id', $companyId)->update([
+                'archived_at' => now(), 'is_active' => false, 'login_allowed' => false,
+            ]);
+
+            return $employees->count();
+        });
+
+        return response()->json(['message' => $count.' employee'.($count === 1 ? '' : 's').' deleted and moved to Archived Employees.']);
+    }
+
     public function index(Request $request)
     {
-        $allEmployeesQuery = User::query()
-            ->with([
-                'company',
-                'employeeDetail.designation',
-                'employeeDetail.department.parent',
-                'employeeDetail.reportingTo.employeeDetail.designation',
-            ])
-            ->where('role', 'employee')
-            ->whereNull('archived_at');
+        // Tenant isolation: company users only ever see their own company's directory.
+        $scopeCompanyId = \App\Services\TenantScope::companyFilter($request->integer('company_id') ?: null);
+        $tenantConnection = (new User)->getConnectionName() ?: config('database.default');
+        $hasLegacyDirectoryFilters = $request->anyFilled([
+            'search', 'company_id', 'department_id', 'designation_id', 'reporting_to', 'status', 'page', 'per_page',
+        ]);
 
-        $employees = (clone $allEmployeesQuery)
-            ->when($request->filled('search'), function ($query) use ($request) {
-                $search = trim((string) $request->search);
-
-                $query->where(function ($q) use ($search) {
-                    $q->where('name', 'like', '%' . $search . '%')
-                        ->orWhere('email', 'like', '%' . $search . '%')
-                        ->orWhereHas('employeeDetail', function ($detail) use ($search) {
-                            $detail->where('employee_id', 'like', '%' . $search . '%')
-                                ->orWhere('skills', 'like', '%' . $search . '%')
-                                ->orWhereHas('department', fn ($department) => $department->where('dpt_name', 'like', '%' . $search . '%'))
-                                ->orWhereHas('designation', fn ($designation) => $designation->where('name', 'like', '%' . $search . '%'));
-                        });
-                });
-            })
-            ->when($request->filled('company_id'), function ($query) use ($request) {
-                $query->where('company_id', $request->company_id);
-            })
-            ->when($request->filled('department_id'), function ($query) use ($request) {
-                $query->whereHas('employeeDetail', fn ($detail) => $detail->where('department_id', $request->department_id));
-            })
-            ->when($request->filled('designation_id'), function ($query) use ($request) {
-                $query->whereHas('employeeDetail', fn ($detail) => $detail->where('designation_id', $request->designation_id));
-            })
-            ->when($request->filled('status'), function ($query) use ($request) {
-                $status = strtolower($request->status);
-                if ($status === 'active') {
-                    $query->whereHas('employeeDetail', fn ($detail) => $detail->where('status', 'Active'));
-                } elseif ($status === 'inactive') {
-                    $query->whereHas('employeeDetail', fn ($detail) => $detail->where('status', 'Inactive'));
-                } elseif ($status === 'on_leave') {
-                    $query->whereHas('employeeDetail', fn ($detail) => $detail->where('status', 'on_leave'));
-                } elseif ($status === 'suspended') {
-                    $query->whereHas('employeeDetail', fn ($detail) => $detail->where('status', 'Suspended'));
-                }
-            })
-            ->when($request->filled('reporting_to'), function ($query) use ($request) {
-                $query->whereHas('employeeDetail', fn ($detail) => $detail->where('reporting_to', $request->reporting_to));
-            })
-            ->orderBy('name')
-            ->paginate(15)
-            ->withQueryString();
-
-        $totalEmployeesCount = (clone $allEmployeesQuery)->count();
-        $activeEmployeesCount = (clone $allEmployeesQuery)->whereHas('employeeDetail', fn ($q) => $q->where('status', 'Active'))->count();
-        $inactiveEmployeesCount = (clone $allEmployeesQuery)->whereHas('employeeDetail', fn ($q) => $q->where('status', 'Inactive'))->count();
-        $onLeaveEmployeesCount = (clone $allEmployeesQuery)->whereHas('employeeDetail', fn ($q) => $q->where('status', 'on_leave'))->count();
-        $managersCount = \App\Models\EmployeeDetail::whereNotNull('reporting_to')->distinct('reporting_to')->count('reporting_to');
-
+        $employees = new \Illuminate\Pagination\LengthAwarePaginator([], 0, 15);
         $stats = [
-            'total' => $totalEmployeesCount,
-            'employees' => $totalEmployeesCount,
-            'active' => $activeEmployeesCount,
-            'inactive' => $inactiveEmployeesCount,
-            'on_leave' => $onLeaveEmployeesCount,
-            'managers' => max(1, $managersCount),
-            'departments' => Department::whereNull('archived_at')->count(),
-            'designations' => Designation::whereNull('archived_at')->count(),
+            'total' => 0,
+            'employees' => 0,
+            'active' => 0,
+            'inactive' => 0,
+            'on_leave' => 0,
+            'managers' => 0,
+            'departments' => 0,
+            'designations' => 0,
         ];
+        $managers = collect();
+        $departmentGroups = collect();
+        $departments = collect();
 
-        $companies = \App\Models\Company::where('status', 'active')->orderBy('name')->get();
-        $departments = Department::whereNull('archived_at')->orderBy('dpt_name')->get();
-        $designations = Designation::whereNull('archived_at')->orderBy('name')->get();
-
-        $managerUserIds = \App\Models\EmployeeDetail::whereNotNull('reporting_to')->pluck('reporting_to')->unique();
-        $managers = User::whereIn('id', $managerUserIds)->orderBy('name')->get();
-
-        $departmentGroups = Department::with(['employeeDetails.user', 'employeeDetails.designation'])
-            ->whereNull('archived_at')
-            ->whereHas('employeeDetails', function ($query) {
-                $query->where('status', 'Active')->whereHas('user', fn ($user) => $user->whereNull('archived_at'));
-            })
-            ->orderBy('dpt_name')
+        $companies = \App\Services\TenantScope::visibleCompanies();
+        $designationColumns = array_flip(Schema::connection($tenantConnection)->getColumnListing('designations'));
+        $designations = Designation::whereNull('archived_at')
+            ->when(isset($designationColumns['level']), fn ($q) => $q->orderByDesc('level'))
+            ->orderBy('name')
             ->get();
+
+        // Only run legacy directory pagination, counts, and grouped relations when explicitly queried
+        // (keeps standalone Organization Details tree loads fast without redundant SQL queries).
+        if ($hasLegacyDirectoryFilters) {
+            $detailColumns = array_flip(Schema::connection($tenantConnection)->getColumnListing('employee_details'));
+            $userColumns = array_flip(Schema::connection($tenantConnection)->getColumnListing('users'));
+            $departmentColumns = array_flip(Schema::connection($tenantConnection)->getColumnListing('departments'));
+
+            $allEmployeesQuery = User::query()
+                ->when($scopeCompanyId, fn ($q) => $q->where('users.company_id', $scopeCompanyId))
+                ->with([
+                    'company',
+                    'employeeDetail.designation',
+                    'employeeDetail.department.parent',
+                    'employeeDetail.reportingTo.employeeDetail.designation',
+                ])
+                ->where('role', 'employee')
+                ->whereNull('archived_at');
+
+            $employees = (clone $allEmployeesQuery)
+                ->when($request->filled('search'), fn ($query) => $this->applyDirectorySearch($query, (string) $request->search))
+                ->when($request->filled('company_id'), function ($query) use ($request) {
+                    $query->where(function ($q) use ($request) {
+                        $q->where('company_id', $request->company_id)
+                            ->orWhereHas('employeeDetail', fn ($detail) => $detail->where('company_id', $request->company_id))
+                            ->orWhere(function ($subQ) {
+                                $subQ->whereNull('company_id')
+                                     ->whereDoesntHave('employeeDetail', fn ($d) => $d->whereNotNull('company_id'));
+                            });
+                    });
+                })
+                ->when($request->filled('department_id'), function ($query) use ($request) {
+                    $query->whereHas('employeeDetail', fn ($detail) => $detail->where('department_id', $request->department_id));
+                })
+                ->when($request->filled('designation_id'), function ($query) use ($request) {
+                    $query->whereHas('employeeDetail', fn ($detail) => $detail->where('designation_id', $request->designation_id));
+                })
+                ->when($request->filled('status'), function ($query) use ($request, $detailColumns, $userColumns) {
+                    $status = strtolower($request->status);
+                    if (isset($detailColumns['status'])) {
+                        if ($status === 'active') {
+                            $query->whereHas('employeeDetail', fn ($detail) => $detail->whereIn('status', ['Active', 'active']));
+                        } elseif ($status === 'inactive') {
+                            $query->whereHas('employeeDetail', fn ($detail) => $detail->whereIn('status', ['Inactive', 'inactive']));
+                        } elseif ($status === 'on_leave') {
+                            $query->whereHas('employeeDetail', fn ($detail) => $detail->where('status', 'on_leave'));
+                        } elseif ($status === 'suspended') {
+                            $query->whereHas('employeeDetail', fn ($detail) => $detail->whereIn('status', ['Suspended', 'suspended']));
+                        }
+                    } elseif (isset($userColumns['is_active'])) {
+                        if ($status === 'active') {
+                            $query->where('is_active', true);
+                        } elseif ($status === 'inactive') {
+                            $query->where('is_active', false);
+                        }
+                    }
+                })
+                ->when($request->filled('reporting_to'), function ($query) use ($request) {
+                    $query->whereHas('employeeDetail', fn ($detail) => $detail->where('reporting_to', $request->reporting_to));
+                })
+                ->orderBy('name')
+                ->paginate((int) $request->input('per_page', 15))
+                ->withQueryString();
+
+            $departments = Department::whereNull('archived_at')
+                ->when(isset($departmentColumns['dpt_name']), fn ($q) => $q->orderBy('dpt_name'), fn ($q) => $q->orderBy('id'))
+                ->get();
+
+            $employeeDetailFilter = function ($detailQuery) use ($request, $scopeCompanyId, $detailColumns) {
+                $detailQuery->whereHas('user', function ($uQuery) use ($request, $scopeCompanyId) {
+                    $uQuery->where('role', 'employee')
+                        ->whereNull('archived_at')
+                        ->when($scopeCompanyId, fn ($q) => $q->where('users.company_id', $scopeCompanyId))
+                        ->when($request->filled('search'), fn ($query) => $this->applyDirectorySearch($query, (string) $request->search))
+                        ->when($request->filled('company_id'), function ($query) use ($request) {
+                            $query->where(function ($q) use ($request) {
+                                $q->where('company_id', $request->company_id)
+                                    ->orWhereHas('employeeDetail', fn ($detail) => $detail->where('company_id', $request->company_id))
+                                    ->orWhere(function ($subQ) {
+                                        $subQ->whereNull('company_id')
+                                             ->whereDoesntHave('employeeDetail', fn ($d) => $d->whereNotNull('company_id'));
+                                    });
+                            });
+                        });
+                })
+                ->when($request->filled('designation_id'), fn ($q) => $q->where('designation_id', $request->designation_id))
+                ->when($request->filled('reporting_to'), fn ($q) => $q->where('reporting_to', $request->reporting_to))
+                ->when($request->filled('status'), function ($q) use ($request) {
+                    $status = strtolower($request->status);
+                    if ($status === 'active') {
+                        $q->whereIn('status', ['Active', 'active']);
+                    } elseif ($status === 'inactive') {
+                        $q->whereIn('status', ['Inactive', 'inactive']);
+                    } elseif ($status === 'on_leave') {
+                        $q->where('status', 'on_leave');
+                    } elseif ($status === 'suspended') {
+                        $q->whereIn('status', ['Suspended', 'suspended']);
+                    }
+                }, function ($q) use ($detailColumns) {
+                    if (isset($detailColumns['status'])) {
+                        $q->whereIn('status', ['Active', 'active']);
+                    }
+                });
+            };
+
+            $departmentGroups = Department::query()
+                ->whereNull('archived_at')
+                ->when($request->filled('department_id'), fn ($q) => $q->where('id', $request->department_id))
+                ->whereHas('employeeDetails', $employeeDetailFilter)
+                ->with([
+                    'employeeDetails' => $employeeDetailFilter,
+                    'employeeDetails.user',
+                    'employeeDetails.designation',
+                    'parent',
+                ])
+                ->when(isset($departmentColumns['dpt_name']), fn ($q) => $q->orderBy('dpt_name'), fn ($q) => $q->orderBy('id'))
+                ->get();
+        }
+
+        $treePayload = ['company' => ['name' => 'Organization', 'logo' => null], 'nodes' => [], 'generated_at' => now()->toIso8601String()];
+        if (Schema::connection($tenantConnection)->hasColumn('users', 'company_id')) {
+            try {
+                $treePayload = app(\App\Services\OrganizationTreeService::class)->buildPayload($request->user(), $scopeCompanyId);
+            } catch (\Throwable $e) {
+                Log::warning('Organization tree payload generation skipped fallback', ['error' => $e->getMessage()]);
+            }
+        }
 
         return view('admin.organization-directory.index', compact(
             'employees',
@@ -104,8 +210,39 @@ class OrganizationDirectoryController extends Controller
             'departments',
             'designations',
             'managers',
-            'departmentGroups'
+            'departmentGroups',
+            'treePayload'
         ));
+    }
+
+    /**
+     * JSON endpoint for refreshing the Organization Details employee tree.
+     */
+    public function tree(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $scopeCompanyId = \App\Services\TenantScope::companyFilter($request->integer('company_id') ?: null);
+
+        return response()->json(
+            app(\App\Services\OrganizationTreeService::class)->buildPayload($request->user(), $scopeCompanyId)
+        );
+    }
+
+    private function applyDirectorySearch(\Illuminate\Database\Eloquent\Builder $query, string $search): void
+    {
+        // Normalize explicitly for databases with case-sensitive collations as well.
+        // Group alternatives so existing company and role filters still apply.
+        $pattern = '%' . mb_strtolower(trim($search), 'UTF-8') . '%';
+
+        $query->where(function ($q) use ($pattern) {
+            $q->whereRaw('LOWER(users.name) LIKE ?', [$pattern])
+                ->orWhereRaw('LOWER(users.email) LIKE ?', [$pattern])
+                ->orWhereHas('employeeDetail', function ($detail) use ($pattern) {
+                    $detail->whereRaw('LOWER(employee_details.employee_id) LIKE ?', [$pattern])
+                        ->orWhereRaw('LOWER(employee_details.skills) LIKE ?', [$pattern])
+                        ->orWhereHas('department', fn ($department) => $department->whereRaw('LOWER(departments.dpt_name) LIKE ?', [$pattern]))
+                        ->orWhereHas('designation', fn ($designation) => $designation->whereRaw('LOWER(designations.name) LIKE ?', [$pattern]));
+                });
+        });
     }
 
     public function show(User $employee)
@@ -118,6 +255,7 @@ class OrganizationDirectoryController extends Controller
 
         abort_unless($employee->role === 'employee' && is_null($employee->archived_at), 404);
         abort_if(optional($employee->employeeDetail)->status === 'Inactive', 404);
+        \App\Services\TenantScope::authorizeCompany($employee->company_id);
 
         return view('admin.organization-directory.show', compact('employee'));
     }
@@ -130,11 +268,21 @@ class OrganizationDirectoryController extends Controller
 
         abort_unless($employee->role === 'employee' && is_null($employee->archived_at), 404);
         abort_if(optional($employee->employeeDetail)->status === 'Inactive', 404);
+        \App\Services\TenantScope::authorizeCompany($employee->company_id);
         abort_unless($employee->employeeDetail, 404);
 
         $data = $request->validate([
             'directory_about' => ['nullable', 'string', 'max:3000'],
-            'skills' => ['nullable', 'string', 'max:1500'],
+            'skills' => [
+                'nullable',
+                'string',
+                'max:1500',
+                function ($attribute, $value, $fail) {
+                    if ($value && preg_match('/(SQLSTATE|Column not found|Unknown column|INSERT INTO|SELECT |syntax error)/i', $value)) {
+                        $fail('Skills cannot contain database error messages or raw query strings.');
+                    }
+                },
+            ],
             'linkedin_url' => ['nullable', 'url', 'max:255'],
             'portfolio_url' => ['nullable', 'url', 'max:255'],
             'facebook_url' => ['nullable', 'url', 'max:255'],
@@ -144,6 +292,14 @@ class OrganizationDirectoryController extends Controller
         ]);
 
         unset($data['cv_file']);
+
+        if (array_key_exists('skills', $data)) {
+            if ($data['skills'] !== null) {
+                $cleanedSkills = array_filter(array_map('trim', explode(',', str_replace(['·', '|'], ',', $data['skills']))));
+                $cleanedSkills = array_filter($cleanedSkills, fn($s) => strlen($s) > 0 && strlen($s) <= 60 && !preg_match('/(SQLSTATE|Column not found|INSERT INTO|SELECT |`)/i', $s));
+                $data['skills'] = !empty($cleanedSkills) ? implode(', ', $cleanedSkills) : null;
+            }
+        }
 
         $cvPath = $this->storeEmployeeCv($request, $employee->employeeDetail->cv_path);
         if ($cvPath) {
@@ -177,7 +333,8 @@ class OrganizationDirectoryController extends Controller
 
     private function ensureDirectoryManager(): void
     {
-        abort_unless(in_array(auth()->user()?->role, ['admin', 'hr'], true), 403);
+        $role = strtolower((string) (auth()->user()?->role ?? ''));
+        abort_unless(in_array($role, ['admin', 'hr', 'manager', 'administrator', 'superadmin'], true), 403);
     }
 
     private function storeEmployeeCv(Request $request, ?string $oldPath = null): ?string

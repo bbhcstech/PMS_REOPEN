@@ -54,6 +54,8 @@ class TenantMigrateCommand extends Command
 
         $successCount = 0;
         $failureCount = 0;
+        $originalTenant = config('database.connections.tenant');
+        $originalDefault = DB::getDefaultConnection();
 
         foreach ($companies as $company) {
             $this->info("--------------------------------------------------");
@@ -61,11 +63,12 @@ class TenantMigrateCommand extends Command
             $this->info("--------------------------------------------------");
 
             try {
-                // Configure connection dynamically
-                config(['database.connections.tenant.database' => $company->db_name]);
+                $targetDb = trim((string) $company->db_name);
+                if ($targetDb === '') throw new \RuntimeException('This company has no registered database.');
+                // A denied company connection must fail, never migrate another company's fallback DB.
+                config(['database.connections.tenant' => array_replace($originalTenant, ['database' => $targetDb, 'url' => null])]);
                 DB::purge('tenant');
-
-                // Test connection
+                DB::setDefaultConnection('tenant');
                 DB::connection('tenant')->getPdo();
 
                 $params = [
@@ -77,27 +80,37 @@ class TenantMigrateCommand extends Command
                 $exitCode = Artisan::call('migrate', $params);
 
                 if ($exitCode === 0) {
-                    $this->info("✔ Migrations completed successfully for {$company->db_name}.");
+                    $this->info("✔ Migrations completed successfully for {$targetDb}.");
 
                     // Ensure Company record is synced into tenant DB companies table
-                    \App\Models\User::syncCompanyToConnection('tenant', $company);
+                    try {
+                        \App\Models\User::syncCompanyToConnection('tenant', $company, strict: true);
+                    } catch (\Throwable $syncEx) {
+                        throw new \RuntimeException('Migrations completed but company registry synchronization failed.', 0, $syncEx);
+                    }
 
                     $this->line(trim(Artisan::output()));
 
                     if ($this->option('seed')) {
                         $this->info("Running tenant seeders...");
-                        Artisan::call('db:seed', ['--database' => 'tenant', '--force' => true]);
+                        if (Artisan::call('db:seed', ['--database' => 'tenant', '--force' => true]) !== 0) {
+                            throw new \RuntimeException('Tenant seeding failed: '.Artisan::output());
+                        }
                     }
 
                     $successCount++;
                 } else {
-                    $this->error("✖ Migration failed for {$company->db_name}:");
+                    $this->error("✖ Migration failed for {$targetDb}:");
                     $this->error(Artisan::output());
                     $failureCount++;
                 }
             } catch (\Throwable $e) {
                 $this->error("✖ Error connecting or migrating database '{$company->db_name}': " . $e->getMessage());
                 $failureCount++;
+            } finally {
+                DB::purge('tenant');
+                config(['database.connections.tenant' => $originalTenant]);
+                DB::setDefaultConnection($originalDefault);
             }
 
             $this->newLine();

@@ -14,8 +14,14 @@ class CompanyNotificationController extends Controller
 {
     private function getActiveCompanyId(): int
     {
+        // Company platform alerts are restricted to company administrators.
+        if (! in_array(strtolower((string) auth()->user()?->role), ['admin', 'administrator', 'superadmin'], true)) {
+            abort(403, 'Unauthorized: Only company administrators can access company notifications.');
+        }
+
         $contextComp = app(\App\Services\CompanyContext::class)->current();
         if ($contextComp) {
+            \App\Services\TenantScope::authorizeCompany($contextComp->id);
             return (int) $contextComp->id;
         }
 
@@ -24,18 +30,7 @@ class CompanyNotificationController extends Controller
             return (int) $user->company_id;
         }
 
-        if (session('current_company_id')) {
-            return (int) session('current_company_id');
-        }
-
-        $dbName = session('current_company_db');
-        if ($dbName) {
-            $comp = Company::on('central')->where('db_name', $dbName)->first();
-            if ($comp) return (int) $comp->id;
-        }
-
-        $firstComp = Company::on('central')->first();
-        return $firstComp ? (int) $firstComp->id : 1;
+        abort(403, 'Unauthorized: Company context could not be identified.');
     }
 
     /**
@@ -96,6 +91,7 @@ class CompanyNotificationController extends Controller
 
         $notification = CentralNotification::on('central')
             ->where('company_id', $companyId)
+            ->whereIn('target_audience', ['company_admin', 'all'])
             ->findOrFail($id);
 
         $notification->update([
@@ -119,6 +115,7 @@ class CompanyNotificationController extends Controller
 
         CentralNotification::on('central')
             ->where('company_id', $companyId)
+            ->whereIn('target_audience', ['company_admin', 'all'])
             ->where('is_read', false)
             ->update([
                 'is_read' => true,
@@ -133,6 +130,64 @@ class CompanyNotificationController extends Controller
     }
 
     /**
+     * Delete single central notification.
+     */
+    public function destroy($id): JsonResponse|RedirectResponse
+    {
+        $companyId = $this->getActiveCompanyId();
+
+        $notification = CentralNotification::on('central')
+            ->where('company_id', $companyId)
+            ->whereIn('target_audience', ['company_admin', 'all'])
+            ->findOrFail($id);
+
+        $notification->delete();
+
+        if (request()->wantsJson() || request()->ajax()) {
+            return response()->json(['success' => true, 'message' => 'Notification deleted.']);
+        }
+
+        return redirect()->back()->with('success', 'Notification deleted.');
+    }
+
+    /**
+     * Delete selected central notifications in one query.
+     */
+    public function deleteSelected(Request $request): JsonResponse|RedirectResponse
+    {
+        $companyId = $this->getActiveCompanyId();
+
+        $validated = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['required', 'string', 'max:100'],
+        ]);
+
+        $centralIds = [];
+        foreach (array_unique($validated['ids']) as $rawId) {
+            $cleanId = str_starts_with($rawId, 'central:') ? substr($rawId, 8) : $rawId;
+            if (ctype_digit($cleanId)) {
+                $centralIds[] = (int) $cleanId;
+            }
+        }
+
+        $deletedCount = empty($centralIds) ? 0 : CentralNotification::on('central')
+            ->where('company_id', $companyId)
+            ->whereIn('target_audience', ['company_admin', 'all'])
+            ->whereIn('id', $centralIds)
+            ->delete();
+
+        $message = $deletedCount === 1
+            ? '1 notification deleted.'
+            : "{$deletedCount} notifications deleted.";
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json(['success' => true, 'deleted' => $deletedCount, 'message' => $message]);
+        }
+
+        return redirect()->back()->with('success', $message);
+    }
+
+    /**
      * Unread count API for Company Admin header.
      */
     public function unreadCount(): JsonResponse
@@ -141,6 +196,7 @@ class CompanyNotificationController extends Controller
 
         $count = CentralNotification::on('central')
             ->where('company_id', $companyId)
+            ->whereIn('target_audience', ['company_admin', 'all'])
             ->where('is_read', false)
             ->count();
 

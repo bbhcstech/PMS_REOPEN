@@ -1,6 +1,7 @@
 @extends('admin.layout.app')
 
 @section('content')
+<script src="{{ asset('admin/assets/js/pms-lead-phone-length.js') }}?v={{ filemtime(public_path('admin/assets/js/pms-lead-phone-length.js')) }}" defer></script>
 
 <style>
 .form-card-modern {
@@ -11,8 +12,8 @@
     transition: all 0.2s ease;
 }
 html[data-pms-theme="dark"] .form-card-modern {
-    background: #102119;
-    border-color: rgba(225, 255, 240, 0.12);
+    background: #0F1530;
+    border-color: rgba(79, 131, 255, 0.12);
 }
 .form-card-header-modern {
     background: #ffffff;
@@ -22,8 +23,8 @@ html[data-pms-theme="dark"] .form-card-modern {
     border-top-right-radius: 16px;
 }
 html[data-pms-theme="dark"] .form-card-header-modern {
-    background: #102119;
-    border-bottom-color: rgba(225, 255, 240, 0.08);
+    background: #0F1530;
+    border-bottom-color: rgba(79, 131, 255, 0.08);
 }
 .form-label-modern {
     font-size: 0.84rem;
@@ -48,22 +49,22 @@ html[data-pms-theme="dark"] .form-label-modern {
 }
 html[data-pms-theme="dark"] .form-control-modern,
 html[data-pms-theme="dark"] .form-select-modern {
-    background-color: #183026;
-    border-color: rgba(225, 255, 240, 0.15);
+    background-color: #141B3D;
+    border-color: rgba(79, 131, 255, 0.15);
     color: #ffffff;
 }
 .form-control-modern:focus, .form-select-modern:focus {
     background-color: #ffffff;
-    border-color: #0f744c;
-    box-shadow: 0 0 0 3.5px rgba(15, 116, 76, 0.12);
+    border-color: #2F6BFF;
+    box-shadow: 0 0 0 3.5px rgba(47, 107, 255, 0.12);
     color: #0f172a;
     outline: none;
 }
 html[data-pms-theme="dark"] .form-control-modern:focus,
 html[data-pms-theme="dark"] .form-select-modern:focus {
-    background-color: #102119;
-    border-color: #40d48c;
-    box-shadow: 0 0 0 3.5px rgba(64, 212, 140, 0.18);
+    background-color: #0F1530;
+    border-color: #60A5FA;
+    box-shadow: 0 0 0 3.5px rgba(79, 131, 255, 0.18);
     color: #ffffff;
 }
 .form-control-modern::placeholder {
@@ -97,35 +98,35 @@ textarea.form-control-modern {
     color: #0f172a;
 }
 html[data-pms-theme="dark"] .btn-back-pill {
-    background-color: #183026;
-    border-color: rgba(225, 255, 240, 0.2);
+    background-color: #141B3D;
+    border-color: rgba(79, 131, 255, 0.2);
     color: #e2e8f0;
 }
 html[data-pms-theme="dark"] .btn-back-pill:hover {
-    background-color: #204033;
+    background-color: rgba(79, 131, 255, 0.2);
     color: #ffffff;
 }
 .btn-submit-emerald {
-    background: linear-gradient(135deg, #0f744c 0%, #10b981 100%);
+    background: linear-gradient(135deg, #4F83FF 0%, #2F6BFF 100%);
     color: #ffffff;
     border: none;
     border-radius: 10px;
     padding: 0.65rem 1.75rem;
     font-size: 0.9rem;
     font-weight: 600;
-    box-shadow: 0 4px 14px rgba(15, 116, 76, 0.25);
+    box-shadow: 0 4px 14px rgba(47, 107, 255, 0.25);
     transition: all 0.2s ease;
 }
 .btn-submit-emerald:hover {
-    background: linear-gradient(135deg, #094c32 0%, #059669 100%);
+    background: linear-gradient(135deg, #2F6BFF 0%, #1E4FCC 100%);
     color: #ffffff;
-    box-shadow: 0 6px 18px rgba(15, 116, 76, 0.35);
+    box-shadow: 0 6px 18px rgba(47, 107, 255, 0.35);
     transform: translateY(-1px);
 }
 .btn-outline-emerald {
     background: transparent;
-    border: 1.5px solid #0f744c;
-    color: #0f744c;
+    border: 1.5px solid #2F6BFF;
+    color: #2F6BFF;
     border-radius: 10px;
     padding: 0.65rem 1.5rem;
     font-size: 0.9rem;
@@ -133,16 +134,16 @@ html[data-pms-theme="dark"] .btn-back-pill:hover {
     transition: all 0.2s ease;
 }
 .btn-outline-emerald:hover {
-    background: #e4f3eb;
-    color: #094c32;
+    background: #EEF2FF;
+    color: #1E4FCC;
 }
 html[data-pms-theme="dark"] .btn-outline-emerald {
-    border-color: #40d48c;
-    color: #40d48c;
+    border-color: #60A5FA;
+    color: #60A5FA;
 }
 html[data-pms-theme="dark"] .btn-outline-emerald:hover {
-    background: rgba(64, 212, 140, 0.15);
-    color: #7af0b5;
+    background: rgba(79, 131, 255, 0.15);
+    color: #93C5FD;
 }
 .btn-cancel-modern {
     background: #f1f5f9;
@@ -160,29 +161,37 @@ html[data-pms-theme="dark"] .btn-outline-emerald:hover {
     color: #1e293b;
 }
 html[data-pms-theme="dark"] .btn-cancel-modern {
-    background: #183026;
-    border-color: rgba(225, 255, 240, 0.15);
+    background: #141B3D;
+    border-color: rgba(79, 131, 255, 0.15);
     color: #cbd5e1;
 }
 html[data-pms-theme="dark"] .btn-cancel-modern:hover {
-    background: #204033;
+    background: rgba(79, 131, 255, 0.2);
     color: #ffffff;
 }
 </style>
 
-<div class="container-fluid py-3">
+@include('admin.partials.crm-workspace-styles')
+
+<div class="container-fluid" id="pms-crm-workspace">
 
     {{-- BREADCRUMB & HEADER --}}
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h4 class="fw-bold mb-1 d-flex align-items-center gap-2" style="color: #0f172a;">
-                <span class="fs-4">👤+</span> Add Lead Contact
-            </h4>
-            <p class="text-muted small mb-0">Create a new sales lead contact record in your organization pipeline</p>
+    <div class="pms-crm-topbar">
+        <div class="pms-crm-heading-group">
+            <div class="pms-crm-title-icon">
+                <i class="fas fa-user-plus"></i>
+            </div>
+            <div>
+                <h1 class="pms-crm-title">Add Lead Contact</h1>
+                <p class="pms-crm-subtitle">Create a new sales lead contact record in your organization pipeline.</p>
+            </div>
         </div>
-        <a href="{{ route('leads.contacts.index') }}" class="btn-back-pill">
-            <i class="fas fa-arrow-left me-1"></i> Back to Lead Contacts
-        </a>
+        <div class="pms-crm-actions">
+            <a href="{{ route('leads.contacts.index') }}" class="pms-crm-btn-secondary">
+                <i class="fas fa-arrow-left"></i>
+                <span>Back to Lead Contacts</span>
+            </a>
+        </div>
     </div>
 
     {{-- DUPLICATE WARNING BANNER --}}
@@ -207,7 +216,7 @@ html[data-pms-theme="dark"] .btn-cancel-modern:hover {
         {{-- SECTION 1: BASIC INFORMATION --}}
         <div class="card form-card-modern mb-4">
             <div class="card-header form-card-header-modern">
-                <h6 class="fw-bold mb-0 text-dark d-flex align-items-center gap-2"><span class="fs-5">💳</span> 1. Basic Information</h6>
+                <h6 class="fw-bold mb-0 d-flex align-items-center gap-2"><span class="pms-crm-sec-icon"><i class="fas fa-id-card"></i></span> 1. Basic Information</h6>
             </div>
             <div class="card-body p-4">
                 <div class="row g-3">
@@ -242,22 +251,52 @@ html[data-pms-theme="dark"] .btn-cancel-modern:hover {
 
                     <div class="col-md-4">
                         <label class="form-label-modern">Primary Phone</label>
-                        <input type="text" name="phone" id="inputPhone" class="form-control form-control-modern" value="{{ old('phone') }}" placeholder="e.g. +1 234 567 890">
+                        <div class="input-group">
+                            <select name="phone_country_code" class="form-select form-control-modern" style="max-width: 115px; flex-shrink: 0;">
+                                @php $selPCode = old('phone_country_code', '+91'); @endphp
+                                @foreach($countries ?? [] as $c)
+                                    <option value="{{ $c->phone_code }}" {{ $selPCode === $c->phone_code ? 'selected' : '' }}>
+                                        {{ $c->iso_code ? $c->iso_code . ' ' : '' }}({{ $c->phone_code }})
+                                    </option>
+                                @endforeach
+                            </select>
+                            <input type="tel" name="phone" id="inputPhone" class="form-control form-control-modern @error('phone') is-invalid @enderror" value="{{ old('phone') }}" placeholder="Phone number" maxlength="30">
+                        </div>
+                        @error('phone')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                        @error('phone_country_code')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                     </div>
 
                     <div class="col-md-4">
                         <label class="form-label-modern">Mobile / Cell</label>
-                        <input type="text" name="mobile" id="inputMobile" class="form-control form-control-modern" value="{{ old('mobile') }}" placeholder="e.g. +1 987 654 321">
+                        <div class="input-group">
+                            <select name="mobile_country_code" class="form-select form-control-modern" style="max-width: 115px; flex-shrink: 0;">
+                                @php $selMCode = old('mobile_country_code', '+91'); @endphp
+                                @foreach($countries ?? [] as $c)
+                                    <option value="{{ $c->phone_code }}" {{ $selMCode === $c->phone_code ? 'selected' : '' }}>
+                                        {{ $c->iso_code ? $c->iso_code . ' ' : '' }}({{ $c->phone_code }})
+                                    </option>
+                                @endforeach
+                            </select>
+                            <input type="tel" name="mobile" id="inputMobile" class="form-control form-control-modern @error('mobile') is-invalid @enderror" value="{{ old('mobile') }}" placeholder="Mobile number" maxlength="30">
+                        </div>
+                        @error('mobile')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                        @error('mobile_country_code')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                     </div>
 
                     <div class="col-md-4">
                         <label class="form-label-modern">Alternate Phone</label>
-                        <input type="text" name="alternate_phone" class="form-control form-control-modern" value="{{ old('alternate_phone') }}" placeholder="e.g. Office Ext 102">
+                        <div class="pms-phone-group">
+@include('partials.phone-country-select', ['phoneField' => 'alternate_phone', 'phoneValue' => ''])
+<input type="text" name="alternate_phone" class="form-control form-control-modern" value="{{ old('alternate_phone') }}" placeholder="Alternate phone number">
+</div>
                     </div>
 
                     <div class="col-md-4">
                         <label class="form-label-modern">WhatsApp Number</label>
-                        <input type="text" name="whatsapp" class="form-control form-control-modern" value="{{ old('whatsapp') }}" placeholder="e.g. +1 234 567 890">
+                        <div class="pms-phone-group">
+@include('partials.phone-country-select', ['phoneField' => 'whatsapp', 'phoneValue' => ''])
+<input type="text" name="whatsapp" class="form-control form-control-modern" value="{{ old('whatsapp') }}" placeholder="e.g. +1 234 567 890">
+</div>
                     </div>
 
                     <div class="col-md-4">
@@ -276,7 +315,7 @@ html[data-pms-theme="dark"] .btn-cancel-modern:hover {
         {{-- SECTION 2: LOCATION --}}
         <div class="card form-card-modern mb-4">
             <div class="card-header form-card-header-modern">
-                <h6 class="fw-bold mb-0 text-dark d-flex align-items-center gap-2"><span class="fs-5">📍</span> 2. Location Details</h6>
+                <h6 class="fw-bold mb-0 d-flex align-items-center gap-2"><span class="pms-crm-sec-icon"><i class="fas fa-map-marker-alt"></i></span> 2. Location Details</h6>
             </div>
             <div class="card-body p-4">
                 <div class="row g-3">
@@ -307,7 +346,7 @@ html[data-pms-theme="dark"] .btn-cancel-modern:hover {
         {{-- SECTION 3: LEAD INFORMATION --}}
         <div class="card form-card-modern mb-4">
             <div class="card-header form-card-header-modern">
-                <h6 class="fw-bold mb-0 text-dark d-flex align-items-center gap-2"><span class="fs-5">🎯</span> 3. Lead Information & Routing</h6>
+                <h6 class="fw-bold mb-0 d-flex align-items-center gap-2"><span class="pms-crm-sec-icon"><i class="fas fa-bullseye"></i></span> 3. Lead Information & Routing</h6>
             </div>
             <div class="card-body p-4">
                 <div class="row g-3">
@@ -418,7 +457,7 @@ html[data-pms-theme="dark"] .btn-cancel-modern:hover {
         {{-- SECTION 4: NOTES --}}
         <div class="card form-card-modern mb-4">
             <div class="card-header form-card-header-modern">
-                <h6 class="fw-bold mb-0 text-dark d-flex align-items-center gap-2"><span class="fs-5">📝</span> 4. Notes & Description</h6>
+                <h6 class="fw-bold mb-0 d-flex align-items-center gap-2"><span class="pms-crm-sec-icon"><i class="fas fa-sticky-note"></i></span> 4. Notes & Description</h6>
             </div>
             <div class="card-body p-4">
                 <textarea name="description" class="form-control form-control-modern" rows="4" placeholder="Enter any initial discussion notes, requirements, or client background details...">{{ old('description') }}</textarea>

@@ -30,6 +30,15 @@ class ProjectController extends Controller
 {
    public function index(Request $request)
 {
+    $request->validate([
+        'start_date' => 'nullable|date',
+        'end_date' => $request->filled('start_date')
+            ? 'nullable|date|after_or_equal:start_date'
+            : 'nullable|date',
+    ], [
+        'end_date.after_or_equal' => 'The end date must be equal to or later than the start date.',
+    ]);
+
     $viewer = auth()->user();
     $isEmployee = $viewer?->role === 'employee';
 
@@ -37,16 +46,20 @@ class ProjectController extends Controller
         'client',
         'users.employeeDetail',
         'latestUpdate.employee',
-        'tasks' => function ($q) use ($viewer, $isEmployee) {
-            if ($isEmployee && $viewer) {
+    ])->withCount('tasks')->whereNull('deleted_at');
+
+    // The list's task modal is rendered only for employee roles.
+    if (strtolower((string) $viewer?->role) === 'employee') {
+        $query->with(['tasks' => function ($q) use ($viewer, $isEmployee) {
+            if ($isEmployee) {
                 $q->where(function ($taskScope) use ($viewer) {
                     $taskScope->whereHas('assignees', fn ($assignees) => $assignees->where('users.id', $viewer->id))
                         ->orWhereRaw('FIND_IN_SET(?, assigned_to)', [$viewer->id]);
                 });
             }
             $q->orderBy('title');
-        }
-    ])->withCount('tasks')->whereNull('deleted_at');
+        }]);
+    }
 
     if ($isEmployee) {
         $query->where(function ($q) use ($viewer) {
@@ -131,12 +144,16 @@ class ProjectController extends Controller
 }
 
 
-public function create()
+public function create(Request $request)
 {
     abort_unless($this->canManageProjects(), 403);
 
+    $selectedClientId = $request->query('client_id');
+    $selectedClient   = $selectedClientId ? Client::find($selectedClientId) : null;
+    $isClientFixed    = $selectedClient !== null;
+
     $clients        = Client::all();
-$users = User::select('users.id', 'users.name', 'employee_details.employee_id')
+    $users = User::select('users.id', 'users.name', 'employee_details.employee_id')
     ->join('employee_details', 'employee_details.user_id', '=', 'users.id')
     ->where('users.role', 'employee')
     ->orderBy('users.name')
@@ -146,9 +163,9 @@ $users = User::select('users.id', 'users.name', 'employee_details.employee_id')
     $categories     = ProjectCategory::all();
     $departments    = Department::with('parent')->latest()->get();
     $designations   = Designation::all();
-    $countries      = Country::all();
+    $countries      = Country::forForms();
     $employee       = null;
-    $currency       = Currency::all();
+    $currency       = Currency::orderBy('currency_name')->get();
     $prtdepartments = ParentDepartment::latest()->get();
 
     // preview next project code like TASK_005
@@ -162,10 +179,14 @@ $users = User::select('users.id', 'users.name', 'employee_details.employee_id')
     $fyString = substr($fyStart, -2) . '-' . substr($fyEnd, -2);
     $prefix   = 'bit' . $fyString . '/';
 
-    $last = DB::table('projects')
-        ->where('project_code', 'like', $prefix.'%')
-        ->orderBy('id', 'desc')
-        ->value('project_code');
+    $last = null;
+    $projectConn = (new Project)->getConnection();
+    if ($projectConn->getSchemaBuilder()->hasTable('projects') && $projectConn->getSchemaBuilder()->hasColumn('projects', 'project_code')) {
+        $last = $projectConn->table('projects')
+            ->where('project_code', 'like', $prefix.'%')
+            ->orderBy('id', 'desc')
+            ->value('project_code');
+    }
 
     $lastNum = 0;
     if ($last && preg_match('/\/(\d{4})$/', $last, $m)) {
@@ -187,7 +208,10 @@ $users = User::select('users.id', 'users.name', 'employee_details.employee_id')
         'employee',
         'prtdepartments',
         'currency',
-        'nextProjectCode'   // <- pass to blade
+        'nextProjectCode',
+        'selectedClientId',
+        'selectedClient',
+        'isClientFixed'
     ));
 }
 
@@ -200,7 +224,10 @@ public function store(Request $request)
 
     Log::info('Project Request:', $request->all());
 
+    $projectType = $request->input('project_type', 'client') === 'home' ? 'home' : 'client';
+
     $rules = [
+        'project_type' => 'nullable|in:client,home',
         'name' => 'required|string|max:255',
         'start_date' => 'nullable|date',
         'without_deadline' => 'nullable',
@@ -208,13 +235,19 @@ public function store(Request $request)
         'employee_ids.*' => 'integer|exists:users,id',
         'department_ids'   => 'required|array|min:1',
         'department_ids.*' => 'integer|exists:departments,id',
-        'currency_id' => 'nullable|integer',
+        'currency_id' => 'nullable|integer|exists:tenant.currencies,id',
         'project_budget' => 'nullable|numeric',
         'hours_allocated' => 'nullable|numeric',
         'priority' => 'nullable|in:low,medium,high,critical',
         'completion_percent' => 'nullable|integer|min:0|max:100',
         'remarks' => 'nullable|string|max:3000',
     ];
+
+    if ($projectType === 'client') {
+        $rules['client_id'] = 'required|exists:clients,id';
+    } else {
+        $rules['client_id'] = 'nullable';
+    }
 
     if (!$request->boolean('without_deadline')) {
         $rules['deadline'] = $request->filled('start_date')
@@ -228,12 +261,11 @@ public function store(Request $request)
 
     $request->validate($rules);
 
-    // generate project code (keeps your existing logic)
+    // generate project code
     $projectCode = null;
     if ($request->input('shortcode_option') === 'manual') {
         $projectCode = $request->input('shortcode_manual');
     } else {
-        DB::beginTransaction();
         try {
             $now = Carbon::now();
             $year = (int) $now->format('Y');
@@ -244,9 +276,7 @@ public function store(Request $request)
             $prefix = 'bit' . $fyString . '/';
             $like = $prefix . '%';
 
-            $last = DB::table('projects')
-                ->where('project_code', 'like', $like)
-                ->lockForUpdate()
+            $last = Project::where('project_code', 'like', $like)
                 ->orderBy('id', 'desc')
                 ->value('project_code');
 
@@ -258,28 +288,32 @@ public function store(Request $request)
             $nextNum = $lastNum + 1;
             $projectCode = $prefix . str_pad($nextNum, 4, '0', STR_PAD_LEFT);
         } catch (\Exception $e) {
-            DB::rollBack();
             Log::error('Shortcode generation failed: ' . $e->getMessage());
             return back()->withInput()->withErrors(['shortcode' => 'Failed to generate project code.']);
         }
     }
 
+    $connection = (new Project())->getConnection();
+    $transactionLevel = $connection->transactionLevel();
     try {
+        $connection->beginTransaction();
+        $authUserId = auth()->id() ?: (User::first()?->id ?? null);
         $project = Project::create([
-            'client_id' => $request->client_id,
-            'created_by' => auth()->id(),
+            'project_type' => $projectType,
+            'client_id' => $projectType === 'client' ? $request->client_id : null,
+            'created_by' => $authUserId,
             'name' => $request->name,
             'project_code' => $projectCode,
-            'category_id' => $request->category_id,
+            'category_id' => $request->category_id ?: (ProjectCategory::first()?->id ?? 1),
             'department_id' => collect($request->input('department_ids', []))->first() ?: $request->input('department_id'),
             'notes' => $request->notes,
             'remarks' => $request->remarks,
-            'priority' => $request->input('priority', 'medium'),
-            'public_gantt_chart' => $request->has('public_gantt_chart') ? 1 : 0,
-            'public_taskboard' => $request->has('public_taskboard') ? 1 : 0,
+            'priority' => $request->input('priority', 'medium') ?: 'medium',
+            'public_gantt_chart' => $request->has('public_gantt_chart') ? 'enable' : 'disable',
+            'public_taskboard' => $request->has('public_taskboard') ? 'enable' : 'disable',
             'client_access' => $request->has('client_access') ? 1 : 0,
-            'need_approval_by_admin' => $request->has('need_approval_by_admin') ? 1 : 0,
-            'public' => $request->has('public') ? 1 : 0,
+            'need_approval_by_admin' => $request->has('need_approval_by_admin') ? '1' : '0',
+            'public' => $request->has('public') ? '1' : '0',
             'description' => $request->description,
             'start_date' => $request->start_date,
             'deadline' => $request->boolean('without_deadline') ? null : $request->deadline,
@@ -287,16 +321,12 @@ public function store(Request $request)
             'currency_id' => $request->currency_id,
             'project_budget' => $request->project_budget,
             'hours_allocated' => $request->hours_allocated,
-            'completion_percent' => (int) $request->input('completion_percent', 0),
+            // A new project always starts at 0%; progress is updated after creation.
+            'completion_percent' => 0,
             'enable_miroboard' => $request->has('enable_miroboard') ? 1 : 0,
             'allow_client_notification' => $request->has('allow_client_notification') ? 1 : 0,
             'manual_timelog' => $request->has('manual_timelog') ? 1 : 0,
         ]);
-
-        // commit shortcode transaction if used
-        if ($request->input('shortcode_option') !== 'manual' && DB::transactionLevel() > 0) {
-            DB::commit();
-        }
 
         // file upload
         if ($request->hasFile('project_file')) {
@@ -329,12 +359,14 @@ public function store(Request $request)
         $this->recordProjectUpdate($project, $project->status, (int) ($project->completion_percent ?? 0), $project->remarks, auth()->id());
         Log::info('Project created with users:', ['project' => $project->toArray(), 'users' => $project->users->pluck('id','name')->toArray()]);
 
+        $connection->commit();
+
         return redirect()->route('projects.index')->with('success', 'Project created successfully.');
-    } catch (\Exception $e) {
-        if (DB::transactionLevel() > 0) {
-            DB::rollBack();
+    } catch (\Throwable $e) {
+        if ($connection->transactionLevel() > $transactionLevel) {
+            $connection->rollBack($transactionLevel);
         }
-        Log::error('Project create failed: ' . $e->getMessage());
+        Log::error('Project create failed: ' . $e->getMessage(), ['exception' => $e]);
         return back()->withInput()->withErrors(['general' => 'Failed to create project.']);
     }
 }
@@ -358,9 +390,9 @@ public function edit($id)
     $categories     = ProjectCategory::all();
     $departments    = Department::with('parent')->latest()->get();
     $designations   = Designation::all();
-    $countries      = Country::all();
+    $countries      = Country::forForms();
     $employee       = null;
-    $currency       = Currency::all();
+    $currency       = Currency::orderBy('currency_name')->get();
     $prtdepartments = ParentDepartment::latest()->get();
 
     return view('admin.projects.edit', compact(
@@ -387,8 +419,10 @@ public function edit($id)
 
     $project = Project::findOrFail($id);
 
+    $projectType = $request->input('project_type', $project->project_type ?? ($project->client_id ? 'client' : 'home'));
+
     $rules = [
-        'client_id'       => 'required|exists:clients,id',
+        'project_type'    => 'nullable|in:client,home',
         'name'            => 'required|string|max:255',
         'project_code'    => ['nullable','string','max:50', Rule::unique('projects','project_code')->ignore($project->id)],
         'description'     => 'nullable|string',
@@ -398,13 +432,19 @@ public function edit($id)
         'employee_ids.*'  => 'integer|exists:users,id',
         'department_ids'   => 'sometimes|array|min:1',
         'department_ids.*' => 'integer|exists:departments,id',
-        'currency_id'     => 'nullable|integer',
+        'currency_id'     => 'nullable|integer|exists:tenant.currencies,id',
         'project_budget'  => 'nullable|numeric',
         'hours_allocated' => 'nullable|numeric',
         'priority'        => 'nullable|in:low,medium,high,critical',
         'completion_percent' => 'nullable|integer|min:0|max:100',
         'remarks'         => 'nullable|string|max:3000',
     ];
+
+    if ($projectType === 'client') {
+        $rules['client_id'] = 'required|exists:clients,id';
+    } else {
+        $rules['client_id'] = 'nullable';
+    }
 
     if (! $request->boolean('without_deadline')) {
         $rules['deadline'] = $request->filled('start_date')
@@ -419,7 +459,8 @@ public function edit($id)
     try {
         // Use fill + save to avoid mass-assignment surprises. Make sure Project::$fillable includes these fields.
         $project->fill([
-            'client_id' => $validated['client_id'],
+            'project_type' => $projectType,
+            'client_id' => $projectType === 'client' ? ($validated['client_id'] ?? $request->client_id) : null,
             'name' => $validated['name'],
             'project_code' => $validated['project_code'] ?? $project->project_code,
             'category_id' => $request->input('category_id'),
@@ -616,25 +657,38 @@ public function edit($id)
         $actual = [];
         $ideal = [];
 
-        $totalTasks = Task::where('project_id', $projectId)->count();
+        $tasks = Task::where('project_id', $projectId);
+        $totalTasks = (clone $tasks)->count();
         $days = $start->diffInDays($end) + 1;
 
         if ($totalTasks > 0 && $days > 0) {
+            $dates = [];
             for ($i = 0; $i < $days; $i++) {
                 $date = $start->copy()->addDays($i);
+                $dates[] = $date->toDateString();
                 $labels[] = $date->format('d-m-Y');
 
                 // Ideal line
                 $ideal[] = $days > 1
                     ? round($totalTasks - ($totalTasks / ($days - 1)) * $i, 2)
                     : $totalTasks;
+            }
 
-                // Actual line
-                $completed = Task::where('project_id', $projectId)
-                    ->whereDate('updated_at', '<=', $date)
-                    ->where('status', 'Completed')
-                    ->count();
+            $completedByDate = (clone $tasks)->where('status', 'Completed')
+                ->whereDate('updated_at', '<=', $dates[array_key_last($dates)])
+                ->toBase()
+                ->selectRaw('DATE(updated_at) AS completed_date, COUNT(*) AS completed_count')
+                ->groupBy('completed_date')
+                ->orderBy('completed_date')
+                ->get();
 
+            $completed = 0;
+            $position = 0;
+            foreach ($dates as $date) {
+                while (isset($completedByDate[$position]) && $completedByDate[$position]->completed_date <= $date) {
+                    $completed += (int) $completedByDate[$position]->completed_count;
+                    $position++;
+                }
                 $actual[] = $totalTasks - $completed;
             }
         }
@@ -819,6 +873,26 @@ public function clientstore(Request $request)
     {
         $projects = Project::onlyTrashed()->get();
         return view('admin.projects.archive', compact('projects'));
+    }
+
+    public function bulkArchive(Request $request)
+    {
+        abort_unless($this->canManageProjects(), 403);
+        $validated = $request->validate([
+            'ids' => 'required|array|min:1',
+            'ids.*' => 'required|integer|distinct',
+        ]);
+
+        $count = (new Project())->getConnection()->transaction(function () use ($validated) {
+            $projects = Project::whereIn('id', $validated['ids'])->lockForUpdate()->get();
+            abort_unless($projects->count() === count($validated['ids']), 422, 'Some selected projects are unavailable. Refresh the list and try again.');
+            foreach ($projects as $project) {
+                $project->delete();
+            }
+            return $projects->count();
+        });
+
+        return response()->json(['success' => true, 'archived' => $count]);
     }
 
     // Archive a project (soft delete)
@@ -1243,4 +1317,3 @@ public function import(Request $request)
     }
 }
 }
-

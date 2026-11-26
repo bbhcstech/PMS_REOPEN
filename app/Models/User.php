@@ -13,6 +13,21 @@ class User extends Authenticatable
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
+    public function notifications()
+    {
+        $relation = $this->morphMany(CompanyDatabaseNotification::class, 'notifiable')
+            ->where(function ($query) {
+                $query->where('data->company_id', (int) $this->company_id)
+                    ->orWhereNull('data->company_id');
+            })->latest();
+
+        // System/settings updates are not shown in the Notification Center (list, unread count and
+        // bell all use this relation), including older ones that were broadcast to every role.
+        \App\Services\NotificationAudience::withoutSystemUpdates($relation);
+
+        return $relation;
+    }
+
     protected static function booted(): void
     {
         static::saving(function (User $user) {
@@ -28,11 +43,15 @@ class User extends Authenticatable
                             ->exists();
 
                         if (! $exists) {
-                            $centralCompany = \App\Models\Central\Company::on('central')->find($user->company_id)
-                                ?? \App\Models\Company::on('central')->find($user->company_id);
+                            try {
+                                $centralCompany = \App\Models\Central\Company::on('central')->find($user->company_id)
+                                    ?? \App\Models\Company::on('central')->find($user->company_id);
 
-                            if ($centralCompany) {
-                                static::syncCompanyToConnection($connectionName, $centralCompany);
+                                if ($centralCompany) {
+                                    static::syncCompanyToConnection($connectionName, $centralCompany);
+                                }
+                            } catch (\Throwable $ce) {
+                                // Central DB may not exist on single-DB setup; continue gracefully
                             }
                         }
 
@@ -52,11 +71,12 @@ class User extends Authenticatable
         });
     }
 
-    public static function syncCompanyToConnection(string $connectionName, $centralCompany): void
+    public static function syncCompanyToConnection(string $connectionName, $centralCompany, bool $strict = false): void
     {
         try {
             $schema = \Illuminate\Support\Facades\Schema::connection($connectionName);
             if (! $schema->hasTable('companies')) {
+                if ($strict) throw new \RuntimeException('Tenant companies table is missing.');
                 return;
             }
 
@@ -127,11 +147,13 @@ class User extends Authenticatable
                     ->updateOrInsert(['id' => $centralCompany->id], $data);
             }
         } catch (\Throwable $e) {
+            if ($strict) throw $e;
             \Illuminate\Support\Facades\Log::warning("syncCompanyToConnection error on connection {$connectionName}: " . $e->getMessage());
         }
     }
 
     protected $fillable = [
+        'company_staff_role_id',
         'name',
         'company_id',
         'email',
@@ -185,7 +207,6 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
-            'password' => 'hashed',
             'is_active' => 'boolean',
             'login_allowed' => 'boolean',
             'must_change_password' => 'boolean',
@@ -231,10 +252,39 @@ class User extends Authenticatable
 
     public function normalizedRole(): string
     {
-        return strtolower((string) $this->role);
+        $role = strtolower(trim((string) $this->role));
+        return $role === 'administrator' ? 'admin' : $role;
     }
 
-    public function hasModulePermission(string $moduleSlug, string $permission = 'view'): bool
+    public function permissionRole(): string
+    {
+        if ($this->company_staff_role_id && $this->company_id) {
+            $staffRole = CompanyStaffRole::where('company_id', $this->company_id)->find($this->company_staff_role_id);
+            if ($staffRole && RolePermission::where('role', $staffRole->permissionKey())->exists()) {
+                return $staffRole->permissionKey();
+            }
+        }
+        return $this->normalizedRole();
+    }
+
+    public function isDeveloper(): bool
+    {
+        $role = strtolower((string) ($this->role ?? ''));
+        $designation = strtolower((string) ($this->designation ?? ''));
+
+        return in_array($role, ['developer', 'dev'], true)
+            || str_contains($role, 'developer')
+            || str_contains($designation, 'developer')
+            || str_contains($designation, 'engineer')
+            || str_contains($designation, 'devops')
+            || str_contains($designation, 'qa');
+    }
+
+    /**
+     * Company-level availability of a feature: Super Admin "Manage Features" entitlement for this
+     * company plus the company's own Module Management active state. Role permissions are separate.
+     */
+    public function featureEnabled(string $moduleSlug): bool
     {
         // Platform Super Admin (central guard) bypasses company feature checks
         if (\Illuminate\Support\Facades\Auth::guard('super_admin')->check()) {
@@ -252,7 +302,31 @@ class User extends Authenticatable
                     return false;
                 }
             }
-        } catch (\Throwable $e) {}
+        } catch (\Throwable $e) {
+            if ($this->company_id) return false;
+        }
+
+        if (WorkspaceModule::where('slug', $moduleSlug)->where('is_active', false)->exists()) {
+            return false;
+        }
+        $inheritedFeature = config('workspace_modules.'.$moduleSlug.'.inherits');
+        if ($inheritedFeature && WorkspaceModule::where('slug', $inheritedFeature)->where('is_active', false)->exists()) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function hasModulePermission(string $moduleSlug, string $permission = 'view'): bool
+    {
+        if (\Illuminate\Support\Facades\Auth::guard('super_admin')->check()) {
+            return true;
+        }
+        if ($moduleSlug === 'company-complaints' && !\App\Support\PlatformSupportAccess::companyAdmin($this)) return false;
+        if (! $this->featureEnabled($moduleSlug)) {
+            return false;
+        }
+        $inheritedFeature = config('workspace_modules.'.$moduleSlug.'.inherits');
 
         if (in_array($this->normalizedRole(), ['admin', 'superadmin'], true)) {
             return true;
@@ -263,13 +337,41 @@ class User extends Authenticatable
             return false;
         }
 
-        return RolePermission::query()
-            ->where('role', $this->normalizedRole())
+        $slugsToTest = app(\App\Services\RolePermissionDefaults::class)->fallbackModuleSlugs($moduleSlug);
+
+        $permissionRole = $this->permissionRole();
+        // An explicit module decision takes precedence over legacy parent aliases.
+        $exact = RolePermission::where('role', $permissionRole)
+            ->whereIn('module_id', WorkspaceModule::where('slug', $moduleSlug)->pluck('id'))->first();
+        if ($exact) {
+            return WorkspaceModule::where('slug', $moduleSlug)->where('is_active', true)->exists()
+                && (bool) $exact->{$column};
+        }
+        // A legacy Payroll grant includes its pages, but a disabled parent never
+        // grants access to a child which has no explicit permission of its own.
+        if (in_array('payroll', $slugsToTest, true)
+            && WorkspaceModule::where('slug', 'payroll')->where('is_active', false)->exists()) {
+            return false;
+        }
+        $hasPermission = RolePermission::query()
+            ->where('role', $permissionRole)
             ->where($column, true)
-            ->whereHas('module', function ($query) use ($moduleSlug) {
-                $query->where('slug', $moduleSlug)->where('is_active', true);
+            ->whereHas('module', function ($query) use ($slugsToTest) {
+                $query->whereIn('slug', array_unique($slugsToTest))->where('is_active', true);
             })
             ->exists();
+
+        if ($hasPermission) {
+            return true;
+        }
+
+        // Fallback: If no role_permissions exist in database for this role, allow default modules
+        if (! RolePermission::where('role', $permissionRole)->exists()) {
+            return in_array($permission, app(\App\Services\RolePermissionDefaults::class)
+                ->getDefaultPermissionsForRole($this->normalizedRole(), $inheritedFeature ?: $moduleSlug), true);
+        }
+
+        return false;
     }
 
     public function canViewModule(string $moduleSlug): bool
@@ -277,11 +379,53 @@ class User extends Authenticatable
         return $this->hasModulePermission($moduleSlug, 'view');
     }
 
+    /** Per-request memo for hasSavedModuleDecision(). */
+    protected array $savedModuleDecisions = [];
+
+    /**
+     * Whether Admin > Roles & Permissions has saved an explicit decision for this user's role
+     * (company staff role such as "Associate Manager", or hr/manager/employee) on the module.
+     */
+    public function hasSavedModuleDecision(string $moduleSlug): bool
+    {
+        if (in_array($this->normalizedRole(), ['admin', 'superadmin'], true)) {
+            return false;
+        }
+        $role = $this->permissionRole();
+        $key = $role . '|' . $moduleSlug;
+        $decisions = &$this->savedModuleDecisions;
+        if (! array_key_exists($key, $decisions)) {
+            try {
+                $decisions[$key] = RolePermission::where('role', $role)
+                    ->whereIn('module_id', WorkspaceModule::where('slug', $moduleSlug)->pluck('id'))
+                    ->exists();
+            } catch (\Throwable $e) {
+                $decisions[$key] = false;
+            }
+        }
+        return $decisions[$key];
+    }
+
+    /**
+     * Enforces the Roles & Permissions toggle for links/routes that are otherwise always available:
+     * denied only when the admin saved the module as OFF for this role; unchanged when never configured.
+     */
+    public function moduleToggleAllows(string $moduleSlug, string $permission = 'view'): bool
+    {
+        if ($moduleSlug === 'company-complaints' && !\App\Support\PlatformSupportAccess::companyAdmin($this)) return false;
+        // The company must have the feature (Super Admin Manage Features + Module Management) for every role,
+        // admins included; the saved role decision is applied on top of that.
+        if (! $this->featureEnabled($moduleSlug)) {
+            return false;
+        }
+        return ! $this->hasSavedModuleDecision($moduleSlug) || $this->hasModulePermission($moduleSlug, $permission);
+    }
+
     public function visibleEmployeeIds()
     {
         $role = $this->normalizedRole();
 
-        if ($role === 'admin') {
+        if (in_array($role, ['admin', 'superadmin', 'administrator', 'hr'], true)) {
             return User::where('role', 'employee')
                 ->when($this->company_id, fn ($query) => $query->where('company_id', $this->company_id))
                 ->pluck('id');
@@ -289,17 +433,6 @@ class User extends Authenticatable
 
         if ($role === 'employee') {
             return collect([$this->id]);
-        }
-
-        if ($role === 'hr') {
-            return User::where('role', 'employee')
-                ->when($this->company_id, fn ($query) => $query->where('company_id', $this->company_id))
-                ->where(function ($query) {
-                    $query->where('hr_id', $this->id)
-                        ->orWhere('reports_to_id', $this->id)
-                        ->orWhereHas('employeeDetail', fn ($detail) => $detail->where('reporting_to', $this->id));
-                })
-                ->pluck('id');
         }
 
         if ($role === 'manager') {
@@ -332,6 +465,21 @@ class User extends Authenticatable
     public function employeeDetail()
     {
         return $this->hasOne(EmployeeDetail::class);
+    }
+
+    public function companyStaffRole()
+    {
+        return $this->belongsTo(CompanyStaffRole::class);
+    }
+
+    public function salaryAssignments()
+    {
+        return $this->hasMany(EmployeeSalaryAssignment::class, 'user_id');
+    }
+
+    public function salaryAssignment()
+    {
+        return $this->hasOne(EmployeeSalaryAssignment::class, 'user_id')->latestOfMany('effective_from');
     }
 
     public function company()
@@ -477,20 +625,6 @@ class User extends Authenticatable
         return Carbon::now()->diffInDays($nextReset, false);
     }
 
-    /**
-     * Check if user account is a Developer role/designation
-     */
-    public function isDeveloper(): bool
-    {
-        $role = strtolower($this->role ?? '');
-        $designation = strtolower($this->designation ?? '');
-
-        return in_array($role, ['developer', 'dev'], true)
-            || str_contains($designation, 'developer')
-            || str_contains($designation, 'engineer')
-            || str_contains($designation, 'devops')
-            || str_contains($designation, 'qa');
-    }
 
     /**
      * Check if developer has any assigned tasks in the system
@@ -534,14 +668,24 @@ class User extends Authenticatable
      */
     public function canLogin()
     {
-        // First check login_allowed
-        if (!$this->login_allowed) {
+        // First check login_allowed (if explicitly set to false, block login)
+        if ($this->login_allowed === false || $this->login_allowed === 0 || $this->login_allowed === '0') {
             return false;
         }
 
-        // Developer login check: Only developers with assigned tasks can log in
-        if ($this->isDeveloper() && !$this->hasAssignedTasks()) {
+        // Archived accounts cannot log in
+        if (!empty($this->archived_at)) {
             return false;
+        }
+
+        // Developers with login_allowed can always login to Developer Portal
+        if ($this->isDeveloper()) {
+            return true;
+        }
+
+        // Admin, HR, Manager roles can always log in if not archived and login_allowed
+        if (in_array(strtolower((string) $this->role), ['admin', 'superadmin', 'administrator', 'hr', 'manager'], true)) {
+            return true;
         }
 
         $employeeStatus = $this->employeeDetail ? (string) $this->employeeDetail->status : 'Active';
@@ -551,9 +695,14 @@ class User extends Authenticatable
             $today = Carbon::today();
             $exitDate = Carbon::parse($this->employeeDetail->exit_date);
 
-            // LOGIC: Can login ONLY if today < exit_date
-            // (BEFORE exit date, NOT ON or AFTER)
-            return $today->lt($exitDate); // $today < $exit_date
+            // LOGIC: Can login ONLY if today < exit_date (BEFORE exit date)
+            return $today->lt($exitDate);
+        }
+
+        // Employee status check (case-insensitive)
+        $employeeStatus = strtolower(trim((string) ($this->employeeDetail?->status ?? 'active')));
+        if (in_array($employeeStatus, ['inactive', 'deactivated', 'terminated', 'resigned'], true)) {
+            return false;
         }
 
         // If no exit date:
@@ -575,17 +724,18 @@ class User extends Authenticatable
             return 'Your account is active but login is blocked by admin. Please contact administrator.';
         }
 
-        // Developer task assignment check
-        if ($this->isDeveloper() && !$this->hasAssignedTasks()) {
-            return 'Access Denied: Only developers with assigned tasks can access the Developer Portal. Please contact your manager or admin to assign work.';
+        if (!empty($this->archived_at)) {
+            return 'This account has been archived. Please contact administrator.';
         }
+
+        $employeeStatus = strtolower(trim((string) ($this->employeeDetail?->status ?? 'active')));
 
         // Check exit date logic
         if ($this->employeeDetail && $this->employeeDetail->exit_date) {
             $today = Carbon::today();
             $exitDate = Carbon::parse($this->employeeDetail->exit_date);
 
-            if ($today->gte($exitDate)) { // $today >= $exitDate
+            if ($today->gte($exitDate)) {
                 return 'Your account access has ended as per your exit date (' . $exitDate->format('d/m/Y') . '). Please contact HR.';
             }
 

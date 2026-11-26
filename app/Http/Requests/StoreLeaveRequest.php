@@ -23,9 +23,23 @@ class StoreLeaveRequest extends FormRequest
             'apology_note' => ['nullable', 'string', 'max:2000'],
             'emergency_flag' => ['nullable'],
             'half_day_flag' => ['nullable'],
-            'contact_during_leave' => ['nullable', 'string', 'max:120'],
+            'contact_during_leave' => [
+                'nullable',
+                'string',
+                'max:25',
+                'regex:/^\+[1-9]\d{6,14}$/',
+            ],
             'status' => ['nullable', 'in:pending,approved,rejected'],
             'admin_note' => ['nullable', 'string', 'max:2000'],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'end_date.after_or_equal' => "End date can't be backdated. Please select a date on or after the start date.",
+            'contact_during_leave.regex' => 'Please enter a valid phone number with country code (e.g. +919876543210).',
+            'contact_during_leave.max'   => 'Contact number must not exceed 25 characters.',
         ];
     }
 }
