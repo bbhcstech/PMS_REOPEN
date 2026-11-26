@@ -462,8 +462,6 @@
     </div>
     @endif
 
-    @include('admin.employees.partials.org-tree')
-
     <div class="filter-export-card">
         <div class="directory-panel-header">
             <div class="directory-panel-title">

@@ -36,9 +36,7 @@
     <div class="org-breadcrumb">
         <a href="{{ route('dashboard') }}"><i class="fas fa-home me-1"></i> Dashboard</a>
         <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
-        <a href="{{ route('organization.index') }}">Organization</a>
-        <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
-        <span>Employees</span>
+        <a href="{{ route('organization.index') }}">Organization Details</a>
         <i class="fas fa-chevron-right text-muted" style="font-size: 0.7rem;"></i>
         <span class="text-dark font-semibold">{{ $employee->name }}</span>
     </div>
@@ -100,7 +98,7 @@
                     $backToDirUrl = request('from_view') ? route('organization.index', ['view' => request('from_view')]) : route('organization.index');
                 @endphp
                 <a href="{{ $backToDirUrl }}" class="org-btn org-banner-btn-outline" style="background: transparent !important; color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; border: 1px solid rgba(255, 255, 255, 0.45) !important; font-weight: 700 !important;">
-                    <i class="fas fa-arrow-left" style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important;"></i> Back to Directory
+                    <i class="fas fa-arrow-left" style="color: #ffffff !important; -webkit-text-fill-color: #ffffff !important;"></i> Back to Organization Details
                 </a>
             </div>
         </div>

@@ -405,6 +405,67 @@
     -webkit-text-fill-color: #0f172a !important;
   }
 
+  #company-notification-center .notif-btn-delete i {
+    color: #dc2626 !important;
+    -webkit-text-fill-color: #dc2626 !important;
+  }
+
+  #company-notification-center .notif-btn-delete:hover {
+    background: #fef2f2 !important;
+    border-color: #fca5a5 !important;
+    color: #dc2626 !important;
+    -webkit-text-fill-color: #dc2626 !important;
+  }
+
+  #company-notification-center .notif-delete-selected-btn {
+    background: #fef2f2 !important;
+    border: 1px solid #fecaca !important;
+    color: #dc2626 !important;
+    -webkit-text-fill-color: #dc2626 !important;
+    border-radius: 10px !important;
+    font-size: 0.8rem !important;
+    font-weight: 650 !important;
+    padding: 0.48rem 0.95rem !important;
+    min-height: 38px !important;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    transition: all 0.18s ease;
+  }
+
+  #company-notification-center .notif-delete-selected-btn i {
+    color: #dc2626 !important;
+    -webkit-text-fill-color: #dc2626 !important;
+    -webkit-text-stroke: 0 !important;
+    font-size: 1rem !important;
+  }
+
+  #company-notification-center .notif-delete-selected-btn:hover {
+    background: #fee2e2 !important;
+    border-color: #fca5a5 !important;
+  }
+
+  #company-notification-center .notif-select-checkbox {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    cursor: pointer;
+    accent-color: #2563eb;
+    flex-shrink: 0;
+  }
+
+  #company-notification-center .notif-select-all-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--bx-ink-body, #334155);
+    cursor: pointer;
+    user-select: none;
+    margin: 0;
+  }
+
   #company-notification-center .notif-title {
     font-size: 0.98rem !important;
     font-weight: 750 !important;
@@ -582,6 +643,23 @@
     color: #60a5fa !important;
     -webkit-text-fill-color: #60a5fa !important;
   }
+
+  html[data-pms-theme="dark"] #company-notification-center .notif-delete-selected-btn {
+    background: rgba(239, 68, 68, 0.16) !important;
+    border-color: rgba(248, 113, 113, 0.35) !important;
+    color: #fca5a5 !important;
+    -webkit-text-fill-color: #fca5a5 !important;
+  }
+
+  html[data-pms-theme="dark"] #company-notification-center .notif-delete-selected-btn i,
+  html[data-pms-theme="dark"] #company-notification-center .notif-btn-delete i {
+    color: #f87171 !important;
+    -webkit-text-fill-color: #f87171 !important;
+  }
+
+  html[data-pms-theme="dark"] #company-notification-center .notif-select-all-label {
+    color: #cbd5e1 !important;
+  }
 </style>
 
 <div id="company-notification-center" class="container-fluid">
@@ -605,6 +683,15 @@
       </div>
 
       <div class="d-flex align-items-center gap-2 flex-wrap">
+        <form id="deleteSelectedNotificationsForm" method="POST" action="{{ request()->routeIs('admin.company-notifications.*') && Route::has('admin.company-notifications.delete-selected') ? route('admin.company-notifications.delete-selected') : route('notifications.deleteSelected') }}" class="d-none" onsubmit="return confirm('Are you sure you want to delete the selected notifications?')">
+          @csrf
+          <div id="deleteSelectedIdsContainer"></div>
+          <button type="submit" class="btn notif-delete-selected-btn">
+            <i class="bx bx-trash"></i>
+            <span id="deleteSelectedCountText">Delete Selected (0)</span>
+          </button>
+        </form>
+
         <form method="POST" action="{{ Route::has('notifications.readAll') ? route('notifications.readAll') : route('admin.company-notifications.read-all') }}">
           @csrf
           <button type="submit" class="btn notif-mark-all-btn">
@@ -697,7 +784,13 @@
           </select>
         </div>
 
-        <div>
+        <div class="d-flex align-items-center gap-3 flex-wrap">
+          @if((method_exists($notifications, 'count') ? $notifications->count() : count($notifications)) > 0)
+            <label for="selectAllNotifications" class="notif-select-all-label">
+              <input type="checkbox" id="selectAllNotifications" class="notif-select-checkbox">
+              <span>Select All</span>
+            </label>
+          @endif
           <button type="submit" class="btn notif-filter-btn">Filter</button>
         </div>
       </form>
@@ -852,6 +945,8 @@
         <!-- Top Metadata & Action Control Bar -->
         <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
           <div class="d-flex align-items-center gap-2 flex-wrap">
+            <input type="checkbox" class="notif-select-checkbox notif-item-checkbox" value="{{ ($isCentral ? 'central:' : 'user:') . $notifId }}" aria-label="Select notification {{ $rawTitle }}">
+
             <!-- Icon Circle -->
             <div style="--notif-icon-color: {{ $iconColor }}; background: {{ $iconBg }}; color: {{ $iconColor }};" class="notif-severity-icon">
               <i class="bx {{ $iconClass }}"></i>
@@ -895,6 +990,22 @@
                 @csrf
                 <button type="submit" class="btn btn-sm btn-pill-action notif-btn-read">
                   <i class="bx bx-check"></i> Read
+                </button>
+              </form>
+            @endif
+
+            <!-- Delete Button -->
+            @php
+              $singleDeleteRoute = ($isCentral && Route::has('admin.company-notifications.delete'))
+                  ? route('admin.company-notifications.delete', $notifId)
+                  : (Route::has('notifications.delete') ? route('notifications.delete', $notifId) : null);
+            @endphp
+            @if($singleDeleteRoute)
+              <form method="POST" action="{{ $singleDeleteRoute }}" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this notification?')">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="btn btn-sm btn-pill-action notif-btn-delete" aria-label="Delete notification">
+                  <i class="bx bx-trash"></i> Delete
                 </button>
               </form>
             @endif
@@ -959,4 +1070,58 @@
   @endif
 
 </div>
+
+@push('js')
+<script>
+  (function () {
+    var root = document.getElementById('company-notification-center');
+    if (!root) return;
+
+    var selectAll = document.getElementById('selectAllNotifications');
+    var bulkForm = document.getElementById('deleteSelectedNotificationsForm');
+    var idsContainer = document.getElementById('deleteSelectedIdsContainer');
+    var countText = document.getElementById('deleteSelectedCountText');
+
+    function getCheckboxes() {
+      return Array.prototype.slice.call(root.querySelectorAll('.notif-item-checkbox'));
+    }
+
+    function syncBulkSelection() {
+      var boxes = getCheckboxes();
+      var selected = boxes.filter(function (cb) { return cb.checked; });
+
+      if (selectAll) {
+        selectAll.checked = boxes.length > 0 && selected.length === boxes.length;
+        selectAll.indeterminate = selected.length > 0 && selected.length < boxes.length;
+      }
+
+      if (bulkForm && idsContainer && countText) {
+        idsContainer.innerHTML = '';
+        selected.forEach(function (cb) {
+          var input = document.createElement('input');
+          input.type = 'hidden';
+          input.name = 'ids[]';
+          input.value = cb.value;
+          idsContainer.appendChild(input);
+        });
+        countText.textContent = 'Delete Selected (' + selected.length + ')';
+        bulkForm.classList.toggle('d-none', selected.length === 0);
+      }
+    }
+
+    root.addEventListener('change', function (event) {
+      if (event.target === selectAll) {
+        getCheckboxes().forEach(function (cb) {
+          cb.checked = selectAll.checked;
+        });
+        syncBulkSelection();
+      } else if (event.target.classList && event.target.classList.contains('notif-item-checkbox')) {
+        syncBulkSelection();
+      }
+    });
+
+    syncBulkSelection();
+  })();
+</script>
+@endpush
 @endsection
