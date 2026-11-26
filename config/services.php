@@ -40,4 +40,10 @@ return [
         'timeout' => env('TESSERACT_TIMEOUT', 5),
     ],
 
+    // Node.js runs the pdfkit + pdf-lib document generators (resources/pdf). Set NODE_BINARY
+    // to an absolute path when "node" is not on the web server's PATH.
+    'node' => [
+        'binary' => env('NODE_BINARY', 'node'),
+    ],
+
 ];

@@ -190,13 +190,13 @@
             </td>
             <td>
                 <span class="param-label">Experience Required</span>
-                <span class="param-value">{{ $requirement->experience_required ?? 'Not Specified' }}</span>
+                <span class="param-value">{{ \App\Support\RecruitmentFormat::experience($requirement->experience_required) }}</span>
             </td>
         </tr>
         <tr>
             <td>
-                <span class="param-label">Salary Range</span>
-                <span class="param-value">{{ $requirement->salary_range ?? 'Negotiable' }}</span>
+                <span class="param-label">Salary Range (CTC)</span>
+                <span class="param-value">{{ \App\Support\RecruitmentFormat::ctc($requirement->salary_range) }}</span>
             </td>
             <td>
                 <span class="param-label">Work Location</span>

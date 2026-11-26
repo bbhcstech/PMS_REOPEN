@@ -88,15 +88,22 @@ class RecruitmentController extends Controller
             'positions' => 'required|integer|min:1',
             'employment_type' => 'required|string|max:100',
             'experience_required' => 'nullable|string|max:100',
-            'salary_range' => 'nullable|string|max:100',
-            'salary_amount' => 'nullable|string|max:100',
-            'salary_currency' => 'nullable|string|max:20',
+            // Salary Range (CTC) in LPA: numbers only, up to 2 decimals; max may not be below min.
+            'salary_min' => ['nullable', 'numeric', 'min:0', 'max:999', 'regex:/^\d+(\.\d{1,2})?$/', 'required_with:salary_max'],
+            'salary_max' => ['nullable', 'numeric', 'min:0', 'max:999', 'regex:/^\d+(\.\d{1,2})?$/', 'gte:salary_min'],
             'location' => 'nullable|string|max:150',
             'description' => 'nullable|string',
             'requirements_summary' => 'nullable|string',
             'pdf_header_image' => \App\Support\RecruitmentPdfBranding::rules(\App\Support\RecruitmentPdfBranding::HEADER_HEIGHT),
             'pdf_footer_image' => \App\Support\RecruitmentPdfBranding::rules(\App\Support\RecruitmentPdfBranding::FOOTER_HEIGHT),
-        ], \App\Support\RecruitmentPdfBranding::messages());
+        ], \App\Support\RecruitmentPdfBranding::messages() + [
+            'salary_min.numeric' => 'Enter the minimum CTC as a number in LPA (e.g. 4.5).',
+            'salary_min.regex' => 'Enter the minimum CTC as a number in LPA (e.g. 4.5).',
+            'salary_min.required_with' => 'Enter the minimum CTC as well as the maximum.',
+            'salary_max.numeric' => 'Enter the maximum CTC as a number in LPA (e.g. 6).',
+            'salary_max.regex' => 'Enter the maximum CTC as a number in LPA (e.g. 6).',
+            'salary_max.gte' => 'The maximum CTC cannot be lower than the minimum.',
+        ]);
 
         $this->ensurePdfBrandingColumns();
 
@@ -106,11 +113,7 @@ class RecruitmentController extends Controller
             $departmentName = $dept?->dpt_name;
         }
 
-        $salaryRange = $request->salary_range;
-        if (empty($salaryRange) && $request->filled('salary_amount')) {
-            $currencySymbol = $request->input('salary_currency', '$');
-            $salaryRange = trim($currencySymbol . ' ' . $request->salary_amount);
-        }
+        $salaryRange = $this->ctcRange($request->input('salary_min'), $request->input('salary_max'));
 
         $user = auth()->user();
 
@@ -168,6 +171,19 @@ class RecruitmentController extends Controller
     {
         $requirement = RecruitmentRequirement::with(['department', 'creator'])->findOrFail($id);
         $policyCard = $this->generatePolicyCard();
+        $fileName = 'Job_Requirement_' . \Illuminate\Support\Str::slug($requirement->title) . '.pdf';
+
+        // Single-page sheet built with pdfkit + pdf-lib; falls back to the DomPDF template below.
+        try {
+            $bytes = app(\App\Services\RecruitmentPdfRenderer::class)->render($requirement, $policyCard);
+            return response($bytes, 200, [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
+                'Cache-Control' => 'private, no-store',
+            ]);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('Recruitment PDF (pdfkit/pdf-lib) unavailable, using DomPDF: ' . $e->getMessage());
+        }
 
         try {
             $pdf = \App\Services\PdfDocument::loadView('admin.recruitment.pdf', compact('requirement', 'policyCard'))
@@ -213,6 +229,16 @@ class RecruitmentController extends Controller
 
         return redirect()->route('recruitment.index')
             ->with('success', "Requirement removed successfully.");
+    }
+
+    /** "4.5 - 6 LPA" (or "5 LPA" for a single figure); null when no CTC was given. */
+    private function ctcRange($min, $max): ?string
+    {
+        $format = fn ($value) => rtrim(rtrim(number_format((float) $value, 2, '.', ''), '0'), '.');
+        $min = ($min === null || $min === '') ? null : $format($min);
+        $max = ($max === null || $max === '') ? null : $format($max);
+        if ($min === null) return null;
+        return ($max === null || $max === $min ? $min : $min . ' - ' . $max) . ' LPA';
     }
 
     /** Tenants that have not run the latest migration still get the header/footer columns. */

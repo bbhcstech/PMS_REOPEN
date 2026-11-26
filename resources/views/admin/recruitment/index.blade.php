@@ -1708,13 +1708,20 @@
 
 @if(auth()->user()?->role === 'admin')
 {{-- CREATE NEW REQUIREMENT MODAL (ADMIN ONLY) --}}
-<div class="modal fade" id="createRequirementModal" tabindex="-1" aria-hidden="true">
+@include('admin.recruitment.partials.create-modal-style')
+<div class="modal fade" id="createRequirementModal" tabindex="-1" aria-hidden="true" aria-labelledby="createRequirementTitle">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg">
             <form method="POST" action="{{ route('recruitment.store') }}" enctype="multipart/form-data">
                 @csrf
-                <div class="modal-header" style="background: linear-gradient(135deg, #1E4FCC 0%, #2F6BFF 100%); color: #ffffff;">
-                    <h5 class="modal-title fw-bold" style="color: #ffffff !important;"><i class="bx bx-plus-circle me-2" style="color: #ffffff !important;"></i> Create New Recruitment Requirement</h5>
+                <div class="modal-header rcm-header">
+                    <span class="rcm-header-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M12 11v5M9.5 13.5h5"/></svg>
+                    </span>
+                    <div class="rcm-header-text">
+                        <h5 class="modal-title" id="createRequirementTitle">Create New Recruitment Requirement</h5>
+                        <p>Publish an opening, generate its PDF and share it with your team.</p>
+                    </div>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body p-4">
@@ -1728,6 +1735,10 @@
                     </div>
 
                     <div class="row g-3">
+                        <div class="col-12 rcm-section">
+                            <span class="rcm-step" aria-hidden="true">1</span>
+                            <div><h6>Role basics</h6><p>What the role is and how many people you need.</p></div>
+                        </div>
                         <div class="col-md-8">
                             <label class="form-label fw-bold">Job Title <sup class="text-danger">*</sup></label>
                             <input type="text" name="title" class="form-control" placeholder="e.g. Senior Laravel Developer" required>
@@ -1799,40 +1810,28 @@
                             </select>
                         </div>
 
+                        <div class="col-12 rcm-section">
+                            <span class="rcm-step" aria-hidden="true">2</span>
+                            <div><h6>Experience, pay &amp; location</h6><p>Shown on the requirement card and in the PDF.</p></div>
+                        </div>
                         <div class="col-md-4">
                             <label class="form-label fw-bold">Experience Required</label>
                             <input type="text" name="experience_required" class="form-control" placeholder="e.g. 2 - 4 Years">
                         </div>
 
                         <div class="col-md-4">
-                            <label class="form-label fw-bold">Salary Range</label>
-                            <div class="input-group">
-                                <select name="salary_currency" id="recruitment_salary_currency" class="form-select bg-light fw-bold" style="max-width: 95px;" onchange="updateSalaryRangeValue();">
-                                    @if(isset($currencies) && count($currencies) > 0)
-                                        @foreach($currencies as $curr)
-                                            @php
-                                                $sym = $curr->currency_symbol ?: ($curr->currency_code ?: '$');
-                                                $code = $curr->currency_code ?: $sym;
-                                            @endphp
-                                            <option value="{{ $sym }}" {{ ($sym == ($defaultCurrencySymbol ?? '$')) ? 'selected' : '' }}>
-                                                {{ $sym }} ({{ $code }})
-                                            </option>
-                                        @endforeach
-                                    @else
-                                        <option value="$" selected>$ (USD)</option>
-                                        <option value="₹">₹ (INR)</option>
-                                        <option value="৳">৳ (BDT)</option>
-                                        <option value="€">€ (EUR)</option>
-                                        <option value="£">£ (GBP)</option>
-                                        <option value="CAD $">CAD ($)</option>
-                                        <option value="AUD $">AUD ($)</option>
-                                        <option value="AED">AED</option>
-                                        <option value="SAR">SAR</option>
-                                    @endif
-                                </select>
-                                <input type="text" name="salary_amount" id="recruitment_salary_amount" class="form-control" placeholder="e.g. 60,000 - 80,000 / year" oninput="updateSalaryRangeValue();">
-                                <input type="hidden" name="salary_range" id="recruitment_salary_range">
+                            <label class="form-label fw-bold" for="recruitment_salary_min">Salary Range (CTC)</label>
+                            <div class="input-group recruitment-salary-ctc">
+                                <input type="number" name="salary_min" id="recruitment_salary_min" class="form-control @error('salary_min') is-invalid @enderror"
+                                       value="{{ old('salary_min') }}" min="0" max="999" step="0.01" inputmode="decimal" placeholder="Min" aria-label="Minimum CTC in LPA">
+                                <span class="input-group-text">–</span>
+                                <input type="number" name="salary_max" id="recruitment_salary_max" class="form-control @error('salary_max') is-invalid @enderror"
+                                       value="{{ old('salary_max') }}" min="0" max="999" step="0.01" inputmode="decimal" placeholder="Max" aria-label="Maximum CTC in LPA">
+                                <span class="input-group-text fw-bold">LPA</span>
                             </div>
+                            @error('salary_min')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                            @error('salary_max')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                            <small class="text-muted d-block mt-1">Numbers only, in lakhs per annum (e.g. 4.5 – 6).</small>
                         </div>
 
                         <div class="col-md-4">
@@ -1840,6 +1839,10 @@
                             <input type="text" name="location" class="form-control" placeholder="e.g. Headquarters / Remote">
                         </div>
 
+                        <div class="col-12 rcm-section">
+                            <span class="rcm-step" aria-hidden="true">3</span>
+                            <div><h6>Role details</h6><p>Responsibilities and the skills candidates should bring.</p></div>
+                        </div>
                         <div class="col-12">
                             <label class="form-label fw-bold">Job Description</label>
                             <textarea name="description" class="form-control" rows="3" placeholder="Provide brief overview of responsibilities and scope..."></textarea>
@@ -1850,6 +1853,10 @@
                             <textarea name="requirements_summary" class="form-control" rows="3" placeholder="Key skills, degrees, technologies, or certifications needed..."></textarea>
                         </div>
 
+                        <div class="col-12 rcm-section">
+                            <span class="rcm-step" aria-hidden="true">4</span>
+                            <div><h6>PDF branding</h6><p>Your company header and footer printed on the requirement PDF.</p></div>
+                        </div>
                         <div class="col-md-6">
                             <label class="form-label fw-bold" for="recPdfHeaderImage">Company Header Image <span class="text-danger">*</span></label>
                             <input type="file" name="pdf_header_image" id="recPdfHeaderImage" class="form-control" accept=".jpg,.jpeg,.png,image/png,image/jpeg" required data-recruitment-banner data-width="{{ \App\Support\RecruitmentPdfBranding::WIDTH }}" data-height="{{ \App\Support\RecruitmentPdfBranding::HEADER_HEIGHT }}" data-max-bytes="{{ \App\Support\RecruitmentPdfBranding::MAX_KB * 1024 }}" aria-describedby="recPdfHeaderImageHelp recPdfHeaderImageFeedback">
@@ -1867,9 +1874,10 @@
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-rec-primary px-4"><i class="bx bx-paper-plane me-1"></i> Create & Broadcast Requirement</button>
+                <div class="modal-footer rcm-footer">
+                    <span class="rcm-footer-note"><sup class="text-danger">*</sup> Required fields</span>
+                    <button type="button" class="btn rcm-cancel" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-rec-primary rcm-submit px-4"><i class="bx bx-paper-plane me-1"></i> Create &amp; Broadcast Requirement</button>
                 </div>
             </form>
         </div>
@@ -1899,36 +1907,29 @@ document.addEventListener('DOMContentLoaded', function () {
 </script>
 @endif
 <script>
-function updateSalaryRangeValue() {
-    const currencySelect = document.getElementById('recruitment_salary_currency');
-    const amountInput = document.getElementById('recruitment_salary_amount');
-    const hiddenRangeInput = document.getElementById('recruitment_salary_range');
-
-    if (!amountInput || !hiddenRangeInput) return;
-
-    const val = amountInput.value.trim();
-    const curr = currencySelect ? currencySelect.value : '$';
-
-    if (!val) {
-        hiddenRangeInput.value = '';
-        return;
-    }
-
-    const hasSymbol = /^[\$\₹\৳\€\£]|^(CAD|AUD|AED|SAR)/i.test(val);
-    if (hasSymbol) {
-        hiddenRangeInput.value = val;
-    } else {
-        hiddenRangeInput.value = curr + ' ' + val;
-    }
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-    const recForm = document.querySelector('form[action*="recruitment.store"]');
-    if (recForm) {
-        recForm.addEventListener('submit', function() {
-            updateSalaryRangeValue();
+// Salary Range (CTC): numbers only (LPA). Block letters/symbols that number inputs would otherwise accept (e, +, -),
+// and keep Max from being lower than Min.
+document.addEventListener('DOMContentLoaded', function () {
+    const minInput = document.getElementById('recruitment_salary_min');
+    const maxInput = document.getElementById('recruitment_salary_max');
+    if (!minInput || !maxInput) return;
+    [minInput, maxInput].forEach(function (input) {
+        input.addEventListener('keydown', function (event) {
+            if (['e', 'E', '+', '-'].includes(event.key)) event.preventDefault();
         });
-    }
+        input.addEventListener('paste', function (event) {
+            const text = (event.clipboardData || window.clipboardData).getData('text').trim();
+            if (!/^\d+(\.\d{1,2})?$/.test(text)) event.preventDefault();
+        });
+    });
+    const syncRange = function () {
+        maxInput.min = minInput.value !== '' ? minInput.value : '0';
+        const invalid = minInput.value !== '' && maxInput.value !== '' && parseFloat(maxInput.value) < parseFloat(minInput.value);
+        maxInput.setCustomValidity(invalid ? 'Maximum CTC cannot be lower than the minimum.' : '');
+    };
+    minInput.addEventListener('input', syncRange);
+    maxInput.addEventListener('input', syncRange);
+    syncRange();
 });
 
 function toggleInlineAddDept(forceState) {
