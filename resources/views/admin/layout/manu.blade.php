@@ -1187,33 +1187,33 @@
               </span>
             </a>
 
-            <div class="navbar-nav-right d-flex align-items-center justify-content-end" id="navbar-collapse">
+            <div class="navbar-nav-right d-flex align-items-center justify-content-between" id="navbar-collapse">
 
               <!-- LEFT: Breadcrumbs (desktop only to prevent mobile topbar crowding) -->
-              <div class="navbar-nav align-items-center d-none d-lg-flex">
+              <div class="navbar-nav align-items-center d-none d-lg-flex pms-navbar-breadcrumb">
                 <div class="nav-item">
-                  <span class="fw-bold">Dashboard</span> • Home
+                  <span class="fw-bold">Dashboard</span> <span class="pms-breadcrumb-dot" aria-hidden="true">&bull;</span> <span class="pms-breadcrumb-sub">Home</span>@if(request()->routeIs('notifications.*', 'admin.company-notifications.*')) <span class="pms-breadcrumb-dot" aria-hidden="true">&bull;</span> <span class="pms-breadcrumb-active">Notification Center</span>@elseif(request()->routeIs('my-documents.*')) <span class="pms-breadcrumb-dot" aria-hidden="true">&bull;</span> <span class="pms-breadcrumb-active">My Documents</span>@endif
                 </div>
               </div>
 
-              <ul class="navbar-nav flex-row align-items-center ms-md-auto">
+              <!-- CENTER: Search -->
+              <div class="nav-item navbar-search-wrapper pms-navbar-search-center d-flex align-items-center mx-auto" title="Search">
+                <i class="bx bx-search icon-md" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#searchModal"></i>
+                <input
+                  type="text"
+                  class="form-control border-0 shadow-none d-none d-md-inline-block"
+                  placeholder="Search..."
+                  data-bs-toggle="modal"
+                  data-bs-target="#searchModal"
+                  readonly
+                  style="cursor: pointer;" />
+              </div>
+
+              <ul class="navbar-nav flex-row align-items-center ms-auto ms-lg-0">
                 <!-- Place this tag where you want the button to render. -->
 
-                <!-- RIGHT: Search + User -->
-                <div class="navbar-nav align-items-center ms-auto d-flex">
-
-                  <!-- Small search -->
-                  <div class="nav-item navbar-search-wrapper d-flex align-items-center me-2 me-sm-3" title="Search">
-                    <i class="bx bx-search icon-md me-1 me-sm-2" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#searchModal"></i>
-                    <input
-                      type="text"
-                      class="form-control border-0 shadow-none ps-1 ps-sm-2 d-none d-md-inline-block"
-                      placeholder="Search..."
-                      data-bs-toggle="modal"
-                      data-bs-target="#searchModal"
-                      readonly
-                      style="cursor: pointer; height: 32px; font-size: 14px; width: 170px;" />
-                  </div>
+                <!-- RIGHT: Actions + User -->
+                <div class="navbar-nav align-items-center d-flex">
 
                   <!-- Sticky Note Icon -->
                   <div class="nav-item me-3">
@@ -1493,7 +1493,7 @@
 
                 <!-- User -->
                 <li class="nav-item navbar-dropdown dropdown-user dropdown">
-                  <a  class="nav-link dropdown-toggle hide-arrow p-0"
+                  <a  class="nav-link dropdown-toggle hide-arrow p-0 pms-user-pill"
                     href="javascript:void(0);"
                     data-bs-toggle="dropdown">
 
@@ -1505,7 +1505,7 @@
                       </div>
 
                       <div class="d-none d-md-block text-start">
-                        <h6 class="mb-0 text-truncate" style="font-size: 14px;">{{ $user->name }}</h6>
+                        <h6 class="mb-0 text-truncate pms-user-pill-name" style="font-size: 13px;">{{ $user->name }}</h6>
                         @if($employeeDesignation && strtolower($employeeDesignation) !== 'employee')
                           <small class="text-muted d-block text-truncate" style="max-width: 180px;">
                             {{ $employeeDesignation }}

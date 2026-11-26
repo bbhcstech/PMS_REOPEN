@@ -73,6 +73,9 @@ Route::post('employees/archive/bulk-restore', [EmployeeController::class, 'bulkR
 Route::post('employees/{id}/restore', [EmployeeController::class, 'restore'])
     ->name('employees.restore');
 
+Route::get('employees/org-tree', [EmployeeController::class, 'orgTree'])
+    ->name('employees.org-tree');
+
 Route::resource('employees', EmployeeController::class);
 Route::get('admin/upper-level-employees', [\App\Http\Controllers\Admin\UpperLevelEmployeeController::class, 'index'])->name('admin.upper-level-employees.index');
 Route::post('admin/upper-level-employees/roles', [\App\Http\Controllers\Admin\UpperLevelEmployeeController::class, 'storeRole'])->name('admin.upper-level-employees.roles.store');

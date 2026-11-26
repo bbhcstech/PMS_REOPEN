@@ -50,6 +50,22 @@
             return true;
         });
 
+        // Reporting flow (top manager -> direct manager) shown under "Reports To"; same links as the Org Tree.
+        $reportingLinks = collect($employeeDetails ?? [])->mapWithKeys(fn ($d) => [(int) $d->user_id => ['to' => (int) $d->reporting_to, 'name' => $d->user?->name]]);
+        $reportingFlow = function ($employee) use ($reportingLinks) {
+            $chain = [];
+            $seen = [(int) $employee->id => true];
+            $managerId = (int) ($employee->employeeDetail?->reporting_to ?? 0);
+            while ($managerId && ! isset($seen[$managerId]) && count($chain) < 8) {
+                $seen[$managerId] = true;
+                $name = $reportingLinks[$managerId]['name'] ?? null;
+                if (! $name) break;
+                array_unshift($chain, $name);
+                $managerId = $reportingLinks[$managerId]['to'] ?? 0;
+            }
+            return $chain;
+        };
+
         $emptyCompanyName = ($selectedCompanyId ? $companies->firstWhere('id', $selectedCompanyId)?->name : null)
             ?: (session('current_company_name') ?: (auth()->user()?->company?->name ?? config('app.name')));
     @endphp
@@ -338,6 +354,8 @@
     </div>
     @endif
 
+    @include('admin.employees.partials.org-tree')
+
     {{-- Filter & Export Section --}}
     <div class="filter-export-card employee-filter-polish">
         <div class="filter-header">
@@ -598,6 +616,13 @@
                                         <i class="fa-solid fa-users fas" style="color: #22D3EE !important; -webkit-text-fill-color: #22D3EE !important; font-family: 'Font Awesome 6 Free', 'Font Awesome 5 Free' !important; font-weight: 900 !important; font-style: normal !important; display: inline-block !important;"></i>
                                         {{ $employee->employeeDetail?->reportingTo?->name ?? 'N/A' }}
                                     </span>
+                                    @php $flow = $reportingFlow($employee); @endphp
+                                    @if(count($flow) > 1)
+                                        <span class="reports-flow" title="Reporting flow: {{ implode(' › ', $flow) }} › {{ $employee->name }}">
+                                            <i class="fas fa-sitemap" aria-hidden="true"></i>
+                                            <span>{{ implode(' › ', $flow) }}</span>
+                                        </span>
+                                    @endif
                                 </div>
                             </td>
                             <td>
