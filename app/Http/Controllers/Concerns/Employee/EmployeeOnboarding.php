@@ -446,11 +446,11 @@ trait EmployeeOnboarding
             // ================================================
             if ($request->department_id === 'new' && $request->filled('new_sub_department')) {
                 $subDepartment = Department::firstOrCreate(
-                    [
+                    array_filter([
                         'dpt_name' => trim($request->new_sub_department),
                         'parent_dpt_id' => $employeeData['parent_dpt_id'],
                         'company_id' => Schema::connection($conn)->hasColumn('departments', 'company_id') ? $request->company_id : null,
-                    ],
+                    ], fn ($value) => ! is_null($value)),
                     [
                         'company_id' => Schema::connection($conn)->hasColumn('departments', 'company_id') ? $request->company_id : null,
                         'dpt_code' => $this->generateNextSubDepartmentCode(),

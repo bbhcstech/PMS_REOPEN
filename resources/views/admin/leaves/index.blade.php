@@ -5,17 +5,20 @@
 @section('content')
 @php $leaveRoute = ! empty($ownLeavesView) ? 'leaves.mine' : (request('staff_category') === 'authority' ? 'admin.authority-leaves' : 'leaves.index'); @endphp
 
-<div class="leave-page">
+<div id="leavePage" class="leave-page">
     <!-- Breadcrumb -->
     <div class="leave-breadcrumb">
-        <i class="fas fa-calendar-check"></i> Dashboard / {{ ! empty($ownLeavesView) ? 'My Leave Requests' : ($isAdmin ? (request('staff_category') === 'authority' ? 'Higher-level leaves' : 'Leave Management') : 'My Leaves') }}
+        <i class="far fa-calendar-check"></i>
+        <span>Dashboard</span>
+        <span class="crumb-sep">/</span>
+        <strong class="crumb-current">{{ ! empty($ownLeavesView) ? 'My Leave Requests' : ($isAdmin ? (request('staff_category') === 'authority' ? 'Higher-level leaves' : 'Leave Management') : 'My Leaves') }}</strong>
     </div>
 
     <!-- Header Card -->
     <section class="leave-hero">
         <div class="leave-hero-main">
-            <div class="leave-hero-icon"><i class="fas fa-user-clock"></i></div>
-            <div>
+            <div class="leave-hero-icon"><i class="fas fa-calendar-alt"></i></div>
+            <div class="leave-hero-text">
                 <h1>{{ ! empty($ownLeavesView) ? 'My Leave Requests' : ($isAdmin ? 'Leave Management' : 'My Leave Dashboard') }}</h1>
                 <p>{{ ! empty($ownLeavesView) ? 'Your own leave requests to the company admin: status, approver and remaining balance.' : ($isAdmin ? 'Manage policy, balances, approvals, unpaid leaves, and employee leave history.' : 'Apply for leave, track approvals, and monitor your April-March balance.') }}</p>
             </div>
@@ -27,26 +30,26 @@
                     @if(request('staff_category') !== 'authority' && $authorityPendingCount)<span class="badge bg-primary">{{ $authorityPendingCount }} pending</span>@endif
                 </a>
             @endif
-            <a href="{{ route('leaves.create', ['staff_category' => request('staff_category')]) }}" class="btn btn-primary"><i class="fas fa-plus-circle"></i> Apply Leave</a>
+            <a href="{{ route('leaves.create', ['staff_category' => request('staff_category')]) }}" class="btn btn-primary"><i class="fas fa-plus"></i> Apply Leave</a>
             @if(! $isAdmin)
                 <a href="{{ route('leaves.apology-letters.create') }}" class="btn btn-light"><i class="fas fa-envelope-open-text"></i> Write Apology Letter</a>
             @endif
-            <a href="{{ route('leaves.calendar', ['staff_category' => request('staff_category')]) }}" class="btn btn-light"><i class="fas fa-calendar-alt"></i> Calendar</a>
+            <a href="{{ route('leaves.calendar', ['staff_category' => request('staff_category')]) }}" class="btn btn-light"><i class="far fa-calendar"></i> Calendar</a>
             @if($isAdmin)
-                <a href="{{ route('leaves.apology-letters.index') }}" class="btn btn-light"><i class="fas fa-envelope-open-text"></i> Apology Letters</a>
+                <a href="{{ route('leaves.apology-letters.index') }}" class="btn btn-light"><i class="far fa-file-alt"></i> Apology Letters</a>
                 @if(\App\Services\WorkforceAccess::isAdmin(auth()->user()))
-                <button class="btn btn-light" data-bs-toggle="modal" data-bs-target="#policyModal"><i class="fas fa-sliders-h"></i> Policy</button>
+                <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#policyModal"><i class="fas fa-shield-alt"></i> Policy</button>
                 @endif
-                <button class="btn btn-light" data-bs-toggle="modal" data-bs-target="#exportModal"><i class="fas fa-download"></i> Export</button>
+                <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#exportModal"><i class="fas fa-cloud-upload-alt"></i> Export</button>
                 <a href="{{ route('leaves.archive', ['staff_category' => request('staff_category')]) }}" class="btn btn-light">
                     <i class="fas fa-box-archive"></i> Archived
                     @if(($archivedCount ?? 0) > 0)
                         <span class="archive-count-badge">{{ $archivedCount }}</span>
                     @endif
                 </a>
-                <form method="POST" action="{{ route('leaves.archive-all', ['staff_category' => request('staff_category')]) }}" class="d-inline" onsubmit="return confirm('Archive all active leave requests? They can be restored later.');">
+                <form method="POST" action="{{ route('leaves.archive-all', ['staff_category' => request('staff_category')]) }}" class="leave-inline-form" onsubmit="return confirm('Archive all active leave requests? They can be restored later.');">
                     @csrf
-                    <button class="btn btn-light"><i class="fas fa-boxes-packing"></i> Archive All</button>
+                    <button type="submit" class="btn btn-light"><i class="fas fa-boxes-packing"></i> Archive All</button>
                 </form>
             @endif
         </div>
@@ -78,71 +81,66 @@
 
     <!-- Policy Notice -->
     <section class="policy-notice">
-        <div class="notice-icon"><i class="fas fa-info-circle"></i></div>
-        <p>{{ $policyNotice }}</p>
+        <div class="notice-icon"><i class="fas fa-info"></i></div>
+        <div class="notice-content">
+            @if(str_starts_with((string) $policyNotice, 'Company Leave Policy:'))
+                <div class="notice-title-row">
+                    <strong>Company Leave Policy:</strong>
+                </div>
+                <p>{{ trim(\Illuminate\Support\Str::after((string) $policyNotice, 'Company Leave Policy:')) }}</p>
+            @else
+                <p>{{ $policyNotice }}</p>
+            @endif
+        </div>
     </section>
-
-    <style>
-        /* Keep the header glyph white; summary cards use the light palette. */
-        html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .leave-page .leave-hero .leave-hero-icon > i,
-        html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .leave-page .leave-hero .leave-hero-icon > i::before {
-            color: #ffffff !important;
-            -webkit-text-fill-color: #ffffff !important;
-        }
-
-        html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .leave-page .leave-stats > .stat-card:first-child {
-            background: #ffffff !important;
-            border-color: rgba(47, 107, 255, 0.1) !important;
-        }
-
-        html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .leave-page .leave-stats > .stat-card:first-child :is(span, strong) {
-            color: #0F172A !important;
-            -webkit-text-fill-color: #0F172A !important;
-        }
-
-        html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .leave-page .leave-stats > .stat-card:first-child i,
-        html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark):not(:has(body.dark, body.dark-mode, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"])) .leave-page .leave-stats > .stat-card:first-child i::before {
-            color: #2F6BFF !important;
-            -webkit-text-fill-color: #2F6BFF !important;
-        }
-    </style>
 
     <!-- Stats Cards -->
     <section class="leave-stats">
-        <div class="stat-card">
-            <span>Total Requests</span>
-            <strong>{{ $stats['total'] }}</strong>
-            <i class="fas fa-list-check"></i>
+        <div class="stat-card stat-total">
+            <div class="stat-body">
+                <span>Total Requests</span>
+                <strong>{{ $stats['total'] }}</strong>
+            </div>
+            <div class="stat-icon-box"><i class="fas fa-list-ul"></i></div>
         </div>
         <div class="stat-card pending">
-            <span>Pending</span>
-            <strong>{{ $stats['pending'] }}</strong>
-            <i class="fas fa-hourglass-half"></i>
+            <div class="stat-body">
+                <span>Pending</span>
+                <strong>{{ $stats['pending'] }}</strong>
+            </div>
+            <div class="stat-icon-box"><i class="fas fa-hourglass-half"></i></div>
         </div>
         <div class="stat-card approved">
-            <span>Approved</span>
-            <strong>{{ $stats['approved'] }}</strong>
-            <i class="fas fa-check-circle"></i>
+            <div class="stat-body">
+                <span>Approved</span>
+                <strong>{{ $stats['approved'] }}</strong>
+            </div>
+            <div class="stat-icon-box"><i class="fas fa-check-circle"></i></div>
         </div>
         <div class="stat-card rejected">
-            <span>Rejected</span>
-            <strong>{{ $stats['rejected'] }}</strong>
-            <i class="fas fa-times-circle"></i>
+            <div class="stat-body">
+                <span>Rejected</span>
+                <strong>{{ $stats['rejected'] }}</strong>
+            </div>
+            <div class="stat-icon-box"><i class="fas fa-times-circle"></i></div>
         </div>
         <div class="stat-card unpaid">
-            <span>Unpaid</span>
-            <strong>{{ $stats['unpaid'] }}</strong>
-            <i class="fas fa-wallet"></i>
+            <div class="stat-body">
+                <span>Unpaid</span>
+                <strong>{{ $stats['unpaid'] }}</strong>
+            </div>
+            <div class="stat-icon-box"><i class="fas fa-credit-card"></i></div>
         </div>
     </section>
 
-    <!-- Balance Cards -->
-    <section class="balance-grid">
+    @if(! $isAdmin)
+    <!-- Personal Balance Card -->
+    <section class="balance-grid balance-grid--personal">
         @forelse($balances as $balance)
             <article class="balance-card">
                 <div class="balance-head">
                     <div>
-                        <h3>{{ $isAdmin ? ($balance->user?->name ?? 'Employee') : 'Your Balance' }}</h3>
+                        <h3>Your Balance</h3>
                         <p>{{ $balance->leave_year ?: $balance->year }}</p>
                     </div>
                     <span>{{ $balance->remaining_leaves }} left</span>
@@ -153,12 +151,6 @@
                     <span>Casual used: {{ $balance->casual_used }}</span>
                     <span>Unpaid {{ $balance->unpaid_used }}</span>
                 </div>
-                @if(\App\Services\WorkforceAccess::isAdmin(auth()->user()))
-                    <form method="POST" action="{{ route('leaves.reset-employee-leaves', $balance->user_id) }}" onsubmit="return confirm('Reset leave balance for {{ $balance->user?->name }}?');">
-                        @csrf
-                        <button class="btn btn-sm btn-outline-secondary"><i class="fas fa-rotate"></i> Reset Balance</button>
-                    </form>
-                @endif
             </article>
         @empty
             <article class="balance-card">
@@ -171,14 +163,15 @@
             </article>
         @endforelse
     </section>
+    @endif
 
     <!-- Filter Panel -->
     <section class="filter-panel">
         <form method="GET" action="{{ route($leaveRoute) }}" class="filter-grid">
-<input type="hidden" name="staff_category" value="{{ request('staff_category', 'employee') }}">
+            <input type="hidden" name="staff_category" value="{{ request('staff_category', 'employee') }}">
             <input type="hidden" name="per_page" value="{{ $perPage ?? request('per_page', 20) }}">
             @if($isAdmin)
-                <div>
+                <div class="filter-field">
                     <label>Employee</label>
                     <select name="employee" class="form-control">
                         <option value="">All Employees</option>
@@ -188,7 +181,7 @@
                     </select>
                 </div>
             @endif
-            <div>
+            <div class="filter-field">
                 <label>Leave Type</label>
                 <select name="leave_type_id" class="form-control">
                     <option value="">All Types</option>
@@ -197,7 +190,7 @@
                     @endforeach
                 </select>
             </div>
-            <div>
+            <div class="filter-field">
                 <label>Status</label>
                 <select name="status" class="form-control">
                     <option value="">All Status</option>
@@ -206,16 +199,16 @@
                     @endforeach
                 </select>
             </div>
-            <div>
+            <div class="filter-field">
                 <label>From</label>
                 <input type="date" name="from" class="form-control" value="{{ request('from') }}">
             </div>
-            <div>
+            <div class="filter-field">
                 <label>To</label>
                 <input type="date" name="to" class="form-control" value="{{ request('to') }}">
             </div>
             <div class="filter-actions">
-                <button class="btn btn-primary"><i class="fas fa-filter"></i> Filter</button>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-filter"></i> Filter</button>
                 <a href="{{ route($leaveRoute) }}" class="btn btn-secondary"><i class="fas fa-redo"></i> Reset</a>
             </div>
         </form>
@@ -223,53 +216,56 @@
 
     <!-- Table Card -->
     <section class="table-card">
-        <div class="table-head">
-            <div>
+        <div class="table-head" data-pms-table-header>
+            <div class="table-head-info">
                 <h2>Leave Requests</h2>
                 <p>Approve, reject, convert to unpaid leave, and audit each request.</p>
             </div>
-            @if($isAdmin)
-                <div class="table-tools">
-                    <form method="GET" action="{{ route($leaveRoute) }}" class="entry-tools">
-<input type="hidden" name="staff_category" value="{{ request('staff_category', 'employee') }}">
-                        @foreach(request()->except(['page', 'per_page']) as $key => $value)
-                            @if(is_array($value))
-                                @foreach($value as $item)
-                                    <input type="hidden" name="{{ $key }}[]" value="{{ $item }}">
-                                @endforeach
-                            @else
-                                <input type="hidden" name="{{ $key }}" value="{{ $value }}">
-                            @endif
-                        @endforeach
-                        <label for="per-page-select">Show</label>
-                        <select id="per-page-select" name="per_page" class="form-control form-control-sm" onchange="this.form.submit()">
-                            @foreach([10, 20, 30, 50, 100] as $size)
-                                <option value="{{ $size }}" {{ ($perPage ?? 20) == $size ? 'selected' : '' }}>{{ $size }}</option>
+            <div class="table-tools-cluster">
+                <div id="leaveTableToolbarHost" class="leave-toolbar-host"></div>
+                @if($isAdmin)
+                    <div class="table-tools">
+                        <form method="GET" action="{{ route($leaveRoute) }}" class="entry-tools">
+                            <input type="hidden" name="staff_category" value="{{ request('staff_category', 'employee') }}">
+                            @foreach(request()->except(['page', 'per_page']) as $key => $value)
+                                @if(is_array($value))
+                                    @foreach($value as $item)
+                                        <input type="hidden" name="{{ $key }}[]" value="{{ $item }}">
+                                    @endforeach
+                                @else
+                                    <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+                                @endif
                             @endforeach
-                        </select>
-                        <span>entries</span>
-                    </form>
-                    <div class="bulk-tools">
-                        <select id="bulk-action" class="form-control form-control-sm">
-                            <option value="">Bulk Action</option>
-                            <option value="archive">Archive Selected</option>
-                            <option value="change_status">Change Status</option>
-                            <option value="delete">Delete</option>
-                        </select>
-                        <select id="status-dropdown" class="form-control form-control-sm" style="display:none">
-                            <option value="">Status</option>
-                            <option value="approved">Approved</option>
-                            <option value="rejected">Rejected</option>
-                            <option value="unpaid">Convert to Unpaid</option>
-                            <option value="pending">Pending</option>
-                        </select>
-                        <button type="button" id="apply-action" class="btn btn-sm btn-primary">Apply</button>
+                            <label for="per-page-select">SHOW</label>
+                            <select id="per-page-select" name="per_page" class="form-control form-control-sm" onchange="this.form.submit()">
+                                @foreach([10, 20, 30, 50, 100] as $size)
+                                    <option value="{{ $size }}" {{ ($perPage ?? 20) == $size ? 'selected' : '' }}>{{ $size }}</option>
+                                @endforeach
+                            </select>
+                            <span>entries</span>
+                        </form>
+                        <div class="bulk-tools">
+                            <select id="bulk-action" class="form-control form-control-sm">
+                                <option value="">Bulk Action</option>
+                                <option value="archive">Archive Selected</option>
+                                <option value="change_status">Change Status</option>
+                                <option value="delete">Delete</option>
+                            </select>
+                            <select id="status-dropdown" class="form-control form-control-sm" style="display:none">
+                                <option value="">Status</option>
+                                <option value="approved">Approved</option>
+                                <option value="rejected">Rejected</option>
+                                <option value="unpaid">Convert to Unpaid</option>
+                                <option value="pending">Pending</option>
+                            </select>
+                            <button type="button" id="apply-action" class="btn btn-sm btn-primary">Apply</button>
+                        </div>
                     </div>
-                </div>
-            @endif
+                @endif
+            </div>
         </div>
         <div class="table-responsive">
-            <table class="table leave-table" id="leaveTable">
+            <table class="table leave-table" id="leaveTable" data-pms-toolbar-host="leaveTableToolbarHost">
                 <thead>
                     <tr>
                         @if($isAdmin)<th width="44"><input type="checkbox" id="select-all" class="form-check-input"></th>@endif
@@ -289,27 +285,57 @@
                             $statusClass = ['pending' => 'warning', 'approved' => 'success', 'rejected' => 'danger'][$leave->status] ?? 'secondary';
                             $currentStatusValue = $leave->status;
                             $statusSelectClass = $statusClass;
+
+                            $empName = trim((string) ($leave->user?->name ?? 'N/A'));
+                            $nameParts = preg_split('/\s+/', $empName, -1, PREG_SPLIT_NO_EMPTY);
+                            $initials = count($nameParts) >= 2
+                                ? strtoupper(mb_substr($nameParts[0], 0, 1) . mb_substr($nameParts[count($nameParts) - 1], 0, 1))
+                                : strtoupper(mb_substr($empName, 0, 2));
+                            $avatarPalettes = ['av-blue', 'av-emerald', 'av-indigo', 'av-amber', 'av-rose'];
+                            $avatarClass = $avatarPalettes[(int) ($leave->user_id ?? $leave->id ?? 0) % count($avatarPalettes)];
+
+                            $typeLower = strtolower((string) $leave->type_label);
+                            $typePillClass = str_contains($typeLower, 'sick')
+                                ? 'type-sick'
+                                : (str_contains($typeLower, 'casual')
+                                    ? 'type-casual'
+                                    : (str_contains($typeLower, 'unpaid') ? 'type-unpaid' : 'type-default'));
+                            $empCode = $leave->user?->employeeDetail?->employee_id;
                         @endphp
                         <tr>
                             @if($isAdmin)<td><input type="checkbox" class="form-check-input leave-checkbox" value="{{ $leave->id }}"></td>@endif
                             <td>
-                                <strong>{{ $leave->user?->name ?? 'N/A' }}</strong>
-                                @if($leave->staff_category === 'authority')
-                                    <small>{{ $leave->staff_role_name }} · {{ $leave->staff_designation }} @if($leave->staff_designation_level !== null) · Level {{ $leave->staff_designation_level }} @endif</small>
-                                @endif
-                                <small>{{ $leave->user?->employeeDetail?->department?->dpt_name ?? $leave->user?->designation ?? 'Employee' }}</small>
+                                <div class="leave-emp-cell">
+                                    <span class="leave-emp-avatar {{ $avatarClass }}">{{ $initials }}</span>
+                                    <div class="leave-emp-meta">
+                                        <strong>{{ $empName }}</strong>
+                                        @if($empCode)
+                                            <small class="emp-code">{{ $empCode }}</small>
+                                        @endif
+                                        @if($leave->staff_category === 'authority')
+                                            <small>{{ $leave->staff_role_name }} · {{ $leave->staff_designation }} @if($leave->staff_designation_level !== null) · Level {{ $leave->staff_designation_level }} @endif</small>
+                                        @endif
+                                        <small>{{ $leave->user?->employeeDetail?->department?->dpt_name ?? $leave->user?->designation ?? 'Employee' }}</small>
+                                    </div>
+                                </div>
                             </td>
-                            <td><span class="type-badge">{{ $leave->type_label }}</span></td>
-                            <td>
-                                <strong>{{ optional($leave->start_date)->format('d M Y') }}</strong>
-                                <small>{{ optional($leave->end_date)->format('d M Y') }}</small>
+                            <td><span class="type-badge {{ $typePillClass }}">{{ $leave->type_label }}</span></td>
+                            <td class="dates-cell">
+                                <strong>{{ optional($leave->start_date)->format('M d, Y') }}@if($leave->end_date && optional($leave->end_date)->ne($leave->start_date)) - {{ optional($leave->end_date)->format('M d, Y') }}@endif</strong>
+                                <small>
+                                    {{ optional($leave->start_date)->format('D') }}@if($leave->end_date && optional($leave->end_date)->ne($leave->start_date)) - {{ optional($leave->end_date)->format('D') }}@endif
+                                    ({{ $leave->half_day_flag ? 'Half Day' : 'Full Day' }})
+                                </small>
                             </td>
-                            <td>{{ number_format((float) $leave->total_days, 1) }}</td>
+                            <td class="days-cell">
+                                <strong>{{ number_format((float) $leave->total_days, 1) }}</strong>
+                                <small>Days</small>
+                            </td>
                             <td class="pay-cell">
                                 <div class="pay-stack">
                                 @if($leave->status === 'rejected')
                                     <span class="pay-badge rejected">N/A</span>
-                                    <small class="text-muted">Rejected</small>
+                                    <small class="pay-sub">Rejected</small>
                                 @elseif($leave->status === 'pending')
                                     <span class="pay-badge pending">Pending</span>
                                 @else
@@ -321,6 +347,7 @@
                                         @if($paidDays > 0 && $unpaidDays > 0)
                                             Partial Unpaid
                                         @else
+                                            @if($unpaidDays <= 0)<i class="fas fa-check"></i>@endif
                                             {{ $unpaidDays > 0 ? 'Unpaid' : 'Paid' }}
                                         @endif
                                     </span>
@@ -349,7 +376,12 @@
                                     <span class="status-badge {{ $statusClass }}">{{ ucfirst($leave->status) }}</span>
                                 @endif
                             </td>
-                            <td class="reason-cell">{{ \Illuminate\Support\Str::limit($leave->reason, 58) }}</td>
+                            <td class="reason-cell">
+                                <span class="reason-text">{{ \Illuminate\Support\Str::limit($leave->reason, 58) }}</span>
+                                @if($leave->status === 'rejected' && $leave->rejection_reason)
+                                    <small class="reason-sub text-danger">{{ \Illuminate\Support\Str::limit($leave->rejection_reason, 48) }}</small>
+                                @endif
+                            </td>
                             <td class="text-end">
                                 <div class="action-row">
                                     <a href="{{ route('leaves.show', $leave->id) }}" class="btn btn-sm btn-light" title="View"><i class="fas fa-eye"></i></a>
@@ -384,8 +416,12 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="100" class="text-center py-5">
-                                <div class="empty-state"><i class="fas fa-calendar-times"></i><h3>No leave requests found</h3></div>
+                            <td colspan="100" class="p-0 border-0">
+                                <div class="empty-state">
+                                    <div class="empty-icon-box"><i class="fas fa-calendar-times"></i></div>
+                                    <h3>No leave requests found</h3>
+                                    <p>Try adjusting your filters or submit a new leave request.</p>
+                                </div>
                             </td>
                         </tr>
                     @endforelse
@@ -394,12 +430,67 @@
         </div>
         <div class="pagination-wrap">{{ $leaves->links() }}</div>
     </section>
+
+    @if($isAdmin)
+    <!-- Collapsible Employee Leave Balances -->
+    <section class="balance-drawer">
+        <div class="balance-drawer-head">
+            <div class="balance-drawer-title">
+                <span class="balance-drawer-icon"><i class="fas fa-wallet"></i></span>
+                <div>
+                    <h3>Employee Leave Balances</h3>
+                    <p>{{ $balances->count() }} active balance {{ $balances->count() === 1 ? 'record' : 'records' }} for this leave year</p>
+                </div>
+            </div>
+            <button type="button" class="btn btn-light btn-sm balance-drawer-toggle collapsed" data-bs-toggle="collapse" data-bs-target="#employeeBalancesPanel" aria-expanded="false" aria-controls="employeeBalancesPanel">
+                <i class="fas fa-chevron-down"></i>
+                <span>View Balances</span>
+            </button>
+        </div>
+        <div id="employeeBalancesPanel" class="collapse">
+            <div class="balance-grid balance-grid--drawer">
+                @forelse($balances as $balance)
+                    <article class="balance-card">
+                        <div class="balance-head">
+                            <div>
+                                <h3>{{ $balance->user?->name ?? 'Employee' }}</h3>
+                                <p>{{ $balance->leave_year ?: $balance->year }}</p>
+                            </div>
+                            <span>{{ $balance->remaining_leaves }} left</span>
+                        </div>
+                        <div class="balance-meter"><span style="width: {{ $balance->allocated_leaves > 0 ? min(100, ($balance->used_leaves / $balance->allocated_leaves) * 100) : 0 }}%"></span></div>
+                        <div class="balance-pills">
+                            <span>Sick used: {{ $balance->sick_used }}</span>
+                            <span>Casual used: {{ $balance->casual_used }}</span>
+                            <span>Unpaid {{ $balance->unpaid_used }}</span>
+                        </div>
+                        @if(\App\Services\WorkforceAccess::isAdmin(auth()->user()))
+                            <form method="POST" action="{{ route('leaves.reset-employee-leaves', $balance->user_id) }}" onsubmit="return confirm('Reset leave balance for {{ $balance->user?->name }}?');">
+                                @csrf
+                                <button type="submit" class="btn btn-sm btn-outline-secondary"><i class="fas fa-rotate"></i> Reset Balance</button>
+                            </form>
+                        @endif
+                    </article>
+                @empty
+                    <article class="balance-card">
+                        <div class="balance-head">
+                            <div>
+                                <h3>No Balance Yet</h3>
+                                <p>Open or create leave requests to initialize balances.</p>
+                            </div>
+                        </div>
+                    </article>
+                @endforelse
+            </div>
+        </div>
+    </section>
+    @endif
 </div>
 
 <!-- Reject Modals -->
 @if($isAdmin)
 @foreach($leaves as $leave)
-<div class="modal fade" id="rejectModal{{ $leave->id }}" tabindex="-1" aria-labelledby="rejectModalLabel{{ $leave->id }}" aria-hidden="true">
+<div class="modal fade leave-ui-modal" id="rejectModal{{ $leave->id }}" tabindex="-1" aria-labelledby="rejectModalLabel{{ $leave->id }}" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <form class="modal-content" method="POST" action="{{ route('leaves.updateStatus', $leave->id) }}">
             @csrf
@@ -428,7 +519,7 @@
 
 <!-- Policy Modal -->
 @if($isAdmin)
-<div class="modal fade" id="policyModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade leave-ui-modal" id="policyModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-centered">
         <form class="modal-content" method="POST" action="{{ route('leaves.update-policy') }}">
             @csrf
@@ -472,10 +563,10 @@
 </div>
 
 <!-- Export Modal -->
-<div class="modal fade" id="exportModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade leave-ui-modal" id="exportModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-centered">
         <form class="modal-content export-modal" id="leaveExportForm" method="GET" action="{{ route('leaves.export') }}">
-<input type="hidden" name="staff_category" value="{{ request('staff_category', 'employee') }}">
+            <input type="hidden" name="staff_category" value="{{ request('staff_category', 'employee') }}">
             <div class="modal-header">
                 <div>
                     <h5 class="modal-title"><i class="fas fa-download me-2"></i>Export Leave Report</h5>
@@ -565,7 +656,8 @@
         </form>
     </div>
 </div>
-<div class="modal fade" id="addLeaveTypeModal" tabindex="-1" aria-labelledby="addLeaveTypeTitle" aria-hidden="true">
+
+<div class="modal fade leave-ui-modal" id="addLeaveTypeModal" tabindex="-1" aria-labelledby="addLeaveTypeTitle" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <form class="modal-content" method="POST" action="{{ route('leaves.store-type') }}">
             @csrf
@@ -574,7 +666,7 @@
                 <p class="text-muted">This type is available only in your company and shares its annual paid leave allowance. Days beyond that allowance are unpaid.</p>
                 <label for="newLeaveTypeName">Name</label><input id="newLeaveTypeName" name="name" class="form-control mb-3" maxlength="100" required placeholder="e.g. Bereavement Leave">
                 <label for="newLeaveTypeCode">Code</label><input id="newLeaveTypeCode" name="code" class="form-control mb-3" maxlength="20" pattern="[A-Z][A-Z0-9_]{1,19}" required placeholder="e.g. BL">
-                <label><input type="checkbox" name="requires_document" value="1"> Supporting document required</label>
+                <label class="switch-line mt-2"><input type="checkbox" name="requires_document" value="1"> <span>Supporting document required</span></label>
             </div>
             <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button class="btn btn-primary">Add Leave Type</button></div>
         </form>
@@ -583,2040 +675,1634 @@
 @endif
 
 <style>
-    /* ===== PREMIUM LEAVE PAGE STYLES - LARGER TEXT & BRIGHTER ICONS ===== */
-    .leave-page {
-        padding: 30px 35px;
+    /* ===== CLEAN ENTERPRISE SAAS THEME FOR LEAVE MANAGEMENT ===== */
+    :root {
+        --lp-bg: #f8fafc;
+        --lp-surface: #ffffff;
+        --lp-surface-subtle: #f8fafc;
+        --lp-surface-hover: #f8fafc;
+        --lp-border: #e2e8f0;
+        --lp-border-subtle: #f1f5f9;
+        --lp-text: #0f172a;
+        --lp-text-body: #334155;
+        --lp-text-muted: #64748b;
+        --lp-text-faint: #94a3b8;
+        --lp-primary: #2563eb;
+        --lp-primary-hover: #1d4ed8;
+        --lp-primary-soft: #eff6ff;
+        --lp-primary-border: #dbeafe;
+        --lp-notice-bg: #f4f8ff;
+        --lp-shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.04);
+        --lp-shadow-sm: 0 4px 12px rgba(15, 23, 42, 0.06);
+    }
+
+    html:is([data-pms-theme="dark"], [data-bs-theme="dark"], [data-theme="dark"], .dark),
+    body:is([data-pms-theme="dark"], [data-bs-theme="dark"], [data-theme="dark"], .dark, .dark-mode) {
+        --lp-bg: #070b1a;
+        --lp-surface: #0f1530;
+        --lp-surface-subtle: #141b3d;
+        --lp-surface-hover: rgba(37, 99, 235, 0.1);
+        --lp-border: rgba(148, 163, 184, 0.18);
+        --lp-border-subtle: rgba(148, 163, 184, 0.12);
+        --lp-text: #f8fafc;
+        --lp-text-body: #e2e8f0;
+        --lp-text-muted: #94a3b8;
+        --lp-text-faint: #64748b;
+        --lp-primary: #3b82f6;
+        --lp-primary-hover: #60a5fa;
+        --lp-primary-soft: rgba(59, 130, 246, 0.16);
+        --lp-primary-border: rgba(96, 165, 250, 0.3);
+        --lp-notice-bg: rgba(37, 99, 235, 0.12);
+        --lp-shadow-xs: 0 4px 12px rgba(0, 0, 0, 0.25);
+        --lp-shadow-sm: 0 12px 28px rgba(0, 0, 0, 0.36);
+    }
+
+    body:has(#leavePage),
+    body:has(#leavePage) .layout-page,
+    body:has(#leavePage) .content-wrapper {
+        background: var(--lp-bg) !important;
+        background-image: none !important;
+    }
+
+    #leavePage.leave-page {
+        padding: 18px 28px 34px !important;
         min-height: 100vh;
-        background: linear-gradient(135deg, #F8FAFC 0%, #EEF2FF 50%, #F8FAFC 100%);
-        color: #0F172A;
+        background: var(--lp-bg) !important;
+        background-image: none !important;
+        color: var(--lp-text);
+        font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         position: relative;
     }
 
-    .leave-page::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: radial-gradient(circle at 0% 0%, rgba(47, 107, 255, 0.03) 0%, transparent 50%),
-                    radial-gradient(circle at 100% 100%, rgba(79, 131, 255, 0.03) 0%, transparent 50%);
-        pointer-events: none;
+    #leavePage.leave-page::before {
+        display: none !important;
+        content: none !important;
     }
 
-    /* Breadcrumb */
-    .leave-breadcrumb {
+    /* Breadcrumb Pill */
+    #leavePage .leave-breadcrumb {
         display: inline-flex;
         align-items: center;
-        gap: 10px;
-        padding: 16px 26px;
-        border-radius: 16px;
-        background: rgba(255, 255, 255, 0.85);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(47, 107, 255, 0.15);
-        color: #2F6BFF;
-        font-weight: 700;
-        font-size: 1.1rem;
-        margin-bottom: 28px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
-        position: relative;
-        z-index: 1;
-        animation: fadeDown 0.4s ease;
+        gap: 8px;
+        padding: 6px 14px;
+        border-radius: 999px;
+        background: var(--lp-surface) !important;
+        backdrop-filter: none !important;
+        border: 1px solid var(--lp-border) !important;
+        box-shadow: var(--lp-shadow-xs) !important;
+        margin-bottom: 14px;
+        font-size: 0.78rem;
+        font-weight: 500;
+        color: var(--lp-text-muted);
     }
 
-    .leave-breadcrumb i {
-        color: #60A5FA;
-        font-size: 1.3rem;
-        filter: drop-shadow(0 0 2px rgba(79, 131, 255, 0.2));
+    #leavePage .leave-breadcrumb i {
+        color: var(--lp-primary) !important;
+        font-size: 0.78rem;
     }
 
-    @keyframes fadeDown {
-        from { opacity: 0; transform: translateY(-16px); }
-        to { opacity: 1; transform: translateY(0); }
+    #leavePage .leave-breadcrumb .crumb-sep {
+        color: var(--lp-text-faint);
     }
 
-    @keyframes fadeUp {
-        from { opacity: 0; transform: translateY(20px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-
-    @keyframes scaleIn {
-        from { opacity: 0; transform: scale(0.96); }
-        to { opacity: 1; transform: scale(1); }
+    #leavePage .leave-breadcrumb .crumb-current {
+        color: var(--lp-text) !important;
+        font-weight: 600;
     }
 
     /* Header Card */
-    .leave-hero {
-        background: rgba(255, 255, 255, 0.96);
-        backdrop-filter: blur(8px);
-        border-radius: 28px;
-        padding: 32px 36px;
+    #leavePage .leave-hero {
+        background: var(--lp-surface) !important;
+        backdrop-filter: none !important;
+        border: 1px solid var(--lp-border) !important;
+        border-radius: 14px !important;
+        padding: 1.2rem 1.45rem !important;
+        margin-bottom: 1rem !important;
+        box-shadow: var(--lp-shadow-xs) !important;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 20px;
-        box-shadow: 0 20px 40px -12px rgba(47, 107, 255, 0.12);
-        border: 1px solid rgba(47, 107, 255, 0.12);
-        margin-bottom: 28px;
-        transition: all 0.3s ease;
-        position: relative;
-        z-index: 1;
-        animation: fadeDown 0.5s ease;
-    }
-
-    .leave-hero:hover {
-        box-shadow: 0 24px 48px -16px rgba(47, 107, 255, 0.18);
-        border-color: rgba(47, 107, 255, 0.2);
-        transform: translateY(-2px);
-    }
-
-    .leave-hero-main {
-        display: flex;
-        align-items: center;
-        gap: 24px;
-    }
-
-    .leave-hero-icon {
-        width: 80px;
-        height: 80px;
-        display: grid;
-        place-items: center;
-        border-radius: 24px;
-        color: #fff;
-        font-size: 38px;
-        background: linear-gradient(145deg, #4F83FF, #2F6BFF);
-        box-shadow: 0 12px 24px -8px rgba(47, 107, 255, 0.35);
-        transition: all 0.3s ease;
-        filter: brightness(1.1);
-    }
-
-    .leave-hero:hover .leave-hero-icon {
-        transform: scale(1.03);
-    }
-
-    .leave-hero h1 {
-        margin: 0 0 6px;
-        font-size: 38px;
-        font-weight: 800;
-        color: #0F172A;
-        letter-spacing: -0.5px;
-    }
-
-    .leave-hero p {
-        margin: 0;
-        color: #5a6e63;
-        font-weight: 500;
-        font-size: 1.1rem;
-    }
-
-    .leave-hero-actions {
-        display: flex;
-        gap: 14px;
+        gap: 1.25rem;
         flex-wrap: wrap;
-        align-items: center;
+        position: relative;
+        z-index: 2;
     }
 
-    /* Buttons */
-    .btn {
-        display: inline-flex;
+    #leavePage .leave-hero:hover {
+        transform: none !important;
+        box-shadow: var(--lp-shadow-xs) !important;
+    }
+
+    #leavePage .leave-hero-main {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        min-width: 0;
+        flex: 1 1 320px;
+    }
+
+    #leavePage .leave-hero-icon {
+        width: 44px !important;
+        height: 44px !important;
+        border-radius: 11px !important;
+        background: var(--lp-primary-soft) !important;
+        background-image: none !important;
+        border: 1px solid var(--lp-primary-border) !important;
+        color: var(--lp-primary) !important;
+        display: inline-flex !important;
         align-items: center;
         justify-content: center;
-        gap: 10px;
-        border-radius: 14px;
-        font-weight: 700;
-        border: 0;
-        min-height: 50px;
-        padding: 0 28px;
-        font-size: 1.05rem;
-        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-        text-decoration: none;
-    }
-
-    .btn i {
-        font-size: 1.15rem;
-        filter: brightness(1.1);
-    }
-
-    .archive-count-badge {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        min-width: 22px;
-        height: 22px;
-        margin-left: 2px;
-        padding: 0 7px;
-        border-radius: 999px;
-        background: #ffedd5;
-        color: #c2410c;
-        font-size: 0.78rem;
-        font-weight: 800;
-    }
-
-    .btn-primary {
-        background: linear-gradient(145deg, #4F83FF, #2F6BFF);
-        color: #fff;
-        box-shadow: 0 8px 20px -6px rgba(47, 107, 255, 0.35);
-    }
-
-    .btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 12px 28px -8px rgba(47, 107, 255, 0.45);
-    }
-
-    .btn-light {
-        background: #F8FAFC;
-        color: #2F6BFF;
-        border: 1px solid rgba(47, 107, 255, 0.18);
-        font-weight: 700;
-    }
-
-    .btn-light:hover {
-        background: #EEF2FF;
-        transform: translateY(-2px);
-        box-shadow: 0 8px 20px -8px rgba(47, 107, 255, 0.25);
-        border-color: #60A5FA;
-    }
-
-    .btn-secondary {
-        background: #f3f4f6;
-        color: #374151;
-        border: 1px solid #e5e7eb;
-        font-weight: 700;
-    }
-
-    .btn-secondary:hover {
-        background: #e5e7eb;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-    }
-
-    .btn-success {
-        background: linear-gradient(145deg, #4F83FF, #2F6BFF);
-        color: #fff;
-        min-height: 40px;
-        padding: 0 16px;
-        font-size: 0.95rem;
-        border-radius: 12px;
-    }
-
-    .btn-success:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(47, 107, 255, 0.3);
-    }
-
-    .btn-warning {
-        background: linear-gradient(145deg, #fbbf24, #f59e0b);
-        color: #fff;
-        min-height: 40px;
-        padding: 0 16px;
-        font-size: 0.95rem;
-        border-radius: 12px;
-    }
-
-    .btn-warning:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
-    }
-
-    .btn-danger {
-        background: linear-gradient(145deg, #ef4444, #dc2626);
-        color: #fff;
-        min-height: 40px;
-        padding: 0 16px;
-        font-size: 0.95rem;
-        border-radius: 12px;
-    }
-
-    .btn-danger:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
-    }
-
-    .btn-sm {
-        min-height: 38px;
-        padding: 0 16px;
-        font-size: 0.9rem;
-        border-radius: 10px;
-    }
-
-    /* Alerts */
-    .alert {
-        border-radius: 18px;
-        border: none;
-        padding: 18px 24px;
-        margin-bottom: 24px;
-        display: flex;
-        align-items: flex-start;
-        gap: 14px;
-        animation: fadeDown 0.4s ease;
-        position: relative;
-        z-index: 1;
-        border-left: 5px solid;
-        font-size: 1.05rem;
-    }
-
-    .alert-success {
-        background: linear-gradient(135deg, #EEF2FF, #E0E7FF);
-        color: #065f46;
-        border-left-color: #10b981;
-    }
-
-    .alert-danger {
-        background: linear-gradient(135deg, #fef2f2, #fee2e2);
-        color: #991b1b;
-        border-left-color: #ef4444;
-    }
-
-    .alert i {
-        font-size: 1.4rem;
-        margin-top: 2px;
-        filter: brightness(1.1);
-    }
-
-    .alert ul {
-        margin-bottom: 0;
-        font-size: 1rem;
-    }
-
-    /* Policy Notice */
-    .policy-notice {
-        display: flex;
-        align-items: center;
-        gap: 18px;
-        padding: 20px 26px;
-        border-radius: 18px;
-        background: rgba(255, 255, 255, 0.92);
-        border: 1px solid rgba(47, 107, 255, 0.12);
-        margin-bottom: 24px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
-        position: relative;
-        z-index: 1;
-        animation: fadeUp 0.5s ease;
-    }
-
-    .notice-icon {
-        width: 48px;
-        height: 48px;
-        display: grid;
-        place-items: center;
-        border-radius: 14px;
-        background: #dbeafe;
-        color: #2563eb;
-        flex: 0 0 auto;
-        font-size: 1.4rem;
-        filter: brightness(1.1);
-    }
-
-    .policy-notice p {
-        margin: 0;
-        color: #475569;
-        font-weight: 500;
-        font-size: 1.05rem;
-    }
-
-    /* Stats Cards */
-    .leave-stats {
-        display: grid;
-        grid-template-columns: repeat(5, 1fr);
-        gap: 18px;
-        margin-bottom: 24px;
-        position: relative;
-        z-index: 1;
-        animation: fadeUp 0.55s ease;
-    }
-
-    .stat-card {
-        position: relative;
-        padding: 24px 22px;
-        border-radius: 20px;
-        background: rgba(255, 255, 255, 0.95);
-        border: 1px solid rgba(47, 107, 255, 0.1);
-        overflow: hidden;
-        transition: all 0.3s ease;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
-    }
-
-    .stat-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 20px 35px -12px rgba(47, 107, 255, 0.15);
-        border-color: rgba(47, 107, 255, 0.2);
-    }
-
-    .stat-card::after {
-        content: '';
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        height: 4px;
-        transform: scaleX(0);
-        transition: transform 0.3s ease;
-    }
-
-    .stat-card:nth-child(1)::after { background: linear-gradient(90deg, #4F83FF, #2F6BFF); }
-    .stat-card:nth-child(2)::after { background: linear-gradient(90deg, #f59e0b, #d97706); }
-    .stat-card:nth-child(3)::after { background: linear-gradient(90deg, #10b981, #2F6BFF); }
-    .stat-card:nth-child(4)::after { background: linear-gradient(90deg, #ef4444, #dc2626); }
-    .stat-card:nth-child(5)::after { background: linear-gradient(90deg, #8b5cf6, #7c3aed); }
-
-    .stat-card:hover::after {
-        transform: scaleX(1);
-    }
-
-    .stat-card span {
-        display: block;
-        color: #6b7280;
-        font-size: 0.9rem;
-        text-transform: uppercase;
-        font-weight: 700;
-        letter-spacing: 0.06em;
-    }
-
-    .stat-card strong {
-        display: block;
-        font-size: 38px;
-        font-weight: 800;
-        color: #0F172A;
-        line-height: 1.2;
-        margin-top: 4px;
-    }
-
-    .stat-card i {
-        position: absolute;
-        right: 18px;
-        bottom: 14px;
-        color: rgba(47, 107, 255, 0.12);
-        font-size: 42px;
-        filter: brightness(1.2);
-    }
-
-    /* Balance Grid */
-    .balance-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-        gap: 18px;
-        margin-bottom: 24px;
-        position: relative;
-        z-index: 1;
-        animation: fadeUp 0.6s ease;
-    }
-
-    .balance-card {
-        padding: 24px 26px;
-        border-radius: 20px;
-        background: rgba(255, 255, 255, 0.95);
-        border: 1px solid rgba(47, 107, 255, 0.1);
-        transition: all 0.3s ease;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
-    }
-
-    .balance-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 12px 30px -10px rgba(47, 107, 255, 0.12);
-        border-color: rgba(47, 107, 255, 0.18);
-    }
-
-    .balance-head {
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        gap: 12px;
-        margin-bottom: 16px;
-    }
-
-    .balance-head h3 {
-        margin: 0;
-        font-size: 1.3rem;
-        font-weight: 800;
-        color: #0F172A;
-    }
-
-    .balance-head p {
-        margin: 4px 0 0;
-        color: #64748B;
-        font-size: 0.95rem;
-        font-weight: 500;
-    }
-
-    .balance-head span {
-        padding: 8px 18px;
-        border-radius: 999px;
-        color: #2F6BFF;
-        background: #E0E7FF;
-        font-weight: 800;
-        font-size: 1rem;
-        white-space: nowrap;
-    }
-
-    .balance-meter {
-        height: 10px;
-        border-radius: 999px;
-        background: #e5e7eb;
-        overflow: hidden;
-        margin-bottom: 16px;
-    }
-
-    .balance-meter span {
-        display: block;
-        height: 100%;
-        background: linear-gradient(90deg, #4F83FF, #2F6BFF);
-        border-radius: 999px;
-        transition: width 0.6s ease;
-    }
-
-    .balance-pills {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        margin-bottom: 14px;
-    }
-
-    .balance-pills span {
-        display: inline-flex;
-        padding: 8px 16px;
-        border-radius: 999px;
-        font-weight: 700;
-        font-size: 0.9rem;
-        background: #F8FAFC;
-        color: #2F6BFF;
-        border: 1px solid rgba(47, 107, 255, 0.08);
-    }
-
-    /* Filter Panel */
-    .filter-panel {
-        border-radius: 22px;
-        background: rgba(255, 255, 255, 0.95);
-        border: 1px solid rgba(47, 107, 255, 0.1);
-        padding: 24px 28px;
-        margin-bottom: 24px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
-        position: relative;
-        z-index: 1;
-        animation: fadeUp 0.65s ease;
-    }
-
-    .filter-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 18px;
-        align-items: end;
-    }
-
-    .leave-page label {
-        font-size: 0.85rem;
-        color: #6b7280;
-        text-transform: uppercase;
-        font-weight: 700;
-        letter-spacing: 0.06em;
-        margin-bottom: 6px;
-        display: block;
-    }
-
-    .leave-page .form-control {
-        min-height: 48px;
-        border-radius: 12px;
-        border: 1.5px solid #e2e8f0;
-        font-weight: 500;
-        font-size: 1rem;
-        color: #0F172A;
-        background: #ffffff;
-        transition: all 0.2s ease;
-        padding: 10px 16px;
-        width: 100%;
-    }
-
-    .leave-page .form-control:focus {
-        border-color: #60A5FA;
-        box-shadow: 0 0 0 4px rgba(79, 131, 255, 0.08);
-        outline: none;
-    }
-
-    .filter-actions {
-        display: flex;
-        gap: 12px;
-        align-items: center;
-        flex-wrap: wrap;
-    }
-
-    .filter-actions .btn {
-        min-height: 48px;
-        padding: 0 24px;
-        font-size: 1rem;
-    }
-
-    /* Table Card */
-    .table-card {
-        border-radius: 24px;
-        background: rgba(255, 255, 255, 0.95);
-        border: 1px solid rgba(47, 107, 255, 0.1);
-        overflow: hidden;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
-        position: relative;
-        z-index: 1;
-        animation: fadeUp 0.7s ease;
-    }
-
-    .table-card:hover {
-        box-shadow: 0 8px 30px rgba(47, 107, 255, 0.06);
-    }
-
-    .table-head {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 16px;
-        padding: 22px 28px;
-        background: linear-gradient(135deg, #fafefb, #F8FAFC);
-        border-bottom: 1px solid rgba(47, 107, 255, 0.08);
-    }
-
-    .table-head h2 {
-        margin: 0;
-        font-size: 1.35rem;
-        font-weight: 700;
-        color: #0F172A;
-    }
-
-    .table-head p {
-        margin: 4px 0 0;
-        color: #64748B;
-        font-size: 0.95rem;
-        font-weight: 500;
-    }
-
-    .table-tools {
-        display: flex;
-        align-items: center;
-        justify-content: flex-end;
-        gap: 14px;
-        flex-wrap: wrap;
-    }
-
-    .entry-tools {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 6px 10px;
-        border: 1px solid rgba(47, 107, 255, 0.12);
-        border-radius: 12px;
-        background: #ffffff;
-        color: #475569;
-        font-weight: 700;
-        white-space: nowrap;
-    }
-
-    .entry-tools label {
-        margin: 0;
-        color: #475569;
-        font-size: 0.82rem;
-        letter-spacing: 0.04em;
-    }
-
-    .entry-tools span {
-        font-size: 0.9rem;
-    }
-
-    .entry-tools .form-control {
-        width: 82px;
-        min-height: 36px;
-        padding: 4px 28px 4px 10px;
-        border-radius: 9px;
-        font-weight: 800;
-    }
-
-    .bulk-tools {
-        display: flex;
-        gap: 12px;
-        align-items: center;
-        flex-wrap: wrap;
-    }
-
-    .bulk-tools .form-control {
-        min-height: 40px;
-        padding: 6px 14px;
-        border: 1.5px solid #e2e8f0;
-        border-radius: 10px;
-        font-size: 0.95rem;
-        font-weight: 500;
-        color: #0F172A;
-        background: #ffffff;
-        transition: all 0.2s ease;
-        width: 180px;
-    }
-
-    .bulk-tools .form-control:focus {
-        border-color: #60A5FA;
-        box-shadow: 0 0 0 4px rgba(79, 131, 255, 0.08);
-        outline: none;
-    }
-
-    /* Table Styling */
-    .leave-table {
-        margin: 0;
-        font-size: 1rem;
-        border-collapse: separate;
-        border-spacing: 0 4px;
-    }
-
-    .leave-table thead th {
-        padding: 16px 18px;
-        background: #f8fafc !important;
-        color: #5a6e63;
-        font-size: 0.85rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        border-bottom: 2px solid #e2e8f0;
-        white-space: nowrap;
-    }
-
-    .leave-table thead th i {
-        filter: brightness(1.2);
-        color: #60A5FA;
-    }
-
-    .leave-table tbody td {
-        padding: 16px 18px;
-        background: white;
-        border-top: 1px solid rgba(47, 107, 255, 0.06);
-        border-bottom: 1px solid rgba(47, 107, 255, 0.06);
-        vertical-align: middle;
-        color: #1e293b;
-        font-weight: 500;
-        font-size: 1rem;
-    }
-
-    .leave-table tbody td:first-child {
-        border-left: 1px solid rgba(47, 107, 255, 0.06);
-        border-radius: 12px 0 0 12px;
-    }
-
-    .leave-table tbody td:last-child {
-        border-right: 1px solid rgba(47, 107, 255, 0.06);
-        border-radius: 0 12px 12px 0;
-    }
-
-    .leave-table tbody tr {
-        transition: all 0.2s ease;
-    }
-
-    .leave-table tbody tr:hover td {
-        background: #fafefb;
-        border-color: rgba(47, 107, 255, 0.12);
-    }
-
-    .leave-table td strong {
-        display: block;
-        font-size: 1.05rem;
-        color: #0F172A;
-        font-weight: 700;
-    }
-
-    .leave-table td small {
-        display: block;
-        color: #64748B;
-        font-size: 0.85rem;
-        font-weight: 500;
-    }
-
-    .leave-table td .type-badge {
-        display: inline-flex;
-        padding: 8px 16px;
-        border-radius: 999px;
-        font-weight: 700;
-        font-size: 0.9rem;
-        background: #EEF2FF;
-        color: #2F6BFF;
-        border: 1px solid rgba(47, 107, 255, 0.1);
-    }
-
-    .leave-table td .pay-badge {
-        display: inline-flex;
-        padding: 8px 16px;
-        border-radius: 999px;
-        font-weight: 700;
-        font-size: 0.88rem;
-        border: 1px solid transparent;
-    }
-
-    /* Badge and day split stack with a gap, so the badge never sits on top of the wrapped text. */
-    .leave-table td.pay-cell {
-        min-width: 170px;
-    }
-    .leave-table td .pay-stack {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 8px;
-    }
-    .leave-table td .pay-stack .pay-badge {
-        line-height: 1.2;
-        white-space: nowrap;
-    }
-    .leave-table td .pay-split {
-        display: inline-flex;
-        align-items: center;
-        flex-wrap: nowrap;
-        gap: 6px;
-        white-space: nowrap;
-        line-height: 1.3;
-    }
-    .leave-table td .pay-split span + span::before {
-        content: "·";
-        margin-right: 6px;
-        opacity: 0.7;
-    }
-
-    .leave-table td .pay-badge.paid {
-        background: #E0E7FF;
-        color: #2F6BFF;
-        border-color: rgba(47, 107, 255, 0.1);
-    }
-
-    .leave-table td .pay-badge.unpaid {
-        background: #ffedd5;
-        color: #c2410c;
-        border-color: rgba(194, 65, 12, 0.1);
-    }
-
-    .leave-table td .pay-badge.rejected {
-        background: #fee2e2;
-        color: #b91c1c;
-        border-color: rgba(185, 28, 28, 0.1);
-    }
-
-    .leave-table td .pay-badge.pending {
-        background: #f1f5f9;
-        color: #64748b;
-        border-color: rgba(100, 116, 139, 0.1);
-    }
-
-    .leave-table td .status-badge {
-        display: inline-flex;
-        padding: 8px 16px;
-        border-radius: 999px;
-        font-weight: 700;
-        font-size: 0.88rem;
-        border: 1px solid transparent;
-    }
-
-    .leave-table td .status-badge.warning {
-        background: #fef3c7;
-        color: #b45309;
-        border-color: rgba(180, 83, 9, 0.1);
-    }
-
-    .leave-table td .status-badge.success {
-        background: #E0E7FF;
-        color: #2F6BFF;
-        border-color: rgba(47, 107, 255, 0.1);
-    }
-
-    .leave-table td .status-badge.danger {
-        background: #fee2e2;
-        color: #b91c1c;
-        border-color: rgba(185, 28, 28, 0.1);
-    }
-
-    .leave-table td .status-change-form {
-        margin: 0;
-        min-width: 132px;
-    }
-
-    .leave-table td .status-select {
-        min-height: 36px;
-        border-radius: 999px;
-        border: 1px solid transparent;
-        font-size: 0.86rem;
-        font-weight: 700;
-        cursor: pointer;
-        padding: 6px 34px 6px 14px;
-    }
-
-    .leave-table td .status-select.warning {
-        background-color: #fef3c7;
-        color: #b45309;
-        border-color: rgba(180, 83, 9, 0.1);
-    }
-
-    .leave-table td .status-select.success {
-        background-color: #E0E7FF;
-        color: #2F6BFF;
-        border-color: rgba(47, 107, 255, 0.1);
-    }
-
-    .leave-table td .status-select.danger {
-        background-color: #fee2e2;
-        color: #b91c1c;
-        border-color: rgba(185, 28, 28, 0.1);
-    }
-
-    .leave-table td .status-select.unpaid {
-        background-color: #ffedd5;
-        color: #c2410c;
-        border-color: rgba(194, 65, 12, 0.1);
-    }
-
-    .leave-table td .status-select.secondary {
-        background-color: #f1f5f9;
-        color: #475569;
-        border-color: rgba(71, 85, 105, 0.1);
-    }
-
-    .leave-table td .reason-cell {
-        max-width: 280px;
-        color: #475467;
-        font-size: 0.95rem;
-        font-weight: 500;
-    }
-
-    /* Action Row */
-    .action-row {
-        display: flex;
-        gap: 8px;
-        align-items: center;
-        justify-content: flex-end;
-        flex-wrap: nowrap;
-        white-space: nowrap;
-    }
-
-    .action-row .btn {
-        min-height: 36px;
-        padding: 0 12px;
-        font-size: 0.88rem;
-        border-radius: 10px;
-        font-weight: 600;
-    }
-
-    .action-row .btn i {
-        font-size: 0.95rem;
-        filter: brightness(1.1);
-    }
-
-    .action-row .btn-light {
-        background: #f3f4f6;
-        color: #374151;
-        border: 1px solid #e5e7eb;
-    }
-
-    .action-row .btn-light:hover {
-        background: #e5e7eb;
-        transform: translateY(-1px);
-    }
-
-    .action-row .btn-success {
-        background: #10B981;
-        color: #ffffff;
-        border: 1px solid #059669;
-    }
-
-    .action-row .btn-success:hover {
-        background: #059669;
-        color: #ffffff;
-        transform: translateY(-1px);
-    }
-
-    .action-row .btn-warning {
-        background: #F59E0B;
-        color: #ffffff;
-        border: 1px solid #D97706;
-    }
-
-    .action-row .btn-warning:hover {
-        background: #D97706;
-        color: #ffffff;
-        transform: translateY(-1px);
-    }
-
-    .action-row .btn-danger {
-        background: #EF4444;
-        color: #ffffff;
-        border: 1px solid #DC2626;
-    }
-
-    .action-row .btn-danger:hover {
-        background: #DC2626;
-        color: #ffffff;
-        transform: translateY(-1px);
-    }
-
-    /* Checkboxes */
-    .form-check-input {
-        width: 20px;
-        height: 20px;
-        border: 2px solid #d1d9e6;
-        border-radius: 5px;
-        cursor: pointer;
-        transition: all 0.2s ease;
-    }
-
-    .form-check-input:checked {
-        background-color: #2F6BFF;
-        border-color: #2F6BFF;
-        box-shadow: 0 0 0 2px rgba(47, 107, 255, 0.15);
-    }
-
-    /* Pagination */
-    .pagination-wrap {
-        padding: 18px 28px;
-        background: #fafefb;
-        border-top: 1px solid rgba(47, 107, 255, 0.08);
-    }
-
-    .pagination-wrap .pagination {
-        margin: 0;
-        display: flex;
-        gap: 6px;
-        justify-content: flex-end;
-        flex-wrap: wrap;
-    }
-
-    .pagination-wrap .page-item .page-link {
-        border-radius: 10px;
-        border: 1px solid #e2e8f0;
-        color: #475569;
-        font-weight: 600;
-        font-size: 1rem;
-        padding: 10px 18px;
-        background: #ffffff;
-        transition: all 0.2s ease;
-    }
-
-    .pagination-wrap .page-item.active .page-link {
-        background: linear-gradient(145deg, #4F83FF, #2F6BFF);
-        border-color: #2F6BFF;
-        color: white;
-        box-shadow: 0 4px 12px rgba(47, 107, 255, 0.2);
-    }
-
-    .pagination-wrap .page-item .page-link:hover:not(.active) {
-        background: #f1f5f9;
-        border-color: #cbd5e1;
-        transform: translateY(-1px);
-    }
-
-    /* Empty State */
-    .empty-state {
-        padding: 40px 20px;
-        text-align: center;
-    }
-
-    .empty-state i {
-        font-size: 52px;
-        color: #C7D2FE;
-        margin-bottom: 16px;
-        display: block;
-        filter: brightness(1.1);
-    }
-
-    .empty-state h3 {
-        color: #2F6BFF;
-        font-weight: 700;
-        font-size: 1.3rem;
-        margin: 0;
-    }
-
-    /* Switch Grid */
-    .switch-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 12px;
-        margin-top: 20px;
-    }
-
-    .switch-line {
-        display: flex;
-        align-items: center;
-        gap: 14px;
-        padding: 14px 18px;
-        border: 1px solid #e5e7eb;
-        border-radius: 12px;
-        text-transform: none;
-        font-size: 1rem;
-        font-weight: 500;
-        color: #172033;
-        background: #fafbfc;
-        cursor: pointer;
-        transition: all 0.2s ease;
-    }
-
-    .switch-line:hover {
-        background: #f1f5f9;
-        border-color: #cbd5e1;
-    }
-
-    .switch-line input[type="checkbox"] {
-        width: 20px;
-        height: 20px;
-        accent-color: #2F6BFF;
-        cursor: pointer;
+        font-size: 1.15rem !important;
+        box-shadow: none !important;
+        filter: none !important;
         flex-shrink: 0;
     }
 
-    /* Policy Grid */
-    .policy-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-        gap: 18px;
+    #leavePage .leave-hero-icon > i,
+    #leavePage .leave-hero-icon > i::before {
+        color: var(--lp-primary) !important;
+        -webkit-text-fill-color: var(--lp-primary) !important;
     }
 
-    .policy-grid label {
-        font-size: 0.85rem;
-        color: #6b7280;
+    #leavePage .leave-hero-text {
+        min-width: 0;
+    }
+
+    #leavePage .leave-hero h1 {
+        margin: 0 0 0.2rem 0 !important;
+        font-size: 1.22rem !important;
+        font-weight: 700 !important;
+        line-height: 1.25 !important;
+        color: var(--lp-text) !important;
+        -webkit-text-fill-color: var(--lp-text) !important;
+        letter-spacing: -0.02em;
+    }
+
+    #leavePage .leave-hero p {
+        margin: 0 !important;
+        max-width: 380px;
+        color: var(--lp-text-muted) !important;
+        -webkit-text-fill-color: var(--lp-text-muted) !important;
+        font-size: 0.8rem !important;
+        font-weight: 400 !important;
+        line-height: 1.45 !important;
+    }
+
+    #leavePage .leave-hero-actions {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+        gap: 0.45rem;
+        max-width: 580px;
+    }
+
+    #leavePage .leave-inline-form {
+        display: inline-flex;
+        margin: 0;
+    }
+
+    /* Buttons */
+    #leavePage .btn,
+    .leave-ui-modal .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.42rem;
+        min-height: 35px;
+        padding: 0 0.82rem;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        white-space: nowrap;
+        text-decoration: none;
+        cursor: pointer;
+        transition: background-color 0.16s ease, border-color 0.16s ease, color 0.16s ease;
+    }
+
+    #leavePage .btn i,
+    .leave-ui-modal .btn i {
+        font-size: 0.82rem;
+        filter: none !important;
+    }
+
+    #leavePage .btn-primary,
+    .leave-ui-modal .btn-primary {
+        background: var(--lp-primary) !important;
+        background-image: none !important;
+        border: 1px solid var(--lp-primary) !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        box-shadow: var(--lp-shadow-xs) !important;
+    }
+
+    #leavePage .btn-primary:hover,
+    .leave-ui-modal .btn-primary:hover {
+        background: var(--lp-primary-hover) !important;
+        border-color: var(--lp-primary-hover) !important;
+        transform: none !important;
+    }
+
+    #leavePage .btn-primary i,
+    #leavePage .btn-primary i::before {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
+    #leavePage .btn-light,
+    #leavePage .btn-secondary,
+    .leave-ui-modal .btn-secondary {
+        background: var(--lp-surface) !important;
+        border: 1px solid var(--lp-border) !important;
+        color: var(--lp-text-body) !important;
+        -webkit-text-fill-color: var(--lp-text-body) !important;
+        box-shadow: var(--lp-shadow-xs) !important;
+    }
+
+    #leavePage .btn-light:hover,
+    #leavePage .btn-secondary:hover,
+    .leave-ui-modal .btn-secondary:hover {
+        background: var(--lp-surface-subtle) !important;
+        border-color: #cbd5e1 !important;
+        color: var(--lp-text) !important;
+        -webkit-text-fill-color: var(--lp-text) !important;
+        transform: none !important;
+    }
+
+    #leavePage .btn-light i {
+        color: var(--lp-text-muted);
+    }
+
+    #leavePage .archive-count-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 19px;
+        height: 19px;
+        padding: 0 5px;
+        border-radius: 999px;
+        background: #f59e0b;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        font-size: 0.68rem;
         font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        display: block;
-        margin-bottom: 4px;
+        line-height: 1;
     }
 
-    .policy-grid .form-control {
-        min-height: 46px;
+    /* Alerts */
+    #leavePage .alert {
         border-radius: 12px;
-        border: 1.5px solid #e2e8f0;
-        font-weight: 500;
-        font-size: 1rem;
-        color: #0F172A;
-        background: #ffffff;
-        transition: all 0.2s ease;
-        padding: 10px 16px;
-        width: 100%;
+        border: 1px solid var(--lp-border);
+        padding: 0.85rem 1.15rem;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+        font-size: 0.85rem;
     }
 
-    .policy-grid .form-control:focus {
-        border-color: #60A5FA;
-        box-shadow: 0 0 0 4px rgba(79, 131, 255, 0.08);
+    #leavePage .alert-success {
+        background: #ecfdf5;
+        color: #065f46;
+        border-color: #a7f3d0;
+    }
+
+    #leavePage .alert-danger {
+        background: #fef2f2;
+        color: #991b1b;
+        border-color: #fecaca;
+    }
+
+    /* Policy Notice Callout */
+    #leavePage .policy-notice {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.85rem;
+        padding: 0.9rem 1.15rem;
+        border-radius: 12px;
+        background: var(--lp-notice-bg) !important;
+        border: 1px solid var(--lp-primary-border) !important;
+        margin-bottom: 1rem;
+        box-shadow: none !important;
+    }
+
+    #leavePage .notice-icon {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: var(--lp-primary) !important;
+        border: 0 !important;
+        color: #ffffff !important;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.68rem;
+        flex: 0 0 22px;
+        margin-top: 2px;
+        filter: none !important;
+    }
+
+    #leavePage .notice-icon i,
+    #leavePage .notice-icon i::before {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
+    #leavePage .notice-content {
+        min-width: 0;
+        flex: 1 1 auto;
+    }
+
+    #leavePage .notice-title-row {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-bottom: 0.25rem;
+    }
+
+    #leavePage .notice-title-row strong {
+        font-size: 0.84rem;
+        font-weight: 700;
+        color: var(--lp-text);
+    }
+
+    #leavePage .policy-notice p {
+        margin: 0 !important;
+        color: var(--lp-text-body) !important;
+        -webkit-text-fill-color: var(--lp-text-body) !important;
+        font-size: 0.8rem !important;
+        font-weight: 400 !important;
+        line-height: 1.5 !important;
+    }
+
+    /* ===== 5 EQUAL KPI CARDS ===== */
+    #leavePage .leave-stats {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 0.9rem;
+        margin-bottom: 1rem;
+    }
+
+    #leavePage .leave-stats > .stat-card,
+    #leavePage .leave-stats > .stat-card:first-of-type {
+        background: var(--lp-surface) !important;
+        background-image: none !important;
+        border: 1px solid var(--lp-border) !important;
+        border-radius: 12px !important;
+        padding: 0.95rem 1.1rem !important;
+        box-shadow: var(--lp-shadow-xs) !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 0.75rem;
+        position: relative;
+        overflow: hidden;
+        transition: border-color 0.16s ease, box-shadow 0.16s ease;
+    }
+
+    #leavePage .leave-stats > .stat-card::after {
+        display: none !important;
+        content: none !important;
+    }
+
+    #leavePage .leave-stats > .stat-card:hover {
+        transform: none !important;
+        border-color: #cbd5e1 !important;
+        box-shadow: var(--lp-shadow-sm) !important;
+    }
+
+    #leavePage .leave-stats .stat-body {
+        min-width: 0;
+    }
+
+    #leavePage .leave-stats .stat-card span {
+        display: block;
+        color: var(--lp-text-muted) !important;
+        -webkit-text-fill-color: var(--lp-text-muted) !important;
+        font-size: 0.68rem !important;
+        font-weight: 700 !important;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        line-height: 1.3;
+    }
+
+    #leavePage .leave-stats .stat-card strong {
+        display: block;
+        font-size: 1.45rem !important;
+        font-weight: 700 !important;
+        line-height: 1.15 !important;
+        margin-top: 0.25rem;
+        letter-spacing: -0.02em;
+    }
+
+    #leavePage .leave-stats .stat-card.stat-total strong {
+        color: var(--lp-text) !important;
+        -webkit-text-fill-color: var(--lp-text) !important;
+    }
+
+    #leavePage .leave-stats .stat-card.pending strong {
+        color: #d97706 !important;
+        -webkit-text-fill-color: #d97706 !important;
+    }
+
+    #leavePage .leave-stats .stat-card.approved strong {
+        color: #16a34a !important;
+        -webkit-text-fill-color: #16a34a !important;
+    }
+
+    #leavePage .leave-stats .stat-card.rejected strong {
+        color: #dc2626 !important;
+        -webkit-text-fill-color: #dc2626 !important;
+    }
+
+    #leavePage .leave-stats .stat-card.unpaid strong {
+        color: #4f46e5 !important;
+        -webkit-text-fill-color: #4f46e5 !important;
+    }
+
+    #leavePage .leave-stats .stat-icon-box {
+        width: 36px;
+        height: 36px;
+        border-radius: 9px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    #leavePage .leave-stats .stat-icon-box i {
+        position: static !important;
+        font-size: 0.95rem !important;
+        filter: none !important;
+    }
+
+    #leavePage .leave-stats .stat-total .stat-icon-box {
+        background: #eff6ff;
+        color: #2563eb;
+    }
+
+    #leavePage .leave-stats .pending .stat-icon-box {
+        background: #fffbeb;
+        color: #d97706;
+    }
+
+    #leavePage .leave-stats .approved .stat-icon-box {
+        background: #ecfdf5;
+        color: #16a34a;
+    }
+
+    #leavePage .leave-stats .rejected .stat-icon-box {
+        background: #fef2f2;
+        color: #dc2626;
+    }
+
+    #leavePage .leave-stats .unpaid .stat-icon-box {
+        background: #eef2ff;
+        color: #4f46e5;
+    }
+
+    #leavePage .leave-stats .stat-icon-box i::before {
+        color: inherit !important;
+        -webkit-text-fill-color: currentColor !important;
+    }
+
+    /* ===== FILTER PANEL ===== */
+    #leavePage .filter-panel {
+        border-radius: 12px !important;
+        background: var(--lp-surface) !important;
+        border: 1px solid var(--lp-border) !important;
+        padding: 0.95rem 1.2rem !important;
+        margin-bottom: 1rem !important;
+        box-shadow: var(--lp-shadow-xs) !important;
+    }
+
+    #leavePage .filter-grid {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr)) auto;
+        gap: 0.75rem;
+        align-items: end;
+    }
+
+    #leavePage .filter-field {
+        min-width: 0;
+    }
+
+    #leavePage label {
+        display: block;
+        font-size: 0.66rem !important;
+        color: var(--lp-text-muted) !important;
+        text-transform: uppercase;
+        font-weight: 700 !important;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.32rem !important;
+    }
+
+    #leavePage .form-control,
+    .leave-ui-modal .form-control {
+        min-height: 36px !important;
+        height: 36px;
+        border-radius: 8px !important;
+        border: 1px solid var(--lp-border) !important;
+        background: var(--lp-surface) !important;
+        color: var(--lp-text) !important;
+        font-size: 0.82rem !important;
+        font-weight: 500 !important;
+        padding: 0.3rem 0.65rem !important;
+        width: 100%;
+        box-shadow: none !important;
+    }
+
+    #leavePage textarea.form-control,
+    .leave-ui-modal textarea.form-control {
+        height: auto;
+        min-height: 92px !important;
+        padding: 0.55rem 0.75rem !important;
+    }
+
+    #leavePage .form-control:focus,
+    .leave-ui-modal .form-control:focus {
+        border-color: var(--lp-primary) !important;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12) !important;
         outline: none;
     }
 
-    /* Modal */
-    .modal-content {
-        border-radius: 24px;
-        border: none;
-        box-shadow: 0 24px 48px rgba(0, 0, 0, 0.12);
+    #leavePage .filter-actions {
+        display: flex;
+        gap: 0.45rem;
+        align-items: center;
+        flex-wrap: nowrap;
+    }
+
+    #leavePage .filter-actions .btn {
+        min-height: 36px;
+        padding: 0 0.9rem;
+        font-size: 0.8rem;
+    }
+
+    /* ===== MAIN TABLE CARD ===== */
+    #leavePage .table-card {
+        border-radius: 14px !important;
+        background: var(--lp-surface) !important;
+        border: 1px solid var(--lp-border) !important;
+        box-shadow: var(--lp-shadow-xs) !important;
+        overflow: hidden;
+        padding: 0 !important;
+    }
+
+    #leavePage .table-card:has(.pms-table-export.is-open) {
+        overflow: visible !important;
+    }
+
+    #leavePage .table-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1rem;
+        flex-wrap: wrap;
+        padding: 1rem 1.35rem !important;
+        background: var(--lp-surface) !important;
+        background-image: none !important;
+        border-bottom: 1px solid var(--lp-border) !important;
+    }
+
+    #leavePage .table-head-info {
+        min-width: 240px;
+        flex: 1 1 260px;
+    }
+
+    #leavePage .table-head h2 {
+        margin: 0 !important;
+        font-size: 1rem !important;
+        font-weight: 700 !important;
+        color: var(--lp-text) !important;
+        -webkit-text-fill-color: var(--lp-text) !important;
+        line-height: 1.25;
+    }
+
+    #leavePage .table-head p {
+        margin: 0.22rem 0 0 !important;
+        color: var(--lp-text-muted) !important;
+        -webkit-text-fill-color: var(--lp-text-muted) !important;
+        font-size: 0.78rem !important;
+        font-weight: 400 !important;
+        max-width: 290px;
+        line-height: 1.4;
+    }
+
+    #leavePage .table-tools-cluster {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+        gap: 0.65rem;
+        flex: 1 1 auto;
+    }
+
+    /* Integrated pms-table-tools inside header */
+    #leavePage .leave-toolbar-host {
+        display: flex;
+        align-items: center;
+    }
+
+    #leavePage .leave-toolbar-host .pms-table-tools,
+    #leavePage .table-card .pms-table-tools {
+        background: transparent !important;
+        border: 0 !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        min-height: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        width: auto !important;
+        gap: 0.65rem !important;
+        flex-wrap: wrap;
+    }
+
+    #leavePage .table-card .pms-table-tools__status {
+        display: inline-flex;
+        align-items: center;
+        background: var(--lp-primary-soft) !important;
+        border: 1px solid var(--lp-primary-border) !important;
+        color: var(--lp-primary) !important;
+        -webkit-text-fill-color: var(--lp-primary) !important;
+        border-radius: 999px;
+        padding: 0.24rem 0.7rem;
+        font-size: 0.75rem !important;
+        font-weight: 600 !important;
+        margin-right: 0 !important;
+    }
+
+    #leavePage .table-card .pms-table-export {
+        margin-left: 0 !important;
+    }
+
+    #leavePage .table-card .pms-table-export__toggle {
+        background: var(--lp-surface) !important;
+        border: 1px solid var(--lp-border) !important;
+        color: var(--lp-text-body) !important;
+        border-radius: 8px !important;
+        min-height: 34px !important;
+        height: 34px;
+        padding: 0 0.72rem !important;
+        font-size: 0.78rem !important;
+        font-weight: 600 !important;
+    }
+
+    #leavePage .table-card .pms-table-export__toggle:hover,
+    #leavePage .table-card .pms-table-export.is-open .pms-table-export__toggle {
+        background: var(--lp-surface-subtle) !important;
+        border-color: #cbd5e1 !important;
+        color: var(--lp-text) !important;
+        transform: none !important;
+        box-shadow: none !important;
+    }
+
+    #leavePage .table-tools {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+        gap: 0.55rem;
+    }
+
+    #leavePage .entry-tools {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.42rem;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        color: var(--lp-text-muted);
+        font-size: 0.76rem;
+        font-weight: 600;
+        white-space: nowrap;
+        margin: 0;
+    }
+
+    #leavePage .entry-tools label {
+        margin: 0 !important;
+        color: var(--lp-text-muted) !important;
+        font-size: 0.7rem !important;
+    }
+
+    #leavePage .entry-tools .form-control {
+        width: 66px !important;
+        min-height: 34px !important;
+        height: 34px !important;
+        padding: 0.2rem 0.45rem !important;
+        border-radius: 8px !important;
+        font-weight: 600 !important;
+    }
+
+    #leavePage .bulk-tools {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        flex-wrap: wrap;
+    }
+
+    #leavePage .bulk-tools .form-control {
+        width: 146px !important;
+        min-height: 34px !important;
+        height: 34px !important;
+        padding: 0.2rem 0.55rem !important;
+        font-size: 0.8rem !important;
+    }
+
+    #leavePage #apply-action {
+        min-height: 34px;
+        height: 34px;
+        padding: 0 0.85rem;
+    }
+
+    /* Flat Clean Table */
+    #leavePage .table-responsive,
+    #leavePage .table-card .pms-table-scroll-host {
+        background: transparent !important;
+        border: 0 !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+    }
+
+    #leavePage .leave-table {
+        margin: 0 !important;
+        width: 100%;
+        min-width: 980px;
+        border-collapse: collapse !important;
+        border-spacing: 0 !important;
+    }
+
+    #leavePage .leave-table thead th {
+        padding: 0.75rem 0.9rem !important;
+        background: var(--lp-surface-subtle) !important;
+        color: var(--lp-text-muted) !important;
+        -webkit-text-fill-color: var(--lp-text-muted) !important;
+        font-size: 0.69rem !important;
+        font-weight: 700 !important;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        border-top: 0 !important;
+        border-bottom: 1px solid var(--lp-border) !important;
+        white-space: nowrap;
+    }
+
+    #leavePage .leave-table tbody td {
+        padding: 0.85rem 0.9rem !important;
+        background: var(--lp-surface) !important;
+        border-top: 0 !important;
+        border-left: 0 !important;
+        border-right: 0 !important;
+        border-bottom: 1px solid var(--lp-border-subtle) !important;
+        border-radius: 0 !important;
+        vertical-align: middle;
+        color: var(--lp-text-body) !important;
+        font-size: 0.82rem !important;
+        font-weight: 500;
+    }
+
+    #leavePage .leave-table tbody tr:hover td,
+    #leavePage .leave-table.pms-exportable-table > tbody > tr:hover > :is(th, td) {
+        background: var(--lp-surface-hover) !important;
+    }
+
+    #leavePage .leave-table tbody tr.pms-row-selected td {
+        background: var(--lp-primary-soft) !important;
+    }
+
+    /* Employee Cell with Avatar */
+    #leavePage .leave-emp-cell {
+        display: flex;
+        align-items: center;
+        gap: 0.68rem;
+        min-width: 175px;
+    }
+
+    #leavePage .leave-emp-avatar {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: #ffffff;
+        flex-shrink: 0;
+        letter-spacing: 0.02em;
+    }
+
+    #leavePage .leave-emp-avatar.av-blue { background: #2563eb; }
+    #leavePage .leave-emp-avatar.av-emerald { background: #059669; }
+    #leavePage .leave-emp-avatar.av-indigo { background: #4f46e5; }
+    #leavePage .leave-emp-avatar.av-amber { background: #d97706; }
+    #leavePage .leave-emp-avatar.av-rose { background: #e11d48; }
+
+    #leavePage .leave-emp-meta {
+        min-width: 0;
+    }
+
+    #leavePage .leave-emp-meta strong,
+    #leavePage .dates-cell strong,
+    #leavePage .days-cell strong {
+        display: block;
+        font-size: 0.84rem !important;
+        font-weight: 600 !important;
+        color: var(--lp-text) !important;
+        -webkit-text-fill-color: var(--lp-text) !important;
+        line-height: 1.3;
+    }
+
+    #leavePage .leave-emp-meta small,
+    #leavePage .dates-cell small,
+    #leavePage .days-cell small,
+    #leavePage .pay-sub {
+        display: block;
+        color: var(--lp-text-muted) !important;
+        -webkit-text-fill-color: var(--lp-text-muted) !important;
+        font-size: 0.72rem !important;
+        font-weight: 400 !important;
+        line-height: 1.35;
+    }
+
+    #leavePage .leave-emp-meta .emp-code {
+        color: var(--lp-text-muted) !important;
+        font-weight: 600 !important;
+        font-size: 0.7rem !important;
+    }
+
+    /* Type Pill Badges with Dot */
+    #leavePage .type-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.38rem;
+        padding: 0.25rem 0.62rem;
+        border-radius: 7px;
+        font-weight: 600;
+        font-size: 0.74rem;
+        white-space: nowrap;
+        border: 1px solid transparent;
+    }
+
+    #leavePage .type-badge::before {
+        content: '';
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: currentColor;
+        flex-shrink: 0;
+    }
+
+    #leavePage .type-badge.type-casual {
+        background: #fffbeb;
+        color: #b45309;
+        border-color: #fde68a;
+    }
+
+    #leavePage .type-badge.type-sick {
+        background: #fef2f2;
+        color: #b91c1c;
+        border-color: #fecaca;
+    }
+
+    #leavePage .type-badge.type-unpaid {
+        background: #eef2ff;
+        color: #4338ca;
+        border-color: #c7d2fe;
+    }
+
+    #leavePage .type-badge.type-default {
+        background: #eff6ff;
+        color: #1d4ed8;
+        border-color: #dbeafe;
+    }
+
+    /* Payment Badges */
+    #leavePage .pay-cell {
+        min-width: 118px;
+    }
+
+    #leavePage .pay-stack {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+
+    #leavePage .pay-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        padding: 0.22rem 0.6rem;
+        border-radius: 999px;
+        font-weight: 600;
+        font-size: 0.74rem;
+        border: 1px solid transparent;
+        white-space: nowrap;
+        line-height: 1.2;
+    }
+
+    #leavePage .pay-badge i {
+        font-size: 0.68rem;
+    }
+
+    #leavePage .pay-badge.paid {
+        background: #ecfdf5;
+        color: #15803d;
+        border-color: #bbf7d0;
+    }
+
+    #leavePage .pay-badge.unpaid {
+        background: #fff7ed;
+        color: #c2410c;
+        border-color: #fed7aa;
+    }
+
+    #leavePage .pay-badge.rejected {
+        background: #fef2f2;
+        color: #b91c1c;
+        border-color: #fecaca;
+    }
+
+    #leavePage .pay-badge.pending {
+        background: var(--lp-surface-subtle);
+        color: var(--lp-text-muted);
+        border-color: var(--lp-border);
+    }
+
+    #leavePage .pay-split {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        white-space: nowrap;
+        font-size: 0.7rem !important;
+        color: var(--lp-text-muted) !important;
+    }
+
+    #leavePage .pay-split span + span::before {
+        content: "·";
+        margin-right: 5px;
+        opacity: 0.7;
+    }
+
+    /* Status Pill & Select */
+    #leavePage .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.25rem 0.68rem;
+        border-radius: 999px;
+        font-weight: 600;
+        font-size: 0.74rem;
+        border: 1px solid transparent;
+        white-space: nowrap;
+    }
+
+    #leavePage .status-badge.warning {
+        background: #fffbeb;
+        color: #b45309;
+        border-color: #fde68a;
+    }
+
+    #leavePage .status-badge.success {
+        background: #ecfdf5;
+        color: #15803d;
+        border-color: #bbf7d0;
+    }
+
+    #leavePage .status-badge.danger {
+        background: #fef2f2;
+        color: #b91c1c;
+        border-color: #fecaca;
+    }
+
+    #leavePage .status-change-form {
+        margin: 0;
+        min-width: 120px;
+    }
+
+    #leavePage .status-select {
+        min-height: 30px !important;
+        height: 30px !important;
+        border-radius: 999px !important;
+        font-size: 0.74rem !important;
+        font-weight: 600 !important;
+        cursor: pointer;
+        padding: 0.15rem 1.75rem 0.15rem 0.68rem !important;
+    }
+
+    #leavePage .status-select.warning {
+        background-color: #fffbeb !important;
+        color: #b45309 !important;
+        border-color: #fde68a !important;
+    }
+
+    #leavePage .status-select.success {
+        background-color: #ecfdf5 !important;
+        color: #15803d !important;
+        border-color: #bbf7d0 !important;
+    }
+
+    #leavePage .status-select.danger {
+        background-color: #fef2f2 !important;
+        color: #b91c1c !important;
+        border-color: #fecaca !important;
+    }
+
+    #leavePage .status-select.unpaid {
+        background-color: #fff7ed !important;
+        color: #c2410c !important;
+        border-color: #fed7aa !important;
+    }
+
+    #leavePage .status-select.secondary {
+        background-color: var(--lp-surface-subtle) !important;
+        color: var(--lp-text-muted) !important;
+        border-color: var(--lp-border) !important;
+    }
+
+    /* Reason Cell */
+    #leavePage .reason-cell {
+        max-width: 240px;
+        min-width: 165px;
+    }
+
+    #leavePage .reason-text {
+        display: block;
+        color: var(--lp-text-body);
+        font-size: 0.8rem;
+        line-height: 1.4;
+    }
+
+    #leavePage .reason-sub {
+        display: block;
+        font-size: 0.7rem;
+        margin-top: 2px;
+    }
+
+    /* Compact Row Actions */
+    #leavePage .action-row {
+        display: inline-flex;
+        gap: 0.3rem;
+        align-items: center;
+        justify-content: flex-end;
+        flex-wrap: nowrap;
+        white-space: nowrap;
+    }
+
+    #leavePage .action-row .btn {
+        min-height: 29px;
+        width: 29px;
+        height: 29px;
+        padding: 0;
+        border-radius: 7px;
+        font-size: 0.74rem;
+    }
+
+    #leavePage .action-row .btn-light {
+        background: var(--lp-surface-subtle) !important;
+        border: 1px solid var(--lp-border) !important;
+        color: var(--lp-text-body) !important;
+    }
+
+    #leavePage .action-row .btn-success {
+        background: #ecfdf5 !important;
+        border: 1px solid #a7f3d0 !important;
+        color: #15803d !important;
+    }
+
+    #leavePage .action-row .btn-success:hover {
+        background: #16a34a !important;
+        color: #ffffff !important;
+    }
+
+    #leavePage .action-row .btn-warning {
+        background: #fffbeb !important;
+        border: 1px solid #fde68a !important;
+        color: #b45309 !important;
+    }
+
+    #leavePage .action-row .btn-warning:hover {
+        background: #d97706 !important;
+        color: #ffffff !important;
+    }
+
+    #leavePage .action-row .btn-danger {
+        background: #fef2f2 !important;
+        border: 1px solid #fecaca !important;
+        color: #dc2626 !important;
+    }
+
+    #leavePage .action-row .btn-danger:hover {
+        background: #dc2626 !important;
+        color: #ffffff !important;
+    }
+
+    #leavePage .action-row .btn-secondary {
+        background: var(--lp-surface-subtle) !important;
+        border: 1px solid var(--lp-border) !important;
+        color: var(--lp-text-muted) !important;
+    }
+
+    /* Checkboxes */
+    #leavePage input.form-check-input[type="checkbox"] {
+        appearance: auto !important;
+        -webkit-appearance: checkbox !important;
+        accent-color: var(--lp-primary);
+        width: 16px !important;
+        height: 16px !important;
+        min-width: 16px !important;
+        min-height: 16px !important;
+        margin: 0 !important;
+        cursor: pointer;
+    }
+
+    /* Pagination */
+    #leavePage .pagination-wrap {
+        padding: 0.85rem 1.35rem;
+        background: var(--lp-surface);
+        border-top: 1px solid var(--lp-border);
+    }
+
+    #leavePage .pagination-wrap:empty {
+        display: none;
+    }
+
+    #leavePage .pagination-wrap .pagination {
+        margin: 0;
+        display: flex;
+        gap: 0.35rem;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+    }
+
+    #leavePage .pagination-wrap .page-item .page-link {
+        border-radius: 8px;
+        border: 1px solid var(--lp-border);
+        color: var(--lp-text-body);
+        font-weight: 600;
+        font-size: 0.8rem;
+        padding: 0.38rem 0.72rem;
+        background: var(--lp-surface);
+    }
+
+    #leavePage .pagination-wrap .page-item.active .page-link {
+        background: var(--lp-primary);
+        border-color: var(--lp-primary);
+        color: #ffffff;
+    }
+
+    /* Empty State */
+    #leavePage .empty-state {
+        padding: 3.4rem 1.5rem;
+        text-align: center;
+    }
+
+    #leavePage .empty-icon-box {
+        width: 54px;
+        height: 54px;
+        border-radius: 14px;
+        background: var(--lp-primary-soft);
+        border: 1px solid var(--lp-primary-border);
+        color: var(--lp-primary);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.35rem;
+        margin-bottom: 0.9rem;
+    }
+
+    #leavePage .empty-state h3 {
+        color: var(--lp-text);
+        font-size: 0.98rem;
+        font-weight: 700;
+        margin: 0 0 0.3rem 0;
+    }
+
+    #leavePage .empty-state p {
+        color: var(--lp-text-muted);
+        font-size: 0.8rem;
+        margin: 0;
+    }
+
+    /* Balances Cards & Collapsible Admin Drawer */
+    #leavePage .balance-drawer {
+        margin-top: 1rem;
+        background: var(--lp-surface);
+        border: 1px solid var(--lp-border);
+        border-radius: 14px;
+        box-shadow: var(--lp-shadow-xs);
         overflow: hidden;
     }
 
-    .modal-header {
-        padding: 22px 28px;
-        background: linear-gradient(135deg, #fafefb, #F8FAFC);
-        border-bottom: 1px solid rgba(47, 107, 255, 0.08);
+    #leavePage .balance-drawer-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 0.85rem 1.35rem;
     }
 
-    .modal-header .modal-title {
-        font-weight: 700;
-        color: #0F172A;
-        font-size: 1.25rem;
+    #leavePage .balance-drawer-title {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
     }
 
-    .modal-header .modal-title i {
-        filter: brightness(1.1);
-    }
-
-    .modal-body {
-        padding: 28px;
-    }
-
-    .modal-body .form-label {
+    #leavePage .balance-drawer-icon {
+        width: 34px;
+        height: 34px;
+        border-radius: 9px;
+        background: var(--lp-primary-soft);
+        border: 1px solid var(--lp-primary-border);
+        color: var(--lp-primary);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
         font-size: 0.9rem;
+    }
+
+    #leavePage .balance-drawer-title h3 {
+        margin: 0;
+        font-size: 0.92rem;
         font-weight: 700;
-        color: #6b7280;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
+        color: var(--lp-text);
     }
 
-    .modal-body .form-control {
-        min-height: 46px;
-        border-radius: 12px;
-        border: 1.5px solid #e2e8f0;
-        font-weight: 500;
-        font-size: 1rem;
-        color: #0F172A;
-        background: #ffffff;
-        transition: all 0.2s ease;
-        padding: 10px 16px;
-        width: 100%;
+    #leavePage .balance-drawer-title p {
+        margin: 0;
+        font-size: 0.74rem;
+        color: var(--lp-text-muted);
     }
 
-    .modal-body .form-control:focus {
-        border-color: #60A5FA;
-        box-shadow: 0 0 0 4px rgba(79, 131, 255, 0.08);
-        outline: none;
+    #leavePage .balance-drawer-toggle i {
+        transition: transform 0.2s ease;
     }
 
-    .modal-footer {
-        padding: 18px 28px;
-        border-top: 1px solid rgba(47, 107, 255, 0.08);
-        gap: 12px;
+    #leavePage .balance-drawer-toggle[aria-expanded="true"] i {
+        transform: rotate(180deg);
     }
 
-    .modal-footer .btn {
-        min-height: 48px;
-        padding: 0 28px;
-        font-size: 1rem;
-    }
-
-    .export-modal .modal-header {
-        align-items: flex-start;
-    }
-
-    .export-subtitle {
-        margin: 6px 0 0;
-        color: #64748b;
-        font-size: 0.94rem;
-        font-weight: 500;
-        text-transform: none;
-        letter-spacing: 0;
-    }
-
-    .export-layout {
+    #leavePage .balance-grid {
         display: grid;
-        grid-template-columns: minmax(280px, 1fr) minmax(320px, 0.9fr);
-        gap: 22px;
+        grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+        gap: 0.85rem;
     }
 
-    .export-filters,
-    .export-actions-panel {
-        border: 1px solid rgba(47, 107, 255, 0.1);
-        border-radius: 18px;
-        background: #fbfefc;
-        padding: 20px;
+    #leavePage .balance-grid--personal {
+        margin-bottom: 1rem;
     }
 
-    .export-filters h6,
-    .export-actions-panel h6 {
-        margin: 0 0 16px;
-        color: #0F172A;
-        font-weight: 800;
-        font-size: 1rem;
+    #leavePage .balance-grid--drawer {
+        padding: 0 1.35rem 1.2rem;
+        border-top: 1px solid var(--lp-border-subtle);
+        padding-top: 1rem;
     }
 
-    .export-filter-grid {
+    #leavePage .balance-card {
+        padding: 0.95rem 1.1rem;
+        border-radius: 12px;
+        background: var(--lp-surface);
+        border: 1px solid var(--lp-border);
+    }
+
+    #leavePage .balance-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 0.75rem;
+        margin-bottom: 0.7rem;
+    }
+
+    #leavePage .balance-head h3 {
+        margin: 0;
+        font-size: 0.92rem;
+        font-weight: 700;
+        color: var(--lp-text);
+    }
+
+    #leavePage .balance-head p {
+        margin: 2px 0 0;
+        color: var(--lp-text-muted);
+        font-size: 0.74rem;
+    }
+
+    #leavePage .balance-head span {
+        padding: 0.2rem 0.6rem;
+        border-radius: 999px;
+        color: var(--lp-primary);
+        background: var(--lp-primary-soft);
+        border: 1px solid var(--lp-primary-border);
+        font-weight: 700;
+        font-size: 0.74rem;
+        white-space: nowrap;
+    }
+
+    #leavePage .balance-meter {
+        height: 7px;
+        border-radius: 999px;
+        background: var(--lp-border-subtle);
+        overflow: hidden;
+        margin-bottom: 0.7rem;
+    }
+
+    #leavePage .balance-meter span {
+        display: block;
+        height: 100%;
+        background: var(--lp-primary);
+        border-radius: 999px;
+    }
+
+    #leavePage .balance-pills {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.45rem;
+        margin-bottom: 0.65rem;
+    }
+
+    #leavePage .balance-pills span {
+        padding: 0.2rem 0.55rem;
+        border-radius: 999px;
+        font-weight: 600;
+        font-size: 0.72rem;
+        background: var(--lp-surface-subtle);
+        color: var(--lp-text-body);
+        border: 1px solid var(--lp-border);
+    }
+
+    /* Modals */
+    .leave-ui-modal .modal-content {
+        border-radius: 16px;
+        border: 1px solid var(--lp-border);
+        background: var(--lp-surface);
+        color: var(--lp-text);
+        box-shadow: 0 24px 48px rgba(15, 23, 42, 0.18);
+        overflow: hidden;
+    }
+
+    .leave-ui-modal .modal-header {
+        padding: 1.1rem 1.4rem;
+        background: var(--lp-surface);
+        border-bottom: 1px solid var(--lp-border);
+    }
+
+    .leave-ui-modal .modal-header .modal-title {
+        font-weight: 700;
+        color: var(--lp-text);
+        font-size: 1.05rem;
+    }
+
+    .leave-ui-modal .modal-body {
+        padding: 1.35rem 1.4rem;
+    }
+
+    .leave-ui-modal .modal-footer {
+        padding: 0.95rem 1.4rem;
+        border-top: 1px solid var(--lp-border);
+        gap: 0.55rem;
+    }
+
+    .leave-ui-modal .policy-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+        gap: 0.9rem;
+    }
+
+    .leave-ui-modal .policy-grid label,
+    .leave-ui-modal .modal-body .form-label {
+        font-size: 0.72rem;
+        color: var(--lp-text-muted);
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        display: block;
+        margin-bottom: 0.3rem;
+    }
+
+    .leave-ui-modal .switch-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 0.65rem;
+        margin-top: 1rem;
+    }
+
+    .leave-ui-modal .switch-line {
+        display: flex;
+        align-items: center;
+        gap: 0.65rem;
+        padding: 0.7rem 0.9rem;
+        border: 1px solid var(--lp-border);
+        border-radius: 10px;
+        background: var(--lp-surface-subtle);
+        color: var(--lp-text);
+        font-size: 0.84rem;
+        font-weight: 500;
+        cursor: pointer;
+    }
+
+    .leave-ui-modal .switch-line input[type="checkbox"] {
+        width: 17px;
+        height: 17px;
+        accent-color: var(--lp-primary);
+    }
+
+    .leave-ui-modal .export-subtitle {
+        margin: 4px 0 0;
+        color: var(--lp-text-muted);
+        font-size: 0.82rem;
+    }
+
+    .leave-ui-modal .export-layout {
+        display: grid;
+        grid-template-columns: minmax(260px, 1fr) minmax(300px, 0.9fr);
+        gap: 1.15rem;
+    }
+
+    .leave-ui-modal .export-filters,
+    .leave-ui-modal .export-actions-panel {
+        border: 1px solid var(--lp-border);
+        border-radius: 12px;
+        background: var(--lp-surface-subtle);
+        padding: 1rem;
+    }
+
+    .leave-ui-modal .export-filters h6,
+    .leave-ui-modal .export-actions-panel h6 {
+        margin: 0 0 0.85rem;
+        color: var(--lp-text);
+        font-weight: 700;
+        font-size: 0.9rem;
+    }
+
+    .leave-ui-modal .export-filter-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 16px;
+        gap: 0.8rem;
     }
 
-    .export-filter-grid > div:first-child {
+    .leave-ui-modal .export-filter-grid > div:first-child {
         grid-column: 1 / -1;
     }
 
-    .export-action-grid {
+    .leave-ui-modal .export-action-grid {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 14px;
+        gap: 0.75rem;
     }
 
-    .export-tile {
-        border: 1px solid #e2e8f0;
-        border-radius: 16px;
-        background: #ffffff;
-        min-height: 116px;
-        padding: 16px;
+    .leave-ui-modal .export-tile {
+        border: 1px solid var(--lp-border);
+        border-radius: 12px;
+        background: var(--lp-surface);
+        min-height: 98px;
+        padding: 0.85rem;
         text-align: left;
         display: flex;
         flex-direction: column;
         justify-content: center;
-        gap: 8px;
-        transition: all 0.2s ease;
-        color: #172033;
+        gap: 0.35rem;
+        color: var(--lp-text);
+        cursor: pointer;
     }
 
-    .export-tile:hover {
-        transform: translateY(-2px);
-        border-color: #60A5FA;
-        box-shadow: 0 14px 28px rgba(15, 23, 42, 0.08);
+    .leave-ui-modal .export-tile:hover {
+        border-color: var(--lp-primary);
+        box-shadow: var(--lp-shadow-sm);
     }
 
-    .export-tile i {
-        width: 42px;
-        height: 42px;
-        border-radius: 14px;
+    .leave-ui-modal .export-tile i {
+        width: 34px;
+        height: 34px;
+        border-radius: 9px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.2rem;
+        font-size: 0.95rem;
     }
 
-    .export-tile span {
-        font-size: 1.02rem;
-        font-weight: 800;
-    }
+    .leave-ui-modal .export-tile span { font-size: 0.86rem; font-weight: 700; }
+    .leave-ui-modal .export-tile small { color: var(--lp-text-muted); font-size: 0.74rem; }
+    .leave-ui-modal .export-tile.copy i { background: #e0f2fe; color: #0369a1; }
+    .leave-ui-modal .export-tile.excel i { background: #eff6ff; color: #2563eb; }
+    .leave-ui-modal .export-tile.csv i { background: #fef3c7; color: #b45309; }
+    .leave-ui-modal .export-tile.pdf i { background: #fee2e2; color: #b91c1c; }
+    .leave-ui-modal .export-tile.print i { background: #ede9fe; color: #6d28d9; }
+    .leave-ui-modal .export-copy-status { min-height: 20px; margin-top: 0.75rem; color: var(--lp-primary); font-weight: 600; font-size: 0.84rem; }
 
-    .export-tile small {
-        color: #64748b;
-        font-weight: 600;
+    /* Dark Mode Overrides for Tinted Pills & Icons */
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode) #leavePage .leave-stats .stat-total .stat-icon-box {
+        background: rgba(59, 130, 246, 0.16); color: #60a5fa;
     }
-
-    .export-tile.copy i {
-        background: #e0f2fe;
-        color: #0369a1;
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode) #leavePage .leave-stats .pending .stat-icon-box {
+        background: rgba(245, 158, 11, 0.16); color: #fbbf24;
     }
-
-    .export-tile.excel i {
-        background: #E0E7FF;
-        color: #2F6BFF;
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode) #leavePage .leave-stats .approved .stat-icon-box {
+        background: rgba(16, 185, 129, 0.16); color: #34d399;
     }
-
-    .export-tile.csv i {
-        background: #fef3c7;
-        color: #b45309;
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode) #leavePage .leave-stats .rejected .stat-icon-box {
+        background: rgba(239, 68, 68, 0.16); color: #f87171;
     }
-
-    .export-tile.pdf i {
-        background: #fee2e2;
-        color: #b91c1c;
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode) #leavePage .leave-stats .unpaid .stat-icon-box {
+        background: rgba(99, 102, 241, 0.18); color: #a5b4fc;
     }
-
-    .export-tile.print i {
-        background: #ede9fe;
-        color: #6d28d9;
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode) #leavePage .type-badge.type-casual {
+        background: rgba(245, 158, 11, 0.16); color: #fbbf24; border-color: rgba(251, 191, 36, 0.3);
     }
-
-    .export-copy-status {
-        min-height: 22px;
-        margin-top: 16px;
-        color: #2F6BFF;
-        font-weight: 700;
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode) #leavePage .type-badge.type-sick {
+        background: rgba(239, 68, 68, 0.16); color: #fca5a5; border-color: rgba(248, 113, 113, 0.3);
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode) #leavePage .type-badge.type-default {
+        background: rgba(59, 130, 246, 0.16); color: #93c5fd; border-color: rgba(96, 165, 250, 0.3);
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode) #leavePage .pay-badge.paid,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode) #leavePage .status-select.success,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode) #leavePage .status-badge.success {
+        background: rgba(16, 185, 129, 0.16) !important; color: #34d399 !important; -webkit-text-fill-color: #34d399 !important; border-color: rgba(52, 211, 153, 0.3) !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode) #leavePage .status-select.warning,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode) #leavePage .status-badge.warning {
+        background: rgba(245, 158, 11, 0.16) !important; color: #fbbf24 !important; -webkit-text-fill-color: #fbbf24 !important; border-color: rgba(251, 191, 36, 0.3) !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode) #leavePage .status-select.danger,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode) #leavePage .status-badge.danger,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, body.dark-mode) #leavePage .pay-badge.rejected {
+        background: rgba(239, 68, 68, 0.16) !important; color: #f87171 !important; -webkit-text-fill-color: #f87171 !important; border-color: rgba(248, 113, 113, 0.3) !important;
     }
 
     /* Responsive */
     @media (max-width: 1200px) {
-        .leave-stats {
-            grid-template-columns: repeat(3, 1fr);
+        #leavePage .leave-stats {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        #leavePage .filter-grid {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        #leavePage .filter-actions {
+            grid-column: 1 / -1;
         }
     }
 
     @media (max-width: 992px) {
-        .leave-page {
-            padding: 20px 25px;
+        #leavePage.leave-page {
+            padding: 16px 20px 28px !important;
         }
 
-        .leave-hero {
+        #leavePage .leave-hero {
             flex-direction: column;
             align-items: flex-start;
         }
 
-        .leave-hero-actions {
+        #leavePage .leave-hero-actions {
+            max-width: none;
             width: 100%;
             justify-content: flex-start;
         }
 
-        .leave-stats {
-            grid-template-columns: repeat(2, 1fr);
+        #leavePage .leave-stats {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
         }
 
-        .filter-grid {
-            grid-template-columns: 1fr 1fr;
+        #leavePage .filter-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .leave-ui-modal .export-layout {
+            grid-template-columns: 1fr;
         }
     }
 
     @media (max-width: 768px) {
-        .leave-page {
-            padding: 16px;
+        #leavePage.leave-page {
+            padding: 12px !important;
         }
 
-        .leave-hero {
-            padding: 20px;
+        #leavePage .leave-stats {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
         }
 
-        .leave-hero-icon {
-            width: 60px;
-            height: 60px;
-            font-size: 28px;
-        }
-
-        .leave-hero h1 {
-            font-size: 28px;
-        }
-
-        .leave-hero p {
-            font-size: 0.95rem;
-        }
-
-        .leave-stats {
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
-
-        .stat-card {
-            padding: 16px;
-        }
-
-        .stat-card strong {
-            font-size: 30px;
-        }
-
-        .stat-card i {
-            font-size: 30px;
-            right: 12px;
-            bottom: 10px;
-        }
-
-        .balance-grid {
+        #leavePage .filter-grid {
             grid-template-columns: 1fr;
         }
 
-        .filter-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .filter-actions {
+        #leavePage .table-head {
             flex-direction: column;
+            align-items: stretch;
+        }
+
+        #leavePage .table-tools-cluster,
+        #leavePage .table-tools,
+        #leavePage .bulk-tools {
             width: 100%;
-        }
-
-        .filter-actions .btn {
-            width: 100%;
-            justify-content: center;
-        }
-
-        .table-head {
-            flex-direction: column;
-            align-items: flex-start;
-        }
-
-        .table-tools,
-        .bulk-tools {
-            width: 100%;
-        }
-
-        .entry-tools {
-            width: 100%;
-            justify-content: space-between;
-        }
-
-        .bulk-tools .form-control {
-            width: 100%;
-        }
-
-        .leave-table tbody td {
-            padding: 12px 14px;
-            font-size: 0.9rem;
-        }
-
-        .leave-table thead th {
-            padding: 12px 14px;
-            font-size: 0.8rem;
-        }
-
-        .policy-grid {
-            grid-template-columns: 1fr 1fr;
-        }
-
-        .export-layout {
-            grid-template-columns: 1fr;
-        }
-
-        .switch-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .btn {
-            font-size: 0.95rem;
-            min-height: 44px;
-            padding: 0 20px;
+            justify-content: flex-start;
         }
     }
 
     @media (max-width: 576px) {
-        .leave-page {
-            padding: 12px;
-        }
-
-        .leave-hero {
-            padding: 16px;
-            border-radius: 20px;
-        }
-
-        .leave-hero-icon {
-            width: 50px;
-            height: 50px;
-            font-size: 22px;
-            border-radius: 18px;
-        }
-
-        .leave-hero h1 {
-            font-size: 24px;
-        }
-
-        .leave-hero p {
-            font-size: 0.85rem;
-        }
-
-        .leave-stats {
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-
-        .stat-card {
-            padding: 14px;
-        }
-
-        .stat-card strong {
-            font-size: 24px;
-        }
-
-        .stat-card span {
-            font-size: 0.75rem;
-        }
-
-        .stat-card i {
-            font-size: 24px;
-            right: 10px;
-            bottom: 8px;
-        }
-
-        .table-card {
-            border-radius: 20px;
-        }
-
-        .table-head {
-            padding: 14px 16px;
-        }
-
-        .table-head h2 {
-            font-size: 1.1rem;
-        }
-
-        .leave-table tbody td {
-            padding: 10px 12px;
-            font-size: 0.85rem;
-        }
-
-        .leave-table td strong {
-            font-size: 0.9rem;
-        }
-
-        .leave-table td small {
-            font-size: 0.75rem;
-        }
-
-        .action-row .btn {
-            min-height: 32px;
-            padding: 0 10px;
-            font-size: 0.8rem;
-        }
-
-        .policy-grid {
+        #leavePage .leave-stats {
             grid-template-columns: 1fr;
         }
-
-        .export-filter-grid,
-        .export-action-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .pagination-wrap {
-            padding: 12px 16px;
-        }
-
-        .pagination-wrap .page-item .page-link {
-            font-size: 0.85rem;
-            padding: 8px 14px;
-        }
-
-        .modal-body {
-            padding: 16px;
-        }
-
-        .modal-header .modal-title {
-            font-size: 1.1rem;
-        }
-
-        .btn {
-            font-size: 0.85rem;
-            min-height: 40px;
-            padding: 0 16px;
-        }
-    }
-</style>
-
-<style>
-    /* Dark mode support */
-    html[data-pms-theme="dark"] .leave-page {
-        background: linear-gradient(135deg, #070B1A, #0F1530);
-    }
-
-    html[data-pms-theme="dark"] .leave-breadcrumb {
-        background: rgba(15, 21, 48, 0.85);
-        border-color: rgba(79, 131, 255, 0.15);
-        color: #EEF1FB;
-    }
-
-    html[data-pms-theme="dark"] .leave-breadcrumb i {
-        color: #60A5FA;
-    }
-
-    html[data-pms-theme="dark"] .leave-hero {
-        background: rgba(15, 21, 48, 0.95);
-        border-color: rgba(79, 131, 255, 0.12);
-    }
-
-    html[data-pms-theme="dark"] .leave-hero h1 {
-        color: #EEF1FB;
-    }
-
-    html[data-pms-theme="dark"] .leave-hero p {
-        color: #94A3B8;
-    }
-
-    html[data-pms-theme="dark"] .btn-light {
-        background: #141B3D;
-        color: #EEF1FB;
-        border-color: rgba(79, 131, 255, 0.15);
-    }
-
-    html[data-pms-theme="dark"] .btn-light:hover {
-        background: rgba(79, 131, 255, 0.15);
-        border-color: #60A5FA;
-    }
-
-    html[data-pms-theme="dark"] .policy-notice,
-    html[data-theme="dark"] .policy-notice,
-    html[data-bs-theme="dark"] .policy-notice,
-    [data-pms-theme="dark"] .policy-notice,
-    [data-theme="dark"] .policy-notice,
-    body.dark-mode .policy-notice {
-        background: #0F1530 !important;
-        border-color: rgba(238, 241, 251, 0.12) !important;
-    }
-
-    html[data-pms-theme="dark"] .policy-notice p,
-    html[data-theme="dark"] .policy-notice p,
-    html[data-bs-theme="dark"] .policy-notice p,
-    [data-pms-theme="dark"] .policy-notice p,
-    [data-theme="dark"] .policy-notice p,
-    body.dark-mode .policy-notice p {
-        color: #CBD5E1 !important;
-        -webkit-text-fill-color: #CBD5E1 !important;
-    }
-
-    html[data-pms-theme="dark"] .notice-icon,
-    html[data-theme="dark"] .notice-icon,
-    html[data-bs-theme="dark"] .notice-icon,
-    [data-pms-theme="dark"] .notice-icon,
-    [data-theme="dark"] .notice-icon,
-    body.dark-mode .notice-icon {
-        background: rgba(37, 99, 235, 0.25) !important;
-        border: 1px solid rgba(147, 197, 253, 0.35) !important;
-        color: #60a5fa !important;
-        -webkit-text-fill-color: #60a5fa !important;
-        filter: none !important;
-    }
-
-    html[data-pms-theme="dark"] .notice-icon i,
-    html[data-theme="dark"] .notice-icon i,
-    html[data-bs-theme="dark"] .notice-icon i,
-    [data-pms-theme="dark"] .notice-icon i,
-    [data-theme="dark"] .notice-icon i,
-    body.dark-mode .notice-icon i,
-    html[data-pms-theme="dark"] .policy-notice i,
-    html[data-theme="dark"] .policy-notice i,
-    html[data-bs-theme="dark"] .policy-notice i,
-    [data-pms-theme="dark"] .policy-notice i,
-    [data-theme="dark"] .policy-notice i,
-    body.dark-mode .policy-notice i {
-        color: #60a5fa !important;
-        -webkit-text-fill-color: #60a5fa !important;
-    }
-
-    html[data-pms-theme="dark"] .stat-card {
-        background: #0F1530;
-        border-color: rgba(79, 131, 255, 0.08);
-    }
-
-    html[data-pms-theme="dark"] .stat-card strong {
-        color: #EEF1FB;
-    }
-
-    html[data-pms-theme="dark"] .balance-card {
-        background: #0F1530;
-        border-color: rgba(79, 131, 255, 0.08);
-    }
-
-    html[data-pms-theme="dark"] .balance-head h3 {
-        color: #EEF1FB;
-    }
-
-    html[data-pms-theme="dark"] .balance-head p {
-        color: #94A3B8;
-    }
-
-    html[data-pms-theme="dark"] .balance-head span {
-        background: #141B3D;
-        color: #60A5FA;
-    }
-
-    html[data-pms-theme="dark"] .balance-pills span {
-        background: #141B3D;
-        color: #60A5FA;
-        border-color: rgba(79, 131, 255, 0.12);
-    }
-
-    html[data-pms-theme="dark"] .filter-panel {
-        background: #0F1530;
-        border-color: rgba(79, 131, 255, 0.08);
-    }
-
-    html[data-pms-theme="dark"] .leave-page .form-control {
-        background: #0F1530;
-        border-color: rgba(79, 131, 255, 0.15);
-        color: #EEF1FB;
-    }
-
-    html[data-pms-theme="dark"] .leave-page .form-control:focus {
-        border-color: #60A5FA;
-        box-shadow: 0 0 0 4px rgba(79, 131, 255, 0.08);
-    }
-
-    html[data-pms-theme="dark"] .leave-page label {
-        color: #94A3B8;
-    }
-
-    html[data-pms-theme="dark"] .table-card {
-        background: #0F1530;
-        border-color: rgba(79, 131, 255, 0.08);
-    }
-
-    html[data-pms-theme="dark"] .table-head {
-        background: #141B3D;
-        border-color: rgba(79, 131, 255, 0.06);
-    }
-
-    html[data-pms-theme="dark"] .table-head h2 {
-        color: #EEF1FB;
-    }
-
-    html[data-pms-theme="dark"] .table-head p {
-        color: #94A3B8;
-    }
-
-    html[data-pms-theme="dark"] .entry-tools {
-        background: #141B3D;
-        border-color: rgba(79, 131, 255, 0.12);
-        color: #94A3B8;
-    }
-
-    html[data-pms-theme="dark"] .entry-tools label {
-        color: #94A3B8;
-    }
-
-    html[data-pms-theme="dark"] .leave-table thead th {
-        background: #141B3D !important;
-        color: #94A3B8 !important;
-        border-color: rgba(79, 131, 255, 0.08);
-    }
-
-    html[data-pms-theme="dark"] .leave-table tbody td {
-        background: #0F1530;
-        border-color: rgba(79, 131, 255, 0.06);
-        color: #EEF1FB;
-    }
-
-    html[data-pms-theme="dark"] .leave-table tbody tr:hover td {
-        background: #141B3D;
-        border-color: rgba(79, 131, 255, 0.12);
-    }
-
-    html[data-pms-theme="dark"] .leave-table td strong {
-        color: #EEF1FB;
-    }
-
-    html[data-pms-theme="dark"] .leave-table td .type-badge {
-        background: #141B3D;
-        color: #60A5FA;
-    }
-
-    html[data-pms-theme="dark"] .leave-table td .pay-badge.paid {
-        background: #141B3D;
-        color: #60A5FA;
-    }
-
-    html[data-pms-theme="dark"] .leave-table td .pay-badge.unpaid {
-        background: rgba(249, 115, 22, 0.16);
-        color: #fdba74;
-        border-color: rgba(249, 115, 22, 0.35);
-    }
-
-    /* Theme-wide dark text-fill rules turned every pay badge white; keep each variant's own colour. */
-    html[data-pms-theme="dark"] .leave-table td .pay-badge.paid { color: #60A5FA !important; -webkit-text-fill-color: #60A5FA !important; }
-    html[data-pms-theme="dark"] .leave-table td .pay-badge.unpaid { color: #fdba74 !important; -webkit-text-fill-color: #fdba74 !important; }
-    html[data-pms-theme="dark"] .leave-table td .pay-badge.rejected { color: #f87171 !important; -webkit-text-fill-color: #f87171 !important; }
-    html[data-pms-theme="dark"] .leave-table td .pay-badge.pending { color: #94a3b8 !important; -webkit-text-fill-color: #94a3b8 !important; }
-    html[data-pms-theme="dark"] .leave-table td .pay-split { color: #a5b4ce; -webkit-text-fill-color: #a5b4ce !important; }
-
-    html[data-pms-theme="dark"] .leave-table td .pay-badge.rejected {
-        background: rgba(239, 68, 68, 0.16);
-        color: #f87171;
-        border-color: rgba(239, 68, 68, 0.3);
-    }
-
-    html[data-pms-theme="dark"] .leave-table td .pay-badge.pending {
-        background: #141B3D;
-        color: #94a3b8;
-        border-color: rgba(148, 163, 184, 0.2);
-    }
-
-    html[data-pms-theme="dark"] .leave-table td .status-badge.warning {
-        background: #1a1a0d;
-        color: #fbbf24;
-    }
-
-    html[data-pms-theme="dark"] .leave-table td .status-badge.success {
-        background: #141B3D;
-        color: #60A5FA;
-    }
-
-    html[data-pms-theme="dark"] .leave-table td .status-badge.danger {
-        background: #1a0d0d;
-        color: #fca5a5;
-    }
-
-    html[data-pms-theme="dark"] .leave-table td .status-select.warning {
-        background: #1a1a0d;
-        color: #fbbf24;
-    }
-
-    html[data-pms-theme="dark"] .leave-table td .status-select.success {
-        background: #141B3D;
-        color: #60A5FA;
-    }
-
-    html[data-pms-theme="dark"] .leave-table td .status-select.danger {
-        background: #1a0d0d;
-        color: #fca5a5;
-    }
-
-    html[data-pms-theme="dark"] .leave-table td .status-select.unpaid {
-        background: #1a1a0d;
-        color: #fbbf24;
-    }
-
-    html[data-pms-theme="dark"] .leave-table td .status-select.secondary {
-        background: #141B3D;
-        color: #94A3B8;
-    }
-
-    html[data-pms-theme="dark"] .leave-table td .reason-cell {
-        color: #94A3B8;
-    }
-
-    html[data-pms-theme="dark"] .action-row .btn-light {
-        background: #141B3D;
-        border-color: rgba(79, 131, 255, 0.1);
-        color: #94A3B8;
-    }
-
-    html[data-pms-theme="dark"] .action-row .btn-light:hover {
-        background: #141B3D;
-        border-color: #60A5FA;
-        color: #EEF1FB;
-    }
-
-    html[data-pms-theme="dark"] .pagination-wrap {
-        background: #141B3D;
-        border-color: rgba(79, 131, 255, 0.06);
-    }
-
-    html[data-pms-theme="dark"] .pagination-wrap .page-item .page-link {
-        background: #0F1530;
-        border-color: rgba(79, 131, 255, 0.12);
-        color: #94A3B8;
-    }
-
-    html[data-pms-theme="dark"] .pagination-wrap .page-item.active .page-link {
-        background: linear-gradient(145deg, #4F83FF, #2F6BFF);
-        border-color: #2F6BFF;
-        color: white;
-    }
-
-    html[data-pms-theme="dark"] .pagination-wrap .page-item .page-link:hover:not(.active) {
-        background: #141B3D;
-        border-color: #60A5FA;
-        color: #EEF1FB;
-    }
-
-    html[data-pms-theme="dark"] .btn-secondary {
-        background: #141B3D;
-        color: #EEF1FB;
-        border-color: rgba(79, 131, 255, 0.15);
-    }
-
-    html[data-pms-theme="dark"] .btn-secondary:hover {
-        background: rgba(79, 131, 255, 0.15);
-    }
-
-    html[data-pms-theme="dark"] .modal-content {
-        background: #0F1530;
-    }
-
-    html[data-pms-theme="dark"] .modal-header {
-        background: #141B3D;
-        border-color: rgba(79, 131, 255, 0.06);
-    }
-
-    html[data-pms-theme="dark"] .modal-header .modal-title {
-        color: #EEF1FB;
-    }
-
-    html[data-pms-theme="dark"] .modal-body .form-control {
-        background: #0F1530;
-        border-color: rgba(79, 131, 255, 0.15);
-        color: #EEF1FB;
-    }
-
-    html[data-pms-theme="dark"] .modal-body .form-control:focus {
-        border-color: #60A5FA;
-        box-shadow: 0 0 0 4px rgba(79, 131, 255, 0.08);
-    }
-
-    html[data-pms-theme="dark"] .modal-body label {
-        color: #94A3B8;
-    }
-
-    html[data-pms-theme="dark"] .modal-footer {
-        border-color: rgba(79, 131, 255, 0.06);
-    }
-
-    html[data-pms-theme="dark"] .export-subtitle,
-    html[data-pms-theme="dark"] .export-tile small {
-        color: #94A3B8;
-    }
-
-    html[data-pms-theme="dark"] .export-filters,
-    html[data-pms-theme="dark"] .export-actions-panel {
-        background: #141B3D;
-        border-color: rgba(79, 131, 255, 0.12);
-    }
-
-    html[data-pms-theme="dark"] .export-filters h6,
-    html[data-pms-theme="dark"] .export-actions-panel h6,
-    html[data-pms-theme="dark"] .export-tile {
-        color: #EEF1FB;
-    }
-
-    html[data-pms-theme="dark"] .export-tile {
-        background: #0F1530;
-        border-color: rgba(79, 131, 255, 0.12);
-    }
-
-    html[data-pms-theme="dark"] .export-tile:hover {
-        border-color: #60A5FA;
-        box-shadow: 0 14px 28px rgba(0, 0, 0, 0.2);
-    }
-
-    html[data-pms-theme="dark"] .export-tile i,
-    html[data-bs-theme="dark"] .export-tile i,
-    html[data-theme="dark"] .export-tile i,
-    html.dark .export-tile i {
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        width: 42px !important;
-        height: 42px !important;
-        border-radius: 14px !important;
-    }
-
-    html[data-pms-theme="dark"] .export-tile.copy i,
-    html[data-bs-theme="dark"] .export-tile.copy i,
-    html[data-theme="dark"] .export-tile.copy i {
-        background: rgba(14, 165, 233, 0.22) !important;
-        color: #38bdf8 !important;
-        border: 1px solid rgba(56, 189, 248, 0.35) !important;
-    }
-
-    html[data-pms-theme="dark"] .export-tile.excel i,
-    html[data-bs-theme="dark"] .export-tile.excel i,
-    html[data-theme="dark"] .export-tile.excel i {
-        background: rgba(47, 107, 255, 0.22) !important;
-        color: #60A5FA !important;
-        border: 1px solid rgba(79, 131, 255, 0.35) !important;
-    }
-
-    html[data-pms-theme="dark"] .export-tile.csv i,
-    html[data-bs-theme="dark"] .export-tile.csv i,
-    html[data-theme="dark"] .export-tile.csv i {
-        background: rgba(245, 158, 11, 0.22) !important;
-        color: #fbbf24 !important;
-        border: 1px solid rgba(251, 191, 36, 0.35) !important;
-    }
-
-    html[data-pms-theme="dark"] .export-tile.pdf i,
-    html[data-bs-theme="dark"] .export-tile.pdf i,
-    html[data-theme="dark"] .export-tile.pdf i {
-        background: rgba(239, 68, 68, 0.22) !important;
-        color: #f87171 !important;
-        border: 1px solid rgba(248, 113, 113, 0.35) !important;
-    }
-
-    html[data-pms-theme="dark"] .export-tile.print i,
-    html[data-bs-theme="dark"] .export-tile.print i,
-    html[data-theme="dark"] .export-tile.print i {
-        background: rgba(139, 92, 246, 0.22) !important;
-        color: #c084fc !important;
-        border: 1px solid rgba(192, 132, 252, 0.35) !important;
-    }
-
-    html[data-pms-theme="dark"] .export-copy-status {
-        color: #60A5FA;
-    }
-
-    html[data-pms-theme="dark"] .switch-line {
-        background: #141B3D;
-        border-color: rgba(79, 131, 255, 0.12);
-        color: #EEF1FB;
-    }
-
-    html[data-pms-theme="dark"] .switch-line:hover {
-        background: #0F1530;
-        border-color: #60A5FA;
-    }
-
-    html[data-pms-theme="dark"] .policy-grid .form-control {
-        background: #0F1530;
-        border-color: rgba(79, 131, 255, 0.15);
-        color: #EEF1FB;
-    }
-
-    html[data-pms-theme="dark"] .policy-grid .form-control:focus {
-        border-color: #60A5FA;
-        box-shadow: 0 0 0 4px rgba(79, 131, 255, 0.08);
-    }
-
-    html[data-pms-theme="dark"] .policy-grid label {
-        color: #94A3B8;
-    }
-
-    html[data-pms-theme="dark"] .bulk-tools .form-control {
-        background: #141B3D;
-        border-color: rgba(79, 131, 255, 0.12);
-        color: #EEF1FB;
-    }
-
-    html[data-pms-theme="dark"] .bulk-tools .form-control:focus {
-        border-color: #60A5FA;
-        box-shadow: 0 0 0 4px rgba(79, 131, 255, 0.08);
-    }
-
-    html[data-pms-theme="dark"] .empty-state h3 {
-        color: #60A5FA;
-    }
-
-    html[data-pms-theme="dark"] .empty-state i {
-        color: #141B3D;
-    }
-
-    html[data-pms-theme="dark"] .alert-danger {
-        background: #1a0d0d;
-        color: #fca5a5;
-        border-left-color: #ef4444;
-    }
-
-    html[data-pms-theme="dark"] .alert-success {
-        background: rgba(47, 107, 255, 0.15);
-        color: #60A5FA;
-        border-left-color: #60A5FA;
     }
 </style>
 
