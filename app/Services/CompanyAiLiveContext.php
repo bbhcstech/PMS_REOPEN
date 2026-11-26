@@ -113,7 +113,7 @@ class CompanyAiLiveContext
             'designation' => $detail?->designation?->name,
             'department' => $detail?->department?->name,
             'employee_id' => $detail?->employee_id,
-            'reports_to' => $detail?->reportingTo?->name,
+            'reports_to' => $this->managerFor($company, $user)?->name,
             'joining_date' => $detail?->joining_date ? Carbon::parse($detail->joining_date)->format('d M Y') : null,
         ]);
     }
@@ -321,7 +321,7 @@ class CompanyAiLiveContext
         if (! $user->canViewModule('events') || ! $tenant->hasTable('events') || ! $tenant->hasColumn('events', 'company_id')) return null;
         $columns = $tenant->getColumnListing('events');
         $query = DB::connection('tenant')->table('events')->where('company_id', $company->id)
-            ->whereDate('start_date', '>=', $now->copy()->subDays(1)->toDateString())
+            ->whereDate('start_date', '>=', $now->toDateString())
             ->whereDate('start_date', '<=', $now->copy()->addDays(60)->toDateString());
         if (in_array('deleted_at', $columns, true)) $query->whereNull('deleted_at');
         if (in_array('archived_at', $columns, true)) $query->whereNull('archived_at');
@@ -339,11 +339,12 @@ class CompanyAiLiveContext
     private function team(Company $company, User $user): array
     {
         $detail = $user->employeeDetail;
+        $manager = $this->managerFor($company, $user);
         $describe = fn (User $person) => $person->name . ($person->employeeDetail?->designation?->name ? ' (' . $person->employeeDetail->designation->name . ')' : '');
         $reports = User::with('employeeDetail.designation')->where('company_id', $company->id)->whereNull('archived_at')
             ->whereHas('employeeDetail', fn ($q) => $q->where('reporting_to', $user->id))->orderBy('name')->limit(30)->get();
         $facts = [
-            'your_manager' => $detail?->reportingTo ? $describe($detail->reportingTo->loadMissing('employeeDetail.designation')) : 'Not assigned',
+            'your_manager' => $manager ? $describe($manager->loadMissing('employeeDetail.designation')) : 'Not assigned',
             'your_direct_reports' => $reports->map($describe)->all() ?: 'None',
         ];
         if ($detail?->department_id) {
@@ -360,6 +361,13 @@ class CompanyAiLiveContext
         }
         if ($user->canViewModule('organization')) $facts['organization_directory_page'] = $this->url('organization.index');
         return $this->record('team', 'Your team & organization', $facts);
+    }
+
+    private function managerFor(Company $company, User $user): ?User
+    {
+        $manager = $user->employeeDetail?->reportingTo;
+
+        return $manager && (int) $manager->company_id === (int) $company->id && !$manager->archived_at ? $manager : null;
     }
 
     private function payslips(User $user): ?array

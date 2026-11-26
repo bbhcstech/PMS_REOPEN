@@ -8,9 +8,7 @@
 @endphp
 @if($assistantRoute && \Illuminate\Support\Facades\Route::has($assistantRoute) && !request()->routeIs('company.ai.*', 'super-admin.ai.*', 'subscription.suspended'))
     <a id="pms-ai-assistant-launcher" href="{{ route($assistantRoute) }}" aria-label="Open your AI assistant" title="AI Assistant" data-live-preserve>
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true">
-            <path d="M10.5 2.5l2.2 5.8 5.8 2.2-5.8 2.2-2.2 5.8-2.2-5.8-5.8-2.2 5.8-2.2 2.2-5.8zM19 14l1 2.8 2.8 1-2.8 1-1 2.8-1-2.8-2.8-1 2.8-1 1-2.8z" />
-        </svg>
+        <img src="{{ asset('logos/bitroxia_logo.png') }}" alt="" width="58" height="58">
     </a>
     <style>
         #pms-ai-assistant-launcher {
@@ -29,14 +27,15 @@
             padding: 0 !important;
             border: 1px solid rgba(255, 255, 255, .38);
             border-radius: 50% !important;
-            background: linear-gradient(145deg, #2857d1, #6437c7) !important;
+            overflow: hidden;
+            background: #141a2a !important;
             color: #fff !important;
             text-decoration: none;
             box-shadow: 0 8px 22px rgba(40, 70, 168, .34), inset 0 1px 0 rgba(255, 255, 255, .18);
             transition: opacity .18s ease, transform .18s ease, visibility .18s;
         }
-        #pms-ai-assistant-launcher svg { background: transparent !important; color: #fff !important; stroke: #fff !important; }
-        #pms-ai-assistant-launcher:hover { background: linear-gradient(145deg, #214abd, #512aac) !important; transform: translateY(-2px); }
+        #pms-ai-assistant-launcher img { display: block; width: 100%; height: 100%; object-fit: cover; transform: translateY(11%) scale(1.8); }
+        #pms-ai-assistant-launcher:hover { transform: translateY(-2px); }
         #pms-ai-assistant-launcher:focus-visible { outline: 3px solid #5e8bff; outline-offset: 4px; }
         @media (max-width: 575px) {
             #pms-ai-assistant-launcher { --launcher-size: 54px; right: max(16px, env(safe-area-inset-right)); bottom: max(16px, env(safe-area-inset-bottom)); }

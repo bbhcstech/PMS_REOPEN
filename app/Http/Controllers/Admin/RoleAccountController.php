@@ -108,7 +108,7 @@ class RoleAccountController extends Controller
 
     private function guardCompany(Request $request, ?User $target = null): void
     {
-        abort_if($target?->company_staff_role_id, 403, 'Manage this account in Add Upper Level Employee.');
+        abort_if($target?->company_staff_role_id, 403, 'This account has a company role. Edit it from Employees → Edit Profile.');
         if (Auth::guard('super_admin')->check() || auth()->user()?->role === 'superadmin') return;
         $companyId = (int) auth()->user()?->company_id;
         abort_unless($companyId, 403);

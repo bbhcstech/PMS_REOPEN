@@ -62,6 +62,21 @@ class PlatformAiAgent
     public function answer(string $question): array
     {
         $identity = $this->identity();
-        return app(GroundedAiResponse::class)->answer($question, $this->records($question), $identity['name'], 'platform');
+        $records = $this->records($question);
+        $metric = match (trim(mb_strtolower($question), " \t\r\n?!.")) {
+            'how many companies are registered' => 'registered',
+            'how many companies are active' => 'active',
+            default => null,
+        };
+        if ($metric) {
+            $registry = array_column($records, null, 'id')['platform:registry'] ?? null;
+            $count = $registry['facts'][$metric.'_companies'] ?? null;
+
+            return $count === null
+                ? ['answer' => 'That count is not available in the platform registry.', 'sources' => []]
+                : ['answer' => "The registry lists {$count} {$metric} ".($count === 1 ? 'company.' : 'companies.'), 'sources' => [$registry]];
+        }
+
+        return app(GroundedAiResponse::class)->answer($question, $records, $identity['name'], 'platform');
     }
 }

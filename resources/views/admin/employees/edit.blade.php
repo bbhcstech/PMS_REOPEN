@@ -1475,6 +1475,12 @@
                                 <span class="mandatory-badge">Required</span>
                             </label>
                             @php $role = old('user_role') ?? ($employee->role ?? 'employee') @endphp
+                            @if($employee->company_staff_role_id)
+                                {{-- Access comes from the account's company role, so it is shown, not edited. --}}
+                                <input type="hidden" name="user_role" value="{{ $employee->role }}">
+                                <input type="text" class="form-select-premium" value="{{ $employee->companyStaffRole?->name ?? 'Company role' }} ({{ ucfirst((string) $employee->role) }} access)" readonly aria-readonly="true">
+                                <small class="text-muted d-block mt-1">This account's access is set by its company role.</small>
+                            @else
                             <select name="user_role" class="form-select-premium select-picker" required>
                                 <option value="">Select Role</option>
                                 <option value="employee" {{ $role === 'employee' ? 'selected' : '' }}>Employee</option>
@@ -1482,6 +1488,7 @@
                                 <option value="manager" {{ $role === 'manager' ? 'selected' : '' }}>Manager</option>
                                 <option value="hr" {{ $role === 'hr' ? 'selected' : '' }}>HR</option>
                             </select>
+                            @endif
                             @error('user_role')
                                 <div class="invalid-feedback d-block">{{ $message }}</div>
                             @enderror

@@ -11,7 +11,6 @@ $items = [
     ['organization', 'Organization', null, 'organization.index'],
     ['events', 'Events', null, 'events.index'],
     ['community', 'Community', null, 'community.index'],
-    ['upper-level-employees', 'Add Upper Level Employee', null, 'admin.upper-level-employees.index'],
     ['hr', 'HR', null, null],
     ['employees', 'Employee', 'hr', 'employees.index'],
     ['recruitment', 'Recruitment', 'hr', 'recruitment.index'],

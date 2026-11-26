@@ -742,7 +742,7 @@
                                             </a>
                                         </li>
                                         <li>
-                                            <a class="dropdown-item" href="{{ $employee->company_staff_role_id ? route('admin.upper-level-employees.index', ['edit' => $employee->id]) : route('employees.edit', $employee->id) }}">
+                                            <a class="dropdown-item" href="{{ route('employees.edit', $employee->id) }}">
                                                 <i class="fas fa-edit text-info me-2"></i> Edit Profile
                                             </a>
                                         </li>
@@ -778,13 +778,13 @@
                                         @php
                                             $isInactiveEmployee = strcasecmp((string) ($employee->employeeDetail?->status ?? ''), 'Inactive') === 0;
                                             $deleteState = match (true) {
-                                                ($employee->role ?? '') !== 'employee' || $employee->company_staff_role_id => 'upper-level',
+                                                ($employee->role ?? '') !== 'employee' => 'privileged',
                                                 isset($employee->subordinate_count) && $employee->subordinate_count > 0 => 'has-team',
                                                 ! $isInactiveEmployee => 'active',
                                                 default => 'ready',
                                             };
                                         @endphp
-                                        @if(! $isInactiveEmployee && $employee->employeeDetail && ($employee->role ?? '') === 'employee' && ! $employee->company_staff_role_id)
+                                        @if(! $isInactiveEmployee && $employee->employeeDetail && ($employee->role ?? '') === 'employee')
                                             <li>
                                                 <button type="button" class="dropdown-item text-warning employee-inactive-trigger"
                                                         data-employee-name="{{ $employee->name }}"
@@ -1298,15 +1298,15 @@ $(document).ready(function () {
         $('#employeeDeleteName').text(deleteContext.name);
         $('#employeeDeleteMeta').text([code ? 'ID ' + code : null, $btn.data('employee-role'), $btn.data('employee-department')].filter(Boolean).join(' · '));
         $('#employeeDeleteInitials').text(initialsOf(deleteContext.name));
-        $('#employeeDeleteStatus').text(state === 'active' ? 'Active' : (state === 'upper-level' ? 'Upper level' : 'Inactive')).toggleClass('is-active', state === 'active');
-        $('#employeeDeleteStepInactive').toggleClass('is-done', state !== 'active' && state !== 'upper-level').toggleClass('is-todo', state === 'active');
+        $('#employeeDeleteStatus').text(state === 'active' ? 'Active' : (state === 'privileged' ? 'HR / Manager' : 'Inactive')).toggleClass('is-active', state === 'active');
+        $('#employeeDeleteStepInactive').toggleClass('is-done', state !== 'active' && state !== 'privileged').toggleClass('is-todo', state === 'active');
         $('#employeeDeleteStepTeam').toggleClass('is-done', team === 0).toggleClass('is-todo', team > 0)
             .find('span:last').text(team > 0 ? team + ' team member(s) still report to this employee' : 'No team members report to this employee');
 
         const reasons = {
             active: deleteContext.name + ' is still active. Mark the employee inactive first — then the Delete option unlocks.',
             'has-team': team + ' team member(s) report to ' + deleteContext.name + '. Assign them a new reporting manager first, then delete.',
-            'upper-level': deleteContext.name + ' is an upper level account. Manage it from Add Upper Level Employee.',
+            privileged: deleteContext.name + ' has HR or manager access. Only employee accounts can be deleted from the Employees section.',
         };
         $('#employeeDeleteTitle').text(ready ? 'Delete employee permanently?' : 'Delete is locked');
         $('#employeeDeleteSubtitle').text(ready ? 'Review the details below before you continue.' : 'Complete the steps below to unlock it.');

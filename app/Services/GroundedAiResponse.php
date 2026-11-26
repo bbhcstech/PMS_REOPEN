@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Exceptions\AiProviderUnavailable;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\{Cache, Http, Log};
 
@@ -44,7 +45,7 @@ class GroundedAiResponse
         $refusal = ['answer' => 'I can only help with information in this assistant workspace that you are allowed to access. I could not find information to answer this question.', 'sources' => []];
         if (!$records) return $refusal;
         $apiKey = trim((string) config('company_ai.api_key'));
-        if ($apiKey === '') abort(503, 'The assistant is not configured yet. Please contact your platform administrator.');
+        if ($apiKey === '') throw new AiProviderUnavailable('missing_key');
         $payload = ['assistant_name' => $name, 'question' => $question];
         if ($history) $payload['recent_conversation'] = array_values($history);
         $payload[$scope === 'company' ? 'authorized_company_records' : 'authorized_platform_records'] = $records;
@@ -63,7 +64,7 @@ class GroundedAiResponse
 
     private function requestReply(string $apiKey, array $messages): array
     {
-        $models = $this->models();
+        $models = $this->models($apiKey);
         $deadline = microtime(true) + (float) config('company_ai.timeout');
         $failures = [];
         foreach ($models as $index => $model) {
@@ -94,7 +95,7 @@ class GroundedAiResponse
             if (!$response->successful()) {
                 $failures[$model] = $status;
                 if (in_array($response->json('error.code'), ['model_not_found', 'model_decommissioned'], true)) {
-                    Cache::put('company_ai.unavailable.' . md5($model), true, now()->addHours(6));
+                    Cache::put($this->modelCacheKey($apiKey, $model), true, now()->addHours(6));
                 }
                 if (in_array($status, [401, 402], true)) break;
                 continue;
@@ -110,22 +111,28 @@ class GroundedAiResponse
             $failures[$model] = 'invalid_reply';
         }
 
-        Log::warning('Workspace assistant provider attempts failed.', ['attempts' => $failures]);
         $statuses = array_values($failures);
-        if (array_intersect($statuses, [401, 402]) || ($statuses && !array_diff($statuses, [403, 404]))) {
-            abort(503, 'The assistant cannot access its AI service. Please contact your platform administrator.');
-        }
-        if (in_array(429, $statuses, true)) {
-            abort(503, 'The assistant is busy right now. Please try again in a minute.');
-        }
-        abort(503, 'The AI service could not complete your request. You can retry your question.');
+        $reason = match (true) {
+            in_array(401, $statuses, true) => 'invalid_key',
+            in_array(402, $statuses, true) => 'billing',
+            !$models || ($statuses && !array_diff($statuses, [403, 404])) => 'model_access',
+            in_array(429, $statuses, true) => 'rate_limit',
+            default => 'unavailable',
+        };
+        Log::warning('Workspace assistant provider attempts failed.', ['reason' => $reason, 'attempts' => $failures]);
+        throw new AiProviderUnavailable($reason, in_array($reason, ['rate_limit', 'unavailable'], true));
     }
 
     /** Configured model first, then fallbacks; models the provider reported as unavailable are skipped for a while. */
-    private function models(): array
+    private function models(string $apiKey): array
     {
         $models = array_values(array_unique(array_filter(array_map('trim', array_merge([(string) config('company_ai.model')], (array) config('company_ai.fallback_models', []))))));
-        $available = array_values(array_filter($models, fn ($model) => !Cache::get('company_ai.unavailable.' . md5($model))));
+        $available = array_values(array_filter($models, fn ($model) => !Cache::get($this->modelCacheKey($apiKey, $model))));
         return $available ?: $models;
+    }
+
+    private function modelCacheKey(string $apiKey, string $model): string
+    {
+        return 'company_ai.unavailable.' . hash_hmac('sha256', $model, $apiKey);
     }
 }

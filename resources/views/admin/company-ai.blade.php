@@ -4,17 +4,20 @@
 @section('content')
 @php
     $assistantSuggestions = $suggestions ?? [];
+    $assistantLogo = asset('logos/bitroxia_logo.png');
+    $supportsLocalAnswers = $supportsLocalAnswers ?? false;
+    $canAsk = $configured || $supportsLocalAnswers;
     $assistantIntro = $assistantDescription ?? 'Ask anything about your workspace — holidays, office timings, attendance, leave, tasks, events, your team or how to do something. Answers come from live company records you are allowed to see.';
 @endphp
 <main id="company-ai-page" data-live-preserve class="{{ ($assistantLayout ?? '') === 'layouts.superadmin' ? 'company-ai-platform' : '' }}">
     <section class="cai-shell" aria-labelledby="assistant-display-name">
         <header class="cai-head">
             <div class="cai-orb" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l1.9 4.6L18.5 9.5l-4.6 1.9L12 16l-1.9-4.6L5.5 9.5l4.6-1.9z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg>
+                <img src="{{ $assistantLogo }}" alt="" width="44" height="44">
             </div>
             <div class="cai-head-text">
                 <h1 id="assistant-display-name">{{ $assistantName }}</h1>
-                <p><span class="cai-live-dot" aria-hidden="true"></span>{{ $configured ? 'Answers from your workspace' : 'Waiting for AI service setup' }}</p>
+                <p><span class="cai-live-dot" aria-hidden="true"></span>{{ $canAsk ? 'Answers from your workspace' : 'Waiting for AI service setup' }}</p>
             </div>
             <button type="button" class="cai-ghost" id="company-ai-reset" title="Start a new conversation">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
@@ -23,20 +26,22 @@
         </header>
 
         @unless($configured)
-            <div class="cai-notice" role="status">Your assistant is ready. A platform administrator needs to configure the AI service before it can answer questions.</div>
+            <div class="cai-notice" role="status">
+                {{ $supportsLocalAnswers ? 'Common questions work directly from workspace records. Broader questions need the AI service.' : 'A platform administrator needs to configure the AI service before this assistant can answer questions.' }}
+            </div>
         @endunless
 
         <div class="cai-stream" id="company-ai-conversation" aria-live="polite">
             <div class="cai-welcome" id="company-ai-welcome">
                 <div class="cai-orb is-large" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3l1.9 4.6L18.5 9.5l-4.6 1.9L12 16l-1.9-4.6L5.5 9.5l4.6-1.9z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg>
+                    <img src="{{ $assistantLogo }}" alt="" width="64" height="64">
                 </div>
                 <h2>Hello{{ auth()->user()?->name ? ', ' . strtok(auth()->user()->name, ' ') : '' }}! How can I help today?</h2>
                 <p>{{ $assistantIntro }}</p>
                 @if($assistantSuggestions)
                     <div class="cai-chips" role="list">
                         @foreach($assistantSuggestions as $suggestion)
-                            <button type="button" class="cai-chip" role="listitem" data-question="{{ $suggestion }}" @disabled(!$configured)>{{ $suggestion }}</button>
+                            <button type="button" class="cai-chip" role="listitem" data-question="{{ $suggestion }}" @disabled(!$canAsk)>{{ $suggestion }}</button>
                         @endforeach
                     </div>
                 @endif
@@ -47,8 +52,8 @@
             @csrf
             <label for="company-ai-question" class="cai-sr">Your question</label>
             <div class="cai-inputbox">
-                <textarea id="company-ai-question" rows="1" maxlength="1000" required placeholder="Ask about holidays, leave, attendance, tasks, policies…" @disabled(!$configured)></textarea>
-                <button id="company-ai-send" type="submit" class="cai-send" title="Send (Enter)" aria-label="Send question" @disabled(!$configured)>
+                <textarea id="company-ai-question" rows="1" maxlength="1000" required placeholder="Ask about holidays, leave, attendance, tasks, policies…" @disabled(!$canAsk)></textarea>
+                <button id="company-ai-send" type="submit" class="cai-send" title="Send (Enter)" aria-label="Send question" @disabled(!$canAsk)>
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
                 </button>
             </div>
@@ -111,12 +116,10 @@
     #company-ai-page .cai-shell::before { content: ''; position: absolute; inset: 0 0 auto 0; height: 220px; background: radial-gradient(600px 200px at 15% -40px, rgba(47, 107, 255, .14), transparent 70%), radial-gradient(500px 200px at 90% -60px, rgba(139, 92, 246, .14), transparent 70%); pointer-events: none; }
 
     #company-ai-page .cai-head { position: relative; display: flex; align-items: center; gap: 14px; padding: 18px 22px; border-bottom: 1px solid var(--cai-border); }
-    #company-ai-page .cai-orb { width: 44px; height: 44px; flex-shrink: 0; border-radius: 50%; display: grid; place-items: center; background: var(--cai-gradient); color: #fff; box-shadow: 0 8px 20px rgba(47, 107, 255, .3); }
-    #company-ai-page .cai-orb svg { width: 22px; height: 22px; color: #fff; stroke: #fff; }
+    #company-ai-page .cai-orb { width: 44px; height: 44px; flex-shrink: 0; border-radius: 50%; display: grid; place-items: center; overflow: hidden; background: #141a2a; box-shadow: 0 8px 20px rgba(47, 107, 255, .3); }
+    #company-ai-page .cai-orb img { display: block; width: 100%; height: 100%; object-fit: cover; transform: translateY(11%) scale(1.8); }
     #company-ai-page .cai-orb.is-large { width: 64px; height: 64px; }
-    #company-ai-page .cai-orb.is-large svg { width: 32px; height: 32px; }
     #company-ai-page .cai-orb.is-small { width: 32px; height: 32px; box-shadow: none; }
-    #company-ai-page .cai-orb.is-small svg { width: 16px; height: 16px; }
     #company-ai-page .cai-head-text { min-width: 0; flex: 1; }
     #company-ai-page .cai-head h1 { margin: 0; font-size: 1.08rem; font-weight: 700; line-height: 1.3; color: var(--cai-ink) !important; -webkit-text-fill-color: var(--cai-ink) !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     #company-ai-page .cai-head p { margin: 3px 0 0; display: flex; align-items: center; gap: 6px; font-size: .8rem; color: var(--cai-muted) !important; -webkit-text-fill-color: var(--cai-muted) !important; }
@@ -142,6 +145,7 @@
     #company-ai-page .cai-row.is-assistant .cai-bubble { background: var(--cai-surface-2); border: 1px solid var(--cai-border); color: var(--cai-ink) !important; -webkit-text-fill-color: var(--cai-ink) !important; border-top-left-radius: 6px; }
     #company-ai-page .cai-row.is-error .cai-bubble { background: var(--cai-warn-bg); border-color: transparent; color: var(--cai-warn-ink) !important; -webkit-text-fill-color: var(--cai-warn-ink) !important; }
     #company-ai-page .cai-retry { margin-top: 8px; }
+    #company-ai-page .cai-row.is-error .cai-chips { justify-content: flex-start; margin-top: 10px; }
     #company-ai-page .cai-bubble :is(p, ul, ol) { margin: 0; color: inherit !important; -webkit-text-fill-color: currentColor !important; }
     #company-ai-page .cai-bubble :is(p, ul, ol) + :is(p, ul, ol) { margin-top: 8px; }
     #company-ai-page .cai-bubble :is(ul, ol) { padding-left: 20px; }
@@ -198,7 +202,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const conversation = document.getElementById('company-ai-conversation');
     const welcome = document.getElementById('company-ai-welcome');
     const counter = document.getElementById('company-ai-count');
-    const orbSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l1.9 4.6L18.5 9.5l-4.6 1.9L12 16l-1.9-4.6L5.5 9.5l4.6-1.9z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg>';
+    const assistantAvatar = document.querySelector('#company-ai-page .cai-head .cai-orb');
     let busy = false;
 
     function el(tag, className, text) {
@@ -206,6 +210,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (className) node.className = className;
         if (text !== undefined) node.textContent = text;
         return node;
+    }
+    function messageAvatar() {
+        const avatar = assistantAvatar.cloneNode(true);
+        avatar.classList.add('is-small');
+        return avatar;
     }
     // Inline formatting: **bold** and in-app paths (/leaves/create) become links. Built with DOM nodes only.
     function inline(target, text) {
@@ -244,7 +253,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function add(kind, text, sources) {
         if (welcome) welcome.remove();
         const row = el('div', 'cai-row is-' + kind);
-        if (kind !== 'user') { const orb = el('div', 'cai-orb is-small'); orb.setAttribute('aria-hidden', 'true'); orb.innerHTML = orbSvg; row.append(orb); }
+        if (kind !== 'user') row.append(messageAvatar());
         const bubble = el('div', 'cai-bubble');
         if (kind === 'user') bubble.textContent = text; else bubble.append(formatted(text));
         if (sources && sources.length) {
@@ -267,7 +276,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     function typing() {
         const row = el('div', 'cai-row is-assistant');
-        const orb = el('div', 'cai-orb is-small'); orb.setAttribute('aria-hidden', 'true'); orb.innerHTML = orbSvg; row.append(orb);
+        row.append(messageAvatar());
         const bubble = el('div', 'cai-bubble cai-typing'); bubble.setAttribute('aria-label', 'Assistant is typing');
         bubble.append(el('span'), el('span'), el('span'));
         row.append(bubble);
@@ -289,6 +298,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const controller = new AbortController();
         const deadline = setTimeout(() => controller.abort(), 45000);
         let retryable = true;
+        let knownQuestions = [];
         try {
             const response = await fetch(@json($askUrl), {
                 method: 'POST', cache: 'no-store', credentials: 'same-origin',
@@ -299,7 +309,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (response.status === 409) { location.reload(); return; }
             const data = await response.json().catch(() => ({}));
             if (!response.ok) {
-                retryable = response.status >= 500;
+                retryable = response.status >= 500 && data.retryable !== false;
+                knownQuestions = Array.isArray(data.suggestions) ? data.suggestions.filter(question => typeof question === 'string') : [];
                 throw new Error(response.status === 429 ? 'Please wait a minute before asking another question.' : (data.message || 'Unable to answer. Please try again.'));
             }
             if (typeof data.answer !== 'string') throw new Error('The assistant did not return an answer.');
@@ -316,8 +327,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 retry.type = 'button';
                 retry.addEventListener('click', () => ask(question, row));
                 row.querySelector('.cai-bubble').append(retry);
-                scrollDown();
             }
+            if (knownQuestions.length) {
+                const options = el('div', 'cai-chips');
+                knownQuestions.forEach(question => {
+                    const chip = el('button', 'cai-chip', question);
+                    chip.type = 'button';
+                    chip.dataset.question = question;
+                    options.append(chip);
+                });
+                row.querySelector('.cai-bubble').append(options);
+            }
+            scrollDown();
         } finally {
             clearTimeout(deadline);
             busy = false; button.disabled = false; input.disabled = false; input.focus();

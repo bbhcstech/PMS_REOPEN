@@ -51,8 +51,13 @@ class CompanyAiAgent
         if ($history && mb_strlen($question) <= 80) {
             $topics = array_values(array_unique(array_merge($topics, $live->topics(end($history)['question']))));
         }
+        $liveRecords = $live->build($company, $user, $topics);
+        if ($result = app(CompanyAiWorkspaceAnswers::class)->answer($question, $liveRecords)) {
+            $this->remember($question, $result['answer']);
+            return $result;
+        }
         $records = [];
-        foreach (array_merge($live->build($company, $user, $topics), app(CompanyAiKnowledge::class)->retrieve($company, $user, $question)) as $record) {
+        foreach (array_merge($liveRecords, app(CompanyAiKnowledge::class)->retrieve($company, $user, $question)) as $record) {
             $records[$record['id']] = $record;
         }
         if (!$records) return $refusal;

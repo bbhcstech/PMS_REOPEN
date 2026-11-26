@@ -109,7 +109,7 @@ trait EmployeeLifecycle
             return $respond('error', 'You cannot delete your own account.', 422);
         }
         if (($user->role ?? '') !== 'employee') {
-            return $respond('error', 'Only employee records can be deleted here. Upper level accounts are managed in Add Upper Level Employee.', 422);
+            return $respond('error', 'Only employee accounts can be deleted here. HR and manager accounts cannot be deleted from the Employees section.', 422);
         }
         if (strcasecmp((string) ($detail?->status ?? ''), 'Inactive') !== 0) {
             return $respond('error', 'Mark ' . $user->name . ' inactive first. Only inactive employees can be deleted.', 422);

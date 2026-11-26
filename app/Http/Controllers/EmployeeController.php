@@ -213,14 +213,9 @@ class EmployeeController extends Controller
     {
         $actorRole = auth()->user()?->normalizedRole();
         if (! in_array($actorRole, ['admin', 'administrator', 'superadmin'], true)) {
-            abort_if($target && ($target->role !== 'employee' || $target->company_staff_role_id), 403, 'Only a company admin can manage upper level employee accounts.');
+            abort_if($target && ($target->role !== 'employee' || $target->company_staff_role_id), 403, 'Only a company admin can manage HR, manager and company-role accounts.');
             $requestedRole = $request->input('user_role', $request->input('role', 'employee'));
             abort_unless($requestedRole === 'employee', 403, 'Only a company admin can assign privileged roles.');
-        }
-        // Role identity and permissions for these accounts are managed together
-        // through the admin-only section, not a generic employee form.
-        if ($target?->company_staff_role_id) {
-            abort(403, 'Manage this account in Add Upper Level Employee.');
         }
     }
 }

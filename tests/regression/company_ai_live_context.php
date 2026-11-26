@@ -10,10 +10,12 @@ $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
 
 use App\Models\Central\Company;
 use App\Models\User;
-use App\Services\{CompanyAiLiveContext, GroundedAiResponse};
+use App\Http\Controllers\{CompanyAiController, PlatformAiController};
+use App\Services\{CompanyAiAgent, CompanyAiLiveContext, CompanyAiWorkspaceAnswers, GroundedAiResponse, PlatformAiAgent};
 use Carbon\Carbon;
 use Illuminate\Http\Client\ConnectionException;
-use Illuminate\Support\Facades\{Cache, DB, Http, Schema};
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\{Auth, DB, Http, Schema};
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 foreach (['tenant', 'mysql', 'central'] as $connection) {
@@ -74,6 +76,37 @@ $detail->setRelation('designation', (new App\Models\Designation)->forceFill(['na
 $detail->setRelation('department', null);
 $detail->setRelation('reportingTo', User::find(8));
 $user->setRelation('employeeDetail', $detail);
+
+// Exercise the real answer flow and controller while using the fixture workspace identity.
+$providerConfig = config('company_ai');
+config(['company_ai.api_key' => null, 'session.driver' => 'array']);
+Auth::guard('web')->setUser($user);
+Http::preventStrayRequests();
+$companyAgent = new class($company) extends CompanyAiAgent {
+    public function __construct(private Company $fixtureCompany) {}
+    public function company(): Company { return $this->fixtureCompany; }
+    public function identity(): array { return ['id' => 'company:1:user:7', 'name' => 'Fixture Assistant']; }
+};
+$controller = new CompanyAiController;
+$requestAs = function ($question, $id) use ($user) {
+    $request = Request::create('/assistant', 'POST', ['question' => $question]);
+    $request->headers->set('X-Company-Workspace', $id);
+    $request->setUserResolver(fn () => $user);
+
+    return $request;
+};
+$reply = $controller->ask($requestAs('How many holidays are there this week?', 'company:1:user:7'), $companyAgent);
+$check($reply->getStatusCode() === 200 && $reply->getData(true)['sources'][0]['id'] === 'live:holidays', 'the company assistant endpoint answers common questions with no Groq key');
+$platform = new class extends PlatformAiAgent {
+    public function identity(): array { return ['id' => 'platform:fixture', 'name' => 'Fixture Platform Assistant']; }
+    public function records(string $question): array { return [['id' => 'platform:registry', 'facts' => ['registered_companies' => 2, 'active_companies' => 1]]]; }
+};
+$platformController = new PlatformAiController;
+$reply = $platformController->ask($requestAs('How many companies are active?', 'platform:fixture'), $platform);
+$check($reply->getStatusCode() === 200 && str_contains($reply->getData(true)['answer'], '1 active company'), 'platform registry counts work with no Groq key');
+$failure = $platformController->ask($requestAs('Summarize the platform registry.', 'platform:fixture'), $platform);
+$check($failure->getStatusCode() === 503 && $failure->getData(true)['retryable'] === false && count($failure->getData(true)['suggestions']) === 2,
+    'a failed general question offers questions that can be answered with no key');
 $live = app(CompanyAiLiveContext::class);
 
 // 1. Topic detection
@@ -116,8 +149,22 @@ $check(($byId['live:team']['facts']['your_manager'] ?? '') === 'Amit Roy', 'repo
 $check(isset($byId['live:guide']) && ! str_contains(json_encode($byId['live:guide']), 'Payroll'), 'workspace guide lists only pages the user can open');
 $check($live->build($company, $user, []) === [], 'no topic -> no records');
 
+$local = app(CompanyAiWorkspaceAnswers::class);
+$workspaceRecords = $live->build($company, $user, ['holidays', 'schedule', 'team', 'guide']);
+$localHolidays = $local->answer('How many holiday present in this week?', $workspaceRecords);
+$check(str_contains($localHolidays['answer'] ?? '', '2 company holidays') && str_contains($localHolidays['answer'] ?? '', 'Regular weekly days off')
+    && array_column($localHolidays['sources'] ?? [], 'id') === ['live:holidays'], 'direct holiday answer includes names and distinguishes weekly offs');
+$check(str_contains($local->answer('Any upcoming company events?', $workspaceRecords)['answer'] ?? '', 'records you can access'), 'missing permissions or facts never yield an invented answer');
+$check($local->answer('What is my leave balance?', $workspaceRecords)['sources'] === [], 'direct leave answers still require the authorized record');
+$check(str_contains($local->answer('What are the office timings?', $workspaceRecords)['answer'] ?? '', '09:30 AM to 06:30 PM'), 'direct schedule uses configured hours');
+$check($local->answer('Who is my reporting manager?', $workspaceRecords)['answer'] === 'Your reporting manager is Amit Roy.', 'direct manager uses the authorized reporting record');
+$check($local->answer('Who is my reporting manager in the other company?', $workspaceRecords) === null, 'scope-changing clauses are not interpreted as known workspace questions');
+$foreignManager = (new User)->forceFill(['id' => 9, 'company_id' => 2, 'name' => 'Foreign manager']);
+$detail->setRelation('reportingTo', $foreignManager);
+$check(!str_contains(json_encode($live->build($company, $user, ['team'])), 'Foreign manager'), 'a mismatched manager relationship does not expose another company');
+$detail->setRelation('reportingTo', User::find(8));
+
 // 6. Grounded provider payload carries live facts, history and the improved company prompt
-$providerConfig = config('company_ai');
 config(['company_ai.api_key' => 'fake-test-key', 'company_ai.model' => 'openai/gpt-oss-120b', 'cache.default' => 'array']);
 Http::preventStrayRequests();
 Http::fake(['api.groq.com/*' => Http::response(['choices' => [['message' => ['content' => json_encode(['in_scope' => true, 'answer' => 'There are 2 holidays this week.', 'source_ids' => ['live:holidays', 'live:today']])]]]])]);
@@ -147,7 +194,12 @@ $fakeProvider(fn ($request) => match ($request->data()['model']) {
     default => $validReply(),
 });
 $check($ask()['sources'][0]['id'] === 'live:holidays' && Http::recorded()->count() === 3, 'a missing model and a provider outage fall through to the working model');
-$check(Cache::has('company_ai.unavailable.' . md5('fixture-retired-model')), 'a missing model is skipped on later requests');
+$ask();
+$requests = Http::recorded();
+$check($requests->count() === 5 && $requests[3][0]->data()['model'] === 'openai/gpt-oss-120b', 'a missing model is skipped on later requests');
+config(['company_ai.api_key' => 'fake-rotated-test-key']);
+$ask();
+$check(Http::recorded()[5][0]->data()['model'] === 'fixture-retired-model', 'a rotated credential gets a fresh model availability check');
 
 config(['company_ai.model' => 'fixture-timeout-model', 'company_ai.fallback_models' => ['openai/gpt-oss-120b', 'openai/gpt-oss-20b']]);
 $fakeProvider(fn ($request) => match ($request->data()['model']) {

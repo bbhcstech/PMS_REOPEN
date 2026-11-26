@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\AiProviderUnavailable;
 use App\Services\CompanyAiAgent;
 use Illuminate\Http\Request;
 
@@ -14,6 +15,7 @@ class CompanyAiController extends Controller
         return response()->view('admin.company-ai', [
             'assistantName' => $identity['name'], 'workspaceKey' => $identity['id'],
             'askUrl' => route('company.ai.ask'), 'configured' => filled(config('company_ai.api_key')),
+            'supportsLocalAnswers' => true,
             'suggestions' => $this->suggestions($request->user()),
         ])
             ->header('Cache-Control', 'private, no-store');
@@ -24,7 +26,13 @@ class CompanyAiController extends Controller
         $data = $request->validate(['question' => 'required|string|max:1000', 'company_id' => 'prohibited', 'agent_id' => 'prohibited', 'messages' => 'prohibited']);
         $identity = $agent->identity();
         abort_unless($request->header('X-Company-Workspace') === $identity['id'], 409, 'Your company session changed. Reload the assistant before continuing.');
-        return response()->json($agent->answer($data['question']) + ['assistant_name' => $identity['name']])->header('Cache-Control', 'private, no-store');
+        try {
+            $answer = $agent->answer($data['question']);
+        } catch (AiProviderUnavailable $error) {
+            return $error->response($this->suggestions($request->user()));
+        }
+
+        return response()->json($answer + ['assistant_name' => $identity['name']])->header('Cache-Control', 'private, no-store');
     }
 
     /** Starter questions, limited to what this user can open. */

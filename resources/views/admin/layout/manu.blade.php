@@ -295,13 +295,6 @@
                 @endif
             @endif
 
-            @if(in_array(strtolower((string) auth()->user()?->role), ['admin', 'administrator'], true) && $canSeeModule('upper-level-employees'))
-                <li class="menu-item {{ request()->routeIs('admin.upper-level-employees.*') ? 'active' : '' }}">
-                    <a href="{{ route('admin.upper-level-employees.index') }}" class="menu-link">
-                        <i class="menu-icon tf-icons bx bx-user-plus"></i><div>Add Upper Level Employee</div>
-                    </a>
-                </li>
-            @endif
             @if($isHrSidebarUser)
                 {{-- HR Role: Show all HR features directly as top-level sidebar items without outer HR dropdown wrapper --}}
                 @if($canSeeModule('employees'))
