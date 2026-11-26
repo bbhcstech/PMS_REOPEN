@@ -5,7 +5,7 @@
 @section('content')
 @include('admin.settings.partials.workforce-navigation')
 
-<div class="designation-form-page {{ isset($designation) ? 'designation-edit-mode' : 'designation-add-mode' }}">
+<div id="pms-designation-form-page" class="designation-form-page {{ isset($designation) ? 'designation-edit-mode' : 'designation-add-mode' }}">
     <!-- Breadcrumb -->
     <div class="breadcrumb">
         <i class="fas {{ isset($designation) ? 'fa-user-edit' : 'fa-user-plus' }}"></i>
@@ -1239,6 +1239,50 @@
         background: #1a0d0d !important;
         color: #fca5a5 !important;
         border-left: 4px solid #ef4444 !important;
+    }
+
+    /* High-specificity ID overrides beating global pms-refresh/pms-bitroxia CSS loaded in footer. */
+    #pms-designation-form-page .header-card .header-icon i {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        background: transparent !important;
+        filter: none !important;
+    }
+    #pms-designation-form-page .form-field .field-icon i {
+        color: inherit !important;
+        -webkit-text-fill-color: currentColor !important;
+        background: transparent !important;
+        filter: none !important;
+    }
+    #pms-designation-form-page .btn-group {
+        display: inline-flex !important;
+        gap: 12px !important;
+    }
+    #pms-designation-form-page .btn-group > .btn {
+        border-radius: 14px !important;
+    }
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark) #pms-designation-form-page .btn-light {
+        background: #ffffff !important;
+        color: #1e40af !important;
+        -webkit-text-fill-color: #1e40af !important;
+        border: 1px solid rgba(47, 107, 255, 0.24) !important;
+    }
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark) #pms-designation-form-page .btn-light:hover {
+        background: #eef2ff !important;
+        color: #1d4ed8 !important;
+        -webkit-text-fill-color: #1d4ed8 !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body.dark-mode, [data-pms-theme="dark"], .dark) #pms-designation-form-page .btn-light,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body.dark-mode, [data-pms-theme="dark"], .dark) #pms-designation-form-page .btn-secondary {
+        background: rgba(47, 107, 255, 0.14) !important;
+        border: 1px solid rgba(96, 165, 250, 0.35) !important;
+        color: #93c5fd !important;
+        -webkit-text-fill-color: #93c5fd !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body.dark-mode, [data-pms-theme="dark"], .dark) #pms-designation-form-page :is(.btn-light, .btn-secondary):hover {
+        background: rgba(79, 131, 255, 0.28) !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
     }
 </style>
 

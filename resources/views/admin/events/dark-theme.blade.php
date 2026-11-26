@@ -28,13 +28,6 @@
         color: #60a5fa !important;
         -webkit-text-fill-color: #60a5fa !important;
     }
-    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) #pms-events-page .pms-events-switcher {
-        background: #1e293b !important;
-        border-color: rgba(148, 163, 184, 0.25) !important;
-    }
-    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) #pms-events-page .pms-events-switcher .btn:not(.active) {
-        color: #cbd5e1 !important;
-    }
     :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) #pms-events-page .events-filter-card .form-control,
     :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) #pms-events-page .events-filter-card .form-select,
     :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body.dark-mode) #pms-events-page .events-filter-card .input-group-text,

@@ -1551,42 +1551,72 @@
     }
 
     /* Code / parent / archived-on badges: icon follows the badge text colour. */
-    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body.dark-mode) .archive-container :is(.code-badge, .deleted-badge, .parent-badge) {
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body.dark-mode) #pms-designation-archive-page :is(.code-badge, .deleted-badge, .parent-badge) {
         background: rgba(47, 107, 255, 0.14) !important;
         border: 1px solid rgba(96, 165, 250, 0.35) !important;
         color: #bfdbfe !important;
         -webkit-text-fill-color: #bfdbfe !important;
     }
-    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body.dark-mode) .archive-container .parent-badge.top-level {
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body.dark-mode) #pms-designation-archive-page .parent-badge.top-level {
         background: rgba(245, 158, 11, 0.16) !important;
         border-color: rgba(251, 191, 36, 0.4) !important;
         color: #fcd34d !important;
         -webkit-text-fill-color: #fcd34d !important;
     }
-    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body.dark-mode) .archive-container :is(.code-badge, .deleted-badge, .parent-badge) i {
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body.dark-mode) #pms-designation-archive-page :is(.code-badge, .deleted-badge, .parent-badge) i {
         color: inherit !important;
         -webkit-text-fill-color: currentColor !important;
         background: transparent !important;
+        filter: none !important;
     }
 
     /* Table header icons and restore button. */
-    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body.dark-mode) .archive-container .archive-table th i {
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body.dark-mode) #pms-designation-archive-page .archive-table th i {
         color: #93c5fd !important;
         -webkit-text-fill-color: #93c5fd !important;
         background: transparent !important;
+        filter: none !important;
     }
-    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body.dark-mode) .archive-container .action-group .btn-restore {
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body.dark-mode) #pms-designation-archive-page .action-group .btn-restore {
         background: linear-gradient(145deg, #4F83FF, #2F6BFF) !important;
         border: 0 !important;
     }
-    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body.dark-mode) .archive-container .action-group .btn-restore i {
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body.dark-mode) #pms-designation-archive-page .action-group .btn-restore i {
         color: #ffffff !important;
         -webkit-text-fill-color: #ffffff !important;
         background: transparent !important;
+        filter: none !important;
+    }
+
+    /* High-specificity ID overrides beating pms-refresh / pms-bitroxia CSS. */
+    #pms-designation-archive-page .stat-card {
+        border-radius: 22px !important;
+        padding: 1.4rem 1.5rem !important;
+    }
+    #pms-designation-archive-page .stat-icon i {
+        background: transparent !important;
+        background-color: transparent !important;
+        color: inherit !important;
+        -webkit-text-fill-color: currentColor !important;
+        filter: none !important;
+    }
+    #pms-designation-archive-page .level-badge i,
+    #pms-designation-archive-page .mini-icon i,
+    #pms-designation-archive-page .empty-state i {
+        color: inherit !important;
+        -webkit-text-fill-color: currentColor !important;
+        filter: none !important;
+    }
+    #pms-designation-archive-page .archive-search-bar {
+        background: linear-gradient(135deg, #f8fafc, #eef2ff);
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body.dark-mode, [data-pms-theme="dark"], .dark) #pms-designation-archive-page .stat-card:first-of-type {
+        background: #0F1530 !important;
+        border: 1px solid rgba(79, 131, 255, 0.2) !important;
     }
 </style>
 
-<div class="archive-container" data-live-preserve data-live-records-off>
+<div id="pms-designation-archive-page" class="archive-container" data-live-preserve data-live-records-off>
     <div class="ambient-orb orb-1"></div>
     <div class="ambient-orb orb-2"></div>
     <div class="ambient-orb orb-3"></div>

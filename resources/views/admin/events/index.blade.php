@@ -1126,40 +1126,6 @@
         font-weight: 600 !important;
     }
 
-    #pms-events-page .pms-events-switcher {
-        display: inline-flex !important;
-        align-items: center !important;
-        gap: 4px !important;
-        padding: 4px !important;
-        background: #f1f5f9 !important;
-        border: 1px solid #e2e8f0 !important;
-        border-radius: 12px !important;
-    }
-
-    #pms-events-page .pms-events-switcher .btn {
-        height: 32px !important;
-        padding: 0 12px !important;
-        border-radius: 8px !important;
-        border: none !important;
-        background: transparent !important;
-        color: #475569 !important;
-        font-size: 0.8rem !important;
-        font-weight: 600 !important;
-        box-shadow: none !important;
-    }
-
-    #pms-events-page .pms-events-switcher .btn.active {
-        background: #2563eb !important;
-        color: #ffffff !important;
-        -webkit-text-fill-color: #ffffff !important;
-        box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25) !important;
-    }
-
-    #pms-events-page .pms-events-switcher .btn.active i {
-        color: #ffffff !important;
-        -webkit-text-fill-color: #ffffff !important;
-    }
-
     #pms-events-page .event-card,
     #pms-events-page .gallery-card,
     #pms-events-page #eventCalendar,

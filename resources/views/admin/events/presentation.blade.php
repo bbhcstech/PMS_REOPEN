@@ -303,18 +303,20 @@
         -webkit-text-fill-color: currentColor !important;
     }
 
-    #pms-events-page .filter-btn-group {
+    #pms-events-page .filter-btn-group,
+    #pms-events-page .pms-events-switcher {
         display: inline-flex !important;
         max-width: 100%;
         margin: 12px 0 0;
-        padding: 3px;
-        gap: 3px;
-        border: 1px solid var(--ev-border);
-        border-radius: 11px;
-        background: var(--ev-soft);
+        padding: 3px !important;
+        gap: 3px !important;
+        border: 1px solid var(--ev-border) !important;
+        border-radius: 11px !important;
+        background: var(--ev-soft) !important;
     }
 
-    #pms-events-page .filter-btn-group .btn {
+    #pms-events-page .filter-btn-group .btn,
+    #pms-events-page .pms-events-switcher .btn {
         justify-content: center;
         width: auto !important;
         min-height: 38px !important;
@@ -328,10 +330,37 @@
         box-shadow: none !important;
         font-size: .8125rem !important;
         font-weight: 650 !important;
+        transition: background-color .15s ease, border-color .15s ease, color .15s ease, box-shadow .15s ease;
     }
 
-    #pms-events-page .filter-btn-group .btn:is(.active, :hover) { background: var(--ev-accent-soft) !important; color: var(--ev-accent) !important; }
-    #pms-events-page .filter-btn-group .btn.active { border-color: var(--ev-control) !important; }
+    #pms-events-page .filter-btn-group .btn :is(i, .bx),
+    #pms-events-page .pms-events-switcher .btn :is(i, .bx) {
+        color: inherit !important;
+        -webkit-text-fill-color: currentColor !important;
+    }
+
+    #pms-events-page .filter-btn-group .btn:not(.active):hover,
+    #pms-events-page .pms-events-switcher .btn:not(.active):hover {
+        background: var(--ev-accent-soft) !important;
+        border-color: var(--ev-control) !important;
+        color: var(--ev-accent) !important;
+        -webkit-text-fill-color: var(--ev-accent) !important;
+    }
+
+    #pms-events-page .filter-btn-group .btn.active,
+    #pms-events-page .pms-events-switcher .btn.active {
+        background: var(--ev-primary) !important;
+        border-color: var(--ev-primary) !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        box-shadow: 0 2px 8px rgb(89 64 176 / 24%) !important;
+    }
+
+    #pms-events-page .filter-btn-group .btn.active :is(i, .bx),
+    #pms-events-page .pms-events-switcher .btn.active :is(i, .bx) {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
 
     #pms-events-page .events-catalog-pane { container-type: inline-size; }
 

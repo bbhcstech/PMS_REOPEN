@@ -5,7 +5,7 @@
 @section('content')
 @include('admin.settings.partials.workforce-navigation')
 
-<div class="designation-view-page">
+<div id="pms-designation-view-page" class="designation-view-page">
     <!-- Breadcrumb -->
     <div class="breadcrumb">
         <i class="fas fa-user-tie"></i> Admin / Settings / Designations / View
@@ -508,7 +508,7 @@
         color: #ffffff !important;
         -webkit-text-fill-color: #ffffff !important;
     }
-    .level-1 { background: linear-gradient(145deg, #2F6BFF, #0a5a3a) !important; color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; }
+    .level-1 { background: linear-gradient(145deg, #4F83FF, #2F6BFF) !important; color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; }
     .level-2 { background: linear-gradient(145deg, #4F83FF, #2F6BFF) !important; color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; }
     .level-3 { background: linear-gradient(145deg, #3b82f6, #2563eb) !important; color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; }
     .level-4 { background: linear-gradient(145deg, #f59e0b, #d97706) !important; color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; }
@@ -1243,6 +1243,50 @@
     .dark .designation-view-page .avatar-circle * {
         color: #60A5FA !important;
         -webkit-text-fill-color: #60A5FA !important;
+    }
+
+    /* High-specificity ID overrides beating global pms-refresh/pms-bitroxia CSS. */
+    #pms-designation-view-page .header-card .header-icon i,
+    #pms-designation-view-page .level-badge i {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        background: transparent !important;
+        filter: none !important;
+    }
+    #pms-designation-view-page .view-field .field-icon i {
+        color: inherit !important;
+        -webkit-text-fill-color: currentColor !important;
+        background: transparent !important;
+        filter: none !important;
+    }
+    #pms-designation-view-page .btn-group {
+        display: inline-flex !important;
+        gap: 12px !important;
+    }
+    #pms-designation-view-page .btn-group > .btn {
+        border-radius: 14px !important;
+    }
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark) #pms-designation-view-page .btn-light {
+        background: #ffffff !important;
+        color: #1e40af !important;
+        -webkit-text-fill-color: #1e40af !important;
+        border: 1px solid rgba(47, 107, 255, 0.24) !important;
+    }
+    html:not([data-pms-theme="dark"]):not([data-bs-theme="dark"]):not([data-theme="dark"]):not(.dark) #pms-designation-view-page .btn-light:hover {
+        background: #eef2ff !important;
+        color: #1d4ed8 !important;
+        -webkit-text-fill-color: #1d4ed8 !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body.dark-mode, [data-pms-theme="dark"], .dark) #pms-designation-view-page :is(.btn-light, .btn-secondary) {
+        background: rgba(47, 107, 255, 0.14) !important;
+        border: 1px solid rgba(96, 165, 250, 0.35) !important;
+        color: #93c5fd !important;
+        -webkit-text-fill-color: #93c5fd !important;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body.dark-mode, [data-pms-theme="dark"], .dark) #pms-designation-view-page :is(.btn-light, .btn-secondary):hover {
+        background: rgba(79, 131, 255, 0.28) !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
     }
 </style>
 

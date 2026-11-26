@@ -23,22 +23,27 @@ const info = {
     event: { title: '<img src=x onerror=alert(1)>', extendedProps: { banner_url: '/uploads/events/banners/event.png' } },
 };
 const content = context.renderCalendarEventContent(info).domNodes[0];
-assert.equal(content.children[0].tag, 'img');
-assert.equal(content.children[0].src, info.event.extendedProps.banner_url);
-assert.equal(content.children[0].alt, info.event.title);
-assert.equal(content.children[1].textContent, '9a ' + info.event.title);
-assert.equal(content.children[1].children.length, 0, 'Title must remain plain text');
-content.children[0].handlers.error();
-assert.equal(content.children.length, 1, 'Broken image should be removed');
-assert.equal(content.children[0].textContent, '9a ' + info.event.title);
+const [frame, label] = content.children;
+const [banner] = frame.children;
+const [time, title] = label.children;
+assert.equal(frame.className, 'event-calendar-banner-frame');
+assert.equal(banner.tag, 'img');
+assert.equal(banner.src, info.event.extendedProps.banner_url);
+assert.equal(banner.alt, info.event.title);
+assert.equal(time.textContent, '9a');
+assert.equal(title.textContent, info.event.title);
+assert.equal(title.children.length, 0, 'Title must remain plain text');
+banner.handlers.error();
+assert.deepEqual(content.children, [label], 'A broken image should remove the frame and keep the label');
 assert.equal(context.renderCalendarEventContent({ ...info, event: { ...info.event, extendedProps: {} } }), true);
 for (const type of ['timeGridWeek', 'listMonth']) {
     assert.equal(context.renderCalendarEventContent({ ...info, view: { type } }), true);
 }
 const allDay = context.renderCalendarEventContent({ ...info, timeText: '' }).domNodes[0];
-assert.equal(allDay.children[1].textContent, info.event.title);
+assert.equal(allDay.children[1].children.length, 1);
+assert.equal(allDay.children[1].children[0].textContent, info.event.title);
 const withTime = context.renderCalendarEventContent({ ...info, timeText: '', event: { ...info.event, extendedProps: { ...info.event.extendedProps, display_time: '09:00 AM' } } }).domNodes[0];
-assert.equal(withTime.children[1].textContent, '09:00 AM ' + info.event.title);
+assert.deepEqual(withTime.children[1].children.map(node => node.textContent), ['09:00 AM', info.event.title]);
 assert.match(view, /eventContent:\s*renderCalendarEventContent/);
 assert.match(view, /eventClick:\s*function\(info\)\s*\{\s*info\.jsEvent\.preventDefault\(\);\s*showEventDetails\(info\.event\.id\);/);
 assert.match(view, /id="eventCalendar" data-pms-export="off"/);
