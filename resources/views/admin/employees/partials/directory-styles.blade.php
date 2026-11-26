@@ -1331,10 +1331,6 @@
         background: var(--emp-primary-soft) !important;
     }
 
-    #employeeDirectoryPage #employeeTable tbody tr.table-warning td {
-        background: #fffbeb !important;
-    }
-
     #employeeDirectoryPage #employeeTable tbody td {
         padding: 13px 16px !important;
         border: 0 !important;
@@ -1345,22 +1341,6 @@
         vertical-align: middle !important;
         border-radius: 0 !important;
         font-weight: 500 !important;
-    }
-
-    #employeeDirectoryPage #employeeTable thead th:first-child,
-    #employeeDirectoryPage #employeeTable tbody td:first-child {
-        width: 52px !important;
-        padding-left: 20px !important;
-        padding-right: 10px !important;
-        text-align: center !important;
-    }
-
-    #employeeDirectoryPage #employeeTable thead th:last-child,
-    #employeeDirectoryPage #employeeTable tbody td:last-child {
-        width: 80px !important;
-        padding-left: 10px !important;
-        padding-right: 20px !important;
-        text-align: center !important;
     }
 
     #employeeDirectoryPage #employeeTable .form-check {
@@ -1845,6 +1825,26 @@
         background: rgba(245, 158, 11, 0.1) !important;
     }
 
+    button.status-badge.js-employee-status-toggle {
+        cursor: pointer;
+        transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+    }
+
+    button.status-badge.js-employee-status-toggle:hover:not(:disabled) {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+    }
+
+    button.status-badge.js-employee-status-toggle:focus-visible {
+        outline: 2px solid #4f46e5;
+        outline-offset: 2px;
+    }
+
+    button.status-badge.js-employee-status-toggle:disabled {
+        opacity: 0.65;
+        cursor: wait;
+    }
+
     /* ===== RESPONSIVE BREAKPOINTS ===== */
     @media (max-width: 1199.98px) {
         #employeeDirectoryPage .stats-grid {
@@ -1893,8 +1893,8 @@
 
         #employeeDirectoryPage #employeeTable tbody tr {
             display: grid !important;
-            grid-template-columns: minmax(0, 1fr) auto;
-            gap: 0 12px;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0 10px;
             width: 100% !important;
             margin: 0 0 12px !important;
             padding: 12px !important;
@@ -1909,9 +1909,9 @@
             width: auto !important;
             min-width: 0 !important;
             max-width: 100% !important;
-            padding: 8px 0 !important;
+            padding: 9px 0 !important;
             text-align: left !important;
-            border-bottom: 0 !important;
+            border-bottom: 1px solid var(--dir-border) !important;
         }
 
         #employeeDirectoryPage #employeeTable tbody tr > td::before {
@@ -1927,7 +1927,7 @@
         #employeeDirectoryPage #employeeTable tbody tr > td:first-child:not([colspan]) {
             grid-column: 1;
             grid-row: 1;
-            padding: 0 !important;
+            padding: 0 0 8px !important;
             display: flex !important;
             align-items: center !important;
         }
@@ -1935,11 +1935,27 @@
         #employeeDirectoryPage #employeeTable tbody tr > td:last-child:not([colspan]) {
             grid-column: 2;
             grid-row: 1;
-            padding: 0 !important;
+            padding: 0 0 8px !important;
             text-align: right !important;
         }
 
+        #employeeDirectoryPage #employeeTable tbody tr > td:nth-child(3) { grid-row: 2; }
+
+        #employeeDirectoryPage #employeeTable tbody tr > td:nth-child(2) {
+            grid-area: 3 / 1;
+            padding-inline-end: 8px !important;
+            border-inline-end: 1px solid var(--dir-border) !important;
+        }
+
+        #employeeDirectoryPage #employeeTable tbody tr > td:nth-child(4) { grid-area: 3 / 2; }
+
+        #employeeDirectoryPage #employeeTable tbody tr > td:nth-child(7) {
+            padding-bottom: 0 !important;
+            border-bottom: 0 !important;
+        }
+
         #employeeDirectoryPage #employeeTable td:first-child::before,
+        #employeeDirectoryPage #employeeTable td:nth-child(3)::before,
         #employeeDirectoryPage #employeeTable td:last-child::before {
             display: none !important;
         }
@@ -1999,3 +2015,4 @@
         }
     }
 </style>
+@include('admin.employees.partials.workspace-overrides')

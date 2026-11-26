@@ -8237,4 +8237,22 @@ html[data-pms-theme="dark"] #layout-navbar .pms-user-pill {
   }
 }
 
+/* Remove redundant top spacing across all admin pages */
+.layout-page > .content-wrapper > .container-xxl.container-p-y {
+  padding-top: 1rem !important;
+  padding-bottom: 1.5rem !important;
+}
+
+.layout-page > .content-wrapper > .container-xxl > [data-live-records] > .container-fluid,
+.layout-page > .content-wrapper > .container-xxl > [data-live-records] > .container,
+.layout-page > .content-wrapper > .container-xxl > [data-live-records] > .container-xxl,
+.layout-page > .content-wrapper > .container-xxl > [data-live-records] > .employee-dashboard,
+.layout-page > .content-wrapper > .container-xxl > [data-live-records] > .payroll-container,
+.layout-page > .content-wrapper > .container-xxl > [data-live-records] > [class*="-page"],
+.layout-page > .content-wrapper > .container-xxl > [data-live-records] > main > .content-wrapper {
+  padding-top: 0 !important;
+  margin-top: 0 !important;
+}
+
+
 

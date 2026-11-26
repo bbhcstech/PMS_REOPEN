@@ -103,7 +103,9 @@
     }
 </style>
 
-<div class="container-fluid px-4 py-4">
+@include('admin.timelogs.partials.workspace-styles')
+
+<div id="pms-timelogs-page" class="pms-ts-page">
     @php $canReviewTimeLogs = in_array(strtolower((string) auth()->user()?->role), ['admin', 'hr', 'manager'], true); @endphp
 
     @if($project)
@@ -115,20 +117,25 @@
     @endif
 
     <!-- Top Header -->
-    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
-        <div>
-            <h3 class="fw-bold mb-0 text-dark"><i class="bx bx-time-five text-primary me-2"></i> Employee Timesheet</h3>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item"><a href="{{ route('dashboard') }}" class="text-decoration-none">Dashboard</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Timesheet</li>
-                </ol>
-            </nav>
+    <div class="pms-ts-topbar">
+        <div class="pms-ts-title-wrap">
+            <div class="pms-ts-title-icon" aria-hidden="true">
+                <i class="bx bx-time-five"></i>
+            </div>
+            <div>
+                <h3 class="pms-ts-title">Employee Timesheet</h3>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="{{ route('dashboard') }}" class="text-decoration-none">Dashboard</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Timesheet</li>
+                    </ol>
+                </nav>
+            </div>
         </div>
 
-        <div class="d-flex align-items-center gap-2">
-            <a href="{{ route('timelogs.create') }}" class="btn btn-primary rounded-pill px-4 shadow-sm">
-                <i class="bx bx-plus-circle me-1"></i> Log Time
+        <div class="pms-ts-actions">
+            <a href="{{ route('timelogs.create') }}" class="btn pms-ts-btn-primary">
+                <i class="bx bx-plus-circle"></i> Log Time
             </a>
         </div>
     </div>
@@ -141,15 +148,15 @@
     @endif
 
     <!-- Filters Section -->
-    <div class="card border-0 shadow-sm rounded-4 mb-4">
+    <div class="card pms-ts-card mb-4">
         <div class="card-body p-4">
             <form method="GET" action="{{ route('timelogs.index') }}">
                 <div class="row g-3 align-items-end">
                     <div class="col-lg-4 col-md-5">
-                        <label class="form-label fw-semibold text-dark mb-1">Duration / Date Range</label>
+                        <label class="pms-ts-label">Duration / Date Range</label>
                         <div class="input-group">
-                            <span class="input-group-text bg-white border-end-0"><i class="bx bx-calendar text-primary"></i></span>
-                            <input type="text" name="daterange" id="daterange" class="form-control border-start-0 ps-0 rounded-end"
+                            <span class="input-group-text border-end-0"><i class="bx bx-calendar text-primary"></i></span>
+                            <input type="text" name="daterange" id="daterange" class="form-control border-start-0 ps-0"
                                    value="{{ request('start_date') && request('end_date') ? request('start_date').' To '.request('end_date') : '' }}"
                                    placeholder="Select Date Range">
                         </div>
@@ -158,8 +165,8 @@
                     </div>
 
                     <div class="col-lg-4 col-md-4">
-                        <label class="form-label fw-semibold text-dark mb-1">Filter by Employee</label>
-                        <select name="user_id" class="form-select rounded-3">
+                        <label class="pms-ts-label">Filter by Employee</label>
+                        <select name="user_id" class="form-select">
                             @if($canReviewTimeLogs)
                                 <option value="">All Employees</option>
                             @endif
@@ -179,11 +186,11 @@
                     </div>
 
                     <div class="col-lg-4 col-md-3 d-flex align-items-center gap-2">
-                        <button type="submit" class="btn btn-primary rounded-pill px-4 flex-grow-1 text-nowrap">
-                            <i class="bx bx-filter-alt me-1"></i> Filter
+                        <button type="submit" class="btn pms-ts-btn-primary flex-grow-1 text-nowrap">
+                            <i class="bx bx-filter-alt"></i> Filter
                         </button>
-                        <a href="{{ route('timelogs.index') }}" class="btn btn-outline-secondary rounded-pill px-4 flex-grow-1 text-nowrap">
-                            <i class="bx bx-refresh me-1"></i> Reset
+                        <a href="{{ route('timelogs.index') }}" class="btn pms-ts-btn-secondary flex-grow-1 text-nowrap">
+                            <i class="bx bx-refresh"></i> Reset
                         </a>
                     </div>
                 </div>
@@ -192,31 +199,33 @@
     </div>
 
     <!-- Actions & Views Switcher Toolbar -->
-    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
-        <div></div>
+    <div class="pms-ts-switcher-bar">
+        <div class="text-muted small">
+            <i class="bx bx-list-check text-primary me-1"></i> Showing logged task durations and timesheet entries.
+        </div>
 
         <!-- View Switcher -->
-        <div class="btn-group" role="group">
-            <a href="{{ route('timelogs.index') }}" class="btn btn-sm btn-outline-primary {{ request()->routeIs('timelogs.index') ? 'active' : '' }}" title="Timesheet List">
-                <i class="bx bx-list-ul me-1"></i> List
+        <div class="pms-ts-switcher" role="group" aria-label="Timesheet views">
+            <a href="{{ route('timelogs.index') }}" class="pms-ts-tab {{ request()->routeIs('timelogs.index') || request()->routeIs('projects.timelogs.index') ? 'active' : '' }}" title="Timesheet List">
+                <i class="bx bx-list-ul"></i> List
             </a>
-            <a href="{{ route('timelogs.calendar') }}" class="btn btn-sm btn-outline-primary {{ request()->routeIs('timelogs.calendar') ? 'active' : '' }}" title="Calendar View">
-                <i class="bx bx-calendar me-1"></i> Calendar
+            <a href="{{ route('timelogs.calendar') }}" class="pms-ts-tab {{ request()->routeIs('timelogs.calendar') ? 'active' : '' }}" title="Calendar View">
+                <i class="bx bx-calendar"></i> Calendar
             </a>
-            <a href="{{ route('timelogs.byEmployee')}}" class="btn btn-sm btn-outline-primary {{ request()->routeIs('timelogs.byEmployee') ? 'active' : '' }}" title="By Employee Summary">
-                <i class="bx bx-user me-1"></i> By Employee
+            <a href="{{ route('timelogs.byEmployee')}}" class="pms-ts-tab {{ request()->routeIs('timelogs.byEmployee') ? 'active' : '' }}" title="By Employee Summary">
+                <i class="bx bx-user"></i> By Employee
             </a>
-            <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#howItWorksModal" title="How It Works">
+            <button type="button" class="pms-ts-tab" data-bs-toggle="modal" data-bs-target="#howItWorksModal" title="How It Works">
                 <i class="bx bx-help-circle"></i>
             </button>
         </div>
     </div>
 
     <!-- Timesheet Table Card -->
-    <div class="card border-0 shadow-sm rounded-4">
+    <div class="card pms-ts-card overflow-hidden">
         <div class="card-body p-4">
             <table id="timelogTable" class="table table-hover align-middle w-100">
-                    <thead class="table-dark">
+                    <thead>
                         <tr>
                             <th style="width: 40px;"><input type="checkbox" id="selectAllLogs"></th>
                             <th style="width: 50px;">Id</th>

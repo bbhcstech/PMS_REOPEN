@@ -5,6 +5,10 @@
 @endsection
 
 @section('content')
+@php
+    $profileEditor = auth()->user();
+    $canShowProfileEditLinks = \App\Support\EmployeeProfileAccess::canShowEditLinks($profileEditor);
+@endphp
 <div id="archivedEmployeesPage" class="employee-dashboard archived-employee-page !min-h-screen !overflow-x-hidden !px-3 !py-4 sm:!px-5 sm:!py-5 lg:!px-8 lg:!py-7">
 
     {{-- Ambient Animated Background --}}
@@ -204,13 +208,22 @@
                                     <a href="{{ route('employees.show', $employee->id) }}" class="archive-icon-btn" title="View Details">
                                         <i class="fas fa-eye"></i>
                                     </a>
-                                    <a href="{{ route('employees.edit', $employee->id) }}" class="archive-icon-btn" title="Edit Profile">
-                                        <i class="fas fa-pen"></i>
-                                    </a>
+                                    @if($canShowProfileEditLinks && \App\Support\EmployeeProfileAccess::canEditTarget($profileEditor, $employee))
+                                        <a href="{{ route('employees.edit', $employee->id) }}" class="archive-icon-btn" title="Edit Profile">
+                                            <i class="fas fa-pen"></i>
+                                        </a>
+                                    @endif
                                     <form action="{{ route('employees.restore', $employee->id) }}" method="POST" onsubmit="return confirm('Restore this employee to the active employee list?');">
                                         @csrf
                                         <button type="submit" class="archive-icon-btn archive-icon-primary" title="Restore">
                                             <i class="fas fa-rotate-left"></i>
+                                        </button>
+                                    </form>
+                                    <form action="{{ route('employees.delete-permanent', $employee->id) }}" method="POST" onsubmit="return confirm('Permanently delete {{ addslashes($employee->name) }}? This action cannot be undone.');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="archive-icon-btn archive-icon-danger" title="Delete Permanently" aria-label="Delete {{ $employee->name }} permanently">
+                                            <i class="fas fa-trash-alt"></i>
                                         </button>
                                     </form>
                                 </div>
@@ -561,6 +574,8 @@
     .archive-icon-btn:hover { transform: translateY(-2px); background: #edf8f2; border-color: var(--primary); color: var(--primary); -webkit-text-fill-color: var(--primary); }
     .archive-icon-primary { background: linear-gradient(135deg, var(--primary), var(--secondary)); border: none; color: white !important; -webkit-text-fill-color: white !important; }
     .archive-icon-primary:hover { background: linear-gradient(135deg, #0b5f3e, #12754c); transform: translateY(-2px); color: white !important; -webkit-text-fill-color: white !important; }
+    .archive-icon-danger { background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c !important; -webkit-text-fill-color: #b91c1c !important; }
+    .archive-icon-danger:hover { background: #dc2626; border-color: #dc2626; transform: translateY(-2px); color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; }
 
     /* Pagination */
     .archive-footer { background: linear-gradient(135deg, #ffffff, #f6fbf8); border-top: 1px solid rgba(47, 107, 255, 0.1); padding: 1rem 1.5rem; }
@@ -1045,7 +1060,10 @@
     :is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) #archivedEmployeesPage #archive-selected-count { background: #14281e !important; border-color: rgba(122, 240, 181, 0.45) !important; color: #FFFFFF !important; -webkit-text-fill-color: #FFFFFF !important; }
     :is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) #archivedEmployeesPage .archive-btn:disabled,
     :is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) #archivedEmployeesPage .archive-btn[disabled] { background: rgba(148, 163, 184, 0.18) !important; color: #CBD5E1 !important; -webkit-text-fill-color: #CBD5E1 !important; }
+    :is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) #archivedEmployeesPage .archive-icon-danger { background: rgba(239, 68, 68, 0.18) !important; border-color: rgba(248, 113, 113, 0.45) !important; color: #FECACA !important; -webkit-text-fill-color: #FECACA !important; }
+    :is(html[data-pms-theme="dark"], html[data-theme="dark"], html[data-bs-theme="dark"], body.dark-mode) #archivedEmployeesPage .archive-icon-danger:hover { background: #dc2626 !important; border-color: #ef4444 !important; color: #FFFFFF !important; -webkit-text-fill-color: #FFFFFF !important; }
 </style>
+@include('admin.employees.partials.workspace-overrides')
 
 @push('js')
 <script>

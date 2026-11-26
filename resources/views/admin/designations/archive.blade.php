@@ -1624,7 +1624,7 @@
             $archivedCollection = $designations->getCollection();
             $totalArchived = method_exists($designations, 'total') ? $designations->total() : $designations->count();
             $levelCount = $archivedCollection->pluck('level')->filter(fn ($level) => $level !== null)->unique()->count();
-            $topLevelCount = $archivedCollection->whereNull('parent_id')->count();
+            $topLevelCount = $archivedCollection->filter(fn ($designation) => $designation->level !== null && (int) $designation->level <= 2)->count();
             $monthlyArchived = $archivedCollection->filter(fn ($designation) => $designation->archived_at && $designation->archived_at->isCurrentMonth())->count();
         @endphp
 
@@ -1709,7 +1709,6 @@
                                 <th><i class="fas fa-qrcode"></i>Code</th>
                                 <th><i class="fas fa-briefcase"></i>Designation Details</th>
                                 <th><i class="fas fa-chart-line"></i>Level</th>
-                                <th><i class="fas fa-link"></i>Parent</th>
                                 <th><i class="fas fa-calendar-alt"></i>Archived On</th>
                                 <th class="text-center"><i class="fas fa-cog"></i>Actions</th>
                             </tr>
@@ -1739,17 +1738,6 @@
                                             </span>
                                         @else
                                             <span class="level-badge default"><i class="fas fa-minus"></i> Not Set</span>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        @if($designation->parent?->name)
-                                            <span class="parent-badge">
-                                                <i class="fas fa-link"></i>{{ $designation->parent->name }}
-                                            </span>
-                                        @else
-                                            <span class="parent-badge top-level">
-                                                <i class="fas fa-crown"></i>Top-level
-                                            </span>
                                         @endif
                                     </td>
                                     <td>

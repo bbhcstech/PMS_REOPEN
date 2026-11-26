@@ -5460,6 +5460,14 @@ button,
   isolation: isolate;
 }
 
+/* Bootstrap appends the modal/offcanvas backdrop to <body>. A modal rendered inside an isolated
+   shell would sit underneath that backdrop and the page becomes unclickable, so the shell stops
+   isolating while one is open. */
+body.modal-open :is(.role-dashboard-shell, .manager-shell, .industry-dashboard-shell, .dashboard-polish-shell, .employee-dashboard),
+:is(.role-dashboard-shell, .manager-shell, .industry-dashboard-shell, .dashboard-polish-shell, .employee-dashboard):has(.modal.show, .modal.showing, .offcanvas.show, .offcanvas.showing) {
+  isolation: auto !important;
+}
+
 .role-dashboard-shell,
 .manager-shell,
 .dashboard-polish-shell {

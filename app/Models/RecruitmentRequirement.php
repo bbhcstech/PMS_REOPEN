@@ -24,6 +24,8 @@ class RecruitmentRequirement extends TenantModel
         'created_by',
         'pdf_header_image',
         'pdf_footer_image',
+        'pdf_header_asset_id',
+        'pdf_footer_asset_id',
     ];
 
     protected $casts = [
@@ -45,6 +47,20 @@ class RecruitmentRequirement extends TenantModel
     /** Header/footer image as an embeddable data URI for the PDF (DomPDF needs no file or network access). */
     public function pdfImageDataUri(string $column): ?string
     {
+        $kind = match ($column) {
+            'pdf_header_image' => 'header',
+            'pdf_footer_image' => 'footer',
+            default => null,
+        };
+        if ($kind === null) {
+            return null;
+        }
+
+        if ($assetId = $this->getAttribute('pdf_'.$kind.'_asset_id')) {
+            return RecruitmentBrandingAsset::where('company_id', $this->company_id)
+                ->where('kind', $kind)->find($assetId)?->imageDataUri();
+        }
+
         $path = $this->getAttribute($column);
         if (! $path) return null;
         $file = public_path($path);

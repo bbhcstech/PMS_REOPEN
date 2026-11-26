@@ -49,150 +49,161 @@ class OrganizationDirectoryController extends Controller
     {
         // Tenant isolation: company users only ever see their own company's directory.
         $scopeCompanyId = \App\Services\TenantScope::companyFilter($request->integer('company_id') ?: null);
+        $tenantConnection = (new User)->getConnectionName() ?: config('database.default');
+        $hasLegacyDirectoryFilters = $request->anyFilled([
+            'search', 'company_id', 'department_id', 'designation_id', 'reporting_to', 'status', 'page', 'per_page',
+        ]);
 
-        $allEmployeesQuery = User::query()
-            ->when($scopeCompanyId, fn ($q) => $q->where('users.company_id', $scopeCompanyId))
-            ->with([
-                'company',
-                'employeeDetail.designation',
-                'employeeDetail.department.parent',
-                'employeeDetail.reportingTo.employeeDetail.designation',
-            ])
-            ->where('role', 'employee')
-            ->whereNull('archived_at');
-
-        $employees = (clone $allEmployeesQuery)
-            ->when($request->filled('search'), fn ($query) => $this->applyDirectorySearch($query, (string) $request->search))
-            ->when($request->filled('company_id'), function ($query) use ($request) {
-                $query->where(function ($q) use ($request) {
-                    $q->where('company_id', $request->company_id)
-                        ->orWhereHas('employeeDetail', fn ($detail) => $detail->where('company_id', $request->company_id))
-                        ->orWhere(function ($subQ) {
-                            $subQ->whereNull('company_id')
-                                 ->whereDoesntHave('employeeDetail', fn ($d) => $d->whereNotNull('company_id'));
-                        });
-                });
-            })
-            ->when($request->filled('department_id'), function ($query) use ($request) {
-                $query->whereHas('employeeDetail', fn ($detail) => $detail->where('department_id', $request->department_id));
-            })
-            ->when($request->filled('designation_id'), function ($query) use ($request) {
-                $query->whereHas('employeeDetail', fn ($detail) => $detail->where('designation_id', $request->designation_id));
-            })
-            ->when($request->filled('status'), function ($query) use ($request) {
-                $status = strtolower($request->status);
-                if (Schema::hasColumn('employee_details', 'status')) {
-                    if ($status === 'active') {
-                        $query->whereHas('employeeDetail', fn ($detail) => $detail->whereIn('status', ['Active', 'active']));
-                    } elseif ($status === 'inactive') {
-                        $query->whereHas('employeeDetail', fn ($detail) => $detail->whereIn('status', ['Inactive', 'inactive']));
-                    } elseif ($status === 'on_leave') {
-                        $query->whereHas('employeeDetail', fn ($detail) => $detail->where('status', 'on_leave'));
-                    } elseif ($status === 'suspended') {
-                        $query->whereHas('employeeDetail', fn ($detail) => $detail->whereIn('status', ['Suspended', 'suspended']));
-                    }
-                } elseif (Schema::hasColumn('users', 'is_active')) {
-                    if ($status === 'active') {
-                        $query->where('is_active', true);
-                    } elseif ($status === 'inactive') {
-                        $query->where('is_active', false);
-                    }
-                }
-            })
-            ->when($request->filled('reporting_to'), function ($query) use ($request) {
-                $query->whereHas('employeeDetail', fn ($detail) => $detail->where('reporting_to', $request->reporting_to));
-            })
-            ->orderBy('name')
-            ->paginate((int) $request->input('per_page', 15))
-            ->withQueryString();
-
-        $totalEmployeesCount = (clone $allEmployeesQuery)->count();
-        if (Schema::hasColumn('employee_details', 'status')) {
-            $activeEmployeesCount = (clone $allEmployeesQuery)->whereHas('employeeDetail', fn ($q) => $q->whereIn('status', ['Active', 'active']))->count();
-            $inactiveEmployeesCount = (clone $allEmployeesQuery)->whereHas('employeeDetail', fn ($q) => $q->whereIn('status', ['Inactive', 'inactive']))->count();
-            $onLeaveEmployeesCount = (clone $allEmployeesQuery)->whereHas('employeeDetail', fn ($q) => $q->where('status', 'on_leave'))->count();
-        } elseif (Schema::hasColumn('users', 'is_active')) {
-            $activeEmployeesCount = (clone $allEmployeesQuery)->where('is_active', true)->count();
-            $inactiveEmployeesCount = (clone $allEmployeesQuery)->where('is_active', false)->count();
-            $onLeaveEmployeesCount = 0;
-        } else {
-            $activeEmployeesCount = $totalEmployeesCount;
-            $inactiveEmployeesCount = 0;
-            $onLeaveEmployeesCount = 0;
-        }
-        $managersCount = \App\Models\EmployeeDetail::whereNotNull('reporting_to')->distinct('reporting_to')->count('reporting_to');
-
+        $employees = new \Illuminate\Pagination\LengthAwarePaginator([], 0, 15);
         $stats = [
-            'total' => $totalEmployeesCount,
-            'employees' => $totalEmployeesCount,
-            'active' => $activeEmployeesCount,
-            'inactive' => $inactiveEmployeesCount,
-            'on_leave' => $onLeaveEmployeesCount,
-            'managers' => max(1, $managersCount),
-            'departments' => Department::whereNull('archived_at')->count(),
-            'designations' => Designation::whereNull('archived_at')->count(),
+            'total' => 0,
+            'employees' => 0,
+            'active' => 0,
+            'inactive' => 0,
+            'on_leave' => 0,
+            'managers' => 0,
+            'departments' => 0,
+            'designations' => 0,
         ];
+        $managers = collect();
+        $departmentGroups = collect();
+        $departments = collect();
 
         $companies = \App\Services\TenantScope::visibleCompanies();
-        $departments = Department::whereNull('archived_at')
-            ->when(Schema::hasColumn('departments', 'dpt_name'), fn ($q) => $q->orderBy('dpt_name'), fn ($q) => $q->orderBy('id'))
+        $designationColumns = array_flip(Schema::connection($tenantConnection)->getColumnListing('designations'));
+        $designations = Designation::query()
+            ->when(isset($designationColumns['archived_at']), fn ($q) => $q->whereNull('archived_at'))
+            ->when(isset($designationColumns['level']), fn ($q) => $q->orderByDesc('level'))
+            ->orderBy('name')
             ->get();
-        $designations = Designation::whereNull('archived_at')->orderBy('name')->get();
 
-        $managerUserIds = \App\Models\EmployeeDetail::whereNotNull('reporting_to')->pluck('reporting_to')->unique();
-        $managers = User::whereIn('id', $managerUserIds)->orderBy('name')->get();
+        // Only run legacy directory pagination, counts, and grouped relations when explicitly queried
+        // (keeps standalone Organization Details tree loads fast without redundant SQL queries).
+        if ($hasLegacyDirectoryFilters) {
+            $detailColumns = array_flip(Schema::connection($tenantConnection)->getColumnListing('employee_details'));
+            $userColumns = array_flip(Schema::connection($tenantConnection)->getColumnListing('users'));
+            $departmentColumns = array_flip(Schema::connection($tenantConnection)->getColumnListing('departments'));
 
-        $employeeDetailFilter = function ($detailQuery) use ($request, $scopeCompanyId) {
-            $detailQuery->whereHas('user', function ($uQuery) use ($request, $scopeCompanyId) {
-                $uQuery->where('role', 'employee')
-                    ->whereNull('archived_at')
-                    ->when($scopeCompanyId, fn ($q) => $q->where('users.company_id', $scopeCompanyId))
-                    ->when($request->filled('search'), fn ($query) => $this->applyDirectorySearch($query, (string) $request->search))
-                    ->when($request->filled('company_id'), function ($query) use ($request) {
-                        $query->where(function ($q) use ($request) {
-                            $q->where('company_id', $request->company_id)
-                                ->orWhereHas('employeeDetail', fn ($detail) => $detail->where('company_id', $request->company_id))
-                                ->orWhere(function ($subQ) {
-                                    $subQ->whereNull('company_id')
-                                         ->whereDoesntHave('employeeDetail', fn ($d) => $d->whereNotNull('company_id'));
-                                });
-                        });
+            $allEmployeesQuery = User::query()
+                ->when($scopeCompanyId, fn ($q) => $q->where('users.company_id', $scopeCompanyId))
+                ->with([
+                    'company',
+                    'employeeDetail.designation',
+                    'employeeDetail.department.parent',
+                    'employeeDetail.reportingTo.employeeDetail.designation',
+                ])
+                ->where('role', 'employee')
+                ->whereNull('archived_at');
+
+            $employees = (clone $allEmployeesQuery)
+                ->when($request->filled('search'), fn ($query) => $this->applyDirectorySearch($query, (string) $request->search))
+                ->when($request->filled('company_id'), function ($query) use ($request) {
+                    $query->where(function ($q) use ($request) {
+                        $q->where('company_id', $request->company_id)
+                            ->orWhereHas('employeeDetail', fn ($detail) => $detail->where('company_id', $request->company_id))
+                            ->orWhere(function ($subQ) {
+                                $subQ->whereNull('company_id')
+                                     ->whereDoesntHave('employeeDetail', fn ($d) => $d->whereNotNull('company_id'));
+                            });
                     });
-            })
-            ->when($request->filled('designation_id'), fn ($q) => $q->where('designation_id', $request->designation_id))
-            ->when($request->filled('reporting_to'), fn ($q) => $q->where('reporting_to', $request->reporting_to))
-            ->when($request->filled('status'), function ($q) use ($request) {
-                $status = strtolower($request->status);
-                if ($status === 'active') {
-                    $q->whereIn('status', ['Active', 'active']);
-                } elseif ($status === 'inactive') {
-                    $q->whereIn('status', ['Inactive', 'inactive']);
-                } elseif ($status === 'on_leave') {
-                    $q->where('status', 'on_leave');
-                } elseif ($status === 'suspended') {
-                    $q->whereIn('status', ['Suspended', 'suspended']);
-                }
-            }, function ($q) {
-                if (Schema::hasColumn('employee_details', 'status')) {
-                    $q->whereIn('status', ['Active', 'active']);
-                }
-            });
-        };
+                })
+                ->when($request->filled('department_id'), function ($query) use ($request) {
+                    $query->whereHas('employeeDetail', fn ($detail) => $detail->where('department_id', $request->department_id));
+                })
+                ->when($request->filled('designation_id'), function ($query) use ($request) {
+                    $query->whereHas('employeeDetail', fn ($detail) => $detail->where('designation_id', $request->designation_id));
+                })
+                ->when($request->filled('status'), function ($query) use ($request, $detailColumns, $userColumns) {
+                    $status = strtolower($request->status);
+                    if (isset($detailColumns['status'])) {
+                        if ($status === 'active') {
+                            $query->whereHas('employeeDetail', fn ($detail) => $detail->whereIn('status', ['Active', 'active']));
+                        } elseif ($status === 'inactive') {
+                            $query->whereHas('employeeDetail', fn ($detail) => $detail->whereIn('status', ['Inactive', 'inactive']));
+                        } elseif ($status === 'on_leave') {
+                            $query->whereHas('employeeDetail', fn ($detail) => $detail->where('status', 'on_leave'));
+                        } elseif ($status === 'suspended') {
+                            $query->whereHas('employeeDetail', fn ($detail) => $detail->whereIn('status', ['Suspended', 'suspended']));
+                        }
+                    } elseif (isset($userColumns['is_active'])) {
+                        if ($status === 'active') {
+                            $query->where('is_active', true);
+                        } elseif ($status === 'inactive') {
+                            $query->where('is_active', false);
+                        }
+                    }
+                })
+                ->when($request->filled('reporting_to'), function ($query) use ($request) {
+                    $query->whereHas('employeeDetail', fn ($detail) => $detail->where('reporting_to', $request->reporting_to));
+                })
+                ->orderBy('name')
+                ->paginate((int) $request->input('per_page', 15))
+                ->withQueryString();
 
-        $departmentGroups = Department::query()
-            ->whereNull('archived_at')
-            ->when($request->filled('department_id'), function ($q) use ($request) {
-                $q->where('id', $request->department_id);
-            })
-            ->whereHas('employeeDetails', $employeeDetailFilter)
-            ->with([
-                'employeeDetails' => $employeeDetailFilter,
-                'employeeDetails.user',
-                'employeeDetails.designation',
-                'parent'
-            ])
-            ->when(Schema::hasColumn('departments', 'dpt_name'), fn ($q) => $q->orderBy('dpt_name'), fn ($q) => $q->orderBy('id'))
-            ->get();
+            $departments = Department::query()
+                ->when(isset($departmentColumns['archived_at']), fn ($q) => $q->whereNull('archived_at'))
+                ->when(isset($departmentColumns['dpt_name']), fn ($q) => $q->orderBy('dpt_name'), fn ($q) => $q->orderBy('id'))
+                ->get();
+
+            $employeeDetailFilter = function ($detailQuery) use ($request, $scopeCompanyId, $detailColumns) {
+                $detailQuery->whereHas('user', function ($uQuery) use ($request, $scopeCompanyId) {
+                    $uQuery->where('role', 'employee')
+                        ->whereNull('archived_at')
+                        ->when($scopeCompanyId, fn ($q) => $q->where('users.company_id', $scopeCompanyId))
+                        ->when($request->filled('search'), fn ($query) => $this->applyDirectorySearch($query, (string) $request->search))
+                        ->when($request->filled('company_id'), function ($query) use ($request) {
+                            $query->where(function ($q) use ($request) {
+                                $q->where('company_id', $request->company_id)
+                                    ->orWhereHas('employeeDetail', fn ($detail) => $detail->where('company_id', $request->company_id))
+                                    ->orWhere(function ($subQ) {
+                                        $subQ->whereNull('company_id')
+                                             ->whereDoesntHave('employeeDetail', fn ($d) => $d->whereNotNull('company_id'));
+                                    });
+                            });
+                        });
+                })
+                ->when($request->filled('designation_id'), fn ($q) => $q->where('designation_id', $request->designation_id))
+                ->when($request->filled('reporting_to'), fn ($q) => $q->where('reporting_to', $request->reporting_to))
+                ->when($request->filled('status'), function ($q) use ($request) {
+                    $status = strtolower($request->status);
+                    if ($status === 'active') {
+                        $q->whereIn('status', ['Active', 'active']);
+                    } elseif ($status === 'inactive') {
+                        $q->whereIn('status', ['Inactive', 'inactive']);
+                    } elseif ($status === 'on_leave') {
+                        $q->where('status', 'on_leave');
+                    } elseif ($status === 'suspended') {
+                        $q->whereIn('status', ['Suspended', 'suspended']);
+                    }
+                }, function ($q) use ($detailColumns) {
+                    if (isset($detailColumns['status'])) {
+                        $q->whereIn('status', ['Active', 'active']);
+                    }
+                });
+            };
+
+            $departmentGroups = Department::query()
+                ->when(isset($departmentColumns['archived_at']), fn ($q) => $q->whereNull('archived_at'))
+                ->when($request->filled('department_id'), fn ($q) => $q->where('id', $request->department_id))
+                ->whereHas('employeeDetails', $employeeDetailFilter)
+                ->with([
+                    'employeeDetails' => $employeeDetailFilter,
+                    'employeeDetails.user',
+                    'employeeDetails.designation',
+                    'parent',
+                ])
+                ->when(isset($departmentColumns['dpt_name']), fn ($q) => $q->orderBy('dpt_name'), fn ($q) => $q->orderBy('id'))
+                ->get();
+        }
+
+        $treePayload = ['company' => ['name' => 'Organization', 'logo' => null], 'nodes' => [], 'generated_at' => now()->toIso8601String()];
+        if (Schema::connection($tenantConnection)->hasColumn('users', 'company_id')) {
+            try {
+                $treePayload = app(\App\Services\OrganizationTreeService::class)->buildPayload($request->user(), $scopeCompanyId);
+            } catch (\Throwable $e) {
+                Log::warning('Organization tree payload generation skipped fallback', ['error' => $e->getMessage()]);
+            }
+        }
 
         return view('admin.organization-directory.index', compact(
             'employees',
@@ -201,8 +212,21 @@ class OrganizationDirectoryController extends Controller
             'departments',
             'designations',
             'managers',
-            'departmentGroups'
+            'departmentGroups',
+            'treePayload'
         ));
+    }
+
+    /**
+     * JSON endpoint for refreshing the Organization Details employee tree.
+     */
+    public function tree(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $scopeCompanyId = \App\Services\TenantScope::companyFilter($request->integer('company_id') ?: null);
+
+        return response()->json(
+            app(\App\Services\OrganizationTreeService::class)->buildPayload($request->user(), $scopeCompanyId)
+        );
     }
 
     private function applyDirectorySearch(\Illuminate\Database\Eloquent\Builder $query, string $search): void

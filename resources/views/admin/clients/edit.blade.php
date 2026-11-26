@@ -1,24 +1,48 @@
 @extends('admin.layout.app')
 
 @section('content')
-<div class="container mt-4">
-    <h5>Edit Client</h5>
-    
-    
-    @if(session('error'))
-    <div class="alert alert-danger" style="background-color: #dc3545; color: white; border-color: #dc3545;">
-        {{ session('error') }}
+@include('admin.clients.partials.workspace-styles')
+
+<div class="container-fluid" id="pms-client-workspace">
+    <!-- Top Header -->
+    <div class="pms-cl-topbar">
+        <div class="pms-cl-heading-group">
+            <div class="pms-cl-title-icon">
+                <i class="bx bx-edit"></i>
+            </div>
+            <div>
+                <h1 class="pms-cl-title">Edit Client</h1>
+                <p class="pms-cl-subtitle">Update account credentials, company profile, tax info, and regional settings for {{ $client->name }}.</p>
+            </div>
+        </div>
+
+        <div class="pms-cl-actions">
+            <a href="{{ route('clients.show', $client->id) }}" class="pms-cl-btn-outline-primary">
+                <i class="bi bi-eye"></i>
+                <span>View Profile</span>
+            </a>
+            <a href="{{ route('clients.index') }}" class="pms-cl-btn-secondary">
+                <i class="bx bx-arrow-back"></i>
+                <span>Back to Clients</span>
+            </a>
+        </div>
     </div>
-@endif
-            
+
+    @if(session('error'))
+        <div class="alert alert-danger alert-dismissible fade show rounded-3 shadow-sm mb-4" role="alert">
+            <i class="bx bx-error-circle me-2 fs-5 align-middle"></i> {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
     <form action="{{ route('clients.update', $client->id) }}" method="POST" enctype="multipart/form-data">
         @csrf
         @method('PUT')
 
         {{-- Account Details --}}
-        <div class="card mb-4">
+        <div class="pms-cl-card mb-4">
             <div class="card-header py-3 px-4 border-bottom">
-                <h5 class="mb-0 fw-bold text-dark">Account Details</h5>
+                <h5 class="mb-0 fw-bold pms-cl-card-title">Account Details</h5>
             </div>
             <div class="card-body p-4">
                 <div class="row g-3">
@@ -178,9 +202,9 @@
         </div>
 
         {{-- Company Details --}}
-        <div class="card mb-4">
+        <div class="pms-cl-card mb-4">
             <div class="card-header py-3 px-4 border-bottom">
-                <h5 class="mb-0 fw-bold text-dark">Company Details</h5>
+                <h5 class="mb-0 fw-bold pms-cl-card-title">Company Details</h5>
             </div>
             <div class="card-body p-4">
                 <div class="row g-3">
@@ -333,8 +357,8 @@
                 </div>
 
                 <div class="col-md-6">
-                    <label>Added By</label>
-                    <select name="added_by" class="form-control">
+                    <label for="added_by">Added By</label>
+                    <select name="added_by" id="added_by" class="form-control">
                         <option value="">Select</option>
                         @foreach($users as $user)
                             <option value="{{ $user->id }}" {{ old('added_by', $client->added_by) == $user->id ? 'selected' : '' }}>{{ $user->name }}</option>
@@ -345,9 +369,15 @@
             </div>
         </div>
 
-        <div class="mb-3 text-end">
-            <button class="btn btn-primary">Update Client</button>
-            <a href="{{ route('clients.index') }}" class="btn btn-outline-secondary">Back</a>
+        <div class="d-flex justify-content-end align-items-center gap-2 mb-3">
+            <a href="{{ route('clients.index') }}" class="pms-cl-btn-secondary">
+                <i class="bx bx-arrow-back"></i>
+                <span>Cancel</span>
+            </a>
+            <button type="submit" class="pms-cl-btn-primary">
+                <i class="bx bx-save"></i>
+                <span>Update Client</span>
+            </button>
         </div>
     </form>
 </div>
@@ -1200,6 +1230,20 @@ $(document).ready(function () {
         templateSelection: formatOption,
         placeholder: "Select Language",
         allowClear: true
+    });
+
+    // Added By dropdown (search by name)
+    $('#added_by').select2({
+        theme: "bootstrap-5",
+        placeholder: "Select",
+        width: '100%',
+        minimumResultsForSearch: 0
+    }).on('select2:open', function() {
+        const searchField = document.querySelector('.select2-container--open .select2-search__field');
+        if (searchField) {
+            searchField.setAttribute('placeholder', 'Search by name...');
+            searchField.focus();
+        }
     });
 
     function generateCompliantPassword(len = 12) {

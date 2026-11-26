@@ -1,11 +1,35 @@
 @extends('admin.layout.app')
 
 @section('content')
-<div class="container">
-    <h4 class="mb-4">Log Time</h4>
+@include('admin.timelogs.partials.workspace-styles')
+
+<div id="pms-timelog-create-page" class="pms-ts-page">
+    <div class="pms-ts-topbar">
+        <div class="pms-ts-title-wrap">
+            <div class="pms-ts-title-icon" aria-hidden="true">
+                <i class="bx bx-time"></i>
+            </div>
+            <div>
+                <h3 class="pms-ts-title">Log Time</h3>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="{{ route('dashboard') }}" class="text-decoration-none">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="{{ route('timelogs.index') }}" class="text-decoration-none">Timesheet</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Log Time</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+
+        <div class="pms-ts-actions">
+            <a href="{{ route('timelogs.index') }}" class="btn pms-ts-btn-secondary">
+                <i class="bx bx-arrow-back"></i> Back to Timesheet
+            </a>
+        </div>
+    </div>
 
     @if ($errors->any())
-        <div class="alert alert-danger">
+        <div class="alert alert-danger rounded-3 shadow-sm mb-4">
             <ul class="mb-0">
                 @foreach ($errors->all() as $error)
                     <li>{{ $error }}</li>
@@ -14,123 +38,130 @@
         </div>
     @endif
 
-    <form method="POST" action="{{ route('timelogs.store') }}">
-        @csrf
+    <div class="card pms-ts-card">
+        <div class="card-body p-4">
+            <form method="POST" action="{{ route('timelogs.store') }}">
+                @csrf
 
-        <div class="row g-4">
+                <div class="row g-4">
 
-            {{-- Auto Generated Code --}}
-            <div class="col-md-6">
-                <label class="form-label">Generated Code</label>
-                <input type="text" id="generated_code" class="form-control" readonly>
-            </div>
+                    {{-- Auto Generated Code --}}
+                    <div class="col-md-6">
+                        <label class="pms-ts-label">Generated Code</label>
+                        <input type="text" id="generated_code" class="form-control" readonly>
+                    </div>
 
-            {{-- Project --}}
-            <div class="col-md-6">
-                <label class="form-label">Project <span class="text-danger">*</span></label>
-                <select name="project_id" id="project_id" class="form-select" required>
-                    <option value="">Select Project</option>
-                    @foreach($projects as $proj)
-                        <option value="{{ $proj->id }}"
-                                data-code="{{ $proj->project_code }}"
-                                {{ (old('project_id', $selectedProjectId ?? request('project_id')) == $proj->id) ? 'selected' : '' }}>
-                            {{ $proj->name }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
+                    {{-- Project --}}
+                    <div class="col-md-6">
+                        <label class="pms-ts-label">Project <span class="text-danger">*</span></label>
+                        <select name="project_id" id="project_id" class="form-select" required>
+                            <option value="">Select Project</option>
+                            @foreach($projects as $proj)
+                                <option value="{{ $proj->id }}"
+                                        data-code="{{ $proj->project_code }}"
+                                        {{ (old('project_id', $selectedProjectId ?? request('project_id')) == $proj->id) ? 'selected' : '' }}>
+                                    {{ $proj->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
 
-            {{-- Task --}}
-            <div class="col-md-6">
-                <label class="form-label">Task <span class="text-danger">*</span></label>
-                <div class="d-flex align-items-center gap-2">
-                <select name="task_id" id="task_id" class="form-control flex-grow-1" style="min-width: 0;" required>
-                    <option value="">Select Task</option>
-                    @foreach($tasks as $t)
-                        <option value="{{ $t->id }}"
-                                {{ (old('task_id', $selectedTaskId ?? request('task_id')) == $t->id) ? 'selected' : '' }}>
-                            {{ $t->title }}
-                        </option>
-                    @endforeach
-                </select>
-                @if(in_array(strtolower((string) auth()->user()?->role), ['admin', 'hr', 'manager', 'administrator', 'superadmin'], true) || \Illuminate\Support\Facades\Auth::guard('super_admin')->check())
-                    <a href="{{ route('tasks.create') }}" id="add_timelog_task" class="btn btn-primary flex-shrink-0" target="_blank" rel="noopener" title="Add Task" aria-label="Add Task" style="width: 44px; height: 44px; padding: 0; display: inline-flex; align-items: center; justify-content: center;">
-                        <span aria-hidden="true" style="font-size: 24px; line-height: 1;">+</span>
-                    </a>
-                @endif
+                    {{-- Task --}}
+                    <div class="col-md-6">
+                        <label class="pms-ts-label">Task <span class="text-danger">*</span></label>
+                        <div class="d-flex align-items-center gap-2">
+                        <select name="task_id" id="task_id" class="form-select flex-grow-1" style="min-width: 0;" required>
+                            <option value="">Select Task</option>
+                            @foreach($tasks as $t)
+                                <option value="{{ $t->id }}"
+                                        {{ (old('task_id', $selectedTaskId ?? request('task_id')) == $t->id) ? 'selected' : '' }}>
+                                    {{ $t->title }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @if(in_array(strtolower((string) auth()->user()?->role), ['admin', 'hr', 'manager', 'administrator', 'superadmin'], true) || \Illuminate\Support\Facades\Auth::guard('super_admin')->check())
+                            <a href="{{ route('tasks.create') }}" id="add_timelog_task" class="btn pms-ts-btn-primary flex-shrink-0" target="_blank" rel="noopener" title="Add Task" aria-label="Add Task" style="width: 40px; height: 40px; padding: 0;">
+                                <span aria-hidden="true" style="font-size: 20px; line-height: 1;">+</span>
+                            </a>
+                        @endif
+                        </div>
+                    </div>
+
+
+                    {{-- Employee (Admins, Managers, HR) --}}
+                    @if(in_array(strtolower((string) auth()->user()?->role), ['admin', 'manager', 'hr'], true))
+                        <div class="col-md-6">
+                            <label class="pms-ts-label">Employee <span class="text-danger">*</span></label>
+                            <select name="employee_id" id="employee_id" class="form-select" required>
+                                <option value="">Select Employee</option>
+                                @foreach($employees as $emp)
+                                    <option value="{{ $emp->id }}">
+                                        {{ $emp->name }} ({{ $emp->email }})
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                    @else
+                        <input type="hidden" name="employee_id" value="{{ auth()->id() }}">
+                    @endif
+
+                    {{-- User Info --}}
+                    <div class="col-md-12">
+                        <div class="pms-ts-user-box">
+                            <strong class="text-dark">{{ auth()->user()->name }}</strong><br>
+                            <small class="text-muted">It's you</small><br>
+                            <span class="text-muted small">{{ auth()->user()->designation ?? 'Employee' }}</span>
+                        </div>
+                    </div>
+
+                    {{-- Start Date --}}
+                    <div class="col-md-6">
+                        <label class="pms-ts-label">Start Date <span class="text-danger">*</span></label>
+                        <input type="date" name="start_date" id="start_date" class="form-control" required>
+                    </div>
+
+                    {{-- Start Time --}}
+                    <div class="col-md-6">
+                        <label class="pms-ts-label">Start Time <span class="text-danger">*</span></label>
+                        <input type="time" name="start_time" id="start_time" class="form-control" required>
+                    </div>
+
+                    {{-- End Date --}}
+                    <div class="col-md-6">
+                        <label class="pms-ts-label">End Date <span class="text-danger">*</span></label>
+                        <input type="date" name="end_date" id="end_date" class="form-control" required>
+                    </div>
+
+                    {{-- End Time --}}
+                    <div class="col-md-6">
+                        <label class="pms-ts-label">End Time <span class="text-danger">*</span></label>
+                        <input type="time" name="end_time" id="end_time" class="form-control" required>
+                    </div>
+
+                    {{-- Memo --}}
+                    <div class="col-md-12">
+                        <label class="pms-ts-label">Memo</label>
+                        <textarea name="memo" class="form-control" rows="4" placeholder="e.g. Worked on branding"></textarea>
+                    </div>
+
+                    {{-- Total Hours --}}
+                    <div class="col-md-6">
+                        <label class="pms-ts-label">Total Hours</label>
+                        <input type="text" id="total_hours" class="form-control" readonly>
+                    </div>
+
+                    {{-- Submit --}}
+                    <div class="col-12 d-flex justify-content-end gap-2 pt-2">
+                        <a href="{{ route('timelogs.index') }}" class="btn pms-ts-btn-secondary">Cancel</a>
+                        <button type="submit" class="btn pms-ts-btn-primary">
+                            <i class="bx bx-check-circle"></i> Save Log
+                        </button>
+                    </div>
+
                 </div>
-            </div>
-
-
-            {{-- Employee (Admins, Managers, HR) --}}
-            @if(in_array(strtolower((string) auth()->user()?->role), ['admin', 'manager', 'hr'], true))
-                <div class="col-md-6">
-                    <label class="form-label">Employee <span class="text-danger">*</span></label>
-                    <select name="employee_id" id="employee_id" class="form-select" required>
-                        <option value="">Select Employee</option>
-                        @foreach($employees as $emp)
-                            <option value="{{ $emp->id }}">
-                                {{ $emp->name }} ({{ $emp->email }})
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-            @else
-                <input type="hidden" name="employee_id" value="{{ auth()->id() }}">
-            @endif
-
-            {{-- User Info --}}
-            <div class="col-md-12">
-                <div class="border p-3 rounded bg-light">
-                    <strong>{{ auth()->user()->name }}</strong><br>
-                    <small>It's you</small><br>
-                    <span class="text-muted">{{ auth()->user()->designation ?? 'Employee' }}</span>
-                </div>
-            </div>
-
-            {{-- Start Date --}}
-            <div class="col-md-6">
-                <label class="form-label">Start Date <span class="text-danger">*</span></label>
-                <input type="date" name="start_date" id="start_date" class="form-control" required>
-            </div>
-
-            {{-- Start Time --}}
-            <div class="col-md-6">
-                <label class="form-label">Start Time <span class="text-danger">*</span></label>
-                <input type="time" name="start_time" id="start_time" class="form-control" required>
-            </div>
-
-            {{-- End Date --}}
-            <div class="col-md-6">
-                <label class="form-label">End Date <span class="text-danger">*</span></label>
-                <input type="date" name="end_date" id="end_date" class="form-control" required>
-            </div>
-
-            {{-- End Time --}}
-            <div class="col-md-6">
-                <label class="form-label">End Time <span class="text-danger">*</span></label>
-                <input type="time" name="end_time" id="end_time" class="form-control" required>
-            </div>
-
-            {{-- Memo --}}
-            <div class="col-md-12">
-                <label class="form-label">Memo</label>
-                <textarea name="memo" class="form-control" rows="5" placeholder="e.g. Worked on branding"></textarea>
-            </div>
-
-            {{-- Total Hours --}}
-            <div class="col-md-6">
-                <label class="form-label">Total Hours</label>
-                <input type="text" id="total_hours" class="form-control" readonly>
-            </div>
-
-            {{-- Submit --}}
-            <div class="col-12 d-flex justify-content-end">
-                <button type="submit" class="btn btn-primary">Save Log</button>
-            </div>
-
+            </form>
         </div>
-    </form>
+    </div>
 </div>
 @endsection
 

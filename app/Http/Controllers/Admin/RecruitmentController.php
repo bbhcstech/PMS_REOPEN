@@ -4,16 +4,26 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\AppSetting;
+use App\Models\BusinessAddress;
+use App\Models\CompanySetting;
 use App\Models\Department;
 use App\Models\ParentDepartment;
+use App\Models\RecruitmentBrandingAsset;
 use App\Models\RecruitmentRequirement;
 use App\Services\SystemNotificationService;
+use App\Services\TenantScope;
+use App\Support\RecruitmentPdfBranding;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
 
 class RecruitmentController extends Controller
 {
     public function index(Request $request)
     {
+        \App\Services\RecruitmentBrandingSchema::ensure();
         $query = RecruitmentRequirement::with(['department', 'creator'])
             ->orderBy('id', 'desc');
 
@@ -61,6 +71,14 @@ class RecruitmentController extends Controller
             ? \App\Models\Currency::all()
             : collect();
         $defaultCurrencySymbol = AppSetting::valueFor('loc_currency_symbol', '$');
+        $companyLocations = $this->companyLocations();
+
+        $brandingAssets = collect();
+        if ($request->user()?->role === 'admin' && ($companyId = TenantScope::companyId())
+            && Schema::connection('tenant')->hasTable('recruitment_branding_assets')) {
+            $brandingAssets = RecruitmentBrandingAsset::where('company_id', $companyId)
+                ->orderBy('name')->orderByDesc('id')->get(['id', 'kind', 'name'])->groupBy('kind');
+        }
 
         return view('admin.recruitment.index', compact(
             'requirements',
@@ -72,8 +90,94 @@ class RecruitmentController extends Controller
             'totalClosed',
             'policyCard',
             'currencies',
-            'defaultCurrencySymbol'
+            'defaultCurrencySymbol',
+            'companyLocations',
+            'brandingAssets'
         ));
+    }
+
+    /**
+     * Store a new company location (BusinessAddress) inline from the recruitment modal.
+     */
+    public function storeLocation(Request $request)
+    {
+        if (auth()->user()?->role !== 'admin') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized action. Only Admin can add company locations.',
+            ], 403);
+        }
+
+        $validated = $request->validate([
+            'location' => 'required|string|max:255',
+            'branch_name' => 'nullable|string|max:255',
+            'country' => 'nullable|string|max:100',
+            'address' => 'nullable|string|max:1000',
+        ]);
+
+        $locationName = trim($validated['location']);
+        $branchName = isset($validated['branch_name']) ? trim($validated['branch_name']) : '';
+        $branchName = $branchName !== '' ? $branchName : null;
+
+        $conn = (new BusinessAddress())->getConnectionName() ?: config('database.default');
+        if (! \Illuminate\Support\Facades\Schema::connection($conn)->hasTable('business_addresses')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Company locations table is not available.',
+            ], 500);
+        }
+
+        $hasCompanyId = \Illuminate\Support\Facades\Schema::connection($conn)->hasColumn('business_addresses', 'company_id');
+        $companyId = auth()->user()?->company_id;
+
+        $existingQuery = BusinessAddress::query()
+            ->whereRaw('LOWER(location) = ?', [mb_strtolower($locationName)]);
+        if ($hasCompanyId && $companyId) {
+            $existingQuery->where('company_id', $companyId);
+        }
+        if ($branchName !== null) {
+            $existingQuery->whereRaw('LOWER(COALESCE(branch_name, "")) = ?', [mb_strtolower($branchName)]);
+        } else {
+            $existingQuery->where(function ($q) {
+                $q->whereNull('branch_name')->orWhere('branch_name', '');
+            });
+        }
+
+        $addressRecord = $existingQuery->first();
+        $created = false;
+
+        if (! $addressRecord) {
+            $defaultCountry = BusinessAddress::query()
+                ->when($hasCompanyId && $companyId, fn ($q) => $q->where('company_id', $companyId))
+                ->where('is_default', true)
+                ->value('country') ?: 'India';
+
+            $country = trim((string) ($validated['country'] ?? ''));
+            $streetAddress = trim((string) ($validated['address'] ?? ''));
+
+            $addressRecord = new BusinessAddress([
+                'branch_name' => $branchName,
+                'location' => $locationName,
+                'address' => $streetAddress !== '' ? $streetAddress : $locationName,
+                'country' => $country !== '' ? $country : $defaultCountry,
+                'is_default' => BusinessAddress::query()
+                    ->when($hasCompanyId && $companyId, fn ($q) => $q->where('company_id', $companyId))
+                    ->count() === 0,
+            ]);
+            if ($hasCompanyId && $companyId) {
+                $addressRecord->setAttribute('company_id', $companyId);
+            }
+            $addressRecord->save();
+            $created = true;
+        }
+
+        $option = $this->formatLocationOption($addressRecord, $this->companyLocations());
+
+        return response()->json([
+            'success' => true,
+            'message' => $created ? 'Location added successfully.' : 'Location already exists and was selected.',
+            'location' => $option,
+        ], $created ? 201 : 200);
     }
 
     public function store(Request $request)
@@ -82,23 +186,30 @@ class RecruitmentController extends Controller
             return back()->with('error', 'Unauthorized action. Only Admin can create recruitment requirements.');
         }
 
-        $request->validate([
+        $companyId = TenantScope::companyId();
+        abort_unless($companyId, 403);
+        \App\Services\RecruitmentBrandingSchema::ensure();
+
+        $validated = $request->validate([
             'title' => 'required|string|max:255',
             'department_id' => 'nullable|integer',
             'positions' => 'required|integer|min:1',
             'employment_type' => 'required|string|max:100',
             'experience_required' => 'nullable|string|max:100',
-            'salary_range' => 'nullable|string|max:100',
-            'salary_amount' => 'nullable|string|max:100',
-            'salary_currency' => 'nullable|string|max:20',
+            // Salary Range (CTC) in LPA: numbers only, up to 2 decimals; max may not be below min.
+            'salary_min' => ['nullable', 'numeric', 'min:0', 'max:999', 'regex:/^\d+(\.\d{1,2})?$/', 'required_with:salary_max'],
+            'salary_max' => ['nullable', 'numeric', 'min:0', 'max:999', 'regex:/^\d+(\.\d{1,2})?$/', 'gte:salary_min'],
             'location' => 'nullable|string|max:150',
             'description' => 'nullable|string',
             'requirements_summary' => 'nullable|string',
-            'pdf_header_image' => \App\Support\RecruitmentPdfBranding::rules(\App\Support\RecruitmentPdfBranding::HEADER_HEIGHT),
-            'pdf_footer_image' => \App\Support\RecruitmentPdfBranding::rules(\App\Support\RecruitmentPdfBranding::FOOTER_HEIGHT),
-        ], \App\Support\RecruitmentPdfBranding::messages());
-
-        $this->ensurePdfBrandingColumns();
+        ] + RecruitmentPdfBranding::selectionRules($companyId), RecruitmentPdfBranding::messages() + [
+            'salary_min.numeric' => 'Enter the minimum CTC as a number in LPA (e.g. 4.5).',
+            'salary_min.regex' => 'Enter the minimum CTC as a number in LPA (e.g. 4.5).',
+            'salary_min.required_with' => 'Enter the minimum CTC as well as the maximum.',
+            'salary_max.numeric' => 'Enter the maximum CTC as a number in LPA (e.g. 6).',
+            'salary_max.regex' => 'Enter the maximum CTC as a number in LPA (e.g. 6).',
+            'salary_max.gte' => 'The maximum CTC cannot be lower than the minimum.',
+        ]);
 
         $departmentName = null;
         if ($request->filled('department_id')) {
@@ -106,19 +217,12 @@ class RecruitmentController extends Controller
             $departmentName = $dept?->dpt_name;
         }
 
-        $salaryRange = $request->salary_range;
-        if (empty($salaryRange) && $request->filled('salary_amount')) {
-            $currencySymbol = $request->input('salary_currency', '$');
-            $salaryRange = trim($currencySymbol . ' ' . $request->salary_amount);
-        }
+        $salaryRange = $this->ctcRange($request->input('salary_min'), $request->input('salary_max'));
 
         $user = auth()->user();
 
-        $pdfHeaderImage = $this->storePdfBrandingImage($request->file('pdf_header_image'), 'header');
-        $pdfFooterImage = $this->storePdfBrandingImage($request->file('pdf_footer_image'), 'footer');
-
-        $requirement = RecruitmentRequirement::create([
-            'company_id' => $user?->company_id,
+        $attributes = [
+            'company_id' => $companyId,
             'title' => $request->title,
             'department_id' => $request->department_id,
             'department_name' => $departmentName ?? $request->department_name ?? 'General',
@@ -131,9 +235,26 @@ class RecruitmentController extends Controller
             'requirements_summary' => $request->requirements_summary,
             'status' => 'open',
             'created_by' => $user?->id,
-            'pdf_header_image' => $pdfHeaderImage,
-            'pdf_footer_image' => $pdfFooterImage,
-        ]);
+        ];
+
+        try {
+            $requirement = DB::connection('tenant')->transaction(function () use ($validated, $attributes, $companyId) {
+                foreach (array_keys(RecruitmentPdfBranding::HEIGHTS) as $kind) {
+                    $column = 'pdf_'.$kind.'_asset_id';
+                    $upload = $validated['pdf_'.$kind.'_image'] ?? null;
+                    $attributes[$column] = $upload
+                        ? $this->storePdfBrandingImage($companyId, $kind, $upload, $validated['pdf_'.$kind.'_name'] ?? null)
+                        : ($validated[$column] ?? null);
+                }
+
+                return RecruitmentRequirement::create($attributes);
+            }, 3);
+        } catch (\Illuminate\Database\QueryException $e) {
+            // Never show a server error page for a failed save: keep the form and explain.
+            \Illuminate\Support\Facades\Log::error('Recruitment requirement could not be saved: ' . $e->getMessage());
+            return back()->withInput($request->except(['pdf_header_image', 'pdf_footer_image']))
+                ->with('error', 'The requirement could not be saved because of a database problem. Please try again, or contact your administrator if it keeps happening.');
+        }
 
         // SHARE NOTIFICATION WITH ALL EMPLOYEES, MANAGERS, AND HR STAFF
         $title = "📢 New Job Requirement: {$requirement->title}";
@@ -164,10 +285,39 @@ class RecruitmentController extends Controller
         return view('admin.recruitment.show', compact('requirement', 'policyCard'));
     }
 
+    public function brandingPreview(int $asset)
+    {
+        abort_unless(auth()->user()?->role === 'admin', 403);
+        $companyId = TenantScope::companyId();
+        abort_unless($companyId, 403);
+        \App\Services\RecruitmentBrandingSchema::ensure();
+
+        $image = RecruitmentBrandingAsset::where('company_id', $companyId)->findOrFail($asset);
+
+        return response(base64_decode($image->image_data, true), 200, [
+            'Content-Type' => $image->mime_type,
+            'Cache-Control' => 'private, no-store',
+            'X-Content-Type-Options' => 'nosniff',
+        ]);
+    }
+
     public function download($id)
     {
         $requirement = RecruitmentRequirement::with(['department', 'creator'])->findOrFail($id);
         $policyCard = $this->generatePolicyCard();
+        $fileName = 'Job_Requirement_' . \Illuminate\Support\Str::slug($requirement->title) . '.pdf';
+
+        // Single-page sheet built with pdfkit + pdf-lib; falls back to the DomPDF template below.
+        try {
+            $bytes = app(\App\Services\RecruitmentPdfRenderer::class)->render($requirement, $policyCard);
+            return response($bytes, 200, [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
+                'Cache-Control' => 'private, no-store',
+            ]);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('Recruitment PDF (pdfkit/pdf-lib) unavailable, using DomPDF: ' . $e->getMessage());
+        }
 
         try {
             $pdf = \App\Services\PdfDocument::loadView('admin.recruitment.pdf', compact('requirement', 'policyCard'))
@@ -215,27 +365,136 @@ class RecruitmentController extends Controller
             ->with('success', "Requirement removed successfully.");
     }
 
-    /** Tenants that have not run the latest migration still get the header/footer columns. */
-    private function ensurePdfBrandingColumns(): void
+    /**
+     * Collect distinct company locations configured via Branches / Locations (and fallback company profile location).
+     */
+    private function companyLocations(): \Illuminate\Support\Collection
     {
-        if (! \Illuminate\Support\Facades\Schema::hasColumn('recruitment_requirements', 'pdf_header_image')
-            || ! \Illuminate\Support\Facades\Schema::hasColumn('recruitment_requirements', 'pdf_footer_image')) {
-            (require database_path('migrations/tenant/2026_10_10_120000_add_pdf_header_footer_to_recruitment_requirements.php'))->up();
+        $locations = collect();
+        $conn = (new BusinessAddress())->getConnectionName() ?: config('database.default');
+        $companyId = auth()->user()?->company_id;
+
+        if (\Illuminate\Support\Facades\Schema::connection($conn)->hasTable('business_addresses')) {
+            $query = BusinessAddress::query();
+            if ($companyId && \Illuminate\Support\Facades\Schema::connection($conn)->hasColumn('business_addresses', 'company_id')) {
+                $query->where('company_id', $companyId);
+            }
+            $addresses = $query->orderByDesc('is_default')->orderBy('location')->get();
+            $locationCounts = $addresses
+                ->map(fn ($a) => mb_strtolower(trim((string) ($a->location ?? ''))))
+                ->filter()
+                ->countBy();
+
+            foreach ($addresses as $addr) {
+                $loc = trim((string) ($addr->location ?? ''));
+                $branch = trim((string) ($addr->branch_name ?? ''));
+                $base = $loc !== '' ? $loc : $branch;
+                if ($base === '') {
+                    continue;
+                }
+                $hasBranchDiff = $branch !== '' && strcasecmp($branch, $loc) !== 0;
+                $label = $hasBranchDiff ? "{$branch} ({$loc})" : $base;
+                $isDuplicateCity = $loc !== '' && ($locationCounts->get(mb_strtolower($loc), 0) > 1);
+                $value = ($hasBranchDiff && $isDuplicateCity) ? "{$branch} - {$loc}" : $base;
+
+                $locations->push([
+                    'id' => $addr->id,
+                    'value' => $value,
+                    'label' => $label,
+                    'is_default' => (bool) $addr->is_default,
+                ]);
+            }
         }
+
+        $csConn = (new CompanySetting())->getConnectionName() ?: config('database.default');
+        if (\Illuminate\Support\Facades\Schema::connection($csConn)->hasTable('company_settings')) {
+            $companyLocation = trim((string) (CompanySetting::query()->value('company_location') ?? ''));
+            if ($companyLocation !== '') {
+                $exists = $locations->contains(fn ($item) => strcasecmp($item['value'], $companyLocation) === 0);
+                if (! $exists) {
+                    $locations->push([
+                        'id' => null,
+                        'value' => $companyLocation,
+                        'label' => $companyLocation,
+                        'is_default' => $locations->isEmpty(),
+                    ]);
+                }
+            }
+        }
+
+        return $locations->unique(fn ($item) => mb_strtolower($item['value']))->values();
     }
 
-    /** Saves an uploaded header/footer image under public/uploads/recruitment and returns its relative path. */
-    private function storePdfBrandingImage(\Illuminate\Http\UploadedFile $file, string $kind): string
+    /**
+     * Format a single BusinessAddress into the dropdown option payload.
+     */
+    private function formatLocationOption(BusinessAddress $addr, \Illuminate\Support\Collection $allLocations): array
     {
-        $directory = public_path('uploads/recruitment');
-        if (! \Illuminate\Support\Facades\File::exists($directory)) {
-            \Illuminate\Support\Facades\File::makeDirectory($directory, 0755, true, true);
+        $matched = $allLocations->firstWhere('id', $addr->id);
+        if ($matched) {
+            return $matched;
         }
-        $companyId = (int) (auth()->user()?->company_id ?? 0);
-        $extension = strtolower((string) ($file->guessExtension() ?: $file->getClientOriginalExtension())) === 'png' ? 'png' : 'jpg';
-        $fileName = 'recruitment_' . $kind . '_' . $companyId . '_' . now()->format('YmdHis') . '_' . \Illuminate\Support\Str::random(8) . '.' . $extension;
-        $file->move($directory, $fileName);
-        return 'uploads/recruitment/' . $fileName;
+
+        $loc = trim((string) ($addr->location ?? ''));
+        $branch = trim((string) ($addr->branch_name ?? ''));
+        $base = $loc !== '' ? $loc : $branch;
+        $hasBranchDiff = $branch !== '' && strcasecmp($branch, $loc) !== 0;
+
+        return [
+            'id' => $addr->id,
+            'value' => $base,
+            'label' => $hasBranchDiff ? "{$branch} ({$loc})" : $base,
+            'is_default' => (bool) $addr->is_default,
+        ];
+    }
+
+    /** "4.5 - 6 LPA" (or "5 LPA" for a single figure); null when no CTC was given. */
+    private function ctcRange($min, $max): ?string
+    {
+        $format = fn ($value) => rtrim(rtrim(number_format((float) $value, 2, '.', ''), '0'), '.');
+        $min = ($min === null || $min === '') ? null : $format($min);
+        $max = ($max === null || $max === '') ? null : $format($max);
+        if ($min === null) return null;
+        return ($max === null || $max === $min ? $min : $min . ' - ' . $max) . ' LPA';
+    }
+
+    private function storePdfBrandingImage(int $companyId, string $kind, UploadedFile $file, ?string $name): int
+    {
+        $filename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+        $defaultName = Str::of($filename)->replaceMatches('/[_-]+/u', ' ')->squish()->limit(100, '')->trim()->toString();
+        $name = Str::squish($name ?? '');
+        // The image is saved in a single INSERT; keep it within the MySQL server's packet limit.
+        $fitted = RecruitmentPdfBranding::fitForDatabase($file->get(), (string) $file->getMimeType(), $this->databasePacketBytes());
+        if (! $fitted) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'pdf_'.$kind.'_image' => 'Company '.$kind.' image is too large to save. Please upload a smaller (more compressed) JPG or PNG.',
+            ]);
+        }
+        $image = $fitted['bytes'];
+
+        return RecruitmentBrandingAsset::query()->select('id')->lockForUpdate()->firstOrCreate([
+            'company_id' => $companyId,
+            'kind' => $kind,
+            'name' => $name !== '' ? $name : ($defaultName !== '' ? $defaultName : 'Company '.$kind),
+            'sha256' => hash('sha256', $image),
+        ], [
+            'mime_type' => $fitted['mime'],
+            'image_data' => base64_encode($image),
+        ])->id;
+    }
+
+    /** The company database's max_allowed_packet (MySQL/MariaDB); generous default when unknown. */
+    private function databasePacketBytes(): int
+    {
+        try {
+            $connection = DB::connection('tenant');
+            if (in_array($connection->getDriverName(), ['mysql', 'mariadb'], true)) {
+                return (int) ($connection->selectOne('SELECT @@max_allowed_packet AS packet')->packet ?? 0) ?: 16 * 1024 * 1024;
+            }
+        } catch (\Throwable $e) {
+            report($e);
+        }
+        return 64 * 1024 * 1024;
     }
 
     /**

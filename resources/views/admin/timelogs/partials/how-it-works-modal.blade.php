@@ -41,6 +41,27 @@
           outline: none !important;
           transform: none !important;
         }
+        :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) #howItWorksModal .modal-content {
+          background: #0f172a !important;
+          border: 1px solid rgba(148, 163, 184, 0.2) !important;
+          color: #e2e8f0 !important;
+        }
+        :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) #howItWorksModal .modal-header,
+        :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) #howItWorksModal .modal-footer {
+          background: #1e293b !important;
+          border-color: rgba(148, 163, 184, 0.2) !important;
+        }
+        :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) #howItWorksModal .bg-white,
+        :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) #howItWorksModal .bg-light {
+          background: #1e293b !important;
+          border-color: rgba(148, 163, 184, 0.2) !important;
+        }
+        :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) #howItWorksModal .text-dark {
+          color: #f8fafc !important;
+        }
+        :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body[data-bs-theme="dark"], body[data-theme="dark"], body.dark, [data-bs-theme="dark"]) #howItWorksModal .btn-close {
+          filter: invert(1) grayscale(100%) brightness(200%) !important;
+        }
       </style>
 
       <div class="modal-header bg-light border-bottom">

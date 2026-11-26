@@ -216,7 +216,7 @@
                                     <select name="status"
                                             class="form-select form-select-sm change-status rounded-pill px-3"
                                             data-ticket-id="{{ $ticket->id }}"
-                                            @disabled(!\App\Support\TicketAccess::canManage() && (int) $ticket->agent_id !== (int) auth()->id())
+                                            @disabled((!\App\Support\TicketAccess::canManage() && (int) $ticket->agent_id !== (int) auth()->id()) || !(auth()->user()?->hasModulePermission('tickets', 'edit') ?? false))
                                             style="min-width: 130px;">
                                         <option value="open" {{ strtolower($ticket->status) == 'open' ? 'selected' : '' }}>Start</option>
                                         <option value="reopened" {{ strtolower($ticket->status) == 'reopened' ? 'selected' : '' }}>REOPENED</option>

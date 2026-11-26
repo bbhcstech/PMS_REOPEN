@@ -1,21 +1,25 @@
 @extends('admin.layout.app')
 
 @section('content')
-<div class="container-fluid px-4 py-4">
-    
-    <!-- Page Header & Breadcrumb -->
-    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
-        <div>
-            <h4 class="fw-bold mb-1" style="color: #1e293b;">Add New Client</h4>
-            <div class="text-muted small">
-                <span>Dashboard</span> <i class="fas fa-chevron-right mx-1" style="font-size: 10px;"></i>
-                <span>Clients</span> <i class="fas fa-chevron-right mx-1" style="font-size: 10px;"></i>
-                <span class="text-primary fw-semibold">Add Client Wizard</span>
+@include('admin.clients.partials.workspace-styles')
+
+<div class="container-fluid" id="pms-client-workspace">
+    <!-- Top Header -->
+    <div class="pms-cl-topbar">
+        <div class="pms-cl-heading-group">
+            <div class="pms-cl-title-icon">
+                <i class="bx bx-user-plus"></i>
+            </div>
+            <div>
+                <h1 class="pms-cl-title">Add New Client</h1>
+                <p class="pms-cl-subtitle">Create a client account, business profile, optional initial project, and deal.</p>
             </div>
         </div>
-        <div>
-            <a href="{{ route('clients.index') }}" class="btn btn-outline-secondary btn-sm rounded-pill px-3 shadow-sm">
-                <i class="fas fa-arrow-left me-1"></i> Back to Clients
+
+        <div class="pms-cl-actions">
+            <a href="{{ route('clients.index') }}" class="pms-cl-btn-secondary">
+                <i class="fas fa-arrow-left"></i>
+                <span>Back to Clients</span>
             </a>
         </div>
     </div>
@@ -44,7 +48,7 @@
     @endif
 
     <!-- Wizard Stepper Navigation -->
-    <div class="card border-0 shadow-sm rounded-4 mb-4" style="background: #ffffff;">
+    <div class="pms-cl-card mb-4">
         <div class="card-body p-3 p-md-4">
             <div class="wizard-stepper">
                 <div class="stepper-progress">
@@ -112,15 +116,15 @@
              STEP 1: CLIENT PERSONAL / ACCOUNT DETAILS
              ========================================== -->
         <div class="wizard-step-panel" id="stepPanel1">
-            <div class="card border-0 shadow-sm rounded-4 mb-4">
-                <div class="card-header bg-white border-bottom py-3 px-4">
+            <div class="pms-cl-card mb-4">
+                <div class="card-header border-bottom py-3 px-4">
                     <div class="d-flex align-items-center justify-content-between">
                         <div class="d-flex align-items-center">
                             <div class="step-header-icon me-3">
-                                <i class="fas fa-user text-primary fs-5"></i>
+                                <i class="fas fa-user fs-5"></i>
                             </div>
                             <div>
-                                <h5 class="mb-0 fw-bold" style="color: #1e293b;">Account Details</h5>
+                                <h5 class="mb-0 fw-bold pms-cl-card-title">Account Details</h5>
                                 <small class="text-muted">Fill in client personal identification and login credentials</small>
                             </div>
                         </div>
@@ -309,8 +313,8 @@
                     <a href="{{ route('clients.index') }}" class="btn btn-outline-secondary px-4 rounded-pill">
                         <i class="fas fa-times me-1"></i> Cancel
                     </a>
-                    <button type="button" class="btn btn-primary px-5 py-2 rounded-pill shadow-sm next-step-btn" onclick="goToStep(2)">
-                        Save and Continue <i class="fas fa-arrow-right ms-2"></i>
+                    <button type="button" class="pms-cl-btn-primary next-step-btn" onclick="goToStep(2)">
+                        <span>Save and Continue</span> <i class="fas fa-arrow-right ms-1"></i>
                     </button>
                 </div>
             </div>
@@ -321,15 +325,15 @@
              STEP 2: COMPANY DETAILS
              ========================================== -->
         <div class="wizard-step-panel d-none" id="stepPanel2">
-            <div class="card border-0 shadow-sm rounded-4 mb-4">
-                <div class="card-header bg-white border-bottom py-3 px-4">
+            <div class="pms-cl-card mb-4">
+                <div class="card-header border-bottom py-3 px-4">
                     <div class="d-flex align-items-center justify-content-between">
                         <div class="d-flex align-items-center">
                             <div class="step-header-icon me-3">
-                                <i class="fas fa-building text-primary fs-5"></i>
+                                <i class="fas fa-building fs-5"></i>
                             </div>
                             <div>
-                                <h5 class="mb-0 fw-bold" style="color: #1e293b;">Company Details</h5>
+                                <h5 class="mb-0 fw-bold pms-cl-card-title">Company Details</h5>
                                 <small class="text-muted">Fill in business information and tax identification</small>
                             </div>
                         </div>
@@ -484,7 +488,7 @@
 
                         <!-- Added By -->
                         <div class="col-md-6">
-                            <label class="form-label fw-semibold text-secondary">Added By</label>
+                            <label class="form-label fw-semibold text-secondary" for="added_by">Added By</label>
                             <select name="added_by" id="added_by" class="form-select form-control-custom">
                                 <option value="">Select User</option>
                                 @foreach($users as $user)
@@ -497,11 +501,11 @@
                 </div>
 
                 <div class="card-footer bg-white border-top p-4 d-flex justify-content-between align-items-center">
-                    <button type="button" class="btn btn-outline-secondary px-4 rounded-pill prev-step-btn" onclick="goToStep(1)">
-                        <i class="fas fa-arrow-left me-2"></i> Previous
+                    <button type="button" class="pms-cl-btn-secondary prev-step-btn" onclick="goToStep(1)">
+                        <i class="fas fa-arrow-left me-1"></i> <span>Previous</span>
                     </button>
-                    <button type="button" class="btn btn-primary px-5 py-2 rounded-pill shadow-sm next-step-btn" onclick="goToStep(3)">
-                        Save and Continue <i class="fas fa-arrow-right ms-2"></i>
+                    <button type="button" class="pms-cl-btn-primary next-step-btn" onclick="goToStep(3)">
+                        <span>Save and Continue</span> <i class="fas fa-arrow-right ms-1"></i>
                     </button>
                 </div>
             </div>
@@ -512,15 +516,15 @@
              STEP 3: ADD PROJECT PAGE
              ========================================== -->
         <div class="wizard-step-panel d-none" id="stepPanel3">
-            <div class="card border-0 shadow-sm rounded-4 mb-4">
-                <div class="card-header bg-white border-bottom py-3 px-4">
+            <div class="pms-cl-card mb-4">
+                <div class="card-header border-bottom py-3 px-4">
                     <div class="d-flex align-items-center justify-content-between">
                         <div class="d-flex align-items-center">
                             <div class="step-header-icon me-3">
-                                <i class="fas fa-project-diagram text-primary fs-5"></i>
+                                <i class="fas fa-project-diagram fs-5"></i>
                             </div>
                             <div>
-                                <h5 class="mb-0 fw-bold" style="color: #1e293b;">Add Project</h5>
+                                <h5 class="mb-0 fw-bold pms-cl-card-title">Add Project</h5>
                                 <small class="text-muted">Optionally create an initial project for this client</small>
                             </div>
                         </div>
@@ -668,9 +672,9 @@
                     </button>
                     <div class="d-flex gap-2 flex-wrap justify-content-end">
                     <input type="hidden" name="project_submit_mode" id="project_submit_mode" value="{{ old('project_submit_mode', 'final') }}">
-                    <button type="button" class="btn btn-outline-secondary px-4 py-2 rounded-pill" onclick="continueProjectStep('later')">Add Later and Continue</button>
-                    <button type="button" class="btn btn-primary px-5 py-2 rounded-pill shadow-sm next-step-btn" onclick="continueProjectStep('final')">
-                        Save and Continue <i class="fas fa-arrow-right ms-2"></i>
+                    <button type="button" class="pms-cl-btn-secondary" onclick="continueProjectStep('later')">Add Later and Continue</button>
+                    <button type="button" class="pms-cl-btn-primary next-step-btn" onclick="continueProjectStep('final')">
+                        <span>Save and Continue</span> <i class="fas fa-arrow-right ms-1"></i>
                     </button>
                     </div>
                 </div>
@@ -682,15 +686,15 @@
              STEP 4: ADD DEALS PAGE (FINAL STEP)
              ========================================== -->
         <div class="wizard-step-panel d-none" id="stepPanel4">
-            <div class="card border-0 shadow-sm rounded-4 mb-4">
-                <div class="card-header bg-white border-bottom py-3 px-4">
+            <div class="pms-cl-card mb-4">
+                <div class="card-header border-bottom py-3 px-4">
                     <div class="d-flex align-items-center justify-content-between">
                         <div class="d-flex align-items-center">
                             <div class="step-header-icon me-3">
                                 <i class="fas fa-handshake text-success fs-5"></i>
                             </div>
                             <div>
-                                <h5 class="mb-0 fw-bold" style="color: #1e293b;">Add Deals</h5>
+                                <h5 class="mb-0 fw-bold pms-cl-card-title">Add Deals</h5>
                                 <small class="text-muted">Optionally add a sales deal and pipeline configuration</small>
                             </div>
                         </div>
@@ -837,17 +841,17 @@
                     </div>
                 </div>
 
-                <div class="card-footer bg-white border-top p-4 d-flex justify-content-between align-items-center">
-                    <button type="button" class="btn btn-outline-secondary px-4 rounded-pill prev-step-btn" onclick="goToStep(3)">
-                        <i class="fas fa-arrow-left me-2"></i> Previous
+                <div class="card-footer border-top p-4 d-flex flex-wrap justify-content-between align-items-center gap-2">
+                    <button type="button" class="pms-cl-btn-secondary prev-step-btn" onclick="goToStep(3)">
+                        <i class="fas fa-arrow-left me-1"></i> <span>Previous</span>
                     </button>
                     <input type="hidden" name="deal_submit_mode" id="deal_submit_mode" value="{{ old('deal_submit_mode', 'final') }}">
-                    <div class="d-flex flex-wrap align-items-center justify-content-end gap-3">
-                        <button type="button" class="btn btn-outline-primary btn-lg px-4 py-2 rounded-pill" id="addLaterSubmitBtn">
-                            <i class="fas fa-clock me-2"></i> Add Later and Submit
+                    <div class="d-flex flex-wrap align-items-center justify-content-end gap-2">
+                        <button type="button" class="pms-cl-btn-outline-primary" id="addLaterSubmitBtn">
+                            <i class="fas fa-clock"></i> <span>Add Later and Submit</span>
                         </button>
-                        <button type="button" class="btn btn-success btn-lg px-5 py-2 rounded-pill shadow" id="finalSubmitBtn">
-                            <i class="fas fa-check-circle me-2"></i> Final Submit
+                        <button type="button" class="pms-cl-btn-success" id="finalSubmitBtn">
+                            <i class="fas fa-check-circle"></i> <span>Final Submit</span>
                         </button>
                     </div>
                 </div>
@@ -2471,6 +2475,20 @@ $(document).ready(function () {
         templateSelection: formatOption,
         placeholder: "Select Language",
         width: '100%'
+    });
+
+    // Step 2: Added By dropdown Select2 (search by name)
+    $('#added_by').select2({
+        theme: "classic",
+        placeholder: "Select User",
+        width: '100%',
+        minimumResultsForSearch: 0
+    }).on('select2:open', function() {
+        const searchField = document.querySelector('.select2-container--open .select2-search__field');
+        if (searchField) {
+            searchField.setAttribute('placeholder', 'Search by name...');
+            searchField.focus();
+        }
     });
 
     // Multi-select Select2

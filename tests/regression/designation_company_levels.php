@@ -118,7 +118,7 @@ Designation::create(['name' => 'Admin L6', 'level' => 6]);
 checkLevels(DesignationLevels::maximum() === 7, 'Admin L6 did not unlock L7.');
 Designation::create(['name' => 'Admin L7', 'level' => 7]);
 checkLevels(DesignationLevels::maximum() === 8, 'Admin L7 did not unlock L8.');
-foreach (['designations/create', 'designations/index', 'designations/hierarchy', 'employees/create', 'employees/edit', 'notifications/index'] as $view) {
+foreach (['designations/create', 'designations/index', 'designations/show', 'designations/archive', 'employees/create', 'employees/edit', 'notifications/index'] as $view) {
     $compiled = app('blade.compiler')->compileString(file_get_contents(resource_path('views/admin/' . $view . '.blade.php')));
     token_get_all($compiled, TOKEN_PARSE);
 }

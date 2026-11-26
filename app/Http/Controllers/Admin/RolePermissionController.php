@@ -127,7 +127,15 @@ class RolePermissionController extends Controller
         $submitted = $validated['permissions'] ?? [];
 
         // Save only the same company-provided modules shown in Module Management.
-        $visibleModuleIds = $this->companyModules()->pluck('id')->all();
+        $companyModules = $this->companyModules();
+        $visibleModuleIds = $companyModules->pluck('id')->all();
+        // Notifying the role is secondary: it must never stop permissions from being saved.
+        try {
+            $before = $this->effectiveGrants($role, $companyModules);
+        } catch (\Throwable $e) {
+            report($e);
+            $before = null;
+        }
 
         DB::connection('tenant')->transaction(function () use ($visibleModuleIds, $submitted, $role) {
             foreach ($visibleModuleIds as $moduleId) {
@@ -142,13 +150,93 @@ class RolePermissionController extends Controller
             }
         });
 
-        $message = 'Role permissions saved successfully for ' . $this->companyRoles()[$role] . '.';
+        $notified = 0;
+        if ($before !== null) {
+            try {
+                $notified = $this->notifyRoleOfChanges($role, $companyModules, $before, $this->grantsFor($role, $visibleModuleIds));
+            } catch (\Throwable $e) {
+                report($e);
+            }
+        }
+
+        $message = 'Role permissions saved successfully for ' . $this->companyRoles()[$role] . '.'
+            . ($notified ? ' ' . $notified . ' ' . ($notified === 1 ? 'user' : 'users') . ' with this role ' . ($notified === 1 ? 'was' : 'were') . ' notified.' : '');
         if ($request->expectsJson()) {
             return response()->json(['success' => true, 'message' => $message, 'role' => $role]);
         }
 
         return redirect()->route('admin.role-permissions.index', ['role' => $role])
             ->with('success', $message);
+    }
+
+    /** Saved grants for a role: module id => list of granted permissions. */
+    private function grantsFor(string $role, array $moduleIds): array
+    {
+        return RolePermission::where('role', $role)->whereIn('module_id', $moduleIds)->get()
+            ->mapWithKeys(fn ($row) => [(int) $row->module_id => collect($this->permissions)->filter(fn ($permission) => (bool) $row->{'can_' . $permission})->values()->all()])
+            ->all();
+    }
+
+    /**
+     * What the role's users actually had before saving: saved grants, otherwise the role defaults.
+     * A company role with nothing saved yet was using its base access role.
+     */
+    private function effectiveGrants(string $role, $modules): array
+    {
+        $saved = $this->grantsFor($role, $modules->pluck('id')->all());
+        if ($saved) return $saved;
+        if (str_starts_with($role, 'staff:')) return $this->effectiveGrants($this->accessRole($role), $modules);
+        return $modules->mapWithKeys(fn ($module) => [(int) $module->id => array_values(array_intersect(
+            $this->permissions, $this->getDefaultPermissionsForRole($role, $module->slug)
+        ))])->all();
+    }
+
+    /**
+     * Tells only the users this role applies to what changed. Nothing is sent when nothing changed.
+     * Returns the number of users notified.
+     */
+    private function notifyRoleOfChanges(string $role, $modules, array $before, array $after): int
+    {
+        $added = [];
+        $removed = [];
+        foreach ($modules as $module) {
+            $id = (int) $module->id;
+            $name = $module->sidebar_name ?? $module->name ?? $module->slug;
+            $gained = array_values(array_diff($after[$id] ?? [], $before[$id] ?? []));
+            $lost = array_values(array_diff($before[$id] ?? [], $after[$id] ?? []));
+            if ($gained) $added[] = $name . ' (' . implode(', ', $gained) . ')';
+            if ($lost) $removed[] = $name . ' (' . implode(', ', $lost) . ')';
+        }
+        if (! $added && ! $removed) return 0;
+
+        $recipients = \App\Services\NotificationAudience::usersForPermissionRole($this->companyId(), $role);
+        if ($recipients->isEmpty()) return 0;
+
+        $summarize = fn (array $items) => implode('; ', array_slice($items, 0, 6)) . (count($items) > 6 ? '; and ' . (count($items) - 6) . ' more' : '');
+        $lines = [];
+        if ($added) $lines[] = 'Access added: ' . $summarize($added) . '.';
+        if ($removed) $lines[] = 'Access removed: ' . $summarize($removed) . '.';
+        $roleName = $this->companyRoles()[$role] ?? ucfirst($role);
+
+        try {
+            \App\Services\SystemNotificationService::notifyUser(
+                $recipients,
+                'Your role permissions were updated',
+                'An administrator updated the permissions for your role (' . $roleName . '). ' . implode(' ', $lines),
+                route('dashboard'),
+                [
+                    'type' => \App\Services\NotificationAudience::PERMISSION_UPDATE,
+                    'permission_role' => $role,
+                    'icon' => 'fa-user-shield',
+                    'color' => 'warning',
+                ]
+            );
+        } catch (\Throwable $e) {
+            report($e);
+            return 0;
+        }
+
+        return $recipients->count();
     }
 
     public function getDefaultPermissionsForRole(string $role, string $slug): array

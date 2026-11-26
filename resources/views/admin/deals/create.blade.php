@@ -148,19 +148,27 @@ html[data-pms-theme="dark"] .btn-cancel-modern:hover {
 }
 </style>
 
-<div class="container-fluid py-3">
+@include('admin.partials.crm-workspace-styles')
+
+<div class="container-fluid" id="pms-crm-workspace">
 
     {{-- HEADER --}}
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h4 class="fw-bold mb-1 d-flex align-items-center gap-2" style="color: #0f172a;">
-                <span class="fs-4">➕</span> Create New Deal
-            </h4>
-            <p class="text-muted small mb-0">Add a new sales opportunity into your pipeline</p>
+    <div class="pms-crm-topbar">
+        <div class="pms-crm-heading-group">
+            <div class="pms-crm-title-icon">
+                <i class="fas fa-handshake"></i>
+            </div>
+            <div>
+                <h1 class="pms-crm-title">Create New Deal</h1>
+                <p class="pms-crm-subtitle">Add a new sales opportunity into your pipeline.</p>
+            </div>
         </div>
-        <a href="{{ route('admin.deals.index') }}" class="btn-back-pill">
-            <i class="fas fa-arrow-left me-1"></i> Back to Deals
-        </a>
+        <div class="pms-crm-actions">
+            <a href="{{ route('admin.deals.index') }}" class="pms-crm-btn-secondary">
+                <i class="fas fa-arrow-left"></i>
+                <span>Back to Deals</span>
+            </a>
+        </div>
     </div>
 
     {{-- FORM CARD --}}
@@ -169,7 +177,7 @@ html[data-pms-theme="dark"] .btn-cancel-modern:hover {
 
         <div class="card form-card-modern mb-4">
             <div class="card-header form-card-header-modern">
-                <h6 class="fw-bold mb-0 text-dark d-flex align-items-center gap-2"><span class="fs-5">🤝</span> Deal Opportunity Details</h6>
+                <h6 class="fw-bold mb-0 d-flex align-items-center gap-2"><span class="pms-crm-sec-icon"><i class="fas fa-handshake"></i></span> Deal Opportunity Details</h6>
             </div>
             <div class="card-body p-4">
                 <div class="row g-3">

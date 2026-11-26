@@ -20,11 +20,11 @@
     width: 60px;
     height: 60px;
     border-radius: 16px;
-    background: linear-gradient(135deg, #2F6BFF, #16a34a);
+    background: linear-gradient(135deg, #2563EB, #1D4ED8);
     color: #ffffff;
     font-weight: 800;
     font-size: 22px;
-    box-shadow: 0 8px 18px rgba(47, 107, 255, 0.25);
+    box-shadow: 0 8px 18px rgba(37, 99, 235, 0.25);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -509,7 +509,9 @@ html[data-pms-theme="dark"] .lead-nav-tabs .nav-link:not(.active)#notes-tab i, [
 </style>
 @endpush
 
-<div class="container-fluid py-3 lead-details-wrapper">
+@include('admin.partials.crm-workspace-styles')
+
+<div class="container-fluid lead-details-wrapper" id="pms-crm-workspace">
 
     @php
         // -------------------------------------------------------------
@@ -1157,8 +1159,8 @@ html[data-pms-theme="dark"] .lead-nav-tabs .nav-link:not(.active)#notes-tab i, [
                     </div>
                 </div>
                 <div class="modal-footer border-top py-3">
-                    <button type="button" class="btn btn-action-outline btn-sm px-3" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-action-primary btn-sm px-4">Log Activity</button>
+                    <button type="button" class="pms-crm-btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="pms-crm-btn-primary">Log Activity</button>
                 </div>
             </form>
         </div>
@@ -1209,8 +1211,8 @@ html[data-pms-theme="dark"] .lead-nav-tabs .nav-link:not(.active)#notes-tab i, [
                     </div>
                 </div>
                 <div class="modal-footer border-top py-3">
-                    <button type="button" class="btn btn-action-outline btn-sm px-3" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-action-warning btn-sm px-4">Schedule Follow-up</button>
+                    <button type="button" class="pms-crm-btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="pms-crm-btn-warning">Schedule Follow-up</button>
                 </div>
             </form>
         </div>

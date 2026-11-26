@@ -310,26 +310,60 @@
         overflow: hidden;
     }
     #eventCalendar .event-calendar-banner-content {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
         width: 100%;
         min-width: 0;
-        padding: 3px;
+        padding: 5px;
+        box-sizing: border-box;
+    }
+    #eventCalendar .event-calendar-banner-frame {
+        width: 100%;
+        height: 60px;
+        border-radius: 7px;
+        overflow: hidden;
+        background: rgba(255, 255, 255, 0.94);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2px;
         box-sizing: border-box;
     }
     #eventCalendar .event-calendar-banner {
         display: block;
         width: 100%;
-        height: 56px;
+        height: 100%;
         object-fit: contain;
-        border-radius: 4px;
-        margin-bottom: 4px;
+        border-radius: 5px;
+        margin-bottom: 0;
     }
     #eventCalendar .event-calendar-banner-label {
-        display: block;
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+        padding: 1px 3px 2px;
         font-size: 0.75rem;
         line-height: 1.3;
-        font-weight: 600;
+        font-weight: 700;
         overflow-wrap: anywhere;
-        color: inherit;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+    #eventCalendar .event-calendar-banner-time {
+        font-size: 0.68rem;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        opacity: 0.88;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+    #eventCalendar .event-calendar-banner-title {
+        font-size: 0.76rem;
+        font-weight: 700;
+        line-height: 1.25;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
     }
 
     .event-description-panel, .event-memories-empty {
@@ -933,27 +967,271 @@
         color: #ffffff !important;
         -webkit-text-fill-color: #ffffff !important;
     }
+
+    /* Clean SaaS Workspace Redesign (Scoped to #pms-events-page) */
+    #pms-events-page.pms-events-page {
+        padding: 0 0 2rem !important;
+        margin: 0 !important;
+        background: transparent !important;
+        font-family: 'Inter', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif !important;
+    }
+
+    #pms-events-page .pms-events-topbar {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 16px !important;
+        margin-bottom: 18px !important;
+    }
+
+    #pms-events-page .pms-events-title-wrap {
+        display: flex !important;
+        align-items: center !important;
+        gap: 14px !important;
+    }
+
+    #pms-events-page .pms-events-title-icon {
+        width: 44px !important;
+        height: 44px !important;
+        border-radius: 12px !important;
+        background: #eff6ff !important;
+        border: 1px solid #dbeafe !important;
+        color: #2563eb !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 1.3rem !important;
+        flex-shrink: 0 !important;
+    }
+
+    #pms-events-page .pms-events-title {
+        margin: 0 !important;
+        font-size: 1.35rem !important;
+        font-weight: 700 !important;
+        color: #0f172a !important;
+        letter-spacing: -0.02em !important;
+        line-height: 1.25 !important;
+    }
+
+    #pms-events-page .pms-events-sub {
+        margin: 2px 0 0 !important;
+        font-size: 0.84rem !important;
+        color: #64748b !important;
+    }
+
+    #pms-events-page .pms-events-btn-primary,
+    .events-section .pms-events-btn-primary {
+        background: #2563eb !important;
+        border: 1px solid #2563eb !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        border-radius: 10px !important;
+        height: 38px !important;
+        padding: 0 18px !important;
+        font-size: 0.84rem !important;
+        font-weight: 600 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 7px !important;
+        box-shadow: 0 6px 14px rgba(37, 99, 235, 0.22) !important;
+    }
+
+    #pms-events-page .pms-events-btn-primary:hover {
+        background: #1d4ed8 !important;
+        border-color: #1d4ed8 !important;
+    }
+
+    #pms-events-page .pms-events-btn-primary i {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
+    #pms-events-page .kpi-card {
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 14px !important;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04) !important;
+    }
+
+    #pms-events-page .pms-kpi-label {
+        font-size: 0.68rem !important;
+        font-weight: 700 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.05em !important;
+        color: #64748b !important;
+    }
+
+    #pms-events-page .kpi-card h3 {
+        font-size: 1.55rem !important;
+        font-weight: 800 !important;
+        color: #0f172a !important;
+    }
+
+    #pms-events-page .kpi-icon-box {
+        width: 44px !important;
+        height: 44px !important;
+        border-radius: 12px !important;
+        font-size: 1.25rem !important;
+    }
+
+    #pms-events-page .events-filter-card {
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 14px !important;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04) !important;
+    }
+
+    #pms-events-page .events-filter-card .input-group-text {
+        background: #ffffff !important;
+        border-color: #e2e8f0 !important;
+        color: #64748b !important;
+        border-top-left-radius: 10px !important;
+        border-bottom-left-radius: 10px !important;
+    }
+
+    #pms-events-page .events-filter-card .form-control,
+    #pms-events-page .events-filter-card .form-select {
+        height: 40px !important;
+        border-color: #e2e8f0 !important;
+        background-color: #ffffff !important;
+        font-size: 0.84rem !important;
+        box-shadow: none !important;
+    }
+
+    #pms-events-page .events-filter-card .form-control {
+        border-top-right-radius: 10px !important;
+        border-bottom-right-radius: 10px !important;
+    }
+
+    #pms-events-page .events-filter-card .form-select {
+        border-radius: 10px !important;
+    }
+
+    #pms-events-page .events-filter-card .form-control:focus,
+    #pms-events-page .events-filter-card .form-select:focus {
+        border-color: #2563eb !important;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12) !important;
+    }
+
+    #pms-events-page .pms-events-btn-reset {
+        height: 38px !important;
+        border-radius: 10px !important;
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        color: #0f172a !important;
+        padding: 0 14px !important;
+        font-size: 0.84rem !important;
+        font-weight: 600 !important;
+    }
+
+    #pms-events-page .pms-events-switcher {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 4px !important;
+        padding: 4px !important;
+        background: #f1f5f9 !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 12px !important;
+    }
+
+    #pms-events-page .pms-events-switcher .btn {
+        height: 32px !important;
+        padding: 0 12px !important;
+        border-radius: 8px !important;
+        border: none !important;
+        background: transparent !important;
+        color: #475569 !important;
+        font-size: 0.8rem !important;
+        font-weight: 600 !important;
+        box-shadow: none !important;
+    }
+
+    #pms-events-page .pms-events-switcher .btn.active {
+        background: #2563eb !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25) !important;
+    }
+
+    #pms-events-page .pms-events-switcher .btn.active i {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
+    #pms-events-page .event-card,
+    #pms-events-page .gallery-card,
+    #pms-events-page #eventCalendar,
+    #pms-events-page .pms-events-empty-card {
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 16px !important;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04) !important;
+    }
+
+    #pms-events-page .pms-events-empty-card {
+        background: #ffffff !important;
+        padding: 52px 24px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        text-align: center !important;
+    }
+
+    #pms-events-page .event-empty-icon {
+        width: 58px !important;
+        height: 58px !important;
+        border-radius: 16px !important;
+        background: #eff6ff !important;
+        border: 1px solid #dbeafe !important;
+        color: #2563eb !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        margin: 0 auto 16px !important;
+    }
+
+    #pms-events-page .event-empty-icon i {
+        color: #2563eb !important;
+        font-size: 1.45rem !important;
+    }
+
+    .events-section .form-section-title {
+        color: #2563eb !important;
+        background: #eff6ff !important;
+        border-left-color: #2563eb !important;
+    }
+
+    .events-section .premium-input,
+    .events-section .premium-select {
+        border-radius: 10px !important;
+        border: 1px solid #e2e8f0 !important;
+    }
 </style>
 @include('admin.events.dark-theme')
+@include('admin.events.presentation')
+@include('admin.events.partials.catalog-style')
 @endpush
 
 @section('content')
-<div class="container-xxl flex-grow-1 container-p-y events-section">
+<div id="pms-events-page" class="events-section pms-events-page">
 
     {{-- HEADER BLOCK --}}
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
-        <div>
-            <h4 class="fw-bold mb-1 text-dark d-flex align-items-center gap-2">
-                <i class="bx bx-calendar-event text-success fs-3"></i> Events & Memories
-            </h4>
-            <p class="text-muted mb-0 small">Company events, activities, and photo archive</p>
+    <div class="pms-events-topbar">
+        <div class="pms-events-title-wrap">
+            <div class="pms-events-title-icon" aria-hidden="true">
+                <i class="bx bx-calendar-event"></i>
+            </div>
+            <div>
+                <h4 class="pms-events-title">Events &amp; Memories</h4>
+                <p class="pms-events-sub">Company events, activities, and photo archive</p>
+            </div>
         </div>
         @if($canManage)
-        <div>
-            <button type="button" class="btn btn-primary d-inline-flex align-items-center gap-2 fw-bold shadow-sm" onclick="openCreateModal()">
-                <i class="bx bx-plus fs-5"></i> Create Event
+            <button type="button" class="btn pms-events-btn-primary" onclick="openCreateModal()">
+                <i class="bx bx-plus"></i> Create Event
             </button>
-        </div>
         @endif
     </div>
 
@@ -986,8 +1264,8 @@
             <div class="card kpi-card p-3">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
-                        <span class="text-muted small fw-semibold d-block">Total Events</span>
-                        <h3 class="fw-bold mb-0 text-dark mt-1">{{ number_format($totalEvents) }}</h3>
+                        <span class="pms-kpi-label d-block">Total Events</span>
+                        <h3 class="fw-bold mb-0 mt-1">{{ number_format($totalEvents) }}</h3>
                     </div>
                     <div class="kpi-icon-box bg-label-primary text-primary">
                         <i class="bx bx-calendar-event"></i>
@@ -1000,8 +1278,8 @@
             <div class="card kpi-card p-3">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
-                        <span class="text-muted small fw-semibold d-block">Upcoming Events</span>
-                        <h3 class="fw-bold mb-0 text-success mt-1">{{ number_format($upcomingEvents) }}</h3>
+                        <span class="pms-kpi-label d-block">Upcoming Events</span>
+                        <h3 class="fw-bold mb-0 mt-1">{{ number_format($upcomingEvents) }}</h3>
                     </div>
                     <div class="kpi-icon-box bg-label-success text-success">
                         <i class="bx bx-time-five"></i>
@@ -1014,8 +1292,8 @@
             <div class="card kpi-card p-3">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
-                        <span class="text-muted small fw-semibold d-block">Today's Events</span>
-                        <h3 class="fw-bold mb-0 text-warning mt-1">{{ number_format($todayEvents) }}</h3>
+                        <span class="pms-kpi-label d-block">Today's Events</span>
+                        <h3 class="fw-bold mb-0 mt-1">{{ number_format($todayEvents) }}</h3>
                     </div>
                     <div class="kpi-icon-box bg-label-warning text-warning">
                         <i class="bx bx-calendar-check"></i>
@@ -1028,8 +1306,8 @@
             <div class="card kpi-card p-3">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
-                        <span class="text-muted small fw-semibold d-block">Past Events</span>
-                        <h3 class="fw-bold mb-0 text-secondary mt-1">{{ number_format($pastEvents) }}</h3>
+                        <span class="pms-kpi-label d-block">Past Events</span>
+                        <h3 class="fw-bold mb-0 mt-1">{{ number_format($pastEvents) }}</h3>
                     </div>
                     <div class="kpi-icon-box bg-label-secondary text-secondary">
                         <i class="bx bx-history"></i>
@@ -1047,14 +1325,14 @@
                     {{-- Search Input --}}
                     <div class="filter-search-box">
                         <div class="input-group">
-                            <span class="input-group-text bg-light border-end-0"><i class="bx bx-search text-success"></i></span>
-                            <input type="text" name="search" class="form-control border-start-0 bg-light" placeholder="Search title, desc, location..." value="{{ request('search') }}">
+                            <span class="input-group-text border-end-0"><i class="bx bx-search"></i></span>
+                            <input type="text" name="search" class="form-control border-start-0" placeholder="Search title, desc, location..." value="{{ request('search') }}">
                         </div>
                     </div>
 
                     {{-- Event Type Filter --}}
                     <div class="filter-select-box">
-                        <select name="event_type" class="form-select bg-light">
+                        <select name="event_type" class="form-select">
                             <option value="all">All Types</option>
                             @foreach($eventTypes as $type)
                                 <option value="{{ $type }}" {{ request('event_type') == $type ? 'selected' : '' }}>{{ $type }}</option>
@@ -1064,7 +1342,7 @@
 
                     {{-- Status Filter --}}
                     <div class="filter-select-box">
-                        <select name="status" class="form-select bg-light">
+                        <select name="status" class="form-select">
                             <option value="all">All Statuses</option>
                             <option value="published" {{ request('status') == 'published' ? 'selected' : '' }}>Published</option>
                             @if($canManage)
@@ -1077,7 +1355,7 @@
 
                     {{-- Time Filter --}}
                     <div class="filter-select-box">
-                        <select name="time_filter" class="form-select bg-light">
+                        <select name="time_filter" class="form-select">
                             <option value="">All Time</option>
                             <option value="upcoming" {{ request('time_filter') == 'upcoming' ? 'selected' : '' }}>Upcoming</option>
                             <option value="today" {{ request('time_filter') == 'today' ? 'selected' : '' }}>Today</option>
@@ -1087,55 +1365,51 @@
 
                     {{-- Filter Action Buttons --}}
                     <div class="d-flex align-items-center gap-2 flex-wrap ms-auto">
-                        <button type="submit" class="btn btn-primary filter-btn-nowrap">
+                        <button type="submit" class="btn pms-events-btn-primary filter-btn-nowrap">
                             <i class="bx bx-filter-alt"></i> Apply
                         </button>
-                        <a href="{{ route('events.index') }}" class="btn btn-outline-secondary filter-btn-nowrap">
+                        <a href="{{ route('events.index') }}" class="btn pms-events-btn-reset filter-btn-nowrap">
                             <i class="bx bx-reset"></i> Reset
                         </a>
 
-                        {{-- ENHANCED VIEW TOGGLE BUTTONS [LIST] [CALENDAR] [GALLERY] --}}
-                        <div class="btn-group filter-btn-group ms-1" role="group">
-                            <button type="button" class="btn btn-outline-primary active" id="btnListView" onclick="switchView('list')">
-                                <i class="bx bx-list-ul"></i> List
-                            </button>
-                            <button type="button" class="btn btn-outline-primary" id="btnCalendarView" onclick="switchView('calendar')">
-                                <i class="bx bx-calendar"></i> Calendar
-                            </button>
-                            <button type="button" class="btn btn-outline-primary" id="btnGalleryView" onclick="switchView('gallery')">
-                                <i class="bx bx-images"></i> Gallery
-                            </button>
-                        </div>
                     </div>
+                </div>
+                <div class="pms-events-switcher filter-btn-group events-view-switcher" role="group" aria-label="Event view">
+                    <button type="button" class="btn active" id="btnListView" aria-controls="eventsListView" onclick="switchView('list')">
+                        <i class="bx bx-list-ul" aria-hidden="true"></i> List
+                    </button>
+                    <button type="button" class="btn" id="btnCalendarView" aria-controls="eventsCalendarView" onclick="switchView('calendar')">
+                        <i class="bx bx-calendar" aria-hidden="true"></i> Calendar
+                    </button>
+                    <button type="button" class="btn" id="btnGalleryView" aria-controls="eventsGalleryView" onclick="switchView('gallery')">
+                        <i class="bx bx-images" aria-hidden="true"></i> Gallery
+                    </button>
                 </div>
             </form>
         </div>
     </div>
 
     {{-- LIST VIEW SECTION --}}
-    <div id="eventsListView">
+    <div id="eventsListView" class="events-catalog-pane">
         @if($events->count() > 0)
-            <div class="row g-4">
+            <div class="events-card-grid events-list-grid">
                 @foreach($events as $event)
-                <div class="col-lg-4 col-md-6 col-12">
+                <div class="events-card-item">
                     <div class="card event-card h-100 d-flex flex-column">
                         {{-- Banner / Header Image --}}
-                        @if($event->banner_url)
-                            <img src="{{ $event->banner_url }}" alt="{{ $event->title }}" class="event-banner-img">
-                        @else
-                            <div class="event-banner-placeholder">
-                                <i class="bx bx-calendar-event opacity-50 display-1"></i>
-                                <div class="position-absolute bottom-0 start-0 p-3">
-                                    <span class="badge badge-event-type">
-                                        {{ $event->event_type }}
-                                    </span>
+                        <div class="events-list-cover">
+                            @if($event->banner_url)
+                                <img src="{{ $event->banner_url }}" alt="{{ $event->title }}" class="event-banner-img">
+                            @else
+                                <div class="event-banner-placeholder" aria-hidden="true">
+                                    <span class="events-cover-icon"><i class="bx bx-calendar-event"></i></span>
                                 </div>
-                            </div>
-                        @endif
+                            @endif
+                        </div>
 
-                        <div class="card-body p-4 d-flex flex-column flex-grow-1">
+                        <div class="card-body event-card-content d-flex flex-column flex-grow-1">
                             {{-- Badges Row --}}
-                            <div class="d-flex align-items-center justify-content-between mb-3">
+                            <div class="events-card-tags">
                                 <span class="badge badge-event-type">
                                     {{ $event->event_type }}
                                 </span>
@@ -1154,42 +1428,42 @@
                             </div>
 
                             {{-- Title --}}
-                            <h5 class="fw-extrabold text-dark mb-2 text-truncate" style="font-size: 1.15rem;" title="{{ $event->title }}">
+                            <h2 class="events-card-title" title="{{ $event->title }}">
                                 {{ $event->title }}
-                            </h5>
+                            </h2>
 
-                            {{-- Date & Time --}}
-                            <div class="small text-muted mb-2 d-flex align-items-center gap-1.5 fw-semibold">
-                                <i class="bx bx-calendar text-success fs-6"></i>
-                                <span class="text-dark fw-bold">{{ $event->start_date->format('d M Y') }}</span>
-                                @if($event->start_time)
-                                    <span>• {{ date('h:i A', strtotime($event->start_time)) }}</span>
-                                @endif
-                            </div>
-
-                            {{-- Location --}}
-                            <div class="small text-muted mb-3 d-flex align-items-center gap-1.5 text-truncate">
-                                @if($event->location_type === 'online')
-                                    <i class="bx bx-video text-info fs-6"></i>
-                                    <a href="{{ $event->meeting_url }}" target="_blank" class="text-info text-decoration-none text-truncate fw-semibold">
-                                        Online Meeting
-                                    </a>
-                                @else
-                                    <i class="bx bx-map-pin text-danger fs-6"></i>
-                                    <span class="text-truncate text-dark fw-semibold">{{ $event->location ?: 'Physical Venue' }}</span>
-                                @endif
+                            <div class="events-card-facts">
+                                <div class="events-card-meta">
+                                    <span class="events-meta-icon" aria-hidden="true"><i class="bx bx-calendar"></i></span>
+                                    <span>{{ $event->start_date->format('d M Y') }}
+                                        @if($event->start_time)
+                                            <span class="events-card-time">{{ date('h:i A', strtotime($event->start_time)) }}</span>
+                                        @endif
+                                    </span>
+                                </div>
+                                <div class="events-card-meta events-card-location">
+                                    @if($event->location_type === 'online')
+                                        <span class="events-meta-icon" aria-hidden="true"><i class="bx bx-video"></i></span>
+                                        <a href="{{ $event->meeting_url }}" target="_blank" class="text-decoration-none text-truncate">
+                                            Online Meeting
+                                        </a>
+                                    @else
+                                        <span class="events-meta-icon" aria-hidden="true"><i class="bx bx-map-pin"></i></span>
+                                        <span class="text-truncate" title="{{ $event->location }}">{{ $event->location ?: 'Physical Venue' }}</span>
+                                    @endif
+                                </div>
                             </div>
 
                             {{-- Description snippet --}}
-                            <p class="text-secondary small mb-3 flex-grow-1" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.5;">
+                            <p class="events-card-description flex-grow-1">
                                 {{ Str::limit(strip_tags($event->description), 110) }}
                             </p>
 
                             {{-- EVENT MEMORIES PHOTO COUNT BADGE --}}
                             @if($event->photos_count > 0)
                                 <div class="mb-3">
-                                    <button type="button" class="btn btn-sm text-success fw-bold pill border-0 d-inline-flex align-items-center gap-1.5" onclick="showEventDetails({{ $event->id }})" style="background: #EEF2FF; color: #2F6BFF; padding: 6px 14px; border-radius: 20px;">
-                                        <i class="bx bx-images fs-5"></i> 📷 {{ $event->photos_count }} Event {{ Str::plural('Photo', $event->photos_count) }}
+                                    <button type="button" class="btn btn-sm event-photos-button" onclick="showEventDetails({{ $event->id }})">
+                                        <i class="bx bx-images" aria-hidden="true"></i> {{ $event->photos_count }} Event {{ Str::plural('Photo', $event->photos_count) }}
                                     </button>
                                 </div>
                             @endif
@@ -1198,11 +1472,11 @@
                             @if($event->rsvp_required && $event->status !== 'cancelled')
                                 <div class="rsvp-box">
                                     <div class="d-flex align-items-center justify-content-between">
-                                        <span class="fw-extrabold text-dark d-flex align-items-center gap-1.5" style="font-size: 0.92rem;">
-                                            <i class="bx bx-checkbox-checked text-success fs-5"></i> RSVP:
+                                        <span class="events-rsvp-label">
+                                            <span class="events-meta-icon" aria-hidden="true"><i class="bx bx-checkbox-checked"></i></span> RSVP
                                         </span>
-                                        <span class="badge rsvp-count-badge" style="background: #e8f5e9; color: #16a34a; font-weight: 700; font-size: 0.78rem; padding: 6px 12px; border-radius: 20px;">
-                                            <i class="bx bx-user-check me-1"></i> {{ $event->rsvp_counts['going'] }} Going
+                                        <span class="badge rsvp-count-badge">
+                                            <i class="bx bx-user-check" aria-hidden="true"></i> {{ $event->rsvp_counts['going'] }} Going
                                         </span>
                                     </div>
                                     @php $myRsvp = $event->user_rsvp?->response; @endphp
@@ -1221,19 +1495,15 @@
                             @endif
 
                             {{-- CARD FOOTER / ACTIONS --}}
-                            <div class="pt-2.5 border-top d-flex align-items-center justify-content-between mt-auto">
-                                <div class="d-flex align-items-center gap-2">
-                                    <div class="avatar avatar-xs" style="width: 32px; height: 32px;">
-                                        <span class="avatar-initial rounded-circle bg-primary text-white fw-bold shadow-sm" style="font-size: 11px; width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #4F83FF, #2F6BFF) !important;">
-                                            {{ strtoupper(substr($event->organizer?->name ?? 'C', 0, 2)) }}
-                                        </span>
-                                    </div>
-                                    <span class="small fw-bold text-dark text-truncate" style="max-width: 130px;" title="{{ $event->organizer?->name }}">
+                            <div class="events-card-footer">
+                                <div class="events-organizer">
+                                    <span class="events-organizer-avatar" aria-hidden="true">{{ strtoupper(substr($event->organizer?->name ?? 'C', 0, 2)) }}</span>
+                                    <span class="text-truncate" title="{{ $event->organizer?->name }}">
                                         {{ $event->organizer?->name ?? 'Company' }}
                                     </span>
                                 </div>
 
-                                <div class="d-flex align-items-center gap-1">
+                                <div class="events-card-actions">
                                     <button type="button" class="btn-action-icon text-muted" title="View Memories / Details" onclick="showEventDetails({{ $event->id }})">
                                         <i class="bx bx-show"></i>
                                     </button>
@@ -1267,16 +1537,16 @@
             </div>
         @else
             {{-- EMPTY STATE --}}
-            <div class="card border-0 shadow-sm p-5 text-center my-4">
-                <div class="avatar avatar-xl bg-label-success rounded-circle mx-auto mb-3 event-empty-icon" style="width: 70px; height: 70px; display: flex; align-items: center; justify-content: center;">
-                    <i class="bx bx-calendar-event fs-1 text-success"></i>
+            <div class="card pms-events-empty-card my-4">
+                <div class="event-empty-icon">
+                    <i class="bx bx-calendar-event"></i>
                 </div>
                 <h5 class="fw-bold text-dark mb-1">No upcoming events</h5>
                 <p class="text-muted small mb-4">Company events and activities will appear here.</p>
                 @if($canManage)
                     <div>
-                        <button type="button" class="btn btn-primary px-4 fw-bold" onclick="openCreateModal()">
-                            <i class="bx bx-plus me-1"></i> Create Event
+                        <button type="button" class="btn pms-events-btn-primary" onclick="openCreateModal()">
+                            <i class="bx bx-plus"></i> Create Event
                         </button>
                     </div>
                 @endif
@@ -1290,34 +1560,35 @@
     </div>
 
     {{-- GALLERY VIEW SECTION (NEW) --}}
-    <div id="eventsGalleryView" class="d-none">
-        <div class="mb-4">
-            <h5 class="fw-bold text-dark mb-1 d-flex align-items-center gap-2">
-                <i class="bx bx-images text-success fs-3"></i> Company Event Gallery Archive
-            </h5>
-            <p class="text-muted small mb-0">Browse photo memories of company tours, celebrations, picnics, and annual events.</p>
+    <div id="eventsGalleryView" class="events-catalog-pane d-none">
+        <div class="events-gallery-heading">
+            <span class="events-empty-icon" aria-hidden="true"><i class="bx bx-images"></i></span>
+            <div>
+                <h2>Event Gallery</h2>
+                <p>Photos from company events.</p>
+            </div>
         </div>
 
         @if($events->count() > 0)
-            <div class="row g-4">
+            <div class="events-card-grid">
                 @foreach($events as $event)
-                <div class="col-lg-4 col-md-6 col-12">
+                <div class="events-card-item">
                     <div class="gallery-card h-100 d-flex flex-column cursor-pointer" onclick="showEventDetails({{ $event->id }})">
                         @php
                             $previewPhotos = $event->photos->take(4);
                         @endphp
                         
                         {{-- Photo Matrix Grid --}}
-                        <div class="gallery-preview-grid {{ $previewPhotos->count() <= 1 ? 'single-image' : '' }}">
+                        <div class="gallery-preview-grid {{ $previewPhotos->count() <= 1 ? 'single-image' : '' }} {{ $previewPhotos->count() === 3 ? 'gallery-has-three' : '' }}">
                             @if($previewPhotos->count() > 0)
                                 @foreach($previewPhotos as $p)
                                     <img src="{{ $p->image_url }}" alt="{{ $event->title }}" class="gallery-preview-img">
                                 @endforeach
                             @elseif($event->banner_url)
-                                <img src="{{ $event->banner_url }}" alt="{{ $event->title }}" class="gallery-preview-img" style="grid-column: span 2;">
+                                <img src="{{ $event->banner_url }}" alt="{{ $event->title }}" class="gallery-preview-img">
                             @else
-                                <div class="d-flex align-items-center justify-content-center h-100 bg-secondary text-white w-100" style="grid-column: span 2;">
-                                    <i class="bx bx-images fs-1 opacity-50"></i>
+                                <div class="event-banner-placeholder" aria-hidden="true">
+                                    <span class="events-cover-icon"><i class="bx bx-images"></i></span>
                                 </div>
                             @endif
 
@@ -1332,28 +1603,28 @@
                             @endif
                         </div>
 
-                        <div class="p-4 d-flex flex-column flex-grow-1">
-                            <div class="d-flex align-items-center justify-content-between mb-2">
+                        <div class="event-card-content d-flex flex-column flex-grow-1">
+                            <div class="events-card-tags">
                                 <span class="badge badge-event-type">{{ $event->event_type }}</span>
-                                <span class="text-muted small fw-semibold">
-                                    <i class="bx bx-calendar text-success me-1"></i> {{ $event->start_date->format('d M Y') }}
+                                <span class="events-gallery-date">
+                                    <span class="events-meta-icon" aria-hidden="true"><i class="bx bx-calendar"></i></span> {{ $event->start_date->format('d M Y') }}
                                 </span>
                             </div>
 
-                            <h5 class="fw-bold text-dark mb-2 text-truncate" title="{{ $event->title }}">
+                            <h3 class="events-card-title" title="{{ $event->title }}">
                                 {{ $event->title }}
-                            </h5>
+                            </h3>
 
-                            <p class="text-secondary small mb-3 flex-grow-1 text-truncate">
-                                <i class="bx bx-map-pin me-1 text-danger"></i> {{ $event->location ?: 'Company Event' }}
+                            <p class="events-card-meta events-card-location">
+                                <span class="events-meta-icon" aria-hidden="true"><i class="bx bx-map-pin"></i></span> <span class="text-truncate">{{ $event->location ?: 'Company Event' }}</span>
                             </p>
 
-                            <div class="pt-3 border-top d-flex align-items-center justify-content-between mt-auto">
-                                <span class="small fw-semibold text-muted">
+                            <div class="events-card-footer">
+                                <span class="events-organizer events-gallery-organizer">
                                     Organized by <strong class="text-dark">{{ $event->organizer?->name ?? 'Company' }}</strong>
                                 </span>
-                                <button type="button" class="btn btn-primary btn-sm fw-bold px-3 shadow-sm" style="background: linear-gradient(135deg, #4F83FF, #2F6BFF); border: none;">
-                                    View Memories
+                                <button type="button" class="btn btn-primary btn-sm events-primary-button">
+                                    View Memories <i class="bx bx-right-arrow-alt" aria-hidden="true"></i>
                                 </button>
                             </div>
                         </div>
@@ -1362,10 +1633,19 @@
                 @endforeach
             </div>
         @else
-            <div class="card border-0 shadow-sm p-5 text-center my-4">
-                <i class="bx bx-images fs-1 text-muted mb-2"></i>
-                <h5 class="fw-bold text-dark">No Event Memories</h5>
-                <p class="text-muted small">No event photo memories have been created yet.</p>
+            <div class="card pms-events-empty-card my-4">
+                <div class="event-empty-icon">
+                    <i class="bx bx-images"></i>
+                </div>
+                <h5 class="fw-bold text-dark mb-1">No Event Memories</h5>
+                <p class="text-muted small mb-4">No event photo memories have been created yet.</p>
+                @if($canManage)
+                    <div>
+                        <button type="button" class="btn pms-events-btn-primary" onclick="openCreateModal()">
+                            <i class="bx bx-plus"></i> Create Event
+                        </button>
+                    </div>
+                @endif
             </div>
         @endif
     </div>
@@ -1779,18 +2059,34 @@
         const content = document.createElement('div');
         content.className = 'event-calendar-banner-content';
 
+        const frame = document.createElement('div');
+        frame.className = 'event-calendar-banner-frame';
+
         const banner = document.createElement('img');
         banner.className = 'event-calendar-banner';
         banner.src = bannerUrl;
         banner.alt = info.event.title;
         banner.loading = 'lazy';
-        banner.addEventListener('error', function() { banner.remove(); }, { once: true });
-        content.appendChild(banner);
+        banner.addEventListener('error', function() { frame.remove(); }, { once: true });
+        frame.appendChild(banner);
+        content.appendChild(frame);
 
         const label = document.createElement('span');
         label.className = 'event-calendar-banner-label';
+
         const timeText = info.timeText || info.event.extendedProps.display_time || '';
-        label.textContent = (timeText ? timeText + ' ' : '') + info.event.title;
+        if (timeText) {
+            const timeEl = document.createElement('span');
+            timeEl.className = 'event-calendar-banner-time';
+            timeEl.textContent = timeText;
+            label.appendChild(timeEl);
+        }
+
+        const titleEl = document.createElement('span');
+        titleEl.className = 'event-calendar-banner-title';
+        titleEl.textContent = info.event.title;
+        label.appendChild(titleEl);
+
         content.appendChild(label);
 
         return { domNodes: [content] };

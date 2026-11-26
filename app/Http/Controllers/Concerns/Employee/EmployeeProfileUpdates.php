@@ -11,6 +11,7 @@ use App\Models\ParentDepartment;
 use App\Models\User;
 use App\Services\SystemNotificationService;
 use App\Support\CountryPhone;
+use App\Support\EmployeeProfileAccess;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -20,6 +21,12 @@ use Illuminate\Support\Facades\Schema;
 
 trait EmployeeProfileUpdates
 {
+    private function authorizeProfileEdit(User $employee): void
+    {
+        abort_unless(EmployeeProfileAccess::canEditTarget(auth()->user(), $employee), 403,
+            'You do not have permission to edit this employee profile.');
+    }
+
     /**
      * Edit form.
      */
@@ -28,11 +35,7 @@ trait EmployeeProfileUpdates
         $this->ensureAdmin();
 
         $employee = User::with('employeeDetail')->findOrFail($id);
-        if ($employee->company_staff_role_id) {
-            abort_unless(in_array(auth()->user()?->normalizedRole(), ['admin', 'administrator'], true)
-                && (int) $employee->company_id === (int) auth()->user()?->company_id, 403);
-            return redirect()->route('admin.upper-level-employees.index', ['edit' => $employee->id]);
-        }
+        $this->authorizeProfileEdit($employee);
 
         return view('admin.employees.edit', [
             'employee' => $employee,
@@ -58,12 +61,12 @@ trait EmployeeProfileUpdates
     public function update(Request $request, $id)
     {
         $this->ensureAdmin();
-        $this->validateJoiningAge($request);
 
         // load user & detail first so we can build validation rules that ignore current records
         $user = User::findOrFail($id);
-        abort_if(auth()->user()->normalizedRole() !== 'superadmin' && (int) $user->company_id !== (int) auth()->user()->company_id, 403);
-        $this->guardEmployeeRole($request, $user);
+        $this->authorizeProfileEdit($user);
+        $this->guardEmployeeRole($request);
+        $this->validateJoiningAge($request);
         $detail = $user->employeeDetail;
 
         // ==============================================
@@ -219,10 +222,14 @@ trait EmployeeProfileUpdates
             $user->mobile = $mobileWithCode; // Store with +91 prefix
             $user->login_allowed = $request->login_allowed ?? 1;
             $user->email_notifications = $request->email_notifications ?? 1;
-            if ($request->filled('user_role')) {
-                $user->role = $request->input('user_role');
-            } elseif ($request->filled('role')) {
-                $user->role = $request->input('role');
+            // A company-role account's access role comes from its company role (login and permissions
+            // depend on that pairing), so it is never changed from this form.
+            if (! $user->company_staff_role_id) {
+                if ($request->filled('user_role')) {
+                    $user->role = $request->input('user_role');
+                } elseif ($request->filled('role')) {
+                    $user->role = $request->input('role');
+                }
             }
             if ($request->filled('password')) {
                 \App\Services\PasswordManagementService::updatePassword(Auth::user(), $user, $request->password);
