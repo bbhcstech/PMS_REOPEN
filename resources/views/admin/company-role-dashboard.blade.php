@@ -29,7 +29,7 @@
         @if(!\App\Services\WorkforceAccess::isAuthority(auth()->user()) && $allows('attendance'))<div class="role-metric"><span>My attendance records this month</span><strong>{{ $attendanceDays ?? '—' }}</strong></div>@endif
         @if(!\App\Services\WorkforceAccess::isAuthority(auth()->user()) && $allows('leaves'))<div class="role-metric"><span>My leave records</span><strong>{{ $leaveCount ?? '—' }}</strong></div>@endif
         @if($hr)
-        @if($allows('leaves'))<div class="role-metric"><span>Company pending leaves</span><strong>{{ $hr['pending_leaves'] ?? '—' }}</strong></div>@endif
+        @if($allows('leaves'))<div class="role-metric"><span>My pending leave</span><strong>{{ $hr['pending_leaves'] ?? '—' }}</strong></div>@endif
         @endif
         @if($manager && $allows('tasks') && $allows('projects'))
         <div class="role-metric"><span>Tasks across my projects</span><strong>{{ $manager['project_tasks'] }}</strong></div>

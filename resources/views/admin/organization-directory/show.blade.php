@@ -28,7 +28,7 @@
         'CV / Resume' => $detail?->cv_path ? asset($detail->cv_path) : null,
     ]);
 
-    $canManageDirectory = in_array(auth()->user()?->role, ['admin', 'hr'], true);
+    $canManageDirectory = in_array(auth()->user()?->normalizedRole(), ['admin', 'hr', 'superadmin'], true);
 @endphp
 
 <div id="pms-org-show-page" class="org-page">

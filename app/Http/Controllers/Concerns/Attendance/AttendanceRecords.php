@@ -350,8 +350,7 @@ trait AttendanceRecords
                 return response('<div class="alert alert-danger">You cannot access this attendance record.</div>', 403);
             }
 
-            // Double-check permission
-            if ($user->role === 'employee' && $attendance->user_id != $user->id) {
+            if (($user->role === 'employee' || \App\Services\WorkforceAccess::isHr($user)) && (int) $attendance->user_id !== (int) $user->id) {
                 return response('<div class="alert alert-danger">You can only view your own attendance details.</div>', 403);
             }
 

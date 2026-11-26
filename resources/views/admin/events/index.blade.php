@@ -1179,24 +1179,6 @@
         text-align: center !important;
     }
 
-    #pms-events-page .event-empty-icon {
-        width: 58px !important;
-        height: 58px !important;
-        border-radius: 16px !important;
-        background: #eff6ff !important;
-        border: 1px solid #dbeafe !important;
-        color: #2563eb !important;
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        margin: 0 auto 16px !important;
-    }
-
-    #pms-events-page .event-empty-icon i {
-        color: #2563eb !important;
-        font-size: 1.45rem !important;
-    }
-
     .events-section .form-section-title {
         color: #2563eb !important;
         background: #eff6ff !important;
@@ -1537,12 +1519,12 @@
             </div>
         @else
             {{-- EMPTY STATE --}}
-            <div class="card pms-events-empty-card my-4">
-                <div class="event-empty-icon">
+            <div class="card pms-events-empty-card events-empty">
+                <div class="events-empty-icon" aria-hidden="true">
                     <i class="bx bx-calendar-event"></i>
                 </div>
-                <h5 class="fw-bold text-dark mb-1">No upcoming events</h5>
-                <p class="text-muted small mb-4">Company events and activities will appear here.</p>
+                <h2>No upcoming events</h2>
+                <p>Company events and activities will appear here.</p>
                 @if($canManage)
                     <div>
                         <button type="button" class="btn pms-events-btn-primary" onclick="openCreateModal()">
@@ -1594,7 +1576,7 @@
 
                             @if($event->photos_count > 0)
                                 <span class="gallery-overlay-count">
-                                    <i class="bx bx-camera me-1"></i> {{ $event->photos_count }} {{ Str::plural('Photo', $event->photos_count) }}
+                                    <i class="bx bx-camera" aria-hidden="true"></i> {{ $event->photos_count }} {{ Str::plural('Photo', $event->photos_count) }}
                                 </span>
                             @else
                                 <span class="gallery-overlay-count bg-dark">
@@ -1633,12 +1615,12 @@
                 @endforeach
             </div>
         @else
-            <div class="card pms-events-empty-card my-4">
-                <div class="event-empty-icon">
+            <div class="card pms-events-empty-card events-empty">
+                <div class="events-empty-icon" aria-hidden="true">
                     <i class="bx bx-images"></i>
                 </div>
-                <h5 class="fw-bold text-dark mb-1">No Event Memories</h5>
-                <p class="text-muted small mb-4">No event photo memories have been created yet.</p>
+                <h3>No Event Memories</h3>
+                <p>No event photo memories have been created yet.</p>
                 @if($canManage)
                     <div>
                         <button type="button" class="btn pms-events-btn-primary" onclick="openCreateModal()">

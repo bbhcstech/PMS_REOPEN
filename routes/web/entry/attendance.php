@@ -45,7 +45,7 @@ Route::post('/attendance/store', [AttendanceController::class, 'store'])->name('
 Route::get('/attendance/by-member', [AttendanceController::class, 'byMember'])->name('attendance.byMember');
 Route::get('/attendance/by-hour', [AttendanceController::class, 'byHour'])->name('attendance.byHour');
 Route::get('/attendance/map-view', [AttendanceController::class, 'todayAttendanceByMap'])->name('attendance.today.map');
-Route::get('/attendance/report', [AttendanceController::class, 'attendanceReport'])->name('attendance.report');
+Route::get('/attendance/report', [AttendanceController::class, 'attendanceReport'])->middleware('auth')->name('attendance.report');
 Route::get('/attendance/export/excel', [AttendanceController::class, 'exportExcel'])->name('attendance.export.excel');
 Route::get('/attendance/export/pdf', [AttendanceController::class, 'exportPdf'])->name('attendance.export.pdf');
 Route::get('/attendance/export/multi-pdf', [AttendanceController::class, 'exportMultiPdf'])->name('attendance.export.multi.pdf');
@@ -53,8 +53,7 @@ Route::post('/attendance/mark', [AttendanceController::class, 'markAttendance'])
 Route::get('/attendance/edit', [AttendanceController::class, 'edit'])->name('attendance.edit');
 Route::put('/attendance/{attendance}', [AttendanceController::class, 'update'])->name('attendance.update');
 
-// Employee-only route (optional separate view)
-Route::get('/my-attendance', [AttendanceController::class, 'employeeIndex'])->name('attendance.employee.index');
+Route::get('/my-attendance', [AttendanceController::class, 'employeeIndex'])->middleware('auth')->name('attendance.employee.index');
 
 
 

@@ -466,6 +466,49 @@
         background: var(--orgd-canvas);
     }
 
+    .orgd-modes {
+        gap: 4px;
+    }
+
+    .orgd-mode {
+        display: inline-flex !important;
+        align-items: center;
+        gap: 6px;
+        height: 32px !important;
+        min-height: 0 !important;
+        padding: 0 11px !important;
+        border: 0 !important;
+        border-radius: 8px !important;
+        background: transparent !important;
+        color: var(--orgd-muted) !important;
+        -webkit-text-fill-color: var(--orgd-muted) !important;
+        font-size: 0.79rem;
+        font-weight: 650;
+        cursor: pointer;
+        box-shadow: none !important;
+        transition: background-color 0.16s, color 0.16s;
+    }
+    .orgd-mode i,
+    .orgd-mode span {
+        color: inherit !important;
+        -webkit-text-fill-color: currentColor !important;
+    }
+    .orgd-mode:hover {
+        background: var(--orgd-surface) !important;
+        color: var(--orgd-text) !important;
+        -webkit-text-fill-color: var(--orgd-text) !important;
+    }
+    .orgd-mode.is-on {
+        background: var(--orgd-accent) !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        box-shadow: 0 2px 8px rgba(79, 70, 229, 0.24) !important;
+    }
+
+    .orgd-tree-panel:not(.is-chart-mode) .orgd-chart-only {
+        display: none !important;
+    }
+
     .orgd-tool {
         width: 32px !important;
         height: 32px !important;
@@ -502,6 +545,143 @@
     .orgd-body {
         position: relative;
         width: 100%;
+        min-height: 480px;
+    }
+
+    /* Level Grid (Tree Grid) & All Employee Cards */
+    .orgd-level-grid,
+    .orgd-cards-grid {
+        padding: 20px;
+        background: var(--orgd-canvas);
+        min-height: 480px;
+    }
+    .orgd-level-grid[hidden],
+    .orgd-cards-grid[hidden],
+    .orgd-viewport[hidden] {
+        display: none !important;
+    }
+
+    .orgd-level-group + .orgd-level-group {
+        margin-top: 22px;
+    }
+
+    .orgd-level-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 12px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid var(--orgd-border);
+    }
+
+    .orgd-level-title {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.88rem;
+        font-weight: 700;
+        color: var(--orgd-text);
+        margin: 0;
+    }
+
+    .orgd-level-count {
+        font-size: 0.76rem;
+        font-weight: 600;
+        color: var(--orgd-muted);
+    }
+
+    .orgd-level-cards,
+    .orgd-cards-wrap {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(265px, 1fr));
+        gap: 14px;
+    }
+
+    .orgd-tile.is-card-mode {
+        width: 100%;
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .orgd-card-meta {
+        display: grid;
+        gap: 5px;
+        font-size: 0.77rem;
+        color: var(--orgd-muted);
+    }
+
+    .orgd-card-meta-row {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        min-width: 0;
+    }
+
+    .orgd-card-meta-row i {
+        width: 14px;
+        text-align: center;
+        color: var(--orgd-accent) !important;
+        -webkit-text-fill-color: var(--orgd-accent) !important;
+        font-size: 0.74rem;
+        flex-shrink: 0;
+    }
+
+    .orgd-card-meta-row span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .orgd-placement-note {
+        margin: 0;
+        font-size: 0.74rem;
+        font-weight: 600;
+        color: var(--orgd-muted);
+    }
+
+    .orgd-chain {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .orgd-chain-step {
+        display: inline-flex;
+        align-items: center;
+        padding: 3px 9px !important;
+        border-radius: 999px !important;
+        border: 1px solid var(--orgd-border) !important;
+        background: var(--orgd-canvas) !important;
+        color: var(--orgd-text) !important;
+        -webkit-text-fill-color: var(--orgd-text) !important;
+        font-size: 0.74rem;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .orgd-chain-step.is-self {
+        border-color: var(--orgd-accent) !important;
+        background: var(--orgd-accent-soft) !important;
+        color: var(--orgd-accent) !important;
+        -webkit-text-fill-color: var(--orgd-accent) !important;
+        cursor: default;
+    }
+
+    .orgd-chain-sep {
+        font-size: 0.65rem;
+        color: var(--orgd-muted) !important;
+        -webkit-text-fill-color: var(--orgd-muted) !important;
+    }
+
+    .orgd-body > .orgd-empty {
+        min-height: 380px;
+        background: var(--orgd-canvas);
+        z-index: 4;
     }
 
     .orgd-viewport {
@@ -812,7 +992,7 @@
         top: 0;
         right: 0;
         bottom: 0;
-        width: 380px;
+        width: 430px;
         max-width: 100%;
         display: flex;
         flex-direction: column;

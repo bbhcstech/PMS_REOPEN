@@ -36,7 +36,8 @@ foreach ([4, 5, 6, 7] as $id) {
     $assert(Notification::sent($admin, App\Notifications\SystemNotification::class)->isNotEmpty(), 'Authority request did not reach Admin');
     $assert(Notification::sent($hr, App\Notifications\SystemNotification::class)->isEmpty(), 'Authority request leaked to HR');
 }
-$review->invoke($service, $employeeLeave, $hr);
+$review->invoke($service, $employeeLeave, $admin);
+denyReview(fn () => $review->invoke($service, $employeeLeave, $hr));
 denyReview(fn () => $service->approve($employeeLeave, $employee));
 denyReview(fn () => $service->approve($employeeLeave, User::find(3)));
 $assert(WorkforceAccess::canAccessRecord($hr, $employee), 'HR cannot access employee details');
@@ -44,25 +45,25 @@ $assert(!WorkforceAccess::canAccessRecord($hr, User::find(6), 'employee'), 'Old 
 Auth::guard('web')->setUser($employee);
 Notification::fake();
 SystemNotificationService::notifyLeaveReviewers($employee, 'New Leave Request', 'Employee request');
-$assert(Notification::sent($hr, App\Notifications\SystemNotification::class)->isNotEmpty(), 'Employee request did not reach HR');
+$assert(Notification::sent($admin, App\Notifications\SystemNotification::class)->isNotEmpty(), 'Employee request did not reach Admin');
+$assert(Notification::sent($hr, App\Notifications\SystemNotification::class)->isEmpty(), 'Employee leave request exposed to HR');
 $assert(Notification::sent(User::find(6), App\Notifications\SystemNotification::class)->isEmpty(), 'Employee request leaked to Manager');
 Auth::guard('web')->setUser($hr);
-$assert(Leave::find(8) !== null, 'HR company query cannot see employee leave');
+$assert(Leave::find(8) === null, 'HR company query exposed employee leave');
 $assert(Leave::find(6) === null, 'HR query exposed Manager leave');
 $controller = app(App\Http\Controllers\LeaveController::class);
 $authorize = new ReflectionMethod($controller, 'authorizeLeaveAccess');
-$authorize->invoke($controller, $employeeLeave);
+denyReview(fn () => $authorize->invoke($controller, $employeeLeave));
 Auth::guard('web')->setUser($admin);
 $authority = Leave::findOrFail(5);
 Auth::guard('web')->setUser($hr);
 denyReview(fn () => $authorize->invoke($controller, $authority));
 $scope = new ReflectionMethod($controller, 'scopeRecordCategory');
 app()->instance('request', Illuminate\Http\Request::create('/leaves'));
-$assert($scope->invoke($controller, Leave::query())->pluck('id')->all() === [8], 'HR queue includes own or authority records');
 foreach (['index', 'create', 'show', 'apology-letters/index'] as $view) {
     token_get_all(app('blade.compiler')->compileString(file_get_contents(resource_path("views/admin/leaves/{$view}.blade.php"))), TOKEN_PARSE);
 }
-echo "PASS: HR employee queue and notifications, admin-only authority records, self-review denial, direct record access, old snapshots and company isolation.\n";
+echo "PASS: HR personal record isolation, admin-only leave reviews and notifications, direct record access, old snapshots and company isolation.\n";
 
 DB::connection('central')->statement('CREATE TABLE companies (id integer primary key, name text, db_name text, deleted_at text)');
 DB::connection('central')->table('companies')->insert(['id' => 1, 'name' => 'Test company', 'db_name' => ':memory:']);
@@ -81,19 +82,19 @@ function guardedRequest(int $actorId, string $controller, string $action, string
 }
 $leaves = App\Http\Controllers\LeaveController::class;
 $attendance = App\Http\Controllers\AttendanceController::class;
-$assert(guardedRequest(5, $leaves, 'index', 'leaves.index') === 'allowed', 'HR employee inbox blocked');
+$assert(guardedRequest(5, $leaves, 'index', 'leaves.index') === 'allowed', 'HR personal report blocked');
 denyReview(fn () => guardedRequest(5, $leaves, 'index', 'leaves.index', ['staff_category' => 'authority']));
-denyReview(fn () => guardedRequest(5, $leaves, 'show', 'leaves.show', [], 5));
+$assert(guardedRequest(5, $leaves, 'show', 'leaves.show', [], 5) === 'allowed', 'HR own leave details blocked');
 denyReview(fn () => guardedRequest(5, $leaves, 'bulkAction', 'leaves.bulkAction', ['ids' => [8, 5], 'action' => 'delete']));
 foreach ([4, 6, 7] as $id) {
-    denyReview(fn () => guardedRequest($id, $leaves, 'index', 'leaves.index'));
-    denyReview(fn () => guardedRequest($id, $attendance, 'index', 'attendance.index'));
+    $assert(guardedRequest($id, $leaves, 'index', 'leaves.index') === 'allowed', 'Authority cannot read their own leave');
+    $assert(guardedRequest($id, $attendance, 'index', 'attendance.index') === 'allowed', 'Authority cannot read their own attendance');
     denyReview(fn () => guardedRequest($id, $attendance, 'store', 'attendance.store'));
     $assert(guardedRequest($id, $leaves, 'create', 'leaves.create') === 'allowed', 'Authority cannot submit leave');
 }
 $assert(guardedRequest(1, $leaves, 'authorityIndex', 'admin.authority-leaves') === 'allowed', 'Admin authority inbox blocked');
 $assert(guardedRequest(8, $attendance, 'index', 'attendance.index') === 'allowed', 'Employee own attendance blocked');
-echo "PASS: HTTP guards reject forged authority filters, self-detail URLs, mixed bulk IDs and authority history/edit routes; submissions and employee attendance remain accessible.\n";
+echo "PASS: HTTP guards reject forged authority filters and mixed bulk IDs; HR can open personal details and submit requests.\n";
 
 foreach (['index', 'create', 'store', 'calendar', 'calendarData', 'leaveReport', 'export', 'createApologyLetter', 'storeApologyLetter'] as $action) {
     $assert(guardedRequest(8, $leaves, $action, 'leaves.'.$action) === 'allowed', 'Employee leave action blocked: '.$action);

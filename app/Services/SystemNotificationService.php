@@ -78,12 +78,7 @@ class SystemNotificationService
 
     public static function notifyLeaveReviewers(User $owner, string $title, string $message, ?string $url = null, array $data = []): void
     {
-        $reviewers = self::admins($owner->company_id);
-        if (! WorkforceAccess::isAuthority($owner)) {
-            $hr = User::where('company_id', self::companyId($owner->company_id))->whereRaw('LOWER(role) = ?', ['hr'])->get();
-            $reviewers = $reviewers->merge($hr);
-        }
-        self::send($reviewers, $title, $message, $url, $data);
+        self::send(self::admins($owner->company_id), $title, $message, $url, $data);
     }
 
     public static function notifyEmployees(string $title, string $message, ?string $url = null, array $data = []): void

@@ -84,8 +84,56 @@ foreach ([[], ['search' => 'Ananya']] as $filters) {
 $source = file_get_contents(resource_path('views/admin/organization-directory/index.blade.php'));
 $source = str_replace("@extends('admin.layout.app')", '', $source)."\n@stack('styles') @yield('content') @stack('scripts')";
 $html = \Illuminate\Support\Facades\Blade::render($source, $data, true);
-if (!str_contains($html, 'Employee Hierarchy Structure') || !str_contains($html, '.orgd-viewport') || !str_contains($html, 'orgTreeInitialData')) {
-    throw new RuntimeException('Organization did not render its content, hierarchy styles and initial data.');
+foreach ([
+    'Employee Hierarchy Structure',
+    '.orgd-viewport',
+    'orgTreeInitialData',
+    'data-org-mode="grid"',
+    'data-org-mode="cards"',
+    'id="orgLevelGrid"',
+    'id="orgCardsGrid"',
+    'pms:records-updated',
+    'loadProfileDetails',
+] as $needle) {
+    if (!str_contains($html, $needle)) {
+        throw new RuntimeException('Organization page is missing expected hierarchy/card/detail element: '.$needle);
+    }
 }
 
-echo "PASS: Organization search, filters, company isolation, and support for tenants without archive columns.\n";
+// Organization tree/cards automatically expose profile endpoints and drop employees deleted or deactivated from Employees.
+$treeRequest = Request::create('/organization/tree', 'GET');
+$treeRequest->setUserResolver(fn () => $viewer);
+$treeResponse = $controller->tree($treeRequest)->getData(true);
+$node = $treeResponse['nodes'][0] ?? null;
+if (!$node || empty($node['profile_url']) || empty($node['org_show_url'])) {
+    throw new RuntimeException('Organization tree node is missing profile_url or org_show_url.');
+}
+$profileRequest = Request::create($node['profile_url'], 'GET');
+$profileRequest->setUserResolver(fn () => $viewer);
+$profileData = $controller->profile($profileRequest, (int) $node['id'])->getData(true);
+if (($profileData['id'] ?? null) !== 1 || !isset($profileData['sections']['Work profile'], $profileData['sections']['Personal information'])) {
+    throw new RuntimeException('Organization profile endpoint did not return full employee details.');
+}
+
+// Archiving/deleting an employee from the Employee section immediately removes them from Organization.
+DB::table('users')->where('id', 1)->update(['archived_at' => now()]);
+$afterDeleteTree = $controller->tree($treeRequest)->getData(true);
+if (!empty($afterDeleteTree['nodes'])) {
+    throw new RuntimeException('Deleted/archived employee remained visible in Organization.');
+}
+try {
+    $controller->profile($profileRequest, 1);
+    throw new RuntimeException('Deleted employee profile should not remain accessible.');
+} catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+    // expected
+}
+
+// Restored but marked Inactive in Employee section is also excluded from Organization.
+DB::table('users')->where('id', 1)->update(['archived_at' => null]);
+DB::table('employee_details')->where('user_id', 1)->update(['status' => 'Inactive']);
+$afterInactiveTree = $controller->tree($treeRequest)->getData(true);
+if (!empty($afterInactiveTree['nodes'])) {
+    throw new RuntimeException('Inactive employee remained visible in Organization.');
+}
+
+echo "PASS: Organization search, filters, company isolation, tree/cards sync, full details, delete removal, and legacy schema support.\n";

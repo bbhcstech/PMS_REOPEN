@@ -8,7 +8,9 @@ use App\Models\Designation;
 use App\Models\Holiday;
 use App\Models\Leave;
 use App\Models\User;
+use App\Services\AttendanceCalendar;
 use App\Services\PdfDocument as Pdf;
+use App\Services\WorkforceAccess;
 use App\Services\WorkScheduleService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -18,6 +20,89 @@ use Maatwebsite\Excel\Facades\Excel;
 
 trait AttendanceReports
 {
+    private function personalReport(Request $request, User $employee)
+    {
+        abort_unless($employee->company_id, 403, 'No company assigned to this account.');
+        $filters = $request->validate([
+            'period' => 'nullable|in:day,week,month',
+            'date' => 'nullable|date_format:Y-m-d',
+            'month' => 'nullable|integer|min:1|max:12',
+            'year' => 'nullable|integer|min:2000|max:2100',
+            'user_id' => 'nullable|integer',
+            'format' => 'nullable|in:csv',
+        ]);
+        abort_if(isset($filters['user_id']) && (int) $filters['user_id'] !== (int) $employee->id, 403, 'You can only view your own attendance.');
+
+        $today = now()->startOfDay();
+        $period = $filters['period'] ?? 'month';
+        $date = match (true) {
+            isset($filters['date']) => Carbon::parse($filters['date'])->startOfDay(),
+            isset($filters['month']) || isset($filters['year']) => Carbon::create(
+                $filters['year'] ?? $today->year, $filters['month'] ?? $today->month, 1
+            )->startOfDay(),
+            default => $today,
+        };
+
+        [$start, $end, $previous, $next] = match ($period) {
+            'day' => [$date, $date, $date->copy()->subDay(), $date->copy()->addDay()],
+            'week' => [$date->copy()->startOfWeek(Carbon::MONDAY), $date->copy()->endOfWeek(Carbon::SUNDAY), $date->copy()->subWeek(), $date->copy()->addWeek()],
+            'month' => [$date->copy()->startOfMonth(), $date->copy()->endOfMonth(), $date->copy()->subMonthNoOverflow(), $date->copy()->addMonthNoOverflow()],
+        };
+
+        $days = app(AttendanceCalendar::class)->daysForUser($employee, $start, $end);
+        $rows = $days->map(function (array $day) {
+            $sessions = $day['daily']->filter(fn (Attendance $session) => $session->clock_in || $session->clock_out);
+
+            return [
+                'date' => $day['date'],
+                'status' => $day['status'],
+                'wfh' => $day['wfh'],
+                'clock_in' => $sessions->map(fn (Attendance $session) => $session->clock_in_datetime?->format('H:i'))->values(),
+                'clock_out' => $sessions->map(fn (Attendance $session) => $session->clock_out_datetime?->format('H:i')
+                    ?? ($session->clock_in ? 'Open' : null))->values(),
+                'seconds' => $day['seconds'],
+            ];
+        });
+        $totalSeconds = $rows->sum('seconds');
+        $daysWorked = $days->filter(fn (array $day) => in_array($day['status'], ['present', 'late', 'half_day', 'wfh'], true)
+            && $day['daily']->isNotEmpty())->count();
+        $statuses = [
+            'present' => 'Present', 'late' => 'Late', 'half_day' => 'Half day',
+            'wfh' => 'Work from home', 'absent' => 'Absent', 'leave' => 'On leave',
+            'unpaid_leave' => 'Unpaid leave', 'holiday' => 'Holiday',
+            'weekend' => 'Weekend', 'scheduled_off' => 'Scheduled off', 'day_off' => 'Day off',
+            'not_joined' => 'Before joining', 'not_marked' => 'Not marked',
+        ];
+        $hours = fn (int $seconds) => $this->secondsToHhmm($seconds);
+
+        if (($filters['format'] ?? null) === 'csv') {
+            return response()->streamDownload(function () use ($rows, $totalSeconds, $statuses, $hours) {
+                $output = fopen('php://output', 'w');
+                fputcsv($output, ['Date', 'Status', 'Work from home', 'Clock in', 'Clock out', 'Hours'], ',', '"', '');
+                foreach ($rows as $row) {
+                    fputcsv($output, [
+                        $row['date']->toDateString(),
+                        $statuses[$row['status']] ?? 'Not marked',
+                        $row['wfh'] ? 'Yes' : 'No',
+                        $row['clock_in']->implode(' | '),
+                        $row['clock_out']->implode(' | '),
+                        $hours($row['seconds']),
+                    ], ',', '"', '');
+                }
+                fputcsv($output, ['Total hours', '', '', '', '', $hours($totalSeconds)], ',', '"', '');
+                fclose($output);
+            }, "my-attendance-{$period}-{$start->toDateString()}.csv", [
+                'Content-Type' => 'text/csv; charset=UTF-8',
+                'Cache-Control' => 'private, no-store',
+            ]);
+        }
+
+        return view('admin.attendance.personal', compact(
+            'employee', 'today', 'period', 'date', 'start', 'end', 'previous', 'next',
+            'rows', 'totalSeconds', 'daysWorked', 'statuses', 'hours',
+        ));
+    }
+
     /**
      * Convert seconds to HH:MM or HH:MM:SS
      */
@@ -345,9 +430,13 @@ trait AttendanceReports
     {
         $user = Auth::user();
 
+        if (WorkforceAccess::isHr($user)) {
+            return $this->personalReport($request, $user);
+        }
+
         // Only authorized admin / management roles can access reports
         $userRole = strtolower((string) ($user->role ?? ''));
-        if (! in_array($userRole, ['admin', 'superadmin', 'hr', 'manager', 'developer'], true)) {
+        if (! in_array($userRole, ['admin', 'superadmin', 'manager', 'developer'], true)) {
             return redirect()->route('attendance.index')
                 ->with('error', 'You do not have permission to access reports.');
         }
@@ -356,7 +445,7 @@ trait AttendanceReports
         $year  = (int) ($request->year ?? now()->year);
         $daysInMonth = Carbon::create($year, $month)->daysInMonth;
 
-        if (in_array($userRole, ['manager', 'hr'], true) && method_exists($user, 'visibleEmployeeIds')) {
+        if ($userRole === 'manager' && method_exists($user, 'visibleEmployeeIds')) {
             $visibleIds = $user->visibleEmployeeIds();
             $users = User::where('role', 'employee')->whereIn('id', $visibleIds)->get();
         } else {

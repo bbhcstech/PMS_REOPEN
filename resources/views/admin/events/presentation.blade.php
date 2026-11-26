@@ -333,11 +333,15 @@
     #pms-events-page .filter-btn-group .btn:is(.active, :hover) { background: var(--ev-accent-soft) !important; color: var(--ev-accent) !important; }
     #pms-events-page .filter-btn-group .btn.active { border-color: var(--ev-control) !important; }
 
+    #pms-events-page .events-catalog-pane { container-type: inline-size; }
+
     #pms-events-page .events-card-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(min(100%, 290px), 1fr));
         gap: var(--ev-gap);
     }
+
+    #pms-events-page .events-list-grid { grid-template-columns: minmax(0, 1fr); }
 
     #pms-events-page .events-card-item { min-width: 0; }
 
@@ -346,7 +350,31 @@
         transform: translateY(-2px);
     }
 
-    #pms-events-page :is(.event-banner-img, .event-banner-placeholder) { height: 150px; }
+    #pms-events-page .events-list-cover {
+        position: relative;
+        min-width: 0;
+        min-height: 132px;
+        aspect-ratio: 16 / 7;
+        overflow: hidden;
+        background: var(--ev-soft);
+    }
+
+    #pms-events-page .events-list-cover > :is(.event-banner-img, .event-banner-placeholder) {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+    }
+
+    @container (min-width: 660px) {
+        #pms-events-page .events-list-grid .event-card {
+            display: grid !important;
+            grid-template-columns: clamp(185px, 24%, 325px) minmax(0, 1fr);
+        }
+        #pms-events-page .events-list-cover { aspect-ratio: auto; }
+        #pms-events-page .events-list-grid .event-card-content { padding: 19px 22px !important; }
+    }
+
     #pms-events-page .event-banner-img { display: block; object-fit: cover; }
 
     #pms-events-page .event-banner-placeholder {
@@ -417,6 +445,16 @@
 
     #pms-events-page .events-card-meta { min-height: 26px; margin: 0 0 4px; }
     #pms-events-page .events-card-location { margin-bottom: 10px; }
+    #pms-events-page .events-card-facts {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        column-gap: 16px;
+        row-gap: 6px;
+        margin-bottom: 12px;
+    }
+    #pms-events-page .events-card-facts .events-card-meta { max-width: 100%; margin: 0; }
+    #pms-events-page .events-card-facts .events-card-location { min-width: 0; flex: 1 1 145px; }
     #pms-events-page .events-card-time::before { content: '·'; margin: 0 4px; }
     #pms-events-page .events-card-meta a { color: var(--ev-accent) !important; -webkit-text-fill-color: currentColor !important; }
     #pms-events-page .events-card-meta a:hover { text-decoration: underline !important; }
@@ -455,7 +493,7 @@
 
     #pms-events-page .event-photos-button:hover { border-color: var(--ev-accent) !important; }
 
-    #pms-events-page .rsvp-box { padding: 10px; border: 1px solid var(--ev-border) !important; border-radius: 12px; background: var(--ev-soft) !important; box-shadow: none; }
+    #pms-events-page .rsvp-box { width: min(100%, 380px); padding: 10px; border: 1px solid var(--ev-border) !important; border-radius: 12px; background: var(--ev-soft) !important; box-shadow: none; }
     #pms-events-page .rsvp-count-badge { background: var(--ev-green-soft) !important; color: var(--ev-green) !important; -webkit-text-fill-color: currentColor !important; }
     #pms-events-page .rsvp-count-badge .bx { color: inherit !important; -webkit-text-fill-color: currentColor !important; }
     #pms-events-page .rsvp-segmented-bar { border: 1px solid var(--ev-border); border-radius: 9px; background: var(--ev-surface) !important; }
@@ -497,19 +535,41 @@
     #pms-events-page .events-card-actions .text-danger { color: var(--ev-red) !important; }
     #pms-events-page .events-card-actions .btn-action-icon:hover { border-color: currentColor !important; transform: none; }
 
-    #pms-events-page .events-empty { padding: clamp(25px, 5vw, 62px) 16px; text-align: center; }
+    #pms-events-page .events-empty { padding: clamp(25px, 5vw, 62px) 16px !important; text-align: center; }
     #pms-events-page .events-empty-icon { width: 46px; height: 46px; border-radius: 13px; background: var(--ev-accent-soft); color: var(--ev-accent) !important; font-size: 1.35rem; }
     #pms-events-page .events-empty .events-empty-icon { margin: 0 auto 12px; }
     #pms-events-page .events-empty p { margin-bottom: 14px; }
-    #pms-events-page .events-gallery-heading { margin-bottom: var(--ev-gap); }
+    #pms-events-page .events-gallery-heading { margin-bottom: var(--ev-gap); gap: 12px; }
     #pms-events-page .events-gallery-heading :is(h2, p) { margin: 0; }
+    #pms-events-page .events-gallery-heading p { margin-top: 3px; }
 
-    #pms-events-page .gallery-preview-grid { grid-auto-rows: minmax(0, 1fr); grid-template-columns: repeat(2, minmax(0, 1fr)); min-height: 150px; background: var(--ev-soft); }
+    #pms-events-page .gallery-preview-grid {
+        grid-auto-rows: minmax(0, 1fr);
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        width: 100%;
+        height: auto;
+        min-height: 150px;
+        aspect-ratio: 16 / 10;
+        background: var(--ev-soft);
+    }
     #pms-events-page .gallery-preview-grid.single-image { grid-template-columns: minmax(0, 1fr); }
-    #pms-events-page .gallery-preview-grid.gallery-has-three .gallery-preview-img:nth-child(3) { grid-column: 1 / -1; }
+    #pms-events-page .gallery-preview-grid.gallery-has-three { grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); }
+    #pms-events-page .gallery-preview-grid.gallery-has-three .gallery-preview-img:first-child { grid-row: span 2; }
+    #pms-events-page .gallery-preview-grid .gallery-preview-img { display: block; min-width: 0; min-height: 0; }
     #pms-events-page .gallery-preview-grid .event-banner-placeholder { height: 100%; }
-    #pms-events-page .gallery-overlay-count { color: #fff !important; -webkit-text-fill-color: currentColor !important; }
+    #pms-events-page .gallery-overlay-count {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        color: #fff !important;
+        -webkit-text-fill-color: currentColor !important;
+    }
     #pms-events-page .gallery-overlay-count .bx { color: inherit !important; -webkit-text-fill-color: currentColor !important; }
+
+    #pms-events-page :is(.events-catalog-pane a, .events-view-switcher button):focus-visible {
+        outline: 2px solid var(--ev-accent);
+        outline-offset: 2px;
+    }
 
     #pms-events-page #eventCalendar {
         --fc-border-color: var(--ev-border);

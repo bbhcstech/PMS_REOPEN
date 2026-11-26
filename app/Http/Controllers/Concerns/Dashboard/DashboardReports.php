@@ -158,16 +158,17 @@ public function hrindex(Request $request)
         $departmentsCount = Department::count();
         $designationsCount = Designation::count();
         $presentToday = Attendance::query()->whereHas('user', fn ($users) => \App\Services\WorkforceAccess::users($users, 'employee'))->where('date', $today)->where('status', 'present')->count();
-        $onLeaveToday = Leave::query()->whereHas('user', fn ($users) => \App\Services\WorkforceAccess::users($users, 'employee'))->whereDate('start_date', '<=', $today)
+        $myLeaves = Leave::where('user_id', auth()->id())->whereNull('archived_at');
+        $onLeaveToday = (clone $myLeaves)->whereDate('start_date', '<=', $today)
                             ->whereDate('end_date', '>=', $today)
                             ->where('status', 'approved')
                             ->count();
-        $pendingLeaves = Leave::query()->whereHas('user', fn ($users) => \App\Services\WorkforceAccess::users($users, 'employee'))->where('status', 'pending')->count();
+        $pendingLeaves = (clone $myLeaves)->where('status', 'pending')->count();
 
         $newEmployees = EmployeeDetail::whereBetween('joining_date', [$startDate, $endDate])->count();
           $exits = EmployeeDetail::whereBetween('exit_date', [$startDate, $endDate])->count();
-         $approvedLeaves = Leave::query()->whereHas('user', fn ($users) => \App\Services\WorkforceAccess::users($users, 'employee'))->where('status', 'Approved')
-                        ->whereBetween('start_date', [$startDate, $endDate])
+         $approvedLeaves = (clone $myLeaves)->where('status', 'approved')
+                        ->whereDate('start_date', '<=', $endDate)->whereDate('end_date', '>=', $startDate)
                         ->count();
 
         $todayPresent = Attendance::query()->whereHas('user', fn ($users) => \App\Services\WorkforceAccess::users($users, 'employee'))->whereDate('date', today())->count();
@@ -195,9 +196,9 @@ public function hrindex(Request $request)
             ->get()
             ->groupBy('user_id');
 
-              $leavesTaken = Leave::query()->whereHas('user', fn ($users) => \App\Services\WorkforceAccess::users($users, 'employee'))->with(['user.employeeDetail.designation'])
-            ->where('status', 'Approved')
-            ->whereBetween('start_date', [$startDate, $endDate])
+              $leavesTaken = (clone $myLeaves)->with(['user.employeeDetail.designation'])
+            ->where('status', 'approved')
+            ->whereDate('start_date', '<=', $endDate)->whereDate('end_date', '>=', $startDate)
             ->select('user_id', DB::raw('count(*) as total'))
             ->groupBy('user_id')
             ->get();

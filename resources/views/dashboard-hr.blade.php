@@ -19,7 +19,7 @@
     }
     $canSeeModule = fn (string $slug) => auth()->user()?->canViewModule($slug) ?? false;
     $attendancePercent = $totalEmployees > 0 ? round(($todayPresent / $totalEmployees) * 100) : 0;
-    $absentToday = max(($totalEmployees ?? 0) - ($todayPresent ?? 0) - ($onLeaveToday ?? 0), 0);
+    $notClockedIn = max(($totalEmployees ?? 0) - ($todayPresent ?? 0), 0);
     $roleScale = max($totalEmployees ?? 0, $totalProjects ?? 0, $newEmployees ?? 0, $exits ?? 0, $approvedLeaves ?? 0, $todayPresent ?? 0, $pendingTasks ?? 0, $pendingLeaves ?? 0, 1);
     $rolePieCharts = [
         ['slug' => 'projects', 'route' => 'projects.index', 'label' => 'Projects', 'value' => $totalProjects ?? 0, 'hint' => ($activeProjects ?? 0) . ' active projects', 'percent' => round((($totalProjects ?? 0) / $roleScale) * 100), 'color' => '#2F6BFF'],
@@ -27,9 +27,9 @@
         ['slug' => 'timelogs', 'route' => 'timelogs.index', 'label' => 'Timesheet Hours', 'value' => $totalTimelogHours ?? 0, 'hint' => ($totalTimelogsCount ?? 0) . ' logged entries', 'percent' => min(100, round((($totalTimelogHours ?? 0) / max($roleScale * 8, 1)) * 100)), 'color' => '#10B981'],
         ['slug' => 'employees', 'route' => 'employees.index', 'label' => 'Employees', 'value' => $totalEmployees ?? 0, 'hint' => 'Total workforce', 'percent' => round((($totalEmployees ?? 0) / $roleScale) * 100), 'color' => '#22D3EE'],
         ['slug' => 'attendance', 'route' => 'attendance.index', 'label' => 'Presence', 'value' => $todayPresent ?? 0, 'hint' => "{$attendancePercent}% present today", 'percent' => $attendancePercent, 'color' => '#06B6D4'],
-        ['slug' => 'leaves', 'route' => 'leaves.index', 'label' => 'Pending Leaves', 'value' => $pendingLeaves ?? 0, 'hint' => 'Awaiting review', 'percent' => round((($pendingLeaves ?? 0) / $roleScale) * 100), 'color' => '#F59E0B'],
+        ['slug' => 'leaves', 'route' => 'leaves.mine', 'label' => 'My Pending Leave', 'value' => $pendingLeaves ?? 0, 'hint' => 'Awaiting review', 'percent' => round((($pendingLeaves ?? 0) / $roleScale) * 100), 'color' => '#F59E0B'],
         ['slug' => 'employees', 'route' => 'employees.index', 'label' => 'New Joiners', 'value' => $newEmployees ?? 0, 'hint' => 'In selected range', 'percent' => round((($newEmployees ?? 0) / $roleScale) * 100), 'color' => '#6366F1'],
-        ['slug' => 'attendance', 'route' => 'attendance.report', 'label' => 'Absent Today', 'value' => $absentToday, 'hint' => 'Not present / leave', 'percent' => $totalEmployees > 0 ? round(($absentToday / $totalEmployees) * 100) : 0, 'color' => '#64748B'],
+        ['slug' => 'attendance', 'route' => 'attendance.report', 'label' => 'No Clock-in Today', 'value' => $notClockedIn, 'hint' => 'Employee clock-ins', 'percent' => $totalEmployees > 0 ? round(($notClockedIn / $totalEmployees) * 100) : 0, 'color' => '#64748B'],
     ];
 
     $clockInLabel = $attendance && $attendance->clock_in ? Carbon::parse($attendance->clock_in)->format('h:i A') : 'Not Clocked In';
@@ -902,8 +902,8 @@
                     @if(Route::has('employees.index') && $canSeeModule('employees'))
                         <a href="{{ route('employees.index') }}" class="role-btn role-btn-light"><i class="bx bx-group"></i> Employees</a>
                     @endif
-                    @if(Route::has('leaves.index') && $canSeeModule('leaves'))
-                        <a href="{{ route('leaves.index') }}" class="role-btn role-btn-light"><i class="bx bx-calendar-minus"></i> Leaves</a>
+                    @if(Route::has('leaves.mine') && $canSeeModule('leaves'))
+                        <a href="{{ route('leaves.mine') }}" class="role-btn role-btn-light"><i class="bx bx-calendar-minus"></i> My Leave</a>
                     @endif
                     @if(Route::has('attendance.report') && $canSeeModule('attendance'))
                         <a href="{{ route('attendance.report') }}" class="role-btn role-btn-light"><i class="bx bx-bar-chart-alt-2"></i> Reports</a>
@@ -1026,7 +1026,7 @@
                 </div>
                 <div class="text-center">
                     <h5 class="fw-bold mb-1">Today Presence</h5>
-                    <p class="text-muted mb-0">{{ $todayPresent ?? 0 }} present, {{ $onLeaveToday ?? 0 }} on leave, {{ $absentToday }} absent</p>
+                    <p class="text-muted mb-0">{{ $todayPresent ?? 0 }} present, {{ $notClockedIn }} without a clock-in</p>
                 </div>
             </div>
         </div>
@@ -1069,7 +1069,7 @@
                 ['title' => 'Employee Exits', 'value' => $exits],
                 ['title' => 'Approved Leaves', 'value' => $approvedLeaves],
                 ['title' => 'Average Attendance', 'value' => $averageAttendance . '%'],
-                ['title' => 'On Leave Today', 'value' => $onLeaveToday ?? 0],
+                ['title' => 'My Leave Today', 'value' => $onLeaveToday ?? 0],
             ];
         @endphp
 
@@ -1173,7 +1173,7 @@
     <div class="col-md-6">
         <div class="card shadow-sm h-100">
             <div class="card-header bg-white border-bottom">
-                <h6 class="mb-0 fw-semibold">Leaves Taken</h6>
+                <h6 class="mb-0 fw-semibold">My Approved Leave</h6>
             </div>
             <br>
             <div class="card-body">
@@ -1377,10 +1377,10 @@
         <div class="card shadow-sm">
             <div class="card-header bg-white border-bottom">
                 <div class="d-flex justify-content-between align-items-center">
-                    <h6 class="mb-0 fw-semibold">Leave Management</h6>
+                    <h6 class="mb-0 fw-semibold">My Leave</h6>
                     <div>
-                        <a href="{{ route('leaves.index') }}" class="btn btn-sm btn-outline-primary me-2">
-                            <i class="bi bi-list-ul me-1"></i> All Leaves
+                        <a href="{{ route('leaves.mine') }}" class="btn btn-sm btn-outline-primary me-2">
+                            <i class="bi bi-list-ul me-1"></i> My Leave Report
                         </a>
                         <a href="{{ route('leaves.create') }}" class="btn btn-sm btn-primary">
                             <i class="bi bi-plus-circle me-1"></i> New Leave
@@ -1409,26 +1409,17 @@
                             <small class="text-muted">On Leave Today</small>
                         </div>
                     </div>
-                    <div class="col-md-3 col-6">
-                        <div class="text-center p-3 border rounded">
-                            @php
-                                $absentToday = $totalEmployees - $todayPresent - $onLeaveToday;
-                            @endphp
-                            <div class="text-danger fw-bold h4 mb-1">{{ $absentToday ?? 0 }}</div>
-                            <small class="text-muted">Absent Today</small>
-                        </div>
-                    </div>
                 </div>
 
                 <!-- Quick Action Buttons -->
                 <div class="d-flex flex-wrap gap-2">
-                    <a href="{{ route('leaves.index', ['status' => 'pending']) }}"
+                    <a href="{{ route('leaves.mine', ['status' => 'pending']) }}"
                        class="btn btn-sm btn-outline-warning">
-                        <i class="bi bi-clock-history me-1"></i> Pending Approvals
+                        <i class="bi bi-clock-history me-1"></i> My Pending Requests
                     </a>
-                    <a href="{{ route('leaves.calendar') }}"
+                    <a href="{{ route('leaves.mine', ['period' => 'week']) }}"
                        class="btn btn-sm btn-outline-success">
-                        <i class="bi bi-calendar-week me-1"></i> Calendar View
+                        <i class="bi bi-calendar-week me-1"></i> This Week
                     </a>
                     <a href="{{ route('admin.leave.report') }}"
                        class="btn btn-sm btn-outline-info">

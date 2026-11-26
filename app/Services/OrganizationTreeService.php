@@ -56,7 +56,7 @@ class OrganizationTreeService
             $query->whereIn('users.id', $viewer->visibleEmployeeIds());
         }
 
-        // Keep parity with Employee section: exclude notice/probation records using a single schema lookup.
+        // Keep parity with Employee section: exclude inactive, notice, and probation records using a single schema lookup.
         $connection = $query->getModel()->getConnectionName() ?: config('database.default');
         $detailColumns = array_flip(Schema::connection($connection)->getColumnListing('employee_details'));
 
@@ -64,7 +64,7 @@ class OrganizationTreeService
             $query->whereDoesntHave('employeeDetail', function ($q) use ($detailColumns) {
                 $q->where(function ($sub) use ($detailColumns) {
                     if (isset($detailColumns['status'])) {
-                        $sub->whereIn('status', ['notice', 'probation']);
+                        $sub->whereIn('status', ['notice', 'probation', 'inactive', 'Inactive']);
                     }
                     if (isset($detailColumns['notice_end_date'])) {
                         $sub->orWhereNotNull('notice_end_date');

@@ -873,40 +873,53 @@
         margin: 0;
     }
 
-    /* Keep Work Analytics horizontal in light mode despite shared chart styles. */
-    html:not([data-pms-theme="dark"]) .industry-analytics-card .industry-bars {
-        grid-template-columns: minmax(0, 1fr);
-        min-height: 0;
-        align-items: stretch;
-        gap: 1rem;
-        padding-top: 0;
+    /* Keep Work Analytics horizontal in both light and dark modes despite shared vertical pill chart styles. */
+    #main.bx-admin-workspace .industry-analytics-card .industry-bars {
+        grid-template-columns: minmax(0, 1fr) !important;
+        min-height: 0 !important;
+        align-items: stretch !important;
+        gap: 1rem !important;
+        padding-top: 0 !important;
     }
 
-    html:not([data-pms-theme="dark"]) .industry-analytics-card .industry-bar {
-        grid-template-columns: minmax(0, 1fr) 100px;
-        justify-items: stretch;
-        align-items: center;
-        gap: 1rem;
+    #main.bx-admin-workspace .industry-analytics-card .industry-bar {
+        grid-template-columns: minmax(0, 1fr) 100px !important;
+        justify-items: stretch !important;
+        align-items: center !important;
+        gap: 1rem !important;
     }
 
-    html:not([data-pms-theme="dark"]) .industry-analytics-card .industry-bar span {
-        width: 100%;
-        height: 12px;
-        min-height: 0;
-        background: #e2e8f0;
-        box-shadow: none;
+    #main.bx-admin-workspace .industry-analytics-card .industry-bar span {
+        width: 100% !important;
+        height: 12px !important;
+        min-height: 0 !important;
+        border-radius: 999px !important;
+        background: #e2e8f0 !important;
+        background-image: none !important;
+        box-shadow: none !important;
     }
 
-    html:not([data-pms-theme="dark"]) .industry-analytics-card .industry-bar span::after {
-        background: #2f6bff;
+    html:is([data-pms-theme="dark"], [data-theme="dark"], [data-bs-theme="dark"], .dark) #main.bx-admin-workspace .industry-analytics-card .industry-bar span {
+        background: #1A2247 !important;
+        background-image: none !important;
     }
 
-    html:not([data-pms-theme="dark"]) .industry-analytics-card .industry-bar.is-muted span::after {
-        background: #10b981;
+    #main.bx-admin-workspace .industry-analytics-card .industry-bar span::after {
+        background: #2f6bff !important;
     }
 
-    html:not([data-pms-theme="dark"]) .industry-analytics-card .industry-bar label {
+    #main.bx-admin-workspace .industry-analytics-card .industry-bar.is-muted span::after {
+        background: #10b981 !important;
+    }
+
+    #main.bx-admin-workspace .industry-analytics-card .industry-bar label {
         color: #334155 !important;
+        -webkit-text-fill-color: #334155 !important;
+    }
+
+    html:is([data-pms-theme="dark"], [data-theme="dark"], [data-bs-theme="dark"], .dark) #main.bx-admin-workspace .industry-analytics-card .industry-bar label {
+        color: #EEF1FB !important;
+        -webkit-text-fill-color: #EEF1FB !important;
     }
 
     /* ======================================================
@@ -1011,7 +1024,8 @@
         margin-bottom: 0.75rem;
     }
 
-    .stat-icon {
+    .stat-icon,
+    #main.bx-admin-workspace .stat-card .stat-icon {
         width: 42px;
         height: 42px;
         border-radius: 12px;
@@ -1028,7 +1042,12 @@
     .stat-icon i,
     .stat-icon .bx,
     .stat-icon [class*="bx"],
-    .stat-icon svg {
+    .stat-icon svg,
+    #main.bx-admin-workspace .stat-card .stat-icon i,
+    #main.bx-admin-workspace .stat-card .stat-icon i::before,
+    #main.bx-admin-workspace .stat-card .stat-icon .bx,
+    #main.bx-admin-workspace .stat-card .stat-icon [class*="bx"],
+    #main.bx-admin-workspace .stat-card .stat-icon svg {
         color: #ffffff !important;
         -webkit-text-fill-color: #ffffff !important;
         background-color: transparent !important;
@@ -1039,10 +1058,13 @@
         line-height: 1 !important;
         visibility: visible !important;
         display: inline-block !important;
+        filter: none !important;
     }
 
     .stat-card:first-of-type .stat-icon,
-    .stat-card.is-featured .stat-icon {
+    .stat-card.is-featured .stat-icon,
+    #main.bx-admin-workspace .stat-card:first-of-type .stat-icon,
+    #main.bx-admin-workspace .stat-card.is-featured .stat-icon {
         background: rgba(255, 255, 255, 0.22) !important;
         border: 1px solid rgba(255, 255, 255, 0.35) !important;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12) !important;
@@ -1056,7 +1078,11 @@
     .stat-card.is-featured .stat-icon i,
     .stat-card.is-featured .stat-icon .bx,
     .stat-card.is-featured .stat-icon [class*="bx"],
-    .stat-card.is-featured .stat-icon svg {
+    .stat-card.is-featured .stat-icon svg,
+    #main.bx-admin-workspace .stat-card:first-of-type .stat-icon i,
+    #main.bx-admin-workspace .stat-card:first-of-type .stat-icon i::before,
+    #main.bx-admin-workspace .stat-card.is-featured .stat-icon i,
+    #main.bx-admin-workspace .stat-card.is-featured .stat-icon i::before {
         color: #ffffff !important;
         -webkit-text-fill-color: #ffffff !important;
         background-color: transparent !important;
@@ -2176,6 +2202,53 @@
     html[data-pms-theme="dark"] #main.bx-admin-workspace .bx-panel-footer-link {
         color: #60A5FA !important;
         -webkit-text-fill-color: #60A5FA !important;
+    }
+
+    /* Dark-mode icon contrast protection against shared .content-wrapper .bx overrides */
+    html:is([data-pms-theme="dark"], [data-theme="dark"], [data-bs-theme="dark"], .dark) #main.bx-admin-workspace .welcome-badge {
+        background: rgba(59, 130, 246, 0.16) !important;
+        border-color: rgba(96, 165, 250, 0.28) !important;
+        color: #93C5FD !important;
+        -webkit-text-fill-color: #93C5FD !important;
+    }
+
+    html:is([data-pms-theme="dark"], [data-theme="dark"], [data-bs-theme="dark"], .dark) #main.bx-admin-workspace .welcome-badge i,
+    html:is([data-pms-theme="dark"], [data-theme="dark"], [data-bs-theme="dark"], .dark) #main.bx-admin-workspace .welcome-badge i::before {
+        color: #93C5FD !important;
+        -webkit-text-fill-color: #93C5FD !important;
+        filter: none !important;
+    }
+
+    html:is([data-pms-theme="dark"], [data-theme="dark"], [data-bs-theme="dark"], .dark) #main.bx-admin-workspace .dashboard-shortcut-link > .bx:first-child {
+        background: rgba(59, 130, 246, 0.18) !important;
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
+        filter: none !important;
+    }
+
+    html:is([data-pms-theme="dark"], [data-theme="dark"], [data-bs-theme="dark"], .dark) #main.bx-admin-workspace .dashboard-shortcut-link > .bx:last-child,
+    html:is([data-pms-theme="dark"], [data-theme="dark"], [data-bs-theme="dark"], .dark) #main.bx-admin-workspace .empty-state i,
+    html:is([data-pms-theme="dark"], [data-theme="dark"], [data-bs-theme="dark"], .dark) #main.bx-admin-workspace .empty-state i::before,
+    html:is([data-pms-theme="dark"], [data-theme="dark"], [data-bs-theme="dark"], .dark) #main.bx-admin-workspace .card-action,
+    html:is([data-pms-theme="dark"], [data-theme="dark"], [data-bs-theme="dark"], .dark) #main.bx-admin-workspace .card-action i {
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
+        filter: none !important;
+    }
+
+    html:is([data-pms-theme="dark"], [data-theme="dark"], [data-bs-theme="dark"], .dark) #main.bx-admin-workspace .stat-card:not(#totalEmployeesCard) .stat-trend i,
+    html:is([data-pms-theme="dark"], [data-theme="dark"], [data-bs-theme="dark"], .dark) #main.bx-admin-workspace .stat-card:not(#totalEmployeesCard) .stat-trend i::before {
+        color: #34D399 !important;
+        -webkit-text-fill-color: #34D399 !important;
+        filter: none !important;
+    }
+
+    html:is([data-pms-theme="dark"], [data-theme="dark"], [data-bs-theme="dark"], .dark) #main.bx-admin-workspace .stat-card:not(#totalEmployeesCard) .stat-dropdown > button i,
+    html:is([data-pms-theme="dark"], [data-theme="dark"], [data-bs-theme="dark"], .dark) #main.bx-admin-workspace .list-item-meta i,
+    html:is([data-pms-theme="dark"], [data-theme="dark"], [data-bs-theme="dark"], .dark) #main.bx-admin-workspace .timeline-time i {
+        color: #9AA3C7 !important;
+        -webkit-text-fill-color: #9AA3C7 !important;
+        filter: none !important;
     }
 
     @media (max-width: 1199.98px) {

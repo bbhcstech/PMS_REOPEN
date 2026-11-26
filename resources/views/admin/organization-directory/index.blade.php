@@ -112,7 +112,7 @@
                 <span>Print Chart</span>
             </button>
         </div>
-    </header>
+    </div>
 
     <section class="orgd-kpis" aria-label="Organization summary" data-live-preserve>
         <div class="orgd-kpi-card">
@@ -225,7 +225,7 @@
         </div>
 
         @if($designationFilterOptions->where('count', '>', 0)->isNotEmpty())
-            <div class="orgd-chips-row" aria-label="Quick designation filters">
+            <div class="orgd-chips-row" id="orgDesignationChipsRow" aria-label="Quick designation filters">
                 <span class="orgd-chips-label">By Designation:</span>
                 <button type="button" class="orgd-chip is-active" data-designation-chip="">
                     <span>All</span>
@@ -238,13 +238,15 @@
                     </button>
                 @endforeach
             </div>
+        @else
+            <div class="orgd-chips-row" id="orgDesignationChipsRow" aria-label="Quick designation filters" hidden></div>
         @endif
     </section>
 
     <section
-        class="orgd-tree-panel"
+        class="orgd-tree-panel is-chart-mode"
         id="orgTreeRoot"
-        data-endpoint="{{ route('organization.tree') }}"
+        data-endpoint="{{ route('organization.tree', array_filter(['company_id' => request()->integer('company_id') ?: null])) }}"
         data-live-preserve
         aria-labelledby="organization-details-heading"
     >
@@ -259,7 +261,22 @@
             </div>
 
             <div class="orgd-toolbar-controls">
-                <div class="orgd-group" aria-label="Expand or collapse branches">
+                <div class="orgd-group orgd-modes" role="group" aria-label="Organization view mode">
+                    <button type="button" class="orgd-mode is-on" data-org-mode="chart" aria-pressed="true" title="Hierarchical tree chart">
+                        <i class="fas fa-sitemap" aria-hidden="true"></i>
+                        <span>Tree Chart</span>
+                    </button>
+                    <button type="button" class="orgd-mode" data-org-mode="grid" aria-pressed="false" title="Employee cards organized by designation level tiers">
+                        <i class="fas fa-layer-group" aria-hidden="true"></i>
+                        <span>Tree Grid</span>
+                    </button>
+                    <button type="button" class="orgd-mode" data-org-mode="cards" aria-pressed="false" title="All employee and user cards">
+                        <i class="fas fa-grip" aria-hidden="true"></i>
+                        <span>All Cards</span>
+                    </button>
+                </div>
+
+                <div class="orgd-group orgd-chart-only" aria-label="Expand or collapse branches">
                     <button type="button" class="orgd-tool" id="orgExpandAllBtn" title="Expand all branches" aria-label="Expand all branches">
                         <i class="fas fa-angles-down" aria-hidden="true"></i>
                     </button>
@@ -290,12 +307,6 @@
             <div class="orgd-viewport" id="orgViewport" tabindex="0" aria-label="Interactive employee hierarchy canvas">
                 <div class="orgd-stage" id="orgStage"></div>
 
-                <div class="orgd-empty" id="orgEmptyState" hidden>
-                    <i class="fas fa-users-slash" aria-hidden="true"></i>
-                    <strong id="orgEmptyTitle">No matching employees found</strong>
-                    <span id="orgEmptyHint">Try selecting another designation or clearing your search filters.</span>
-                </div>
-
                 <div class="orgd-pan orgd-chart-only" aria-label="Canvas pan controls">
                     <button type="button" class="orgd-tool" data-pan-x="0" data-pan-y="90" title="Pan up" aria-label="Pan up">
                         <i class="fas fa-chevron-up" aria-hidden="true"></i>
@@ -317,6 +328,16 @@
                     <span><i class="orgd-dot" aria-hidden="true"></i> Direct reporting manager</span>
                     <span><i class="orgd-dot is-level" aria-hidden="true"></i> Designation level hierarchy</span>
                 </div>
+            </div>
+
+            <div class="orgd-level-grid" id="orgLevelGrid" aria-label="Employees organized by designation level" hidden></div>
+
+            <div class="orgd-cards-grid" id="orgCardsGrid" aria-label="All employees and users cards" hidden></div>
+
+            <div class="orgd-empty" id="orgEmptyState" hidden>
+                <i class="fas fa-users-slash" aria-hidden="true"></i>
+                <strong id="orgEmptyTitle">No matching employees found</strong>
+                <span id="orgEmptyHint">Try selecting another designation or clearing your search filters.</span>
             </div>
 
             <aside class="orgd-inspector" id="orgInspector" aria-label="Selected employee details" aria-hidden="true">
@@ -344,14 +365,18 @@
     const initialDataEl = document.getElementById('orgTreeInitialData');
     const viewport = document.getElementById('orgViewport');
     const stage = document.getElementById('orgStage');
+    const levelGrid = document.getElementById('orgLevelGrid');
+    const cardsGrid = document.getElementById('orgCardsGrid');
     const emptyState = document.getElementById('orgEmptyState');
     const emptyTitle = document.getElementById('orgEmptyTitle');
     const emptyHint = document.getElementById('orgEmptyHint');
     const statusText = document.getElementById('orgStatusText');
     const zoomLabel = document.getElementById('orgZoomLabel');
     const searchInput = document.getElementById('orgSearchInput');
+    const searchSuggestions = document.getElementById('orgSearchSuggestions');
     const designationSelect = document.getElementById('orgDesignationSelect');
     const departmentSelect = document.getElementById('orgDepartmentSelect');
+    const chipsRow = document.getElementById('orgDesignationChipsRow');
     const isolateBtn = document.getElementById('orgIsolateBtn');
     const resetFiltersBtn = document.getElementById('orgResetFiltersBtn');
     const refreshBtn = document.getElementById('orgRefreshBtn');
@@ -360,8 +385,9 @@
     const inspector = document.getElementById('orgInspector');
     const inspectorBody = document.getElementById('orgInspectorBody');
     const closeInspectorBtn = document.getElementById('orgCloseInspectorBtn');
-    const designationChips = Array.from(document.querySelectorAll('[data-designation-chip]'));
+    const modeButtons = Array.from(root.querySelectorAll('[data-org-mode]'));
 
+    const MODE_KEY = 'pms.orgd.mode';
     const MIN_SCALE = 0.2;
     const MAX_SCALE = 2.4;
 
@@ -373,11 +399,19 @@
         collapsed: new Set(),
         selected: null,
         isolateBranch: false,
+        mode: 'chart',
         x: 0,
         y: 0,
         scale: 1,
         userMoved: false,
         lastFocusBeforeInspector: null,
+        profileRequest: null,
+        loading: false,
+    };
+
+    const storage = {
+        get: function (k) { try { return window.localStorage.getItem(k); } catch (e) { return null; } },
+        set: function (k, v) { try { window.localStorage.setItem(k, v); } catch (e) {} },
     };
 
     function el(tag, className, text) {
@@ -471,7 +505,102 @@
         }
 
         updateKpisFromNodes(rawNodes);
+        syncFilterControls(rawNodes);
         renderAll(Boolean(shouldFit));
+
+        if (state.selected && state.nodes.has(state.selected) && inspector.classList.contains('is-open')) {
+            openInspector(state.nodes.get(state.selected), false);
+        }
+    }
+
+    function syncFilterControls(nodes) {
+        const deptCounts = new Map();
+        const desigStats = new Map();
+
+        nodes.forEach(function (n) {
+            if (n.department) {
+                const dk = String(n.department);
+                deptCounts.set(dk, (deptCounts.get(dk) || 0) + 1);
+            }
+            if (n.designation && n.designation !== 'No designation') {
+                const name = String(n.designation);
+                const key = name.toLowerCase();
+                const prev = desigStats.get(key) || { name: name, level: n.level, count: 0 };
+                prev.count++;
+                if (prev.level === null || prev.level === undefined) prev.level = n.level;
+                desigStats.set(key, prev);
+            }
+        });
+
+        const sortedDesigs = Array.from(desigStats.values()).sort(function (a, b) {
+            const la = a.level === null || a.level === undefined ? -1 : Number(a.level);
+            const lb = b.level === null || b.level === undefined ? -1 : Number(b.level);
+            if (lb !== la) return lb - la;
+            return a.name.localeCompare(b.name);
+        });
+
+        if (designationSelect) {
+            const prevDesig = designationSelect.value;
+            designationSelect.replaceChildren(new Option('All Designations (' + nodes.length + ')', ''));
+            sortedDesigs.forEach(function (d) {
+                const lvl = d.level !== null && d.level !== undefined ? ' (L' + d.level + ')' : '';
+                designationSelect.add(new Option(d.name + lvl + ' — ' + d.count, d.name));
+            });
+            const hasPrev = sortedDesigs.some(function (d) { return d.name === prevDesig; });
+            designationSelect.value = hasPrev ? prevDesig : '';
+        }
+
+        if (departmentSelect) {
+            const prevDept = departmentSelect.value;
+            departmentSelect.replaceChildren(new Option('All Departments', ''));
+            Array.from(deptCounts.entries())
+                .sort(function (a, b) { return a[0].localeCompare(b[0]); })
+                .forEach(function (entry) {
+                    departmentSelect.add(new Option(entry[0] + ' (' + entry[1] + ')', entry[0]));
+                });
+            departmentSelect.value = deptCounts.has(prevDept) ? prevDept : '';
+        }
+
+        if (chipsRow) {
+            if (sortedDesigs.length === 0) {
+                chipsRow.hidden = true;
+                chipsRow.replaceChildren();
+            } else {
+                chipsRow.hidden = false;
+                const frag = document.createDocumentFragment();
+                frag.appendChild(el('span', 'orgd-chips-label', 'By Designation:'));
+                const makeChip = function (value, label, count) {
+                    const btn = el('button', 'orgd-chip');
+                    btn.type = 'button';
+                    btn.setAttribute('data-designation-chip', value);
+                    btn.append(el('span', '', label), el('span', 'orgd-chip-count', String(count)));
+                    return btn;
+                };
+                frag.appendChild(makeChip('', 'All', nodes.length));
+                sortedDesigs.forEach(function (d) {
+                    frag.appendChild(makeChip(d.name, d.name, d.count));
+                });
+                chipsRow.replaceChildren(frag);
+            }
+        }
+
+        if (searchSuggestions) {
+            const frag = document.createDocumentFragment();
+            const seen = new Set();
+            sortedDesigs.forEach(function (d) {
+                if (!seen.has(d.name)) {
+                    seen.add(d.name);
+                    frag.appendChild(new Option(d.name, d.name));
+                }
+            });
+            nodes.forEach(function (n) {
+                if (n.name && !seen.has(n.name)) {
+                    seen.add(n.name);
+                    frag.appendChild(new Option(n.name, n.name));
+                }
+            });
+            searchSuggestions.replaceChildren(frag);
+        }
     }
 
     function updateKpisFromNodes(nodes) {
@@ -586,20 +715,46 @@
 
     function syncChipSelection() {
         const currentDesig = (designationSelect ? designationSelect.value : '').trim().toLowerCase();
-        designationChips.forEach(function (chip) {
+        if (!chipsRow) return;
+        chipsRow.querySelectorAll('[data-designation-chip]').forEach(function (chip) {
             const chipVal = (chip.getAttribute('data-designation-chip') || '').trim().toLowerCase();
             chip.classList.toggle('is-active', chipVal === currentDesig);
         });
+    }
+
+    function setMode(mode, persist) {
+        state.mode = (mode === 'grid' || mode === 'cards') ? mode : 'chart';
+        root.classList.toggle('is-chart-mode', state.mode === 'chart');
+        root.classList.toggle('is-grid-mode', state.mode === 'grid');
+        root.classList.toggle('is-cards-mode', state.mode === 'cards');
+        if (viewport) viewport.hidden = state.mode !== 'chart';
+        if (levelGrid) levelGrid.hidden = state.mode !== 'grid';
+        if (cardsGrid) cardsGrid.hidden = state.mode !== 'cards';
+
+        modeButtons.forEach(function (btn) {
+            const active = btn.getAttribute('data-org-mode') === state.mode;
+            btn.classList.toggle('is-on', active);
+            btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+        });
+
+        if (persist) storage.set(MODE_KEY, state.mode);
+        renderAll(state.mode === 'chart');
     }
 
     function renderAll(shouldFit) {
         const filterState = computeFilterState();
         syncChipSelection();
 
-        renderTree(filterState);
+        if (state.mode === 'grid') {
+            renderLevelGrid(filterState);
+        } else if (state.mode === 'cards') {
+            renderCardsGrid(filterState);
+        } else {
+            renderTree(filterState);
+        }
         updateStatusSummary(filterState);
 
-        if (shouldFit) {
+        if (shouldFit && state.mode === 'chart') {
             requestAnimationFrame(fitToScreen);
         }
     }
@@ -689,6 +844,164 @@
 
         treeRoot.appendChild(rootUl);
         stage.replaceChildren(treeRoot);
+    }
+
+    function visibleNodesList(filterState) {
+        const list = [];
+        state.nodes.forEach(function (node) {
+            if (filterState.hasFilter && !filterState.matches.has(node.id)) return;
+            list.push(node);
+        });
+        return list.sort(function (a, b) {
+            const la = a.level === null || a.level === undefined ? -1 : Number(a.level);
+            const lb = b.level === null || b.level === undefined ? -1 : Number(b.level);
+            if (lb !== la) return lb - la;
+            return String(a.name || '').localeCompare(String(b.name || ''));
+        });
+    }
+
+    function buildEmployeeCard(node, filterState, showPlacement) {
+        const tile = el('div', 'orgd-tile is-card-mode');
+        tile.tabIndex = 0;
+        tile.setAttribute('role', 'button');
+        tile.setAttribute('aria-label', node.name + ', ' + display(node.designation));
+        if (state.selected === node.id) tile.classList.add('is-selected');
+        if (filterState.pathIds.has(node.id) && state.selected !== node.id) tile.classList.add('is-path');
+        if (filterState.hasFilter && filterState.matches.has(node.id)) tile.classList.add('is-match');
+
+        tile.appendChild(el('span', 'orgd-tile-flag', state.selected === node.id ? 'Selected' : 'In Path'));
+
+        const top = el('div', 'orgd-tile-top');
+        top.appendChild(createPhoto(node));
+        const who = el('div', 'orgd-who');
+        const nameEl = el('div', 'orgd-name');
+        nameEl.appendChild(el('span', '', node.name));
+        if (isActiveStatus(node)) {
+            nameEl.appendChild(icon('fa-circle-check'));
+        }
+        who.append(nameEl, el('p', 'orgd-designation', display(node.designation)));
+        top.appendChild(who);
+        tile.appendChild(top);
+
+        const tags = el('div', 'orgd-tags');
+        tags.appendChild(el('span', 'orgd-tag', levelBadge(node)));
+        if (node.role) {
+            tags.appendChild(el('span', 'orgd-tag is-dept', node.role));
+        }
+        if (node.department) {
+            tags.appendChild(el('span', 'orgd-tag is-dept', node.department));
+        }
+        tile.appendChild(tags);
+
+        const meta = el('div', 'orgd-card-meta');
+        if (node.email) {
+            const row = el('div', 'orgd-card-meta-row');
+            row.append(icon('fa-envelope'), el('span', '', node.email));
+            meta.appendChild(row);
+        }
+        if (node.mobile) {
+            const row = el('div', 'orgd-card-meta-row');
+            row.append(icon('fa-phone'), el('span', '', node.mobile));
+            meta.appendChild(row);
+        }
+        if (showPlacement) {
+            const mgr = node.parent && state.nodes.has(node.parent) ? state.nodes.get(node.parent) : null;
+            if (mgr) {
+                tile.appendChild(el('p', 'orgd-placement-note', (node.placement === 'level' ? 'Placed under ' : 'Reports to ') + mgr.name));
+            }
+        }
+        if (meta.childNodes.length) {
+            tile.appendChild(meta);
+        }
+
+        const foot = el('div', 'orgd-tile-foot');
+        const counts = document.createElement('span');
+        counts.append(
+            el('strong', '', String(node.directs || 0)),
+            document.createTextNode(' direct • '),
+            el('strong', '', String(node.total || 0)),
+            document.createTextNode(' team')
+        );
+        foot.append(el('span', '', node.employee_code || 'EMP'), counts);
+        tile.appendChild(foot);
+
+        tile.addEventListener('click', function () {
+            selectNode(node.id, tile);
+        });
+        tile.addEventListener('keydown', function (ev) {
+            if (ev.key === 'Enter' || ev.key === ' ') {
+                ev.preventDefault();
+                selectNode(node.id, tile);
+            }
+        });
+
+        return tile;
+    }
+
+    function renderLevelGrid(filterState) {
+        if (!levelGrid) return;
+        const list = visibleNodesList(filterState);
+        if (state.nodes.size === 0 || (filterState.hasFilter && list.length === 0)) {
+            levelGrid.replaceChildren();
+            emptyTitle.textContent = state.nodes.size === 0 ? 'No employees in tree' : 'No matching designation or employee';
+            emptyHint.textContent = state.nodes.size === 0
+                ? 'Active employees added in the Employee section will appear here automatically.'
+                : 'Adjust your designation filter or search query, or click Reset to view all employees.';
+            emptyState.hidden = false;
+            return;
+        }
+        emptyState.hidden = true;
+
+        const tiers = new Map();
+        list.forEach(function (node) {
+            const lvl = node.level === null || node.level === undefined ? -1 : Number(node.level);
+            if (!tiers.has(lvl)) tiers.set(lvl, []);
+            tiers.get(lvl).push(node);
+        });
+
+        const sortedKeys = Array.from(tiers.keys()).sort(function (a, b) { return b - a; });
+        const fragment = document.createDocumentFragment();
+        sortedKeys.forEach(function (lvl) {
+            const members = tiers.get(lvl);
+            const group = el('section', 'orgd-level-group');
+            const head = el('div', 'orgd-level-head');
+            const title = el('h3', 'orgd-level-title');
+            title.append(
+                el('span', 'orgd-tag', lvl === -1 ? 'No level' : 'Level ' + lvl),
+                el('span', '', lvl === -1 ? 'Unassigned Designation Level' : 'Designation Tier L' + lvl)
+            );
+            head.append(title, el('span', 'orgd-level-count', members.length + (members.length === 1 ? ' member' : ' members')));
+            group.appendChild(head);
+
+            const cards = el('div', 'orgd-level-cards');
+            members.forEach(function (node) {
+                cards.appendChild(buildEmployeeCard(node, filterState, true));
+            });
+            group.appendChild(cards);
+            fragment.appendChild(group);
+        });
+        levelGrid.replaceChildren(fragment);
+    }
+
+    function renderCardsGrid(filterState) {
+        if (!cardsGrid) return;
+        const list = visibleNodesList(filterState);
+        if (state.nodes.size === 0 || (filterState.hasFilter && list.length === 0)) {
+            cardsGrid.replaceChildren();
+            emptyTitle.textContent = state.nodes.size === 0 ? 'No employees in directory' : 'No matching employees or users found';
+            emptyHint.textContent = state.nodes.size === 0
+                ? 'Active employees added in the Employee section will appear here automatically.'
+                : 'Try another search query or designation filter, or click Reset.';
+            emptyState.hidden = false;
+            return;
+        }
+        emptyState.hidden = true;
+
+        const wrap = el('div', 'orgd-cards-wrap');
+        list.forEach(function (node) {
+            wrap.appendChild(buildEmployeeCard(node, filterState, true));
+        });
+        cardsGrid.replaceChildren(wrap);
     }
 
     function buildNodeLi(id, filterState) {
@@ -798,10 +1111,66 @@
         state.selected = id;
         state.lastFocusBeforeInspector = triggerEl || document.activeElement;
         renderAll(false);
-        openInspector(node);
+        openInspector(node, true);
     }
 
-    function openInspector(node) {
+    function reportingChain(id) {
+        const chain = [];
+        const seen = new Set();
+        let cursor = state.nodes.get(id);
+        while (cursor && !seen.has(cursor.id) && chain.length < 40) {
+            seen.add(cursor.id);
+            chain.unshift(cursor);
+            cursor = cursor.parent ? state.nodes.get(cursor.parent) : null;
+        }
+        return chain;
+    }
+
+    async function loadProfileDetails(node, target) {
+        if (!node.profile_url) return;
+        if (state.profileRequest) state.profileRequest.abort();
+        const controller = new AbortController();
+        state.profileRequest = controller;
+
+        const status = el('p', 'orgd-note', 'Loading complete employee details…');
+        target.replaceChildren(status);
+
+        try {
+            const resp = await fetch(node.profile_url, {
+                headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                credentials: 'same-origin',
+                cache: 'no-store',
+                signal: controller.signal,
+            });
+            if (!resp.ok) throw new Error('HTTP ' + resp.status);
+            const profile = await resp.json();
+            if (controller.signal.aborted || state.selected !== node.id) return;
+
+            const frag = document.createDocumentFragment();
+            Object.entries(profile.sections || {}).forEach(function (entry) {
+                const secTitle = entry[0];
+                const fields = entry[1] || {};
+                const sec = el('div', 'orgd-section');
+                sec.appendChild(el('h4', '', secTitle));
+                const dl = el('dl', 'orgd-facts');
+                Object.entries(fields).forEach(function (pair) {
+                    const wide = pair[0] === 'About' || pair[0] === 'Business address';
+                    const item = el('div', wide ? 'is-wide' : '');
+                    item.append(el('dt', '', pair[0]), el('dd', '', display(pair[1])));
+                    dl.appendChild(item);
+                });
+                sec.appendChild(dl);
+                frag.appendChild(sec);
+            });
+            target.replaceChildren(frag);
+        } catch (err) {
+            if (controller.signal.aborted || state.selected !== node.id) return;
+            status.textContent = 'Extended employee details could not be loaded.';
+        }
+    }
+
+    function openInspector(node, focusClose) {
+        if (state.profileRequest) state.profileRequest.abort();
         inspectorBody.innerHTML = '';
 
         const hero = el('div', 'orgd-hero');
@@ -814,6 +1183,9 @@
 
         const tags = el('div', 'orgd-tags');
         tags.appendChild(el('span', 'orgd-tag', levelBadge(node)));
+        if (node.role) {
+            tags.appendChild(el('span', 'orgd-tag is-dept', node.role));
+        }
         tags.appendChild(el('span', 'orgd-tag ' + (isActiveStatus(node) ? 'is-ok' : 'is-warn'), display(node.status || 'Active')));
         if (node.employee_code) {
             tags.appendChild(el('span', 'orgd-tag is-dept', node.employee_code));
@@ -822,9 +1194,18 @@
         inspectorBody.appendChild(hero);
 
         const actions = el('div', 'orgd-actions');
-        const profileLink = el('a', 'orgd-action' + (node.show_url ? '' : ' is-disabled'));
-        profileLink.href = node.show_url || '#';
-        profileLink.append(icon('fa-id-card'), el('span', '', 'View Profile'));
+        const dirProfileUrl = node.org_show_url || node.show_url || '#';
+        const dirLink = el('a', 'orgd-action' + (dirProfileUrl !== '#' ? '' : ' is-disabled'));
+        dirLink.href = dirProfileUrl;
+        dirLink.append(icon('fa-id-card'), el('span', '', 'Directory Profile'));
+
+        const hrProfileLink = el('a', 'orgd-action' + (node.show_url ? '' : ' is-disabled'));
+        hrProfileLink.href = node.show_url || '#';
+        hrProfileLink.append(icon('fa-user-tie'), el('span', '', 'HR Profile'));
+
+        const emailLink = el('a', 'orgd-action' + (node.email ? '' : ' is-disabled'));
+        emailLink.href = node.email ? 'mailto:' + node.email : '#';
+        emailLink.append(icon('fa-envelope'), el('span', '', 'Email'));
 
         const filterDesigBtn = el('button', 'orgd-action');
         filterDesigBtn.type = 'button';
@@ -837,7 +1218,7 @@
                 renderAll(true);
             }
         });
-        actions.append(profileLink, filterDesigBtn);
+        actions.append(dirLink, hrProfileLink, emailLink, filterDesigBtn);
         inspectorBody.appendChild(actions);
 
         const statsSec = el('div', 'orgd-section');
@@ -851,10 +1232,33 @@
         statsSec.appendChild(statsGrid);
         inspectorBody.appendChild(statsSec);
 
+        const chain = reportingChain(node.id);
+        if (chain.length > 0) {
+            const chainSec = el('div', 'orgd-section');
+            chainSec.appendChild(el('h4', '', 'Reporting Flow'));
+            const chainWrap = el('div', 'orgd-chain');
+            chain.forEach(function (step, idx) {
+                const isSelf = step.id === node.id;
+                const stepEl = el(isSelf ? 'span' : 'button', 'orgd-chain-step' + (isSelf ? ' is-self' : ''), step.name);
+                if (!isSelf) {
+                    stepEl.type = 'button';
+                    stepEl.addEventListener('click', function () {
+                        selectNode(step.id, stepEl);
+                    });
+                }
+                chainWrap.appendChild(stepEl);
+                if (idx < chain.length - 1) {
+                    chainWrap.appendChild(icon('fa-chevron-right orgd-chain-sep'));
+                }
+            });
+            chainSec.appendChild(chainWrap);
+            inspectorBody.appendChild(chainSec);
+        }
+
         if (node.parent && state.nodes.has(node.parent)) {
             const parentNode = state.nodes.get(node.parent);
             const mgrSec = el('div', 'orgd-section');
-            mgrSec.appendChild(el('h4', '', 'Reports To'));
+            mgrSec.appendChild(el('h4', '', node.placement === 'level' ? 'Placed Under (Level Hierarchy)' : 'Reports To'));
             mgrSec.appendChild(makePersonButton(parentNode));
             inspectorBody.appendChild(mgrSec);
         }
@@ -872,17 +1276,28 @@
         }
         inspectorBody.appendChild(dirSec);
 
+        const location = [node.address, node.country].filter(Boolean).join(', ');
         const factsSec = el('div', 'orgd-section');
-        factsSec.appendChild(el('h4', '', 'Employee Record Details'));
+        factsSec.appendChild(el('h4', '', 'Complete Employee Record'));
         const dl = el('dl', 'orgd-facts');
         [
-            ['Email', node.email, true],
-            ['Phone', node.mobile, false],
+            ['Employee ID', node.employee_code, false],
+            ['Designation', node.designation, false],
+            ['Level', levelBadge(node), false],
+            ['Role', node.role, false],
             ['Department', node.department, false],
             ['Parent Dept', node.parent_department, false],
+            ['Reporting Manager', node.reporting_to_name || 'Top level', false],
+            ['Hierarchy Link', node.placement === 'level' ? 'By designation level' : (node.placement === 'reporting' ? 'Direct reporting manager' : 'Root level'), false],
             ['Joining Date', node.joining_date, false],
             ['Tenure', node.tenure, false],
-            ['Employment', node.employment_type, false],
+            ['Employment Type', node.employment_type, false],
+            ['Status', node.status, false],
+            ['Gender', node.gender, false],
+            ['Phone', node.mobile, false],
+            ['Email', node.email, true],
+            ['Company', node.company, true],
+            ['Location', location, true],
             ['Skills', node.skills, true],
         ].forEach(function (row) {
             const item = el('div', row[2] ? 'is-wide' : '');
@@ -892,9 +1307,15 @@
         factsSec.appendChild(dl);
         inspectorBody.appendChild(factsSec);
 
+        const extendedHost = el('div', 'orgd-extended-profile');
+        inspectorBody.appendChild(extendedHost);
+        loadProfileDetails(node, extendedHost);
+
         inspector.classList.add('is-open');
         inspector.setAttribute('aria-hidden', 'false');
-        closeInspectorBtn.focus();
+        if (focusClose !== false) {
+            closeInspectorBtn.focus();
+        }
     }
 
     function makePersonButton(person) {
@@ -1054,13 +1475,21 @@
         });
     }
 
-    designationChips.forEach(function (chip) {
-        chip.addEventListener('click', function () {
+    modeButtons.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            setMode(btn.getAttribute('data-org-mode'), true);
+        });
+    });
+
+    if (chipsRow) {
+        chipsRow.addEventListener('click', function (ev) {
+            const chip = ev.target.closest('[data-designation-chip]');
+            if (!chip) return;
             const val = chip.getAttribute('data-designation-chip') || '';
             if (designationSelect) designationSelect.value = val;
             renderAll(state.isolateBranch);
         });
-    });
+    }
 
     if (resetFiltersBtn) {
         resetFiltersBtn.addEventListener('click', function () {
@@ -1087,26 +1516,43 @@
         }
     });
 
-    if (refreshBtn) {
-        refreshBtn.addEventListener('click', async function () {
-            refreshBtn.disabled = true;
-            statusText.textContent = 'Refreshing employee hierarchy…';
-            try {
-                const resp = await fetch(root.dataset.endpoint, {
-                    headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-                    credentials: 'same-origin',
-                    cache: 'no-store',
-                });
-                if (!resp.ok) throw new Error('HTTP ' + resp.status);
-                const payload = await resp.json();
-                hydratePayload(payload, !state.userMoved);
-            } catch (err) {
+    async function refreshTreeData(manual) {
+        if (state.loading) return;
+        state.loading = true;
+        if (refreshBtn && manual) refreshBtn.disabled = true;
+        if (manual && statusText) statusText.textContent = 'Refreshing employee hierarchy…';
+        try {
+            const resp = await fetch(root.dataset.endpoint, {
+                headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                credentials: 'same-origin',
+                cache: 'no-store',
+            });
+            if (!resp.ok) throw new Error('HTTP ' + resp.status);
+            const payload = await resp.json();
+            hydratePayload(payload, !state.userMoved && state.mode === 'chart');
+        } catch (err) {
+            if (manual && statusText) {
                 statusText.textContent = 'Could not refresh organization tree. Please try again.';
-            } finally {
-                refreshBtn.disabled = false;
             }
+        } finally {
+            state.loading = false;
+            if (refreshBtn && manual) refreshBtn.disabled = false;
+        }
+    }
+
+    if (refreshBtn) {
+        refreshBtn.addEventListener('click', function () {
+            refreshTreeData(true);
         });
     }
+
+    // Keep Organization automatically synchronized when employees are added, updated, or deleted.
+    document.addEventListener('pms:records-updated', function () {
+        refreshTreeData(false);
+    });
+    document.addEventListener('visibilitychange', function () {
+        if (!document.hidden) refreshTreeData(false);
+    });
 
     if (exportCsvBtn) {
         exportCsvBtn.addEventListener('click', function () {
@@ -1166,7 +1612,23 @@
 
     try {
         const parsed = initialDataEl ? JSON.parse(initialDataEl.textContent || '{}') : {};
-        hydratePayload(parsed, true);
+        const requestedMode = new URLSearchParams(window.location.search).get('view');
+        const initialMode = (requestedMode === 'grid' || requestedMode === 'cards' || requestedMode === 'chart')
+            ? requestedMode
+            : (storage.get(MODE_KEY) || 'chart');
+        state.mode = (initialMode === 'grid' || initialMode === 'cards') ? initialMode : 'chart';
+        root.classList.toggle('is-chart-mode', state.mode === 'chart');
+        root.classList.toggle('is-grid-mode', state.mode === 'grid');
+        root.classList.toggle('is-cards-mode', state.mode === 'cards');
+        if (viewport) viewport.hidden = state.mode !== 'chart';
+        if (levelGrid) levelGrid.hidden = state.mode !== 'grid';
+        if (cardsGrid) cardsGrid.hidden = state.mode !== 'cards';
+        modeButtons.forEach(function (btn) {
+            const active = btn.getAttribute('data-org-mode') === state.mode;
+            btn.classList.toggle('is-on', active);
+            btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+        });
+        hydratePayload(parsed, state.mode === 'chart');
     } catch (e) {
         statusText.textContent = 'Unable to parse initial organization data.';
     }

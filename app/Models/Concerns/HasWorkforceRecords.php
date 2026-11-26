@@ -16,7 +16,7 @@ trait HasWorkforceRecords
             $table = $query->getModel()->getTable();
             $query->whereHas('user', fn ($user) => $user->where('company_id', $companyId ?: 0));
             if (! WorkforceAccess::isAdmin(auth()->user())) {
-                if (WorkforceAccess::isHr(auth()->user())) {
+                if ($table !== 'leaves' && WorkforceAccess::isHr(auth()->user())) {
                     $query->where(function ($visible) use ($table) {
                         $visible->where($table . '.user_id', auth()->id())
                             ->orWhere(function ($employees) use ($table) {
