@@ -15,11 +15,17 @@ class User extends Authenticatable
 
     public function notifications()
     {
-        return $this->morphMany(CompanyDatabaseNotification::class, 'notifiable')
+        $relation = $this->morphMany(CompanyDatabaseNotification::class, 'notifiable')
             ->where(function ($query) {
                 $query->where('data->company_id', (int) $this->company_id)
                     ->orWhereNull('data->company_id');
             })->latest();
+
+        // System/settings updates are not shown in the Notification Center (list, unread count and
+        // bell all use this relation), including older ones that were broadcast to every role.
+        \App\Services\NotificationAudience::withoutSystemUpdates($relation);
+
+        return $relation;
     }
 
     protected static function booted(): void
