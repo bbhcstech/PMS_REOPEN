@@ -203,7 +203,7 @@
                     <div>
                         <span class="text-muted fw-semibold small d-block mb-1">🏠 Home Projects (In-House)</span>
                         <h4 class="fw-bold text-info mb-0">{{ $stats['home_projects_count'] }}</h4>
-                        <small class="text-muted">Total Cost: ${{ number_format($stats['home_cost'], 2) }}</small>
+                        <small class="text-muted">Total Cost: {{ $stats['home_currency_symbol'] ?? '$' }}{{ number_format($stats['home_cost'], 2) }}</small>
                     </div>
                     <div class="p-3 rounded-4 bg-info-subtle text-info">
                         <i class="bx bx-home-alt fs-3"></i>
@@ -219,7 +219,7 @@
                     <div>
                         <span class="text-muted fw-semibold small d-block mb-1">💼 Client Projects (Client)</span>
                         <h4 class="fw-bold text-success mb-0">{{ $stats['client_projects_count'] }}</h4>
-                        <small class="text-muted">Total Cost: ${{ number_format($stats['client_cost'], 2) }}</small>
+                        <small class="text-muted">Total Cost: {{ $stats['client_currency_symbol'] ?? '$' }}{{ number_format($stats['client_cost'], 2) }}</small>
                     </div>
                     <div class="p-3 rounded-4 bg-success-subtle text-success">
                         <i class="bx bx-buildings fs-3"></i>
@@ -246,7 +246,7 @@
                                 }
                             }
                         @endphp
-                        <h4 class="fw-bold text-dark mb-0" title="${{ number_format($pipelineValue, 2) }}">${{ $pipelineLabel }}</h4>
+                        <h4 class="fw-bold text-dark mb-0" title="{{ $stats['pipeline_currency_symbol'] ?? '$' }}{{ number_format($pipelineValue, 2) }}">{{ $stats['pipeline_currency_symbol'] ?? '$' }}{{ $pipelineLabel }}</h4>
                         <small class="text-success"><i class="bx bx-trending-up me-1"></i>Combined Project Valuation</small>
                     </div>
                     <div class="p-3 rounded-4 bg-warning-subtle text-warning">
@@ -425,7 +425,7 @@
                             <!-- Cost / Value (Fetched from Deals / Budget) -->
                             <td>
                                 <div class="fw-bold text-dark fs-6 cost-badge">
-                                    ${{ number_format($project->calculated_cost, 2) }}
+                                    {{ $project->currency_symbol ?? '$' }}{{ number_format($project->calculated_cost, 2) }}
                                 </div>
                                 @if($project->cost_source === 'deal')
                                     <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2" style="font-size: 0.68rem;" title="Fetched automatically from Deals section">
@@ -631,7 +631,7 @@
                             <!-- Cost / Deal Value (Fetched from Deals Section) -->
                             <td>
                                 <div class="fw-bold text-dark fs-6 cost-badge">
-                                    ${{ number_format($project->calculated_cost, 2) }}
+                                    {{ $project->currency_symbol ?? '$' }}{{ number_format($project->calculated_cost, 2) }}
                                 </div>
                                 @if($project->cost_source === 'deal')
                                     <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2" style="font-size: 0.68rem;" title="Fetched automatically from Deals section">

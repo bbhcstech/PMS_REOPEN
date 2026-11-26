@@ -1845,6 +1845,26 @@
         background: rgba(245, 158, 11, 0.1) !important;
     }
 
+    button.status-badge.js-employee-status-toggle {
+        cursor: pointer;
+        transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+    }
+
+    button.status-badge.js-employee-status-toggle:hover:not(:disabled) {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+    }
+
+    button.status-badge.js-employee-status-toggle:focus-visible {
+        outline: 2px solid #4f46e5;
+        outline-offset: 2px;
+    }
+
+    button.status-badge.js-employee-status-toggle:disabled {
+        opacity: 0.65;
+        cursor: wait;
+    }
+
     /* ===== RESPONSIVE BREAKPOINTS ===== */
     @media (max-width: 1199.98px) {
         #employeeDirectoryPage .stats-grid {
