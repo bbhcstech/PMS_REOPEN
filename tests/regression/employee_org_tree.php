@@ -9,6 +9,7 @@ $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
 
 use App\Http\Controllers\EmployeeController;
 use App\Models\{Department, Designation, EmployeeDetail, User};
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{Auth, DB};
 
@@ -98,14 +99,18 @@ foreach (['central', 'tenant'] as $connection) {
 config(['database.default' => 'tenant', 'session.driver' => 'array']);
 DB::connection('central')->statement('CREATE TABLE companies (id integer primary key, name text, deleted_at text)');
 DB::connection('central')->statement("INSERT INTO companies (id, name) VALUES (1, 'Alpha'), (2, 'Beta')");
-DB::statement('CREATE TABLE users (id integer primary key, name text, email text, company_id integer, role text, archived_at text)');
+DB::statement('CREATE TABLE users (id integer primary key, name text, email text, company_id integer, role text, archived_at text, manager_id integer, reports_to_id integer)');
 DB::statement('CREATE TABLE designations (id integer primary key, name text, level integer, company_id integer, added_by integer)');
-DB::statement('CREATE TABLE employee_details (id integer primary key, user_id integer, designation_id integer, employee_id text, status text, reporting_to integer)');
+DB::statement('CREATE TABLE employee_details (id integer primary key, user_id integer, designation_id integer, employee_id text, status text, reporting_to integer, business_address text, dob text, hourly_rate decimal, login_allowed boolean, government_id_card text)');
 DB::statement("INSERT INTO users (id, name, email, company_id, role) VALUES
     (101, 'Director', 'director@example.test', 1, 'admin'), (102, 'Staff', 'staff@example.test', 1, 'employee'),
     (201, 'Other manager', 'manager@example.test', 2, 'manager')");
 DB::statement("INSERT INTO designations VALUES (1, 'Director', 18, null, 101), (2, 'Staff', 0, 1, 101), (3, 'Manager', 32, 2, 201)");
-DB::statement("INSERT INTO employee_details VALUES (1, 101, 1, 'EMP-101', 'Active', null), (2, 102, 2, 'EMP-102', 'Active', 101), (3, 201, 3, 'EMP-201', 'Active', null)");
+DB::statement("INSERT INTO employee_details (id, user_id, designation_id, employee_id, status, reporting_to) VALUES (1, 101, 1, 'EMP-101', 'Active', null), (2, 102, 2, 'EMP-102', 'Active', 101), (3, 201, 3, 'EMP-201', 'Active', null)");
+DB::table('users')->where('id', 102)->update(['manager_id' => 103]);
+DB::table('employee_details')->where('user_id', 102)->update([
+    'business_address' => 'Alpha office', 'dob' => '1990-05-20', 'hourly_rate' => 50, 'login_allowed' => false, 'government_id_card' => 'private-id',
+]);
 $controller = app(EmployeeController::class);
 $requestAs = function (User $viewer, array $query = []) {
     Auth::guard('web')->setUser($viewer);
@@ -118,8 +123,32 @@ $admin = User::findOrFail(101);
 $payload = $controller->orgTree($requestAs($admin))->getData(true);
 $check(array_column($payload['nodes'], 'level') === [18, 0] && $payload['company']['name'] === 'Alpha', 'endpoint includes company leadership and legacy designation levels');
 $check($payload['nodes'][1]['parent'] === 101 && $payload['nodes'][1]['reporting_to_name'] === 'Director', 'endpoint returns reporting links and employee details');
+$profileUrl = $payload['nodes'][1]['profile_url'];
+$route = app('router')->getRoutes()->match(Request::create($profileUrl));
+$check($route->getName() === 'employees.org-tree.profile' && $route->parameter('employee') === '102', 'tree cards link to the correct profile endpoint');
+$check(! str_contains(json_encode($payload), '1990-05-20'), 'private profile information is absent from the roster payload');
+$response = $controller->orgTreeProfile($requestAs($admin, ['company_id' => 1]), 102);
+$profile = $response->getData(true);
+$check($profile['id'] === 102 && $profile['sections']['Work profile']['Business address'] === 'Alpha office', 'administrator receives the selected work profile');
+$check($profile['sections']['Personal information']['Date of birth'] === '20 May 1990'
+    && $profile['sections']['Account and employment record']['Hourly rate'] === '50.00'
+    && $profile['sections']['Account and employment record']['Login allowed'] === 'No', 'administrator receives the authorized private profile fields');
+$check(str_contains($response->headers->get('Cache-Control'), 'no-store') && ! str_contains($response->getContent(), 'private-id'), 'profile responses are private and omit sensitive identity documents');
 $staffPayload = $controller->orgTree($requestAs(User::findOrFail(102)))->getData(true);
 $check(array_column($staffPayload['nodes'], 'id') === [102], 'employee access retains the existing roster visibility filter');
+$self = $controller->orgTreeProfile($requestAs(User::findOrFail(102)), 102)->getData(true);
+$check(isset($self['sections']['Personal information']), 'employees can view their own private profile fields');
+$manager = (new User)->forceFill(['id' => 103, 'role' => 'manager', 'company_id' => 1]);
+$report = $controller->orgTreeProfile($requestAs($manager), 102)->getData(true);
+$check(array_keys($report['sections']) === ['Work profile'], 'managers receive only the work profile of a visible report');
+foreach ([[$manager, 101], [$admin, 201]] as [$viewer, $id]) {
+    try {
+        $controller->orgTreeProfile($requestAs($viewer), $id);
+        $check(false, 'profile lookup rejects employees outside the viewer roster');
+    } catch (ModelNotFoundException $e) {
+        $check(true, 'profile lookup rejects employees outside the viewer roster');
+    }
+}
 try {
     $controller->orgTree($requestAs($admin, ['company_id' => 2]));
     $check(false, 'company administrators cannot request another company');
@@ -130,5 +159,5 @@ $platform = (new User)->forceFill(['id' => 9001, 'role' => 'superadmin']);
 $platformPayload = $controller->orgTree($requestAs($platform, ['company_id' => 2]))->getData(true);
 $check(array_column($platformPayload['nodes'], 'level') === [32] && $platformPayload['company']['name'] === 'Beta', 'platform view loads the selected company designations');
 
-echo $failures ? "\nFAIL: {$failures} check(s) failed\n" : "\nPASS: org tree placement, cycle safety and counts.\n";
+echo $failures ? "\nFAIL: {$failures} check(s) failed\n" : "\nPASS: org tree placement, cycle safety, counts and profile access.\n";
 exit($failures ? 1 : 0);

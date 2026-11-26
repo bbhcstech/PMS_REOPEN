@@ -310,26 +310,60 @@
         overflow: hidden;
     }
     #eventCalendar .event-calendar-banner-content {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
         width: 100%;
         min-width: 0;
-        padding: 3px;
+        padding: 5px;
+        box-sizing: border-box;
+    }
+    #eventCalendar .event-calendar-banner-frame {
+        width: 100%;
+        height: 60px;
+        border-radius: 7px;
+        overflow: hidden;
+        background: rgba(255, 255, 255, 0.94);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2px;
         box-sizing: border-box;
     }
     #eventCalendar .event-calendar-banner {
         display: block;
         width: 100%;
-        height: 56px;
+        height: 100%;
         object-fit: contain;
-        border-radius: 4px;
-        margin-bottom: 4px;
+        border-radius: 5px;
+        margin-bottom: 0;
     }
     #eventCalendar .event-calendar-banner-label {
-        display: block;
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+        padding: 1px 3px 2px;
         font-size: 0.75rem;
         line-height: 1.3;
-        font-weight: 600;
+        font-weight: 700;
         overflow-wrap: anywhere;
-        color: inherit;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+    #eventCalendar .event-calendar-banner-time {
+        font-size: 0.68rem;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        opacity: 0.88;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+    #eventCalendar .event-calendar-banner-title {
+        font-size: 0.76rem;
+        font-weight: 700;
+        line-height: 1.25;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
     }
 
     .event-description-panel, .event-memories-empty {
@@ -2036,18 +2070,34 @@
         const content = document.createElement('div');
         content.className = 'event-calendar-banner-content';
 
+        const frame = document.createElement('div');
+        frame.className = 'event-calendar-banner-frame';
+
         const banner = document.createElement('img');
         banner.className = 'event-calendar-banner';
         banner.src = bannerUrl;
         banner.alt = info.event.title;
         banner.loading = 'lazy';
-        banner.addEventListener('error', function() { banner.remove(); }, { once: true });
-        content.appendChild(banner);
+        banner.addEventListener('error', function() { frame.remove(); }, { once: true });
+        frame.appendChild(banner);
+        content.appendChild(frame);
 
         const label = document.createElement('span');
         label.className = 'event-calendar-banner-label';
+
         const timeText = info.timeText || info.event.extendedProps.display_time || '';
-        label.textContent = (timeText ? timeText + ' ' : '') + info.event.title;
+        if (timeText) {
+            const timeEl = document.createElement('span');
+            timeEl.className = 'event-calendar-banner-time';
+            timeEl.textContent = timeText;
+            label.appendChild(timeEl);
+        }
+
+        const titleEl = document.createElement('span');
+        titleEl.className = 'event-calendar-banner-title';
+        titleEl.textContent = info.event.title;
+        label.appendChild(titleEl);
+
         content.appendChild(label);
 
         return { domNodes: [content] };

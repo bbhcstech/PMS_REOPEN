@@ -1,6 +1,7 @@
 @php
     $pdfHeaderImage = method_exists($requirement, 'pdfImageDataUri') ? $requirement->pdfImageDataUri('pdf_header_image') : null;
     $pdfFooterImage = method_exists($requirement, 'pdfImageDataUri') ? $requirement->pdfImageDataUri('pdf_footer_image') : null;
+    $pdfFooterHeight = !empty($requirement->pdf_footer_asset_id) ? '21mm' : '16mm';
 @endphp
 <!doctype html>
 <html>
@@ -147,9 +148,9 @@
         body { padding: 0; }
         .pdf-brand-header, .pdf-brand-footer { position: fixed; left: 15mm; right: 15mm; text-align: center; }
         .pdf-brand-header { top: 10mm; height: 24mm; }
-        .pdf-brand-footer { bottom: 8mm; height: 16mm; }
+        .pdf-brand-footer { bottom: 8mm; height: {{ $pdfFooterHeight }}; }
         .pdf-brand-header img { max-width: 180mm; max-height: 24mm; width: auto; height: auto; }
-        .pdf-brand-footer img { max-width: 180mm; max-height: 16mm; width: auto; height: auto; }
+        .pdf-brand-footer img { max-width: 180mm; max-height: {{ $pdfFooterHeight }}; width: auto; height: auto; }
         .header-table, .title-box, .params-table { page-break-inside: avoid; }
         .section-header { page-break-after: avoid; }
         .section-text { overflow-wrap: break-word; word-wrap: break-word; }

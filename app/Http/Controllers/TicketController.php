@@ -286,7 +286,7 @@ class TicketController extends Controller
     public function changeStatus(Request $request)
     {
         $request->validate([
-            'ticketId' => 'required|exists:tickets,id',
+            'ticketId' => ['required', Rule::exists('tenant.tickets', 'id')],
             'status' => 'required|in:open,in_progress,pending,resolved,closed,reopened'
         ]);
 

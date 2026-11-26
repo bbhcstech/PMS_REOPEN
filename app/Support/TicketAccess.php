@@ -23,7 +23,7 @@ class TicketAccess
     {
         $user = auth()->user();
         abort_unless($user && $user->company_id, 403);
-        $companyId = $ticket->company_id ?? $ticket->requester?->company_id;
+        $companyId = $ticket->company_id ?: $ticket->requester?->company_id;
         \App\Services\TenantScope::authorizeCompany($companyId);
         abort_unless(self::canManage() || (!$manage && ($progress
             ? (int) $ticket->agent_id === (int) $user->id

@@ -20,28 +20,29 @@ $image = function ($width, $height, $extension = 'png') use (&$paths) {
 $validate = fn ($file, $height) => Validator::make(['pdf_header_image' => $file],
     ['pdf_header_image' => Branding::rules($height)], Branding::messages());
 try {
-    $header = $image(1800, 240);
-    $footer = $image(1800, 160, 'jpg');
-    brandingCheck($validate($header, 240)->passes(), 'Valid PNG header rejected.');
-    brandingCheck($validate($footer, 160)->passes(), 'Valid JPEG footer rejected.');
-    brandingCheck($validate($header, 160)->fails(), 'Header dimensions accepted for footer.');
-    brandingCheck($validate($image(1799, 240), 240)->fails(), 'Wrong width accepted.');
-    brandingCheck($validate(null, 240)->fails(), 'Missing banner accepted.');
-    brandingCheck($validate(new UploadedFile($header->getPathname(), 'banner.pdf', null, null, true), 240)->fails(), 'Invalid extension accepted.');
+    $header = $image(1240, 160);
+    $footer = $image(1240, 140, 'jpg');
+    brandingCheck($validate($header, Branding::HEADER_HEIGHT)->passes(), 'Valid PNG header rejected.');
+    brandingCheck($validate($footer, Branding::FOOTER_HEIGHT)->passes(), 'Valid JPEG footer rejected.');
+    brandingCheck($validate($header, Branding::FOOTER_HEIGHT)->fails(), 'Header dimensions accepted for footer.');
+    brandingCheck($validate($image(1800, 240), Branding::HEADER_HEIGHT)->fails(), 'Legacy dimensions accepted for a new upload.');
+    brandingCheck($validate($image(1239, 160), Branding::HEADER_HEIGHT)->fails(), 'Wrong width accepted.');
+    brandingCheck($validate(null, Branding::HEADER_HEIGHT)->fails(), 'Missing banner accepted.');
+    brandingCheck($validate(new UploadedFile($header->getPathname(), 'banner.pdf', null, null, true), Branding::HEADER_HEIGHT)->fails(), 'Invalid extension accepted.');
     $fake = tempnam(sys_get_temp_dir(), 'rec-fake-'); $paths[] = $fake;
     file_put_contents($fake, '%PDF-1.4 not an image');
-    brandingCheck($validate(new UploadedFile($fake, 'banner.png', null, null, true), 240)->fails(), 'Spoofed PNG accepted.');
-    $large = $image(1800, 240);
+    brandingCheck($validate(new UploadedFile($fake, 'banner.png', null, null, true), Branding::HEADER_HEIGHT)->fails(), 'Spoofed PNG accepted.');
+    $large = $image(1240, 160);
     file_put_contents($large->getPathname(), str_repeat('x', 2097153), FILE_APPEND);
     clearstatcache(true, $large->getPathname());
-    brandingCheck($validate($large, 240)->fails(), 'Oversized image accepted.');
+    brandingCheck($validate($large, Branding::HEADER_HEIGHT)->fails(), 'Oversized image accepted.');
 
     $requirement = new class extends App\Models\RecruitmentRequirement {
         public array $artwork = [];
         public function pdfImageDataUri(string $column): ?string { return $this->artwork[$column] ?? null; }
     };
     $requirement->forceFill(['id' => 1, 'title' => 'Recruitment branding regression', 'employment_type' => 'Full-time',
-        'positions' => 2, 'status' => 'open', 'created_at' => now(), 'pdf_header_image' => 'header.png', 'pdf_footer_image' => 'footer.jpg',
+        'positions' => 2, 'status' => 'open', 'created_at' => now(), 'pdf_header_asset_id' => 1, 'pdf_footer_asset_id' => 2,
         'description' => str_repeat("Responsibilities and project delivery requirements.\n", 140)]);
     $requirement->setRelation('creator', null);
     $requirement->artwork = ['pdf_header_image' => 'data:image/png;base64,'.base64_encode(file_get_contents($header->getPathname())),
@@ -62,8 +63,11 @@ try {
     brandingCheck(count($frames) === $pages * 2, 'Branding did not repeat on every page.');
     foreach ($frames as $box) {
         brandingCheck($box['x'] >= 40 && $box['x'] + $box['w'] <= 555, 'Banner exceeds A4 content width.');
+        brandingCheck(abs($box['w'] - 180 * 72 / 25.4) < 1, 'Banner does not fill the page width: '.json_encode($box));
         brandingCheck($box['y'] >= 0 && $box['y'] + $box['h'] <= 842, 'Banner outside page: '.json_encode($box));
         brandingCheck($box['y'] + $box['h'] < 119 || $box['y'] > 745, 'Banner overlaps reserved content area.');
+        $height = $box['y'] < 119 ? Branding::HEADER_HEIGHT : Branding::FOOTER_HEIGHT;
+        brandingCheck(abs($box['h'] - $box['w'] * $height / Branding::WIDTH) < 1, 'Banner proportions changed: '.json_encode($box));
     }
     echo "Recruitment branding: types, extensions, exact dimensions, file size and repeated multi-page PDF banners passed.\n";
 } finally {

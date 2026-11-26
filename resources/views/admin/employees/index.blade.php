@@ -462,6 +462,8 @@
     </div>
     @endif
 
+    @include('admin.employees.partials.org-tree')
+
     <div class="filter-export-card">
         <div class="directory-panel-header">
             <div class="directory-panel-title">
@@ -598,18 +600,18 @@
             <table id="employeeTable" data-pms-export="off" class="table table-hover align-middle mb-0 employee-list-table">
                 <thead>
                     <tr>
-                        <th width="58" class="no-export" data-pms-selection-column aria-label="Select rows">
+                        <th scope="col" class="no-export" data-pms-selection-column aria-label="Select rows">
                             <div class="form-check">
                                 <input class="form-check-input" type="checkbox" id="selectAll">
                             </div>
                         </th>
-                        <th width="170">Emp ID</th>
-                        <th>Employee Name</th>
-                        <th width="190">Company</th>
-                        <th width="200">Email</th>
-                        <th width="220">Role & Reporting</th>
-                        <th width="120">Status</th>
-                        <th width="80">Actions</th>
+                        <th scope="col">Emp ID</th>
+                        <th scope="col">Employee Name</th>
+                        <th scope="col">Company</th>
+                        <th scope="col">Email</th>
+                        <th scope="col">Role & Reporting</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Actions</th>
                     </tr>
                 </thead>
                 <tbody>

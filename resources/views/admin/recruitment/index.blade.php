@@ -1122,6 +1122,83 @@
         border-color: rgba(96, 165, 250, 0.35) !important;
     }
 
+    /* Recruitment PDF branding controls */
+    #createRequirementModal .rec-branding-card {
+        display: grid;
+        align-content: start;
+        gap: 12px;
+        height: 100%;
+        padding: 14px;
+        border: 1px solid var(--rec-border);
+        border-radius: 14px;
+        background: var(--rec-surface-subtle);
+    }
+    #createRequirementModal .rec-branding-card > div { min-width: 0; }
+    #createRequirementModal .rec-branding-heading {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px 10px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid var(--rec-border);
+    }
+    #createRequirementModal .rec-branding-icon {
+        display: grid;
+        place-items: center;
+        width: 34px;
+        height: 34px;
+        flex-shrink: 0;
+        border-radius: 9px;
+        background: var(--rec-primary-soft);
+        color: var(--rec-btn-icon-color) !important;
+        font-size: 1.15rem;
+    }
+    #createRequirementModal .rec-branding-heading h6 {
+        margin: 0;
+        font-size: .9rem;
+        font-weight: 700;
+        color: var(--rec-text-dark) !important;
+        -webkit-text-fill-color: currentColor !important;
+    }
+    #createRequirementModal :is(.rec-branding-heading p, .rec-branding-hint, .rec-branding-feedback) {
+        margin: 0;
+        color: var(--rec-text-muted) !important;
+        -webkit-text-fill-color: currentColor !important;
+        font-size: .78rem;
+    }
+    #createRequirementModal .rec-branding-size {
+        padding: 4px 8px;
+        border: 1px solid var(--rec-primary-border);
+        border-radius: 8px;
+        background: var(--rec-primary-soft);
+        color: var(--rec-text-body) !important;
+        -webkit-text-fill-color: currentColor !important;
+        font-size: .73rem;
+        font-weight: 650;
+        white-space: nowrap;
+    }
+    #createRequirementModal .rec-branding-card .form-label {
+        margin-bottom: 4px;
+        font-size: .82rem;
+        font-weight: 650;
+    }
+    #createRequirementModal .rec-branding-upload {
+        display: grid;
+        gap: 10px;
+    }
+    #createRequirementModal .rec-branding-upload > div { min-width: 0; }
+    #createRequirementModal input[data-branding-file] { width: 100%; }
+    #createRequirementModal p.rec-branding-hint { margin-top: 5px; }
+    #createRequirementModal .rec-branding-preview {
+        width: 100%;
+        height: auto;
+        border: 1px solid var(--rec-border);
+        border-radius: 8px;
+        background: #fff;
+    }
+    #createRequirementModal .rec-branding-feedback.is-error { color: var(--bs-form-invalid-color, #dc3545) !important; }
+    #createRequirementModal .rec-branding-card [hidden] { display: none !important; }
+
     /* Modals & Alert Box in Dark Mode */
     :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark) .modal-content {
         background: #0f1530 !important;
@@ -1708,6 +1785,12 @@
 
 @if(auth()->user()?->role === 'admin')
 {{-- CREATE NEW REQUIREMENT MODAL (ADMIN ONLY) --}}
+@php
+    $oldText = function ($key, $default = '') {
+        $value = old($key, $default);
+        return is_scalar($value) ? $value : $default;
+    };
+@endphp
 @include('admin.recruitment.partials.create-modal-style')
 <div class="modal fade" id="createRequirementModal" tabindex="-1" aria-hidden="true" aria-labelledby="createRequirementTitle">
     <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -1741,11 +1824,11 @@
                         </div>
                         <div class="col-md-8">
                             <label class="form-label fw-bold">Job Title <sup class="text-danger">*</sup></label>
-                            <input type="text" name="title" class="form-control" placeholder="e.g. Senior Laravel Developer" required>
+                            <input type="text" name="title" class="form-control" value="{{ $oldText('title') }}" placeholder="e.g. Senior Laravel Developer" required>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label fw-bold">Positions Needed <sup class="text-danger">*</sup></label>
-                            <input type="number" name="positions" class="form-control" value="1" min="1" required>
+                            <input type="number" name="positions" class="form-control" value="{{ $oldText('positions', 1) }}" min="1" required>
                         </div>
 
                         <div class="col-md-6">
@@ -1754,7 +1837,7 @@
                                 <select name="department_id" id="recruitment_department_select" class="form-select">
                                     <option value="">-- Select Department --</option>
                                     @foreach($departments as $dept)
-                                        <option value="{{ $dept->id }}">{{ $dept->dpt_name }}</option>
+                                        <option value="{{ $dept->id }}" @selected(old('department_id') == $dept->id)>{{ $dept->dpt_name }}</option>
                                     @endforeach
                                 </select>
                                 <button type="button" class="btn btn-outline-success d-flex align-items-center" onclick="toggleInlineAddDept();" title="Add New Department" style="border-top-right-radius: 0.375rem; border-bottom-right-radius: 0.375rem;">
@@ -1802,11 +1885,9 @@
                         <div class="col-md-6">
                             <label class="form-label fw-bold">Employment Type <sup class="text-danger">*</sup></label>
                             <select name="employment_type" class="form-select" required>
-                                <option value="Full-time">Full-time</option>
-                                <option value="Part-time">Part-time</option>
-                                <option value="Contract">Contract</option>
-                                <option value="Remote">Remote</option>
-                                <option value="Internship">Internship</option>
+                                @foreach(['Full-time', 'Part-time', 'Contract', 'Remote', 'Internship'] as $employmentType)
+                                    <option value="{{ $employmentType }}" @selected(old('employment_type') === $employmentType)>{{ $employmentType }}</option>
+                                @endforeach
                             </select>
                         </div>
 
@@ -1816,7 +1897,12 @@
                         </div>
                         <div class="col-md-4">
                             <label class="form-label fw-bold">Experience Required</label>
-                            <input type="text" name="experience_required" class="form-control" placeholder="e.g. 2 - 4 Years">
+                            <select name="experience_required" class="form-select">
+                                <option value="No">No</option>
+                                @for($i = 1; $i <= 10; $i++)
+                                    <option value="{{ $i }}" @selected(old('experience_required') == $i)>{{ $i }}</option>
+                                @endfor
+                            </select>
                         </div>
 
                         <div class="col-md-4">
@@ -1835,8 +1921,62 @@
                         </div>
 
                         <div class="col-md-4">
-                            <label class="form-label fw-bold">Location</label>
-                            <input type="text" name="location" class="form-control" placeholder="e.g. Headquarters / Remote">
+                            <label class="form-label fw-bold" for="recruitment_location_select">Location</label>
+                            <div class="input-group">
+                                <select name="location" id="recruitment_location_select" class="form-select">
+                                    <option value="">-- Select Location --</option>
+                                    @if(isset($companyLocations))
+                                        @foreach($companyLocations as $loc)
+                                            <option value="{{ $loc['value'] }}" {{ old('location') === $loc['value'] ? 'selected' : '' }}>
+                                                {{ $loc['label'] }}{{ !empty($loc['is_default']) ? ' (Default)' : '' }}
+                                            </option>
+                                        @endforeach
+                                    @endif
+                                </select>
+                                <button type="button" class="btn btn-outline-success d-flex align-items-center" onclick="toggleInlineAddLocation();" title="Add New Location" aria-label="Add New Location" style="border-top-right-radius: 0.375rem; border-bottom-right-radius: 0.375rem;">
+                                    <i class="bx bx-plus fs-5"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- INLINE QUICK ADD LOCATION PANEL -->
+                        <div id="inlineAddLocationWrapper" class="col-12 d-none">
+                            <div id="inlineAddLocationPanel" class="p-3 rounded-3 quick-add-dept-panel">
+                                <div class="d-flex justify-content-between align-items-center mb-2 pb-1 panel-header">
+                                    <span class="small d-flex align-items-center gap-1 panel-title">
+                                        <i class="bx bx-map"></i> Quick Add Company Location
+                                    </span>
+                                    <button type="button" class="btn-close" style="font-size: 0.65rem;" onclick="toggleInlineAddLocation(false);" aria-label="Close"></button>
+                                </div>
+
+                                <div id="inlineLocationError" class="alert alert-danger py-1 px-2 small rounded-2 mb-2 d-none"></div>
+
+                                <div class="row g-2">
+                                    <div class="col-md-6">
+                                        <label class="form-label small mb-1 panel-label" for="inline_location_name">Location / City <sup class="text-danger">*</sup></label>
+                                        <input type="text" id="inline_location_name" class="form-control form-control-sm panel-input" placeholder="e.g. Salt Lake Sector 5, Kolkata or Remote" autocomplete="off">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small mb-1 panel-label" for="inline_location_branch">Branch / Office Name <span class="text-muted fw-normal">(Optional)</span></label>
+                                        <input type="text" id="inline_location_branch" class="form-control form-control-sm panel-input" placeholder="e.g. Headquarters, Main Branch" autocomplete="off">
+                                    </div>
+                                    <div class="col-md-8">
+                                        <label class="form-label small mb-1 panel-label" for="inline_location_address">Address <span class="text-muted fw-normal">(Optional)</span></label>
+                                        <input type="text" id="inline_location_address" class="form-control form-control-sm panel-input" placeholder="Street / building address" autocomplete="off">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label small mb-1 panel-label" for="inline_location_country">Country <span class="text-muted fw-normal">(Optional)</span></label>
+                                        <input type="text" id="inline_location_country" class="form-control form-control-sm panel-input" placeholder="e.g. India" autocomplete="off">
+                                    </div>
+                                </div>
+
+                                <div class="d-flex justify-content-end gap-2 mt-2 pt-1">
+                                    <button type="button" class="btn btn-sm btn-panel-cancel" onclick="toggleInlineAddLocation(false);">Cancel</button>
+                                    <button type="button" id="btnSaveInlineLocation" class="btn btn-sm btn-panel-save px-3" onclick="saveInlineLocation();">
+                                        <i class="bx bx-check me-1"></i> Save &amp; Select
+                                    </button>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="col-12 rcm-section">
@@ -1845,33 +1985,24 @@
                         </div>
                         <div class="col-12">
                             <label class="form-label fw-bold">Job Description</label>
-                            <textarea name="description" class="form-control" rows="3" placeholder="Provide brief overview of responsibilities and scope..."></textarea>
+                            <textarea name="description" class="form-control" rows="3" placeholder="Provide brief overview of responsibilities and scope...">{{ $oldText('description') }}</textarea>
                         </div>
 
                         <div class="col-12">
-                            <label class="form-label fw-bold">Candidate Qualifications & Requirements</label>
-                            <textarea name="requirements_summary" class="form-control" rows="3" placeholder="Key skills, degrees, technologies, or certifications needed..."></textarea>
+                            <label class="form-label fw-bold">Candidate Qualification</label>
+                            <textarea name="requirements_summary" class="form-control" rows="3" placeholder="Key skills, degrees, technologies, or certifications needed...">{{ $oldText('requirements_summary') }}</textarea>
                         </div>
 
                         <div class="col-12 rcm-section">
                             <span class="rcm-step" aria-hidden="true">4</span>
                             <div><h6>PDF branding</h6><p>Your company header and footer printed on the requirement PDF.</p></div>
                         </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold" for="recPdfHeaderImage">Company Header Image <span class="text-danger">*</span></label>
-                            <input type="file" name="pdf_header_image" id="recPdfHeaderImage" class="form-control" accept=".jpg,.jpeg,.png,image/png,image/jpeg" required data-recruitment-banner data-width="{{ \App\Support\RecruitmentPdfBranding::WIDTH }}" data-height="{{ \App\Support\RecruitmentPdfBranding::HEADER_HEIGHT }}" data-max-bytes="{{ \App\Support\RecruitmentPdfBranding::MAX_KB * 1024 }}" aria-describedby="recPdfHeaderImageHelp recPdfHeaderImageFeedback">
-                            <small id="recPdfHeaderImageHelp" class="text-muted d-block mt-1">Top of every PDF page. Exactly {{ \App\Support\RecruitmentPdfBranding::WIDTH }} × {{ \App\Support\RecruitmentPdfBranding::HEADER_HEIGHT }} px. JPG/JPEG or PNG, max 2 MB. PDF files are not accepted.</small>
-                            <div id="recPdfHeaderImageFeedback" class="small mt-2" aria-live="polite">@error('pdf_header_image')<span class="text-danger">{{ $message }}</span>@enderror</div>
-                            <img id="recPdfHeaderImagePreview" class="img-fluid border rounded mt-2" alt="Company header preview" hidden style="width: 100%; height: auto;">
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold" for="recPdfFooterImage">Company Footer Image <span class="text-danger">*</span></label>
-                            <input type="file" name="pdf_footer_image" id="recPdfFooterImage" class="form-control" accept=".jpg,.jpeg,.png,image/png,image/jpeg" required data-recruitment-banner data-width="{{ \App\Support\RecruitmentPdfBranding::WIDTH }}" data-height="{{ \App\Support\RecruitmentPdfBranding::FOOTER_HEIGHT }}" data-max-bytes="{{ \App\Support\RecruitmentPdfBranding::MAX_KB * 1024 }}" aria-describedby="recPdfFooterImageHelp recPdfFooterImageFeedback">
-                            <small id="recPdfFooterImageHelp" class="text-muted d-block mt-1">Bottom of every PDF page. Exactly {{ \App\Support\RecruitmentPdfBranding::WIDTH }} × {{ \App\Support\RecruitmentPdfBranding::FOOTER_HEIGHT }} px. JPG/JPEG or PNG, max 2 MB. PDF files are not accepted.</small>
-                            <div id="recPdfFooterImageFeedback" class="small mt-2" aria-live="polite">@error('pdf_footer_image')<span class="text-danger">{{ $message }}</span>@enderror</div>
-                            <img id="recPdfFooterImagePreview" class="img-fluid border rounded mt-2" alt="Company footer preview" hidden style="width: 100%; height: auto;">
-                        </div>
+                        @foreach(\App\Support\RecruitmentPdfBranding::HEIGHTS as $kind => $height)
+                            <div class="col-md-6">
+                                @include('admin.recruitment.partials.branding-field', ['assets' => $brandingAssets[$kind] ?? collect()])
+                            </div>
+                        @endforeach
+                        <p class="col-12 rec-branding-hint mb-0">New images are saved to your company’s dropdowns when you create the requirement.</p>
                     </div>
                 </div>
                 <div class="modal-footer rcm-footer">
@@ -1898,8 +2029,8 @@
 </div>
 
 <script src="{{ asset('admin/assets/js/pms-recruitment-actions.js') }}"></script>
-<script src="{{ asset('admin/assets/js/pms-recruitment-branding.js') }}"></script>
-@if($errors->has('pdf_header_image') || $errors->has('pdf_footer_image'))
+<script src="{{ asset('admin/assets/js/pms-recruitment-branding.js') }}?v={{ filemtime(public_path('admin/assets/js/pms-recruitment-branding.js')) }}"></script>
+@if($errors->hasAny(['pdf_header_image', 'pdf_header_asset_id', 'pdf_header_name', 'pdf_footer_image', 'pdf_footer_asset_id', 'pdf_footer_name']))
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     bootstrap.Modal.getOrCreateInstance(document.getElementById('createRequirementModal')).show();
@@ -2056,6 +2187,139 @@ function saveInlineDepartment() {
         console.error(err);
         if (errorBox) {
             errorBox.textContent = 'Network error while creating department. Please try again.';
+            errorBox.classList.remove('d-none');
+        }
+    })
+    .finally(() => {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bx bx-check me-1"></i> Save & Select';
+        }
+    });
+}
+
+function toggleInlineAddLocation(forceState) {
+    const wrapper = document.getElementById('inlineAddLocationWrapper');
+    const input = document.getElementById('inline_location_name');
+    const errorBox = document.getElementById('inlineLocationError');
+    if (!wrapper) return;
+
+    if (errorBox) {
+        errorBox.classList.add('d-none');
+        errorBox.textContent = '';
+    }
+
+    const isCurrentlyHidden = wrapper.classList.contains('d-none');
+    const shouldShow = (typeof forceState === 'boolean') ? forceState : isCurrentlyHidden;
+
+    if (shouldShow) {
+        wrapper.classList.remove('d-none');
+        if (input) {
+            setTimeout(() => input.focus(), 50);
+        }
+    } else {
+        wrapper.classList.add('d-none');
+        ['inline_location_name', 'inline_location_branch', 'inline_location_address', 'inline_location_country'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.value = '';
+        });
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const inlineLocInput = document.getElementById('inline_location_name');
+    if (inlineLocInput) {
+        inlineLocInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                e.stopPropagation();
+                saveInlineLocation();
+            }
+        });
+    }
+});
+
+function saveInlineLocation() {
+    const btn = document.getElementById('btnSaveInlineLocation');
+    const errorBox = document.getElementById('inlineLocationError');
+    const inputLocation = document.getElementById('inline_location_name');
+    const inputBranch = document.getElementById('inline_location_branch');
+    const inputAddress = document.getElementById('inline_location_address');
+    const inputCountry = document.getElementById('inline_location_country');
+
+    if (errorBox) {
+        errorBox.classList.add('d-none');
+        errorBox.textContent = '';
+    }
+
+    const locationName = inputLocation ? inputLocation.value.trim() : '';
+    const branchName = inputBranch ? inputBranch.value.trim() : '';
+    const streetAddress = inputAddress ? inputAddress.value.trim() : '';
+    const country = inputCountry ? inputCountry.value.trim() : '';
+
+    if (!locationName) {
+        if (errorBox) {
+            errorBox.textContent = 'Please enter a location or city name.';
+            errorBox.classList.remove('d-none');
+        }
+        if (inputLocation) inputLocation.focus();
+        return;
+    }
+
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="bx bx-loader-alt bx-spin me-1"></i> Saving...';
+    }
+
+    fetch('{{ route("recruitment.locations.store") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({
+            location: locationName,
+            branch_name: branchName || null,
+            address: streetAddress || null,
+            country: country || null
+        })
+    })
+    .then(async res => {
+        const data = await res.json().catch(() => ({}));
+        return { status: res.status, data };
+    })
+    .then(({ status, data }) => {
+        if (status >= 200 && status < 300 && data.success && data.location) {
+            const loc = data.location;
+            const locSelect = document.getElementById('recruitment_location_select');
+            if (locSelect) {
+                const existing = Array.from(locSelect.options).find(opt => opt.value === loc.value);
+                if (!existing) {
+                    const labelText = loc.is_default ? `${loc.label} (Default)` : loc.label;
+                    locSelect.add(new Option(labelText, loc.value, true, true));
+                }
+                locSelect.value = loc.value;
+            }
+
+            toggleInlineAddLocation(false);
+            showQuickToast(`Location "${loc.label}" added and selected!`, true);
+        } else {
+            let errMsg = data.message || 'Failed to add location. Please check the inputs.';
+            if (data.errors) {
+                errMsg = Object.values(data.errors).flat().join('<br>');
+            }
+            if (errorBox) {
+                errorBox.innerHTML = errMsg;
+                errorBox.classList.remove('d-none');
+            }
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        if (errorBox) {
+            errorBox.textContent = 'Network error while adding location. Please try again.';
             errorBox.classList.remove('d-none');
         }
     })

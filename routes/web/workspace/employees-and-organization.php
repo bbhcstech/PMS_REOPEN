@@ -79,6 +79,8 @@ Route::post('employees/{id}/restore', [EmployeeController::class, 'restore'])
 
 Route::get('employees/org-tree', [EmployeeController::class, 'orgTree'])
     ->name('employees.org-tree');
+Route::get('employees/org-tree/{employee}/profile', [EmployeeController::class, 'orgTreeProfile'])
+    ->whereNumber('employee')->name('employees.org-tree.profile');
 
 Route::resource('employees', EmployeeController::class);
 

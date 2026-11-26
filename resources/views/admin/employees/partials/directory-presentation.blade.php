@@ -548,9 +548,10 @@
     #employeeDirectoryPage .table-card .table-responsive {
         padding: 0 !important;
         border-radius: 0 !important;
+        background: var(--dir-surface) !important;
     }
 
-    #employeeDirectoryPage #employeeTable {
+    #employeeDirectoryPage #employeeTable.employee-list-table {
         width: 100% !important;
         border-collapse: separate !important;
         border-spacing: 0 !important;
@@ -559,9 +560,9 @@
     }
 
     #employeeDirectoryPage #employeeTable thead th {
-        padding: 11px 12px !important;
+        padding: 13px 14px !important;
         border: 0 !important;
-        border-bottom: 1px solid var(--dir-border) !important;
+        border-bottom: 1px solid var(--dir-control-border) !important;
         background: var(--dir-subtle) !important;
         color: var(--dir-muted) !important;
         -webkit-text-fill-color: currentColor !important;
@@ -571,16 +572,21 @@
     }
 
     #employeeDirectoryPage #employeeTable tbody tr {
-        --dir-row-bg: var(--dir-surface);
+        --dir-row-base: var(--dir-surface);
+        --dir-row-bg: var(--dir-row-base);
         background: var(--dir-row-bg) !important;
     }
 
-    #employeeDirectoryPage #employeeTable tbody tr.table-warning {
-        --dir-row-bg: color-mix(in srgb, var(--dir-amber-soft) 50%, var(--dir-surface));
+    #employeeDirectoryPage #employeeTable tbody tr:nth-child(even) {
+        --dir-row-base: color-mix(in srgb, var(--dir-subtle) 48%, var(--dir-surface));
     }
 
-    #employeeDirectoryPage #employeeTable tbody tr:hover {
-        --dir-row-bg: var(--dir-subtle);
+    #employeeDirectoryPage #employeeTable tbody tr.table-warning {
+        --dir-row-base: color-mix(in srgb, var(--dir-amber-soft) 50%, var(--dir-surface));
+    }
+
+    #employeeDirectoryPage #employeeTable tbody tr:is(:hover, :focus-within) {
+        --dir-row-bg: color-mix(in srgb, var(--dir-accent-soft) 45%, var(--dir-row-base));
     }
 
     #employeeDirectoryPage #employeeTable tbody tr:is(.selected, .pms-row-selected, :has(.employee-checkbox:checked)) {
@@ -598,9 +604,24 @@
     #employeeDirectoryPage #employeeTable .employee-name {
         color: var(--dir-ink) !important;
         -webkit-text-fill-color: currentColor !important;
-        font-size: .9rem !important;
+        font-size: .9375rem !important;
         font-weight: 750 !important;
         letter-spacing: -.01em !important;
+    }
+
+    #employeeDirectoryPage #employeeTable :is(.employee-name, .employee-company-name, .email-link, .employee-designation, .role-name, .reports-to) {
+        white-space: normal !important;
+        overflow-wrap: anywhere !important;
+        line-height: 1.35 !important;
+    }
+
+    #employeeDirectoryPage #employeeTable :is(.employee-company-chip, .employee-details, .email-link) {
+        min-width: 0 !important;
+        max-width: 100% !important;
+    }
+
+    #employeeDirectoryPage #employeeTable :is(.employee-company-logo, .email-icon, .reports-to > i) {
+        flex: 0 0 auto;
     }
 
     #employeeDirectoryPage #employeeTable :is(.employee-designation, .reports-to) {
@@ -629,6 +650,25 @@
         letter-spacing: 0 !important;
     }
 
+    #employeeDirectoryPage #employeeTable .status-badge {
+        padding-inline: 8px !important;
+        box-shadow: none !important;
+        white-space: nowrap !important;
+    }
+
+    #employeeDirectoryPage #employeeTable .status-badge .status-text {
+        padding: 0 !important;
+        border: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        font-size: inherit !important;
+        font-weight: inherit !important;
+    }
+
+    #employeeDirectoryPage #employeeTable .form-check {
+        padding: 0 !important;
+    }
+
     #employeeDirectoryPage #employeeTable :is(.profile-initials, .email-link),
     #employeeDirectoryPage #employeeTable .btn-action-dots > i,
     #employeeDirectoryPage #employeeTable .btn-action-dots > i::before {
@@ -637,10 +677,19 @@
         filter: none !important;
     }
 
+    #employeeDirectoryPage #employeeTable .email-link {
+        font-weight: 550 !important;
+    }
+
     #employeeDirectoryPage #employeeTable .btn-action-dots:is(:hover, [aria-expanded="true"]) {
         border-color: var(--dir-control-border) !important;
         background: var(--dir-accent-soft) !important;
         transform: none !important;
+    }
+
+    #employeeDirectoryPage #employeeTable :is(.form-check-input, .email-link, .btn-action-dots):focus-visible {
+        outline: 2px solid var(--dir-accent) !important;
+        outline-offset: 2px;
     }
 
     #employeeDirectoryPage .empty-state {
@@ -694,9 +743,10 @@
         transform: none;
     }
 
-    @media (min-width: 769px) {
-        #employeeDirectoryPage #employeeTable {
-            min-width: 1120px !important;
+    @media (min-width: 768px) {
+        #employeeDirectoryPage #employeeTable.employee-list-table {
+            min-width: 1080px !important;
+            table-layout: fixed !important;
         }
 
         #employeeDirectoryPage #employeeTable :is(th, td) {
@@ -704,22 +754,29 @@
             max-width: none !important;
         }
 
-        #employeeDirectoryPage #employeeTable th:nth-child(1) { width: 5% !important; }
-        #employeeDirectoryPage #employeeTable th:nth-child(2) { width: 11% !important; }
-        #employeeDirectoryPage #employeeTable th:nth-child(3) { width: 19% !important; }
-        #employeeDirectoryPage #employeeTable th:nth-child(4) { width: 15% !important; }
-        #employeeDirectoryPage #employeeTable th:nth-child(5) { width: 16% !important; }
-        #employeeDirectoryPage #employeeTable th:nth-child(6) { width: 20% !important; }
-        #employeeDirectoryPage #employeeTable th:nth-child(7) { width: 8% !important; }
-        #employeeDirectoryPage #employeeTable th:nth-child(8) { width: 6% !important; }
+        #employeeDirectoryPage #employeeTable thead th:first-child { width: 48px !important; }
+        #employeeDirectoryPage #employeeTable thead th:nth-child(2) { width: 10% !important; }
+        #employeeDirectoryPage #employeeTable thead th:nth-child(4) { width: 14% !important; }
+        #employeeDirectoryPage #employeeTable thead th:nth-child(5) { width: 17% !important; }
+        #employeeDirectoryPage #employeeTable thead th:nth-child(6) { width: 19% !important; }
+        #employeeDirectoryPage #employeeTable thead th:nth-child(7) { width: 9% !important; }
+        #employeeDirectoryPage #employeeTable thead th:last-child { width: 76px !important; }
 
         #employeeDirectoryPage #employeeTable tbody td {
-            width: auto !important;
             height: auto !important;
-            padding: 11px 12px !important;
+            padding: 12px 14px !important;
             border: 0 !important;
             border-radius: 0 !important;
             border-bottom: 1px solid var(--dir-border) !important;
+        }
+
+        #employeeDirectoryPage #employeeTable :is(thead th, tbody td):not(:last-child) {
+            border-inline-end: 1px solid var(--dir-border) !important;
+        }
+
+        #employeeDirectoryPage #employeeTable :is(thead th, tbody td):is(:first-child, :nth-child(7), :last-child) {
+            padding-inline: 8px !important;
+            text-align: center !important;
         }
 
         #employeeDirectoryPage #employeeTable tbody tr:last-child td {
@@ -727,7 +784,7 @@
         }
     }
 
-    @media (max-width: 768px) {
+    @media (max-width: 767.98px) {
         #employeeDirectoryPage .table-card .table-responsive {
             padding: 12px !important;
         }

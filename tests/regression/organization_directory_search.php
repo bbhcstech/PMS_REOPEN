@@ -62,4 +62,22 @@ try {
 } catch (Symfony\Component\HttpKernel\Exception\HttpException $e) {
     if ($e->getStatusCode() !== 403) throw $e;
 }
-echo "PASS: case-insensitive Organization search across table/grid and Structure; all search fields, existing filters, bound values and company isolation preserved.\n";
+// Older tenant tables do not have archive columns. The directory still loads their active records.
+Schema::table('designations', fn ($table) => $table->dropColumn('archived_at'));
+Schema::table('departments', fn ($table) => $table->dropColumn('archived_at'));
+$viewer = (new User)->forceFill(['id' => 9, 'company_id' => 1, 'role' => 'admin']);
+Auth::guard('web')->setUser($viewer);
+foreach ([[], ['search' => 'Ananya']] as $filters) {
+    $request = Request::create('/organization', 'GET', $filters);
+    $request->setUserResolver(fn () => $viewer);
+    $data = $controller->index($request)->getData();
+    if ($data['designations']->pluck('name')->all() !== ['Developer'] || array_column($data['treePayload']['nodes'], 'id') !== [1]) {
+        throw new RuntimeException('Organization lost a designation or tree member on a legacy tenant.');
+    }
+    if ($filters && ($data['departments']->pluck('dpt_name')->all() !== ['Engineering']
+        || $data['departmentGroups']->pluck('dpt_name')->all() !== ['Engineering'])) {
+        throw new RuntimeException('Organization lost its department data on a legacy tenant.');
+    }
+}
+
+echo "PASS: Organization search, filters, company isolation, and support for tenants without archive columns.\n";

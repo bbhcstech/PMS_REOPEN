@@ -511,11 +511,157 @@
     #events-page .gallery-overlay-count { color: #fff !important; -webkit-text-fill-color: currentColor !important; }
     #events-page .gallery-overlay-count .bx { color: inherit !important; -webkit-text-fill-color: currentColor !important; }
 
-    #events-page #eventCalendar { padding: clamp(10px, 2vw, 24px); }
-    #events-page #eventCalendar .fc-toolbar-title { color: var(--ev-ink) !important; -webkit-text-fill-color: currentColor !important; }
-    #events-page #eventCalendar .fc-button { background: var(--ev-soft) !important; border-color: var(--ev-control) !important; color: var(--ev-ink) !important; -webkit-text-fill-color: currentColor !important; box-shadow: none !important; }
-    #events-page #eventCalendar .fc-button:not(:disabled):is(.fc-button-active, :hover) { background: var(--ev-accent-soft) !important; border-color: var(--ev-accent) !important; color: var(--ev-accent) !important; }
+    #events-page #eventCalendar {
+        --fc-border-color: var(--ev-border);
+        --fc-page-bg-color: var(--ev-surface);
+        --fc-neutral-bg-color: var(--ev-soft);
+        --fc-today-bg-color: rgba(88, 64, 173, 0.06);
+        padding: clamp(12px, 2vw, 24px);
+    }
+    :is([data-pms-theme="dark"], [data-theme="dark"], [data-bs-theme="dark"], .dark, .dark-mode) #events-page #eventCalendar {
+        --fc-today-bg-color: rgba(109, 80, 194, 0.16);
+    }
+    #events-page #eventCalendar .fc-toolbar-title {
+        color: var(--ev-ink) !important;
+        -webkit-text-fill-color: currentColor !important;
+        font-size: clamp(1.05rem, 1.8vw, 1.35rem) !important;
+        font-weight: 750 !important;
+        letter-spacing: -0.02em;
+    }
+    #events-page #eventCalendar .fc-button {
+        background: var(--ev-soft) !important;
+        border: 1px solid var(--ev-control) !important;
+        border-radius: 9px !important;
+        padding: 7px 14px !important;
+        color: var(--ev-ink) !important;
+        -webkit-text-fill-color: currentColor !important;
+        box-shadow: none !important;
+        font-size: .8125rem !important;
+        font-weight: 650 !important;
+        transition: background-color .15s ease, border-color .15s ease, color .15s ease;
+    }
+    #events-page #eventCalendar .fc-button:not(:disabled):hover {
+        background: var(--ev-accent-soft) !important;
+        border-color: var(--ev-accent) !important;
+        color: var(--ev-accent) !important;
+    }
+    #events-page #eventCalendar .fc-button:not(:disabled):is(.fc-button-active, :active) {
+        background: var(--ev-primary) !important;
+        border-color: var(--ev-primary) !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
     #events-page #eventCalendar .fc-icon { color: inherit !important; -webkit-text-fill-color: currentColor !important; }
+
+    /* Grid headers, day cells, and today indicator */
+    #events-page #eventCalendar .fc-scrollgrid {
+        border-radius: 12px !important;
+        overflow: hidden;
+        border-color: var(--ev-border) !important;
+    }
+    #events-page #eventCalendar .fc-col-header-cell {
+        background: var(--ev-soft) !important;
+        border-color: var(--ev-border) !important;
+    }
+    #events-page #eventCalendar .fc-col-header-cell-cushion {
+        padding: 10px 6px !important;
+        font-size: .78rem !important;
+        font-weight: 700 !important;
+        letter-spacing: .04em;
+        text-transform: uppercase;
+        color: var(--ev-muted) !important;
+        -webkit-text-fill-color: var(--ev-muted) !important;
+        text-decoration: none !important;
+    }
+    #events-page #eventCalendar .fc-daygrid-day-number {
+        padding: 7px 9px !important;
+        font-size: .84rem !important;
+        font-weight: 650 !important;
+        color: var(--ev-ink) !important;
+        -webkit-text-fill-color: var(--ev-ink) !important;
+        text-decoration: none !important;
+    }
+    #events-page #eventCalendar .fc-daygrid-day-other .fc-daygrid-day-number {
+        color: var(--ev-muted) !important;
+        -webkit-text-fill-color: var(--ev-muted) !important;
+        opacity: .55;
+    }
+    #events-page #eventCalendar .fc-daygrid-day.fc-day-today .fc-daygrid-day-number {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 26px;
+        height: 26px;
+        margin: 5px 6px 2px;
+        padding: 0 7px !important;
+        border-radius: 999px;
+        background: var(--ev-primary);
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+    #events-page #eventCalendar td.fc-daygrid-day {
+        transition: background-color .15s ease;
+    }
+    #events-page #eventCalendar td.fc-daygrid-day:hover {
+        background: rgba(88, 64, 173, 0.025);
+    }
+
+    /* Solid calendar event pills/cards: force crisp white text in both light and dark mode */
+    #events-page #eventCalendar :is(.fc-daygrid-block-event, .fc-h-event, .fc-timegrid-event) {
+        border: none !important;
+        border-radius: 9px !important;
+        margin: 2px 4px 4px !important;
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.12);
+        transition: transform .16s ease, box-shadow .16s ease;
+    }
+    #events-page #eventCalendar :is(.fc-daygrid-block-event, .fc-h-event, .fc-timegrid-event):hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 14px rgba(15, 23, 42, 0.18);
+    }
+    #events-page #eventCalendar :is(.fc-daygrid-block-event, .fc-h-event, .fc-timegrid-event):not(.event-calendar-has-banner) {
+        padding: 3px 7px !important;
+    }
+    #events-page #eventCalendar :is(
+        .fc-daygrid-block-event,
+        .fc-daygrid-block-event *,
+        .fc-h-event,
+        .fc-h-event *,
+        .fc-timegrid-event,
+        .fc-timegrid-event *,
+        .event-calendar-has-banner,
+        .event-calendar-has-banner *
+    ) {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+    #events-page #eventCalendar .fc-daygrid-dot-event {
+        border-radius: 7px !important;
+        padding: 3px 6px !important;
+        margin: 1px 4px !important;
+    }
+    #events-page #eventCalendar .fc-daygrid-dot-event,
+    #events-page #eventCalendar .fc-daygrid-dot-event :is(.fc-event-title, .fc-event-time) {
+        color: var(--ev-ink) !important;
+        -webkit-text-fill-color: var(--ev-ink) !important;
+    }
+    #events-page #eventCalendar .fc-daygrid-more-link {
+        color: var(--ev-accent) !important;
+        -webkit-text-fill-color: var(--ev-accent) !important;
+        font-weight: 700;
+        font-size: .78rem;
+    }
+    #events-page #eventCalendar .fc-popover {
+        border-radius: 12px !important;
+        border: 1px solid var(--ev-border) !important;
+        background: var(--ev-surface) !important;
+        box-shadow: var(--ev-shadow) !important;
+    }
+    #events-page #eventCalendar .fc-popover-header {
+        background: var(--ev-soft) !important;
+        color: var(--ev-ink) !important;
+        border-bottom: 1px solid var(--ev-border) !important;
+        font-weight: 700;
+    }
 
     .events-section.modal :is(.modal-content, .event-meta-card) { border-radius: 14px !important; border: 1px solid var(--ev-border) !important; }
     .events-section.modal .modal-header.text-white { background: linear-gradient(112deg, #302345, #53366f) !important; }

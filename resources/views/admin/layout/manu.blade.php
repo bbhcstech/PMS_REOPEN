@@ -67,45 +67,51 @@
     $timerTasks = $tasks;
 
     if ($isEmployeeUser) {
-        $assignedWorkProjects = Project::withCount(['tasks' => function ($query) use ($userId) {
-                $query->where(function ($taskQuery) use ($userId) {
+        if ($canSeeModule('projects')) {
+            $assignedWorkProjects = Project::withCount(['tasks' => function ($query) use ($userId) {
+                    $query->where(function ($taskQuery) use ($userId) {
+                        $taskQuery->whereHas('assignees', function ($assignees) use ($userId) {
+                            $assignees->where('users.id', $userId);
+                        })->orWhereRaw('FIND_IN_SET(?, assigned_to)', [$userId]);
+                    });
+                }])
+                ->where(function ($query) use ($userId) {
+                    $query->whereHas('users', function ($members) use ($userId) {
+                        $members->where('users.id', $userId);
+                    })->orWhereHas('tasks', function ($taskQuery) use ($userId) {
+                        $taskQuery->whereHas('assignees', function ($assignees) use ($userId) {
+                            $assignees->where('users.id', $userId);
+                        })->orWhereRaw('FIND_IN_SET(?, assigned_to)', [$userId]);
+                    });
+                })
+                ->latest()
+                ->take(5)
+                ->get();
+        }
+
+        if ($canSeeModule('tasks')) {
+            $assignedWorkTasks = Task::with('project')
+                ->where(function ($taskQuery) use ($userId) {
                     $taskQuery->whereHas('assignees', function ($assignees) use ($userId) {
                         $assignees->where('users.id', $userId);
                     })->orWhereRaw('FIND_IN_SET(?, assigned_to)', [$userId]);
-                });
-            }])
-            ->where(function ($query) use ($userId) {
-                $query->whereHas('users', function ($members) use ($userId) {
-                    $members->where('users.id', $userId);
-                })->orWhereHas('tasks', function ($taskQuery) use ($userId) {
-                    $taskQuery->whereHas('assignees', function ($assignees) use ($userId) {
-                        $assignees->where('users.id', $userId);
-                    })->orWhereRaw('FIND_IN_SET(?, assigned_to)', [$userId]);
-                });
-            })
-            ->latest()
-            ->take(5)
-            ->get();
+                })
+                ->latest()
+                ->take(5)
+                ->get();
+        }
 
-        $assignedWorkTasks = Task::with('project')
-            ->where(function ($taskQuery) use ($userId) {
-                $taskQuery->whereHas('assignees', function ($assignees) use ($userId) {
-                    $assignees->where('users.id', $userId);
-                })->orWhereRaw('FIND_IN_SET(?, assigned_to)', [$userId]);
-            })
-            ->latest()
-            ->take(5)
-            ->get();
-
-        $assignedWorkTickets = Ticket::with('project')
-            ->where(function ($ticketQuery) use ($userId) {
-                $ticketQuery->where('agent_id', $userId)
-                    ->orWhere('requester_id', $userId);
-            })
-            ->whereNotIn('status', ['resolved', 'closed'])
-            ->latest()
-            ->take(5)
-            ->get();
+        if ($canSeeModule('tickets') && ! \App\Support\TicketAccess::hiddenForCurrentUser()) {
+            $assignedWorkTickets = Ticket::with('project')
+                ->where(function ($ticketQuery) use ($userId) {
+                    $ticketQuery->where('agent_id', $userId)
+                        ->orWhere('requester_id', $userId);
+                })
+                ->whereNotIn('status', ['resolved', 'closed'])
+                ->latest()
+                ->take(5)
+                ->get();
+        }
 
         $timerProjects = Project::where(function ($query) use ($userId) {
                 $query->whereHas('users', function ($members) use ($userId) {
@@ -492,12 +498,12 @@
                         @if(\App\Services\WorkforceAccess::isAdmin(auth()->user()))
                         @if($canSeeModule('attendance') && (!\App\Services\WorkforceAccess::isAuthority(auth()->user()) || \App\Services\WorkforceAccess::canManageLeaves(auth()->user())))
                         @if($canSeeModule('higher-level-attendance'))
-                        <li class="menu-item {{ request()->routeIs('admin.authority-attendance') ? 'active' : '' }}"><a href="{{ route('admin.authority-attendance', ['view' => 'team']) }}" class="menu-link"><div class="text-truncate">Higher-level attendance</div></a></li>
+                        <li class="menu-item {{ request()->routeIs('admin.authority-attendance') ? 'active' : '' }}"><a href="{{ route('admin.authority-attendance', ['view' => 'team']) }}" class="menu-link"><div class="text-truncate">HR Attendance</div></a></li>
                         @endif
                         @endif
                         @if($canSeeModule('leaves'))
                         @if($canSeeModule('higher-level-leaves'))
-                        <li class="menu-item {{ request()->routeIs('admin.authority-leaves') ? 'active' : '' }}"><a href="{{ route('admin.authority-leaves') }}" class="menu-link"><div class="text-truncate">Higher-level leaves</div></a></li>
+                        <li class="menu-item {{ request()->routeIs('admin.authority-leaves') ? 'active' : '' }}"><a href="{{ route('admin.authority-leaves') }}" class="menu-link"><div class="text-truncate">HR Leave</div></a></li>
                         @endif
                         @endif
                         @endif
@@ -1304,35 +1310,43 @@
                                 <li><span class="dropdown-item-text text-muted small">No assigned tasks.</span></li>
                             @endforelse
 
+                            @if($canSeeModule('tickets') && ! \App\Support\TicketAccess::hiddenForCurrentUser())
                             <li><hr class="dropdown-divider my-1"></li>
                             <li class="dropdown-header text-uppercase fw-bold">Tickets</li>
                             @forelse($assignedWorkTickets as $ticketItem)
+                                @php
+                                    $canUpdateAssignedTicket = (\App\Support\TicketAccess::canManage() || (int) $ticketItem->agent_id === (int) $userId)
+                                        && (auth()->user()?->hasModulePermission('tickets', 'edit') ?? false);
+                                @endphp
                                 <li class="px-3 py-2">
                                     <div class="d-flex justify-content-between gap-2">
                                         <a class="text-decoration-none flex-grow-1" href="{{ route('tickets.show', $ticketItem->id) }}">
                                             <div class="fw-semibold text-truncate">#{{ $ticketItem->id }} {{ $ticketItem->subject }}</div>
-                                            <small class="text-muted">{{ $ticketItem->project?->name ?? 'No project' }} · {{ ucfirst($ticketItem->status) }}</small>
+                                            <small class="text-muted">{{ $ticketItem->project?->name ?? 'No project' }} · {{ \App\Models\Ticket::statusLabel($ticketItem->status) }}</small>
                                         </a>
                                     </div>
                                     <div class="d-flex gap-1 mt-2">
-                                        <form method="POST" action="{{ route('tickets.change-status') }}" class="d-inline">
-                                            @csrf
-                                            <input type="hidden" name="ticketId" value="{{ $ticketItem->id }}">
-                                            <input type="hidden" name="status" value="pending">
-                                            <button type="submit" class="btn btn-sm btn-outline-primary py-1 px-2">Start Progress</button>
-                                        </form>
-                                        <form method="POST" action="{{ route('tickets.change-status') }}" class="d-inline">
-                                            @csrf
-                                            <input type="hidden" name="ticketId" value="{{ $ticketItem->id }}">
-                                            <input type="hidden" name="status" value="resolved">
-                                            <button type="submit" class="btn btn-sm btn-outline-success py-1 px-2">End</button>
-                                        </form>
+                                        @if($canUpdateAssignedTicket)
+                                            <form method="POST" action="{{ route('tickets.change-status') }}" class="d-inline">
+                                                @csrf
+                                                <input type="hidden" name="ticketId" value="{{ $ticketItem->id }}">
+                                                <input type="hidden" name="status" value="in_progress">
+                                                <button type="submit" class="btn btn-sm btn-outline-primary py-1 px-2">Start Progress</button>
+                                            </form>
+                                            <form method="POST" action="{{ route('tickets.change-status') }}" class="d-inline">
+                                                @csrf
+                                                <input type="hidden" name="ticketId" value="{{ $ticketItem->id }}">
+                                                <input type="hidden" name="status" value="resolved">
+                                                <button type="submit" class="btn btn-sm btn-outline-success py-1 px-2">End</button>
+                                            </form>
+                                        @endif
                                         <a href="{{ route('tickets.show', $ticketItem->id) }}" class="btn btn-sm btn-outline-secondary py-1 px-2">Details</a>
                                     </div>
                                 </li>
                             @empty
                                 <li><span class="dropdown-item-text text-muted small">No active tickets.</span></li>
                             @endforelse
+                            @endif
                         </ul>
                     </li>
                   </div>

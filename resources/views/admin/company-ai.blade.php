@@ -9,10 +9,11 @@
     $canAsk = $configured || $supportsLocalAnswers;
     $assistantIntro = $assistantDescription ?? 'Ask anything about your workspace — holidays, office timings, attendance, leave, tasks, events, your team or how to do something. Answers come from live company records you are allowed to see.';
 @endphp
+@include('partials.ai-assistant-mark-styles')
 <main id="company-ai-page" data-live-preserve class="{{ ($assistantLayout ?? '') === 'layouts.superadmin' ? 'company-ai-platform' : '' }}">
     <section class="cai-shell" aria-labelledby="assistant-display-name">
         <header class="cai-head">
-            <div class="cai-orb" aria-hidden="true">
+            <div class="cai-orb pms-ai-assistant-mark" aria-hidden="true">
                 <img src="{{ $assistantLogo }}" alt="" width="44" height="44">
             </div>
             <div class="cai-head-text">
@@ -33,7 +34,7 @@
 
         <div class="cai-stream" id="company-ai-conversation" aria-live="polite">
             <div class="cai-welcome" id="company-ai-welcome">
-                <div class="cai-orb is-large" aria-hidden="true">
+                <div class="cai-orb pms-ai-assistant-mark is-large" aria-hidden="true">
                     <img src="{{ $assistantLogo }}" alt="" width="64" height="64">
                 </div>
                 <h2>Hello{{ auth()->user()?->name ? ', ' . strtok(auth()->user()->name, ' ') : '' }}! How can I help today?</h2>
@@ -116,8 +117,7 @@
     #company-ai-page .cai-shell::before { content: ''; position: absolute; inset: 0 0 auto 0; height: 220px; background: radial-gradient(600px 200px at 15% -40px, rgba(47, 107, 255, .14), transparent 70%), radial-gradient(500px 200px at 90% -60px, rgba(139, 92, 246, .14), transparent 70%); pointer-events: none; }
 
     #company-ai-page .cai-head { position: relative; display: flex; align-items: center; gap: 14px; padding: 18px 22px; border-bottom: 1px solid var(--cai-border); }
-    #company-ai-page .cai-orb { width: 44px; height: 44px; flex-shrink: 0; border-radius: 50%; display: grid; place-items: center; overflow: hidden; background: #141a2a; box-shadow: 0 8px 20px rgba(47, 107, 255, .3); }
-    #company-ai-page .cai-orb img { display: block; width: 100%; height: 100%; object-fit: cover; transform: translateY(11%) scale(1.8); }
+    #company-ai-page .cai-orb { width: 44px; height: 44px; flex-shrink: 0; box-shadow: 0 0 0 2px rgb(96 135 233 / .14), 0 5px 12px rgb(47 107 255 / .20); }
     #company-ai-page .cai-orb.is-large { width: 64px; height: 64px; }
     #company-ai-page .cai-orb.is-small { width: 32px; height: 32px; box-shadow: none; }
     #company-ai-page .cai-head-text { min-width: 0; flex: 1; }

@@ -71,7 +71,8 @@ class OrganizationDirectoryController extends Controller
 
         $companies = \App\Services\TenantScope::visibleCompanies();
         $designationColumns = array_flip(Schema::connection($tenantConnection)->getColumnListing('designations'));
-        $designations = Designation::whereNull('archived_at')
+        $designations = Designation::query()
+            ->when(isset($designationColumns['archived_at']), fn ($q) => $q->whereNull('archived_at'))
             ->when(isset($designationColumns['level']), fn ($q) => $q->orderByDesc('level'))
             ->orderBy('name')
             ->get();
@@ -139,7 +140,8 @@ class OrganizationDirectoryController extends Controller
                 ->paginate((int) $request->input('per_page', 15))
                 ->withQueryString();
 
-            $departments = Department::whereNull('archived_at')
+            $departments = Department::query()
+                ->when(isset($departmentColumns['archived_at']), fn ($q) => $q->whereNull('archived_at'))
                 ->when(isset($departmentColumns['dpt_name']), fn ($q) => $q->orderBy('dpt_name'), fn ($q) => $q->orderBy('id'))
                 ->get();
 
@@ -181,7 +183,7 @@ class OrganizationDirectoryController extends Controller
             };
 
             $departmentGroups = Department::query()
-                ->whereNull('archived_at')
+                ->when(isset($departmentColumns['archived_at']), fn ($q) => $q->whereNull('archived_at'))
                 ->when($request->filled('department_id'), fn ($q) => $q->where('id', $request->department_id))
                 ->whereHas('employeeDetails', $employeeDetailFilter)
                 ->with([
