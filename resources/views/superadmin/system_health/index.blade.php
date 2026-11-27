@@ -1776,7 +1776,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function triggerCheck() {
         manualRefreshBtn.disabled = true;
-        manualRefreshBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Refreshing...';
+        manualRefreshBtn.textContent = 'Refreshing...';
 
         fetch("{{ Route::has('super-admin.system-health.check') ? route('super-admin.system-health.check') : (Route::has('superadmin.system-health.check') ? route('superadmin.system-health.check') : url('/super-admin/system-health/check')) }}", {
             method: 'POST',
@@ -2091,7 +2091,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (retestDiagBtn) {
         retestDiagBtn.addEventListener('click', function() {
             const consoleLog = document.getElementById('diagConsoleLog');
-            consoleLog.innerHTML = `<div><span style="color: #eab308;"><i class="fas fa-spinner fa-spin"></i> Running live database check...</span></div>`;
+            consoleLog.innerHTML = `<div><span style="color: #eab308;">Running live database check...</span></div>`;
             retestDiagBtn.disabled = true;
             fetch("{{ route('super-admin.system-health.check') }}", {
                 method: 'POST',

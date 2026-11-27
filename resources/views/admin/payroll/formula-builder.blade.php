@@ -272,7 +272,7 @@ document.getElementById('validateBtn').addEventListener('click', function() {
 
     const btn = this;
     btn.disabled = true;
-    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Validating...';
+    btn.textContent = 'Validating...';
 
     fetch('{{ route('payroll.formula-builder.validate') }}', {
         method: 'POST',

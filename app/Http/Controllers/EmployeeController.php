@@ -175,8 +175,22 @@ class EmployeeController extends Controller
                 return true;
             });
 
+        $pendingOnboardingCount = 0;
+        try {
+            $appTable = (new \App\Models\EmployeeOnboardingApplication)->getTable();
+            $appConn = (new \App\Models\EmployeeOnboardingApplication)->getConnectionName() ?: 'tenant';
+            if (Schema::connection($appConn)->hasTable($appTable)) {
+                $pendingOnboardingCount = \App\Models\EmployeeOnboardingApplication::where('status', \App\Models\EmployeeOnboardingApplication::STATUS_PENDING_REVIEW)
+                    ->when($selectedCompanyId, fn ($q) => $q->where('company_id', $selectedCompanyId))
+                    ->count();
+            }
+        } catch (\Throwable $e) {
+            $pendingOnboardingCount = 0;
+        }
+
         return view('admin.employees.index', [
             'employees' => $employees,
+            'pendingOnboardingCount' => $pendingOnboardingCount,
             'companyEmployeeTotal' => $selectedCompanyId ? app(\App\Services\CompanyEmployeeDirectory::class)->count($selectedCompanyId) : $employees->count(),
             'companies' => $companies,
             'companyStats' => $companyStats,

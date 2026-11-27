@@ -106,6 +106,8 @@
                 sync(match, next);
                 anchor = match.nextSibling;
             } else {
+                // Skip cloning elements whose unique ID is already mounted outside this live region (e.g. portals/modals moved to body).
+                if (next.nodeType === 1 && next.id && document.getElementById(next.id)) continue;
                 match = next.cloneNode(true);
                 if (match.nodeType === 1) match.querySelectorAll('script').forEach(script => script.remove());
                 current.insertBefore(match, anchor);
@@ -139,9 +141,15 @@
             if (wrapper) (replacement.closest('.table-responsive') || replacement).replaceWith(wrapper.cloneNode(true));
         });
     }
+    function hasActiveOverlay() {
+        return Boolean(
+            document.body?.classList.contains('modal-open') ||
+            document.querySelector('.modal.show, .modal.showing, .modal-backdrop, .offcanvas.show, .drawer-overlay.active, .drawer-overlay.open, .modal-overlay.active, .modal-overlay.show, .plan-modal-backdrop.open, .dropdown-menu.show, .pms-table-export.is-open')
+        );
+    }
     async function refresh() {
         if (busy || stopped) return;
-        if (document.hidden || document.body.classList.contains('modal-open') || document.querySelector('.modal.show, .modal.showing, .offcanvas.show, .drawer-overlay.active, .drawer-overlay.open, .modal-overlay.active, .modal-overlay.show, .plan-modal-backdrop.open, .dropdown-menu.show, .pms-table-export.is-open')) { timer = setTimeout(refresh, 5000); return; }
+        if (document.hidden || hasActiveOverlay()) { timer = setTimeout(refresh, 5000); return; }
         busy = true;
         const url = location.href;
         try {
@@ -152,7 +160,7 @@
             const page = new DOMParser().parseFromString(await response.text(), 'text/html');
             const fresh = page.querySelector('[data-live-records]');
             if (!fresh || fresh.dataset.liveIdentity !== region.dataset.liveIdentity) { stopped = true; return; }
-            if (location.href !== url || !region.isConnected) return;
+            if (location.href !== url || !region.isConnected || hasActiveOverlay()) return;
             const focused = document.activeElement;
             const selection = focused && typeof focused.selectionStart === 'number'
                 ? [focused.selectionStart, focused.selectionEnd] : null;

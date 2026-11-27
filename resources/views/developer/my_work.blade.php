@@ -170,7 +170,6 @@
 
         <div id="modalContentArea">
             <div style="text-align: center; padding: 48px; color: var(--slate-muted);">
-                <i class="bx bx-loader-alt bx-spin" style="font-size: 36px; color: var(--primary);"></i>
                 <p style="margin-top: 12px; font-size: 13.5px; font-weight: 600;">Loading task details...</p>
             </div>
         </div>

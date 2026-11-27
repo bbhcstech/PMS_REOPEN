@@ -72,6 +72,34 @@ Route::delete('employees/{id}/permanent', [EmployeeController::class, 'deletePer
 Route::post('employees/{id}/restore', [EmployeeController::class, 'restore'])
     ->name('employees.restore');
 
+// Employee Self-Onboarding Applications & HR Review Workflow
+Route::prefix('employees/onboarding')->name('employees.onboarding.')->group(function () {
+    Route::get('/', [\App\Http\Controllers\Admin\EmployeeOnboardingController::class, 'index'])->name('index');
+    Route::get('/{application}/review', [\App\Http\Controllers\Admin\EmployeeOnboardingController::class, 'review'])
+        ->whereNumber('application')->name('review');
+    Route::post('/{application}/approve', [\App\Http\Controllers\Admin\EmployeeOnboardingController::class, 'approve'])
+        ->whereNumber('application')->name('approve');
+    Route::post('/{application}/request-correction', [\App\Http\Controllers\Admin\EmployeeOnboardingController::class, 'requestCorrection'])
+        ->whereNumber('application')->name('request-correction');
+    Route::post('/{application}/reject', [\App\Http\Controllers\Admin\EmployeeOnboardingController::class, 'reject'])
+        ->whereNumber('application')->name('reject');
+    Route::post('/{application}/resend-activation', [\App\Http\Controllers\Admin\EmployeeOnboardingController::class, 'resendActivation'])
+        ->whereNumber('application')->name('resend-activation');
+    Route::get('/{application}/documents/{type}', [\App\Http\Controllers\Admin\EmployeeOnboardingController::class, 'previewDocument'])
+        ->whereNumber('application')->whereIn('type', ['profile_picture', 'cv_file', 'government_id_card'])->name('document');
+});
+
+Route::prefix('employees/invitations')->name('employees.invitations.')->group(function () {
+    Route::post('/{invitation}/resend', [\App\Http\Controllers\Admin\EmployeeOnboardingController::class, 'resendInvitation'])
+        ->whereNumber('invitation')->name('resend');
+    Route::post('/{invitation}/regenerate', [\App\Http\Controllers\Admin\EmployeeOnboardingController::class, 'regenerateLink'])
+        ->whereNumber('invitation')->name('regenerate');
+    Route::post('/{invitation}/revoke', [\App\Http\Controllers\Admin\EmployeeOnboardingController::class, 'revokeInvitation'])
+        ->whereNumber('invitation')->name('revoke');
+    Route::get('/{invitation}/copy-link', [\App\Http\Controllers\Admin\EmployeeOnboardingController::class, 'copyLink'])
+        ->whereNumber('invitation')->name('copy-link');
+});
+
 Route::get('employees/org-tree', [EmployeeController::class, 'orgTree'])
     ->name('employees.org-tree');
 Route::get('employees/org-tree/{employee}/profile', [EmployeeController::class, 'orgTreeProfile'])

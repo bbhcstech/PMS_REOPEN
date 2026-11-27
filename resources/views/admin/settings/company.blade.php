@@ -1364,7 +1364,7 @@
                 const btn = document.getElementById('btnConfirmReset');
                 if (btn) {
                     btn.disabled = true;
-                    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1.5"></i> Resetting...';
+                    btn.textContent = 'Resetting...';
                 }
             });
         }

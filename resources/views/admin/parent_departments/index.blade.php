@@ -1426,27 +1426,8 @@
 
     /* Archive button loading state */
     #parentDepartmentPage .delete-btn.loading {
-        position: relative;
-        color: transparent !important;
         pointer-events: none;
-    }
-
-    #parentDepartmentPage .delete-btn.loading::after {
-        content: '';
-        position: absolute;
-        width: 16px;
-        height: 16px;
-        top: 50%;
-        left: 50%;
-        margin: -8px 0 0 -8px;
-        border: 2px solid #dc2626;
-        border-top-color: transparent;
-        border-radius: 50%;
-        animation: pdSpin 0.7s linear infinite;
-    }
-
-    @keyframes pdSpin {
-        to { transform: rotate(360deg); }
+        opacity: 0.6;
     }
 
     /* Responsive */
@@ -1731,7 +1712,6 @@ $(document).ready(function() {
         }
 
         const originalHtml = deleteBtn.html();
-        deleteBtn.html('<i class="fas fa-spinner fa-spin"></i>');
         deleteBtn.prop('disabled', true);
         deleteBtn.addClass('loading');
 
@@ -1798,7 +1778,7 @@ $(document).ready(function() {
         const deleteBtn = $(this);
         const originalText = deleteBtn.html();
 
-        deleteBtn.html('<i class="fas fa-spinner fa-spin me-1"></i> Archiving...');
+        deleteBtn.text('Archiving...');
         deleteBtn.prop('disabled', true);
 
         $.ajax({

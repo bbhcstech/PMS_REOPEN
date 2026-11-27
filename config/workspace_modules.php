@@ -113,6 +113,8 @@ $modules['my-documents']['route_prefixes'] = ['my-documents'];
 $modules['my-payslips']['route_prefixes'] = ['my-payslips'];
 $modules['events']['route_prefixes'] = ['events'];
 $modules['community']['route_prefixes'] = ['community'];
+$modules['employees']['route_prefixes'] = ['employees'];
+$modules['employees']['view_routes'] = ['employees.onboarding.index', 'employees.onboarding.review', 'employees.onboarding.document', 'employees.invitations.copy-link'];
 $modules['recruitment']['route_prefixes'] = ['recruitment'];
 // GET routes that only need "view" even though their name says download/export
 // (e.g. the job requirement PDF that staff download to share for referrals).

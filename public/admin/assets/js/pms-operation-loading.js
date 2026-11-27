@@ -7,24 +7,8 @@
     function ignored(element) { return element && element.closest('[data-pms-loading="off"]'); }
     function updateProgress() {
         clearTimeout(progressTimer);
-        var active = states.size || navigation;
-        if (!active) {
-            if (progress) progress.hidden = true;
-            if (announcement) announcement.textContent = '';
-            return;
-        }
-        // Fast operations finish without flashing a page-level indicator.
-        progressTimer = setTimeout(function () {
-            if (!document.body || (!states.size && !navigation)) return;
-            if (!progress) {
-                progress = document.createElement('div'); progress.id = 'pms-operation-progress';
-                progress.setAttribute('aria-hidden', 'true'); document.body.appendChild(progress);
-                announcement = document.createElement('div'); announcement.className = 'pms-operation-announcement';
-                announcement.setAttribute('role', 'status'); announcement.setAttribute('aria-live', 'polite');
-                document.body.appendChild(announcement);
-            }
-            progress.hidden = false; announcement.textContent = 'Loading. Please wait.';
-        }, 120);
+        if (progress) progress.hidden = true;
+        if (announcement) announcement.textContent = '';
     }
     function begin(element, disable) {
         if (!element || ignored(element)) return function () {};
@@ -33,11 +17,7 @@
             state = { count: 0, busy: element.getAttribute('aria-busy'), disabled: element.disabled,
                 ownsDisabled: false, inline: false };
             states.set(element, state);
-            element.setAttribute('aria-busy', 'true'); element.setAttribute('data-pms-operation-busy', '');
-            // Existing module spinners retain their own labels and presentation.
-            if (!element.matches('input,select,textarea') && !element.querySelector('.spinner-border,.spinner-grow,[data-loading-spinner],.fa-spinner,.bx-loader')) {
-                element.classList.add('pms-operation-inline'); state.inline = true;
-            }
+            element.setAttribute('aria-busy', 'true');
         }
         if (disable && 'disabled' in element && !element.disabled) {
             element.disabled = true; state.ownsDisabled = true;
@@ -56,8 +36,6 @@
             if (--state.count > 0) return;
             if (state.ownsDisabled) element.disabled = state.disabled;
             if (state.busy === null) element.removeAttribute('aria-busy'); else element.setAttribute('aria-busy', state.busy);
-            element.removeAttribute('data-pms-operation-busy');
-            if (state.inline) element.classList.remove('pms-operation-inline');
             states.delete(element); updateProgress();
         };
     }
@@ -87,8 +65,6 @@
             state.count = 1;
             if (state.ownsDisabled) element.disabled = state.disabled;
             if (state.busy === null) element.removeAttribute('aria-busy'); else element.setAttribute('aria-busy', state.busy);
-            element.removeAttribute('data-pms-operation-busy');
-            if (state.inline) element.classList.remove('pms-operation-inline');
         });
         states.clear(); forms.clear(); requestForms.clear(); updateProgress();
     }

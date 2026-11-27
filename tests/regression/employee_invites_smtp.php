@@ -131,14 +131,20 @@ try {
     Mail::fake();
     $response = $controller->sendInvite(inviteRequest('/employees/send-invite', ['email' => 'MAILTO: New@Example.test ', 'message' => 'Welcome aboard']));
     inviteCheck($response->getStatusCode() === 200, 'Configured invitation failed');
-    inviteCheck(Mail::sent(EmployeeInvite::class, fn ($mail) => $mail->hasTo('new@example.test') && $mail->messageText === 'Welcome aboard' && $mail->companyName === 'Fixture Company')->count() === 1, 'Invitation recipient/content incorrect');
-    $invited = User::where('email', 'new@example.test')->firstOrFail();
-    inviteCheck($invited->employeeDetail?->employee_id === 'FIXTURE-COMPANY-EMP-0001', 'Employee profile/ID missing');
-    $email = new EmployeeInvite($invited, 'Welcome aboard', EmployeeInviteController::inviteUrl($invited, 1), 'Fixture Company');
-    $html = $email->render();
-    inviteCheck(str_contains($html, 'Welcome aboard') && str_contains($html, 'invite/employee'), 'Invitation email template failed');
+    inviteCheck(Mail::sent(\App\Mail\EmployeeOnboardingInvitationMail::class, fn ($mail) => $mail->hasTo('new@example.test') && $mail->personalMessage === 'Welcome aboard' && $mail->company?->name === 'Fixture Company')->count() === 1, 'Invitation recipient/content incorrect');
+    inviteCheck(!User::where('email', 'new@example.test')->exists(), 'Invitation must not immediately create an official user account');
+    $invited = \App\Models\EmployeeInvitation::where('email', 'new@example.test')->firstOrFail();
+    $html = (new \App\Mail\EmployeeOnboardingInvitationMail(
+        \App\Models\Central\Company::on('central')->find(1),
+        $response->getData(true)['url'],
+        'Welcome aboard',
+        $invited->expires_at,
+        'new@example.test',
+        false
+    ))->render();
+    inviteCheck(str_contains($html, 'Welcome aboard') && str_contains($html, '/onboarding/'), 'Invitation email template failed');
 
-    // SMTP failure must not leave a partial account or report success.
+    // SMTP failure must not leave an active invitation or user account.
     $fake = Mail::getFacadeRoot();
     Mail::swap(new class {
         public function forgetMailers() {}
@@ -146,32 +152,39 @@ try {
         public function send($mail) { throw new RuntimeException('Simulated transport failure'); }
     });
     $response = $controller->sendInvite(inviteRequest('/employees/send-invite', ['email' => 'failure@example.test']));
-    inviteCheck($response->getStatusCode() === 500 && !User::where('email', 'failure@example.test')->exists(), 'Failed send kept an account');
+    inviteCheck($response->getStatusCode() === 500 && !User::where('email', 'failure@example.test')->exists() && !\App\Models\EmployeeInvitation::where('email', 'failure@example.test')->exists(), 'Failed send kept an account or invitation');
     Mail::swap($fake);
 
     AppSetting::where('key', 'mail_mailer')->update(['value' => 'log']);
     $response = $controller->generateInviteLink(inviteRequest('/employees/invite-link', ['email' => 'link@example.test']));
     inviteCheck($response->getStatusCode() === 200, 'Manual invitation requires SMTP');
     $link = $response->getData(true)['url'];
-    $request = inviteRequest($link, [], 'GET');
-    inviteCheck(URL::hasValidSignature($request), 'Generated link signature invalid');
-    parse_str(parse_url($link, PHP_URL_QUERY), $query);
-    inviteCheck($query['expires'] > now()->addDays(6)->timestamp && $query['expires'] <= now()->addDays(7)->timestamp, 'Link expiry not seven days');
-    $linkUser = User::where('email', 'link@example.test')->firstOrFail();
+    inviteCheck(str_contains($link, '/onboarding/'), 'Manual invitation link did not point to self-onboarding route');
+    $linkInv = \App\Models\EmployeeInvitation::where('email', 'link@example.test')->firstOrFail();
+    inviteCheck($linkInv->expires_at->greaterThan(now()->addHours(71)) && $linkInv->expires_at->lessThanOrEqualTo(now()->addHours(73)), 'Default onboarding expiry should be 72 hours');
+
+    // Verify signed account activation route (used after HR approval) still enforces signature & single-use
+    $linkUser = User::create([
+        'name' => 'Approved Candidate', 'email' => 'approved@example.test', 'password' => Hash::make('TempRandom#99'),
+        'company_id' => 1, 'role' => 'employee', 'login_allowed' => 1,
+    ]);
+    $activationLink = EmployeeInviteController::inviteUrl($linkUser, 1);
+    $request = inviteRequest($activationLink, [], 'GET');
+    inviteCheck(URL::hasValidSignature($request), 'Activation link signature invalid');
     $accept = new EmployeeInviteController;
     $view = $accept->show($request, 1, $linkUser->id);
-    inviteCheck($view->getData()['invalid'] === false, 'Valid link cannot open onboarding');
+    inviteCheck($view->getData()['invalid'] === false, 'Valid activation link cannot open password setup');
     $submitUrl = $view->getData()['submitUrl'];
     $request = inviteRequest($submitUrl, ['name' => 'Invited Employee', 'password' => 'Fixture@12345', 'password_confirmation' => 'Fixture@12345']);
     $accept->complete($request, 1, $linkUser->id);
     inviteCheck(Hash::check('Fixture@12345', $linkUser->fresh()->password), 'Onboarding password not saved');
-    $response = $accept->show(inviteRequest($link, [], 'GET'), 1, $linkUser->id);
-    inviteCheck($response->getStatusCode() === 410, 'Used invitation link can be reused');
-    inviteCheck(!URL::hasValidSignature(inviteRequest(str_replace('company=1', 'company=2', $link).'&changed=1', [], 'GET')), 'Tampered signature accepted');
+    $response = $accept->show(inviteRequest($activationLink, [], 'GET'), 1, $linkUser->id);
+    inviteCheck($response->getStatusCode() === 410, 'Used activation link can be reused');
+    inviteCheck(!URL::hasValidSignature(inviteRequest(str_replace('company=1', 'company=2', $activationLink).'&changed=1', [], 'GET')), 'Tampered signature accepted');
 
     Auth::guard('web')->setUser($actor);
-    $response = $controller->generateInviteLink(inviteRequest('/employees/invite-link', ['email' => 'new@example.test']));
-    inviteCheck($response->getStatusCode() === 422, 'Manual link could reset an existing account');
+    $response = $controller->generateInviteLink(inviteRequest('/employees/invite-link', ['email' => 'approved@example.test']));
+    inviteCheck($response->getStatusCode() === 422, 'Manual link could invite an already existing employee');
     $actor->role = 'employee';
     try {
         $controller->generateInviteLink(inviteRequest('/employees/invite-link', ['email' => 'blocked@example.test']));

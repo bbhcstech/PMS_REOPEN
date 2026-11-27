@@ -2755,7 +2755,7 @@
     function openTaskHistoryModal(taskId) {
         const modal = document.getElementById('taskHistoryModal');
         const body = document.getElementById('taskHistoryTimelineBody');
-        body.innerHTML = '<div style="text-align:center; padding: 28px; color: var(--slate-muted);"><i class="bx bx-loader-alt bx-spin" style="font-size: 32px; color: var(--primary);"></i><br><span style="margin-top: 8px; display: inline-block;">Loading activity timeline...</span></div>';
+        body.innerHTML = '<div style="text-align:center; padding: 28px; color: var(--slate-muted);"><span style="margin-top: 8px; display: inline-block;">Loading activity timeline...</span></div>';
         modal.classList.add('active');
 
         fetch('{{ url('/super-admin/developers/tasks') }}/' + taskId + '/history')

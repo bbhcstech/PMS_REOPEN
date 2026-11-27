@@ -1163,17 +1163,15 @@
 @endpush
 
 @section('content')
-<div id="pms-events-page" class="events-section pms-events-page">
+<div id="events-page" class="container-xxl flex-grow-1 container-p-y events-section">
 
     {{-- HEADER BLOCK --}}
-    <div class="pms-events-topbar">
-        <div class="pms-events-title-wrap">
-            <div class="pms-events-title-icon" aria-hidden="true">
-                <i class="bx bx-calendar-event"></i>
-            </div>
+    <header class="events-hero">
+        <div class="events-heading">
+            <span class="events-heading-icon" aria-hidden="true"><i class="bx bx-calendar-event"></i></span>
             <div>
-                <h4 class="pms-events-title">Events &amp; Memories</h4>
-                <p class="pms-events-sub">Company events, activities, and photo archive</p>
+                <h1>Events &amp; Memories</h1>
+                <p>Company activities, schedules, and photo memories.</p>
             </div>
         </div>
         @if($canManage)
@@ -1207,61 +1205,22 @@
     @endif
 
     {{-- KPI SUMMARY CARDS --}}
-    <div class="row g-3 mb-4">
-        <div class="col-sm-6 col-lg-3">
-            <div class="card kpi-card p-3">
-                <div class="d-flex align-items-center justify-content-between">
-                    <div>
-                        <span class="pms-kpi-label d-block">Total Events</span>
-                        <h3 class="fw-bold mb-0 mt-1">{{ number_format($totalEvents) }}</h3>
-                    </div>
-                    <div class="kpi-icon-box bg-label-primary text-primary">
-                        <i class="bx bx-calendar-event"></i>
-                    </div>
-                </div>
-            </div>
+    <dl class="events-kpis" aria-label="Event totals">
+        <div class="kpi-card">
+            <dt>Total Events</dt>
+            <dd>{{ number_format($totalEvents) }} <span class="kpi-icon-box" aria-hidden="true"><i class="bx bx-calendar-event"></i></span></dd>
         </div>
-
-        <div class="col-sm-6 col-lg-3">
-            <div class="card kpi-card p-3">
-                <div class="d-flex align-items-center justify-content-between">
-                    <div>
-                        <span class="pms-kpi-label d-block">Upcoming Events</span>
-                        <h3 class="fw-bold mb-0 mt-1">{{ number_format($upcomingEvents) }}</h3>
-                    </div>
-                    <div class="kpi-icon-box bg-label-success text-success">
-                        <i class="bx bx-time-five"></i>
-                    </div>
-                </div>
-            </div>
+        <div class="kpi-card event-kpi-upcoming">
+            <dt>Upcoming Events</dt>
+            <dd>{{ number_format($upcomingEvents) }} <span class="kpi-icon-box" aria-hidden="true"><i class="bx bx-time-five"></i></span></dd>
         </div>
-
-        <div class="col-sm-6 col-lg-3">
-            <div class="card kpi-card p-3">
-                <div class="d-flex align-items-center justify-content-between">
-                    <div>
-                        <span class="pms-kpi-label d-block">Today's Events</span>
-                        <h3 class="fw-bold mb-0 mt-1">{{ number_format($todayEvents) }}</h3>
-                    </div>
-                    <div class="kpi-icon-box bg-label-warning text-warning">
-                        <i class="bx bx-calendar-check"></i>
-                    </div>
-                </div>
-            </div>
+        <div class="kpi-card event-kpi-today">
+            <dt>Today's Events</dt>
+            <dd>{{ number_format($todayEvents) }} <span class="kpi-icon-box" aria-hidden="true"><i class="bx bx-calendar-check"></i></span></dd>
         </div>
-
-        <div class="col-sm-6 col-lg-3">
-            <div class="card kpi-card p-3">
-                <div class="d-flex align-items-center justify-content-between">
-                    <div>
-                        <span class="pms-kpi-label d-block">Past Events</span>
-                        <h3 class="fw-bold mb-0 mt-1">{{ number_format($pastEvents) }}</h3>
-                    </div>
-                    <div class="kpi-icon-box bg-label-secondary text-secondary">
-                        <i class="bx bx-history"></i>
-                    </div>
-                </div>
-            </div>
+        <div class="kpi-card event-kpi-past">
+            <dt>Past Events</dt>
+            <dd>{{ number_format($pastEvents) }} <span class="kpi-icon-box" aria-hidden="true"><i class="bx bx-history"></i></span></dd>
         </div>
     </div>
 
@@ -1273,14 +1232,14 @@
                     {{-- Search Input --}}
                     <div class="filter-search-box">
                         <div class="input-group">
-                            <span class="input-group-text border-end-0"><i class="bx bx-search"></i></span>
-                            <input type="text" name="search" class="form-control border-start-0" placeholder="Search title, desc, location..." value="{{ request('search') }}">
+                            <span class="input-group-text bg-light border-end-0" aria-hidden="true"><i class="bx bx-search"></i></span>
+                            <input type="text" name="search" class="form-control border-start-0 bg-light" aria-label="Search events" placeholder="Search events" value="{{ request('search') }}">
                         </div>
                     </div>
 
                     {{-- Event Type Filter --}}
                     <div class="filter-select-box">
-                        <select name="event_type" class="form-select">
+                        <select name="event_type" class="form-select bg-light" aria-label="Event type">
                             <option value="all">All Types</option>
                             @foreach($eventTypes as $type)
                                 <option value="{{ $type }}" {{ request('event_type') == $type ? 'selected' : '' }}>{{ $type }}</option>
@@ -1290,7 +1249,7 @@
 
                     {{-- Status Filter --}}
                     <div class="filter-select-box">
-                        <select name="status" class="form-select">
+                        <select name="status" class="form-select bg-light" aria-label="Event status">
                             <option value="all">All Statuses</option>
                             <option value="published" {{ request('status') == 'published' ? 'selected' : '' }}>Published</option>
                             @if($canManage)
@@ -1303,7 +1262,7 @@
 
                     {{-- Time Filter --}}
                     <div class="filter-select-box">
-                        <select name="time_filter" class="form-select">
+                        <select name="time_filter" class="form-select bg-light" aria-label="Event date range">
                             <option value="">All Time</option>
                             <option value="upcoming" {{ request('time_filter') == 'upcoming' ? 'selected' : '' }}>Upcoming</option>
                             <option value="today" {{ request('time_filter') == 'today' ? 'selected' : '' }}>Today</option>
@@ -1312,14 +1271,13 @@
                     </div>
 
                     {{-- Filter Action Buttons --}}
-                    <div class="d-flex align-items-center gap-2 flex-wrap ms-auto">
-                        <button type="submit" class="btn pms-events-btn-primary filter-btn-nowrap">
+                    <div class="events-filter-actions">
+                        <button type="submit" class="btn btn-primary filter-btn-nowrap">
                             <i class="bx bx-filter-alt"></i> Apply
                         </button>
-                        <a href="{{ route('events.index') }}" class="btn pms-events-btn-reset filter-btn-nowrap">
+                        <a href="{{ route('events.index') }}" class="btn btn-outline-secondary filter-btn-nowrap">
                             <i class="bx bx-reset"></i> Reset
                         </a>
-
                     </div>
                 </div>
                 <div class="pms-events-switcher filter-btn-group events-view-switcher" role="group" aria-label="Event view">
@@ -1493,8 +1451,8 @@
                 <p>Company events and activities will appear here.</p>
                 @if($canManage)
                     <div>
-                        <button type="button" class="btn pms-events-btn-primary" onclick="openCreateModal()">
-                            <i class="bx bx-plus"></i> Create Event
+                        <button type="button" class="btn btn-primary events-primary-button" onclick="openCreateModal()">
+                            <i class="bx bx-plus" aria-hidden="true"></i> Create Event
                         </button>
                     </div>
                 @endif
@@ -1766,10 +1724,8 @@
                 </button>
             </div>
             <div class="modal-body p-4" id="detailModalBody">
-                <div class="text-center py-5">
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
+                <div class="text-center py-5 text-muted">
+                    Loading...
                 </div>
             </div>
         </div>
@@ -2246,7 +2202,7 @@
     function showEventDetails(id) {
         const modalEl = document.getElementById('eventDetailsModal');
         const modalBody = document.getElementById('detailModalBody');
-        modalBody.innerHTML = `<div class="text-center py-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>`;
+        modalBody.innerHTML = `<div class="text-center py-5 text-muted">Loading...</div>`;
 
         let modal = bootstrap.Modal.getInstance(modalEl);
         if (!modal) {

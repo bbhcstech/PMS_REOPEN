@@ -102,8 +102,11 @@ async function run() {
     origin = 'http://127.0.0.1:' + server.address().port;
     browser = spawn('C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', ['--headless', '--disable-gpu', '--no-first-run', '--disable-background-networking', '--use-fake-device-for-media-stream', '--use-fake-ui-for-media-stream', '--remote-debugging-port=0', '--user-data-dir=' + temp, 'about:blank'], { stdio: 'ignore', windowsHide: true });
     const portFile = path.join(temp, 'DevToolsActivePort');
-    for (let i = 0; i < 100 && !fs.existsSync(portFile); i++) await delay(100);
-    const port = fs.readFileSync(portFile, 'utf8').split('\n')[0];
+    let port = '';
+    for (let i = 0; i < 100 && !port; i++) {
+        try { if (fs.existsSync(portFile)) port = fs.readFileSync(portFile, 'utf8').split('\n')[0].trim(); } catch (_) {}
+        if (!port) await delay(100);
+    }
     const targets = await fetch('http://127.0.0.1:' + port + '/json/list').then(r => r.json());
     socket = new WebSocket(targets.find(target => target.type === 'page').webSocketDebuggerUrl);
     await new Promise(resolve => socket.addEventListener('open', resolve, { once: true }));
@@ -133,17 +136,17 @@ async function run() {
             await send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [point] });
             await send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
         } else await click('fetch');
-        await delay(150);
-        check(await busy('fetch'), width + ': spinner remains during response body download');
-        check(await evaluate(`!document.getElementById('pms-operation-progress').hidden && getComputedStyle(document.getElementById('fetch'),'::after').content!=='none'`), width + ': page and inline indicators visible');
+        await delay(40);
+        check(await busy('fetch'), width + ': operation state tracked during response body download');
+        check(await evaluate(`!document.getElementById('pms-operation-progress') && getComputedStyle(document.getElementById('fetch'),'::after').content==='none'`), width + ': no spinner or progress bar rendered');
         const during = await evaluate(`(()=>{const e=document.getElementById('fetch'),r=e.getBoundingClientRect();return [r.width,r.height,e.textContent,getComputedStyle(e).backgroundColor]})()`);
         assert.deepEqual(during, before, width + ': button dimensions, label and color unchanged'); checks++;
         await click('fetch'); check(await evaluate('calls===1'), width + ': duplicate request blocked');
         await waitFor('done===1'); check(!await busy('fetch'), width + ': success restored button');
-        await click('instant'); await delay(150); check(!await busy('instant'), width + ': instant toggle has no spinner');
-        await click('hash'); await delay(150); check(!await busy('hash'), width + ': hash link has no spinner');
+        await click('instant'); await delay(100); check(!await busy('instant'), width + ': instant toggle has no spinner');
+        await click('hash'); await delay(100); check(!await busy('hash'), width + ': hash link has no spinner');
         for (const id of ['fail', 'http', 'abort']) {
-            await click(id); await waitFor(`!document.getElementById('${id}').hasAttribute('data-pms-operation-busy')`);
+            await click(id); await waitFor(`document.getElementById('${id}').getAttribute('aria-busy')!=='true'`);
             check(!await busy(id), width + ': ' + id + ' restores state');
         }
         await waitFor('errors===3');
@@ -151,7 +154,7 @@ async function run() {
         await click('xhr'); check(await busy('xhr'), width + ': XHR loading'); await delay(400); check(!await busy('xhr'), width + ': XHR reset');
         await click('parallel'); await delay(380); check(await busy('parallel'), width + ': parallel request remains busy'); await delay(300); check(!await busy('parallel'), width + ': final request resets');
         await click('chain'); await delay(450); check(await busy('chain'), width + ': chained API request remains busy'); await delay(550); check(!await busy('chain'), width + ': chained API requests reset');
-        await click('xhrFail'); await waitFor(`!document.getElementById('xhrFail').hasAttribute('data-pms-operation-busy')`); check(!await busy('xhrFail'), width + ': XHR failure reset');
+        await click('xhrFail'); await waitFor(`document.getElementById('xhrFail').getAttribute('aria-busy')!=='true'`); check(!await busy('xhrFail'), width + ': XHR failure reset');
         await click('custom'); check(await busy('custom'), width + ': custom async operation'); await delay(350); check(!await busy('custom'), width + ': custom reset');
         await click('existing'); check(await evaluate(`!document.getElementById('existing').classList.contains('pms-operation-inline')`), width + ': existing spinner reused'); await delay(350);
         const startPosts = posts; await click('deal');

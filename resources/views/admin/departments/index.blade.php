@@ -1538,7 +1538,7 @@ $(document).ready(function() {
         const deleteBtn = $(this);
         const originalText = deleteBtn.html();
 
-        deleteBtn.html('<i class="fas fa-spinner fa-spin me-1"></i> Archiving...');
+        deleteBtn.text('Archiving...');
         deleteBtn.prop('disabled', true);
 
         $.ajax({

@@ -96,6 +96,10 @@
             <a href="{{ route('employees.create') }}" class="btn directory-button directory-button-primary">
                 <i class="fas fa-user-plus" aria-hidden="true"></i>Add Employee
             </a>
+            <a href="{{ route('employees.onboarding.index', $selectedCompanyId ? ['company_id' => $selectedCompanyId] : []) }}"
+               class="btn directory-button" id="addNewEmployeeBtn" title="Review employee self-onboarding applications">
+                <i class="fas fa-inbox" aria-hidden="true"></i>Add New Employee ({{ $pendingOnboardingCount ?? 0 }})
+            </a>
             <button type="button" class="btn directory-button" data-bs-toggle="modal" data-bs-target="#inviteModal">
                 <i class="fas fa-envelope" aria-hidden="true"></i>Invite
             </button>
@@ -164,290 +168,7 @@
     @endif
     @endif
 
-    {{-- Invite Modal - FUNCTIONALITY UNCHANGED --}}
-    <div class="modal fade" id="inviteModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">
-                        <i class="fas fa-paper-plane me-2"></i>
-                        Invite to {{ session('current_company_name') ?: (auth()->user()?->company?->name ?? config('app.name')) }}
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <!-- Nav Tabs -->
-                    <ul class="nav nav-tabs" id="inviteTabs" role="tablist">
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="invite-email-tab" data-bs-toggle="tab" data-bs-target="#invite-email" type="button" role="tab">
-                                <i class="fas fa-envelope me-2"></i>Invite by Email
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="invite-link-tab" data-bs-toggle="tab" data-bs-target="#invite-link" type="button" role="tab">
-                                <i class="fas fa-link me-2"></i>Invite by Link
-                            </button>
-                        </li>
-                    </ul>
-
-                    <div class="tab-content" id="inviteTabsContent">
-                        <!-- Invite by Email -->
-                        <div class="tab-pane fade show active" id="invite-email" role="tabpanel">
-                            <div class="alert alert-info bg-light">
-                                <i class="fas fa-info-circle text-primary me-2"></i>
-                                Employees will receive an email to log in and update their profile.
-                            </div>
-
-                            <form id="inviteEmailForm">
-                                @csrf
-                                <div class="mb-3">
-                                    <label class="form-label fw-bold">Email Address <span class="text-danger">*</span></label>
-                                    <div class="input-group">
-                                        <span class="input-group-text"><i class="fas fa-at"></i></span>
-                                        <input type="email" name="email" id="inviteEmail" class="form-control" placeholder="e.g. name@example.com" autocomplete="email" required>
-                                    </div>
-                                </div>
-                                <div class="mb-4">
-                                    <label class="form-label fw-bold">Personal Message <span class="text-muted">(Optional)</span></label>
-                                    <textarea name="message" id="inviteMessage" class="form-control" rows="3" placeholder="Add a welcome message..."></textarea>
-                                </div>
-                            </form>
-                        </div>
-
-                        <!-- Invite by Link -->
-                        <div class="tab-pane fade" id="invite-link" role="tabpanel">
-                            <div class="alert alert-light border">
-                                <i class="fas fa-link text-primary me-2"></i>
-                                Create a signed link for one employee. It expires in 7 days and can be used once. Email delivery is not required.
-                            </div>
-
-                            <div class="mb-4">
-                                <label class="form-label fw-bold" for="inviteLinkEmail">Employee Email Address *</label>
-                                <input type="email" class="form-control" id="inviteLinkEmail" placeholder="name@example.com" autocomplete="email" required>
-                            </div>
-
-                            <div class="d-flex justify-content-end">
-                                <button type="button" class="btn btn-primary px-4" id="createLinkBtn">
-                                    <i class="fas fa-plus-circle me-2"></i>Generate Invite Link
-                                </button>
-                            </div>
-
-                            <div class="mt-4" id="linkContainer" style="display:none;">
-                                <div class="alert alert-success border-0 bg-success bg-opacity-10">
-                                    <i class="fas fa-check-circle text-success me-2"></i>
-                                    <span class="fw-medium">Invitation link created successfully!</span>
-                                    <small class="d-block mt-1">This link will expire in 7 days</small>
-                                </div>
-
-                                <div class="input-group">
-                                    <input type="text" class="form-control border-end-0" id="inviteLink" readonly>
-                                    <button class="btn btn-outline-primary" type="button" id="copyLinkBtn">
-                                        <i class="fas fa-copy" aria-hidden="true"></i><span class="visually-hidden">Copy invitation link</span>
-                                    </button>
-                                    <button class="btn btn-outline-success" type="button" id="shareLinkBtn" title="Share via Email">
-                                        <i class="fas fa-share-alt"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" form="inviteEmailForm" id="sendInviteBtn" class="btn btn-primary">
-                        <span id="sendInviteSpinner" class="spinner-border spinner-border-sm me-2 d-none"></span>
-                        <i class="fas fa-paper-plane me-2"></i>Send Invitation
-                    </button>
-                </div>
-                <div class="mt-3 px-3" id="inviteEmailAlert" style="display:none;"></div>
-            </div>
-        </div>
-    </div>
-
-    {{-- Blocked Delete Modal - FUNCTIONALITY UNCHANGED --}}
-    <div class="modal fade" id="blockedDeleteModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header bg-warning text-dark">
-                    <h5 class="modal-title">
-                        <i class="fas fa-exclamation-triangle me-2"></i>
-                        Delete Restricted
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body text-center py-4">
-                    <i class="fas fa-users-slash fa-4x text-warning mb-3"></i>
-                    <h5 id="blockedEmployeeName" class="fw-bold mb-2"></h5>
-                    <p class="text-muted mb-0" id="blockedEmployeeReason"></p>
-                </div>
-                <div class="modal-footer border-0 justify-content-center">
-                    <a href="#" id="blocked-view-subordinates" class="btn btn-outline-primary">
-                        <i class="fas fa-eye me-2"></i>View Team Members
-                    </a>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    {{-- Delete Employee: locked (needs inactive / no team) or typed confirmation for a permanent delete --}}
-    <div class="modal fade emp-lifecycle-modal" id="employeeDeleteModal" tabindex="-1" aria-labelledby="employeeDeleteTitle" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="elm-head">
-                    <span class="elm-icon" id="employeeDeleteIcon" aria-hidden="true"><i class="fas fa-trash-can"></i></span>
-                    <div class="elm-head-text">
-                        <h5 class="modal-title" id="employeeDeleteTitle">Delete employee</h5>
-                        <p id="employeeDeleteSubtitle">This permanently removes the employee.</p>
-                    </div>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="elm-body">
-                    <div class="elm-person">
-                        <span class="elm-avatar" id="employeeDeleteInitials" aria-hidden="true">E</span>
-                        <div>
-                            <strong id="employeeDeleteName">Employee</strong>
-                            <small id="employeeDeleteMeta"></small>
-                        </div>
-                        <span class="elm-pill" id="employeeDeleteStatus">Inactive</span>
-                    </div>
-
-                    <ol class="elm-steps" aria-label="Delete requirements">
-                        <li id="employeeDeleteStepInactive"><span class="elm-step-mark" aria-hidden="true"></span><span>Employee is marked <strong>Inactive</strong></span></li>
-                        <li id="employeeDeleteStepTeam"><span class="elm-step-mark" aria-hidden="true"></span><span>No team members report to this employee</span></li>
-                    </ol>
-
-                    <div class="elm-locked" id="employeeDeleteLocked">
-                        <p id="employeeDeleteLockedText"></p>
-                    </div>
-
-                    <form id="employeeDeleteForm" method="POST" action="#" class="elm-confirm">
-                        @csrf
-                        @method('DELETE')
-                        <div class="elm-warning">
-                            <i class="fas fa-triangle-exclamation" aria-hidden="true"></i>
-                            <div>
-                                <strong>This cannot be undone.</strong>
-                                The employee's login, profile and their personal records (attendance, leave and similar history) are removed for good.
-                                To keep history instead, use <em>Archive Employee</em> — it can be restored later.
-                            </div>
-                        </div>
-                        <label for="employeeDeleteConfirm" class="elm-label">Type <code id="employeeDeleteCode"></code> to confirm</label>
-                        <input type="text" id="employeeDeleteConfirm" name="confirm_code" class="elm-input" autocomplete="off" spellcheck="false" required>
-                    </form>
-                </div>
-                <div class="elm-foot">
-                    <button type="button" class="elm-btn is-ghost" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="elm-btn is-warning" id="employeeDeleteMakeInactive"><i class="fas fa-user-clock" aria-hidden="true"></i> Mark Inactive</button>
-                    <button type="submit" form="employeeDeleteForm" class="elm-btn is-danger" id="employeeDeleteSubmit" disabled><i class="fas fa-trash-can" aria-hidden="true"></i> Delete permanently</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    {{-- Mark Inactive: step 1 before an employee can be deleted --}}
-    <div class="modal fade emp-lifecycle-modal" id="employeeInactiveModal" tabindex="-1" aria-labelledby="employeeInactiveTitle" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <form class="modal-content" id="employeeInactiveForm" method="POST" action="#">
-                @csrf
-                <div class="elm-head">
-                    <span class="elm-icon is-warning" aria-hidden="true"><i class="fas fa-user-clock"></i></span>
-                    <div class="elm-head-text">
-                        <h5 class="modal-title" id="employeeInactiveTitle">Mark employee inactive</h5>
-                        <p>Inactive employees can then be archived or deleted.</p>
-                    </div>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="elm-body">
-                    <div class="elm-person">
-                        <span class="elm-avatar" id="employeeInactiveInitials" aria-hidden="true">E</span>
-                        <div>
-                            <strong id="employeeInactiveName">Employee</strong>
-                            <small id="employeeInactiveMeta"></small>
-                        </div>
-                        <span class="elm-pill is-active">Active</span>
-                    </div>
-                    <label for="employeeInactiveDate" class="elm-label">Exit date</label>
-                    <input type="date" id="employeeInactiveDate" name="exit_date" class="elm-input" max="{{ now()->toDateString() }}" value="{{ now()->toDateString() }}" required>
-                    <p class="elm-hint">The employee's status changes to Inactive with this exit date. You can reactivate them later by editing their profile.</p>
-                </div>
-                <div class="elm-foot">
-                    <button type="button" class="elm-btn is-ghost" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="elm-btn is-warning" id="employeeInactiveSubmit"><i class="fas fa-user-clock" aria-hidden="true"></i> Mark Inactive</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <style>
-        .emp-lifecycle-modal {
-            --elm-surface: #ffffff; --elm-soft: #f3f5fc; --elm-ink: #10142c; --elm-muted: #545d82; --elm-border: rgba(16, 20, 44, .1);
-            --elm-danger: #dc2626; --elm-danger-soft: #fef2f2; --elm-danger-ink: #991b1b; --elm-warn: #d97706; --elm-warn-soft: #fffbeb;
-            --elm-ok: #059669; --elm-ok-soft: #ecfdf5; --elm-primary: #2f6bff;
-        }
-        :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body.dark, body.dark-mode) .emp-lifecycle-modal {
-            --elm-surface: #0f1530; --elm-soft: #141b3d; --elm-ink: #eef1fb; --elm-muted: #9aa3c7; --elm-border: rgba(238, 241, 251, .12);
-            --elm-danger: #f87171; --elm-danger-soft: rgba(239, 68, 68, .12); --elm-danger-ink: #fecaca; --elm-warn: #fbbf24; --elm-warn-soft: rgba(245, 158, 11, .12);
-            --elm-ok: #34d399; --elm-ok-soft: rgba(16, 185, 129, .12);
-        }
-        .emp-lifecycle-modal .modal-dialog { max-width: 500px; }
-        .emp-lifecycle-modal .modal-content { border: 1px solid var(--elm-border) !important; border-radius: 20px !important; background: var(--elm-surface) !important; color: var(--elm-ink) !important; box-shadow: 0 24px 60px rgba(15, 23, 42, .25) !important; overflow: hidden; }
-        .emp-lifecycle-modal .elm-head { display: flex; align-items: flex-start; gap: 14px; padding: 20px 22px 12px; }
-        .emp-lifecycle-modal .elm-icon { width: 46px; height: 46px; flex-shrink: 0; border-radius: 14px; display: grid; place-items: center; background: var(--elm-danger-soft); }
-        .emp-lifecycle-modal .elm-icon i { font-size: 19px; color: var(--elm-danger) !important; -webkit-text-fill-color: var(--elm-danger) !important; }
-        .emp-lifecycle-modal .elm-icon.is-locked, .emp-lifecycle-modal .elm-icon.is-warning { background: var(--elm-warn-soft); }
-        .emp-lifecycle-modal .elm-icon.is-locked i, .emp-lifecycle-modal .elm-icon.is-warning i { color: var(--elm-warn) !important; -webkit-text-fill-color: var(--elm-warn) !important; }
-        .emp-lifecycle-modal .elm-head-text { flex: 1; min-width: 0; }
-        .emp-lifecycle-modal .modal-title { margin: 2px 0 0; font-size: 1.08rem; font-weight: 700; color: var(--elm-ink) !important; -webkit-text-fill-color: var(--elm-ink) !important; }
-        .emp-lifecycle-modal .elm-head-text p { margin: 3px 0 0; font-size: .84rem; color: var(--elm-muted) !important; -webkit-text-fill-color: var(--elm-muted) !important; }
-        :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body.dark, body.dark-mode) .emp-lifecycle-modal .btn-close { filter: invert(1) grayscale(1) brightness(1.6); }
-        .emp-lifecycle-modal .elm-body { padding: 6px 22px 8px; }
-        .emp-lifecycle-modal .elm-person { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1px solid var(--elm-border); border-radius: 14px; background: var(--elm-soft); }
-        .emp-lifecycle-modal .elm-avatar { width: 40px; height: 40px; flex-shrink: 0; border-radius: 50%; display: grid; place-items: center; background: linear-gradient(135deg, #2f6bff, #8b5cf6); color: #fff !important; -webkit-text-fill-color: #fff !important; font-weight: 700; font-size: .9rem; }
-        .emp-lifecycle-modal .elm-person > div { flex: 1; min-width: 0; }
-        .emp-lifecycle-modal .elm-person strong { display: block; font-size: .95rem; color: var(--elm-ink) !important; -webkit-text-fill-color: var(--elm-ink) !important; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .emp-lifecycle-modal .elm-person small { display: block; font-size: .78rem; color: var(--elm-muted) !important; -webkit-text-fill-color: var(--elm-muted) !important; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .emp-lifecycle-modal .elm-pill { flex-shrink: 0; padding: 3px 10px; border-radius: 999px; font-size: .72rem; font-weight: 700; background: var(--elm-danger-soft); color: var(--elm-danger) !important; -webkit-text-fill-color: var(--elm-danger) !important; }
-        .emp-lifecycle-modal .elm-pill.is-active { background: var(--elm-ok-soft); color: var(--elm-ok) !important; -webkit-text-fill-color: var(--elm-ok) !important; }
-        .emp-lifecycle-modal .elm-steps { list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 8px; }
-        .emp-lifecycle-modal .elm-steps li { display: flex; align-items: center; gap: 10px; font-size: .86rem; color: var(--elm-ink) !important; -webkit-text-fill-color: var(--elm-ink) !important; }
-        .emp-lifecycle-modal .elm-steps li span, .emp-lifecycle-modal .elm-steps li strong { color: inherit !important; -webkit-text-fill-color: currentColor !important; }
-        .emp-lifecycle-modal .elm-step-mark { width: 22px; height: 22px; flex-shrink: 0; border-radius: 50%; display: grid; place-items: center; border: 2px solid var(--elm-border); font-size: 11px; font-weight: 800; }
-        .emp-lifecycle-modal .elm-steps li.is-done .elm-step-mark { border-color: var(--elm-ok); background: var(--elm-ok); }
-        .emp-lifecycle-modal .elm-steps li.is-done .elm-step-mark::after { content: '✓'; color: #fff; -webkit-text-fill-color: #fff; }
-        .emp-lifecycle-modal .elm-steps li.is-todo .elm-step-mark { border-color: var(--elm-warn); }
-        .emp-lifecycle-modal .elm-steps li.is-todo .elm-step-mark::after { content: '!'; color: var(--elm-warn); -webkit-text-fill-color: var(--elm-warn); }
-        .emp-lifecycle-modal .elm-steps li.is-todo { color: var(--elm-warn) !important; -webkit-text-fill-color: var(--elm-warn) !important; font-weight: 600; }
-        .emp-lifecycle-modal .elm-locked p { margin: 14px 0 0; padding: 12px 14px; border-radius: 12px; background: var(--elm-warn-soft); font-size: .86rem; line-height: 1.55; color: var(--elm-ink) !important; -webkit-text-fill-color: var(--elm-ink) !important; }
-        .emp-lifecycle-modal .elm-warning { display: flex; gap: 10px; margin: 14px 0 0; padding: 12px 14px; border-radius: 12px; background: var(--elm-danger-soft); font-size: .84rem; line-height: 1.55; color: var(--elm-danger-ink) !important; -webkit-text-fill-color: var(--elm-danger-ink) !important; }
-        .emp-lifecycle-modal .elm-warning :is(strong, em, div) { color: inherit !important; -webkit-text-fill-color: currentColor !important; }
-        .emp-lifecycle-modal .elm-warning strong { display: block; margin-bottom: 2px; }
-        .emp-lifecycle-modal .elm-warning i { margin-top: 3px; color: var(--elm-danger) !important; -webkit-text-fill-color: var(--elm-danger) !important; }
-        .emp-lifecycle-modal .elm-label { display: block; margin: 16px 0 6px; font-size: .84rem; font-weight: 600; color: var(--elm-ink) !important; -webkit-text-fill-color: var(--elm-ink) !important; }
-        .emp-lifecycle-modal .elm-label code { padding: 1px 7px; border-radius: 6px; background: var(--elm-soft); border: 1px solid var(--elm-border); font-size: .82rem; color: var(--elm-danger) !important; -webkit-text-fill-color: var(--elm-danger) !important; }
-        .emp-lifecycle-modal .elm-input { display: block; width: 100%; height: 44px; padding: 0 14px !important; border: 1px solid var(--elm-border) !important; border-radius: 12px !important; background: var(--elm-surface) !important; color: var(--elm-ink) !important; -webkit-text-fill-color: var(--elm-ink) !important; font: inherit; outline: none; box-shadow: none !important; color-scheme: light dark; }
-        .emp-lifecycle-modal .elm-input:focus { border-color: var(--elm-primary) !important; box-shadow: 0 0 0 4px rgba(47, 107, 255, .18) !important; }
-        .emp-lifecycle-modal .elm-input.is-match { border-color: var(--elm-danger) !important; }
-        .emp-lifecycle-modal .elm-input::placeholder { color: var(--elm-muted) !important; -webkit-text-fill-color: var(--elm-muted) !important; opacity: .6; }
-        .emp-lifecycle-modal .elm-hint { margin: 8px 0 0; font-size: .8rem; line-height: 1.5; color: var(--elm-muted) !important; -webkit-text-fill-color: var(--elm-muted) !important; }
-        .emp-lifecycle-modal .elm-foot { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; padding: 16px 22px 20px; }
-        .emp-lifecycle-modal .elm-btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; height: 42px; padding: 0 18px !important; border-radius: 12px !important; border: 1px solid transparent !important; font: inherit; font-size: .88rem; font-weight: 600; cursor: pointer; width: auto !important; box-shadow: none !important; transition: filter .15s, opacity .15s; }
-        .emp-lifecycle-modal .elm-btn[hidden] { display: none !important; }
-        .emp-lifecycle-modal .elm-btn i { color: inherit !important; -webkit-text-fill-color: currentColor !important; }
-        .emp-lifecycle-modal .elm-btn.is-ghost { background: transparent !important; border-color: var(--elm-border) !important; color: var(--elm-ink) !important; -webkit-text-fill-color: var(--elm-ink) !important; }
-        .emp-lifecycle-modal .elm-btn.is-danger { background: #dc2626 !important; color: #fff !important; -webkit-text-fill-color: #fff !important; }
-        .emp-lifecycle-modal .elm-btn.is-warning { background: #d97706 !important; color: #fff !important; -webkit-text-fill-color: #fff !important; }
-        .emp-lifecycle-modal .elm-btn:hover:not(:disabled) { filter: brightness(1.08); }
-        .emp-lifecycle-modal .elm-btn:disabled { opacity: .45; cursor: not-allowed; }
-        .emp-lifecycle-modal .elm-btn:focus-visible { outline: 3px solid rgba(47, 107, 255, .4); outline-offset: 2px; }
-        .employee-dashboard .dropdown-menu .employee-delete-trigger.is-locked,
-        .employee-dashboard .dropdown-menu .employee-delete-trigger.is-locked i { color: #94a3b8 !important; -webkit-text-fill-color: #94a3b8 !important; }
-        .employee-dashboard .dropdown-menu .employee-delete-trigger.text-danger i { color: #dc2626 !important; -webkit-text-fill-color: #dc2626 !important; }
-        @media (max-width: 575.98px) {
-            .emp-lifecycle-modal .elm-foot { flex-direction: column-reverse; }
-            .emp-lifecycle-modal .elm-btn { width: 100% !important; }
-        }
-    </style>
+    {{-- Modals are pushed to @stack('modals') outside [data-live-records] and #employeeDirectoryPage (isolation: isolate) --}}
 
     {{-- Alerts Section - FUNCTIONALITY UNCHANGED --}}
     @if($errors->any())
@@ -1261,8 +982,6 @@ $(document).ready(function () {
         });
     });
 
-    // Keep Bootstrap's modal above its backdrop, outside transformed page cards.
-    document.body.appendChild(document.getElementById('inviteModal'));
     function inviteNotice(message, success = false) {
         $('#inviteEmailAlert').attr('class', 'alert mx-3 mb-3 ' + (success ? 'alert-success' : 'alert-danger'))
             .attr('role', 'status').text(message).show();
@@ -1273,6 +992,7 @@ $(document).ready(function () {
     });
 
     // Invite by email
+    let activeLinkInvitationId = null;
     $('#inviteEmailForm').on('submit', function(e) {
         e.preventDefault();
         const email = $('#inviteEmail').val().trim();
@@ -1280,7 +1000,6 @@ $(document).ready(function () {
         if (!this.reportValidity() || $('#sendInviteBtn').prop('disabled')) return;
         $('#inviteEmailAlert').hide();
         $('#sendInviteBtn').prop('disabled', true);
-        $('#sendInviteSpinner').removeClass('d-none');
 
         $.ajax({
             url: '{{ route("employees.sendInvite") }}',
@@ -1301,15 +1020,28 @@ $(document).ready(function () {
             },
             complete: function() {
                 $('#sendInviteBtn').prop('disabled', false);
-                $('#sendInviteSpinner').addClass('d-none');
             }
         });
     });
 
+    function showGeneratedLinkState(res) {
+        activeLinkInvitationId = res.invitation_id || activeLinkInvitationId;
+        $('#inviteLink').val(res.url || '');
+        if (res.status) {
+            $('#inviteLinkStatus').text(res.status);
+        }
+        if (res.expires_at) {
+            $('#inviteLinkExpiry').text('Single-use onboarding link • Expires ' + res.expires_at);
+        }
+        $('#linkContainer').show();
+    }
+
     // Generate invite link
     $('#createLinkBtn').on('click', function() {
         const input = document.getElementById('inviteLinkEmail');
-        if (!input.reportValidity() || $(this).prop('disabled')) return;
+        const emailVal = input.value.trim();
+        if (emailVal && !input.reportValidity()) return;
+        if ($(this).prop('disabled')) return;
         $('#linkContainer').hide();
         $('#inviteLink').val('');
         $('#inviteEmailAlert').hide();
@@ -1318,10 +1050,9 @@ $(document).ready(function () {
             url: '{{ route("employees.inviteLink") }}',
             type: 'POST',
             timeout: 30000,
-            data: { _token: '{{ csrf_token() }}', email: input.value.trim() },
+            data: { _token: '{{ csrf_token() }}', email: emailVal },
             success: function(res) {
-                $('#inviteLink').val(res.url);
-                $('#linkContainer').show();
+                showGeneratedLinkState(res);
                 inviteNotice(res.message, true);
             },
             error: function(xhr) {
@@ -1329,6 +1060,48 @@ $(document).ready(function () {
                 inviteNotice(errors ? Object.values(errors).flat().join(' ') : (xhr.responseJSON?.message || 'Could not create the invitation link. Please try again.'));
             },
             complete: function() { $('#createLinkBtn').prop('disabled', false); }
+        });
+    });
+
+    // Regenerate active link
+    $('#regenerateLinkBtn').on('click', function() {
+        if (!activeLinkInvitationId || $(this).prop('disabled')) return;
+        $(this).prop('disabled', true);
+        $.ajax({
+            url: '{{ url("/employees/invitations") }}/' + activeLinkInvitationId + '/regenerate',
+            type: 'POST',
+            timeout: 30000,
+            data: { _token: '{{ csrf_token() }}' },
+            success: function(res) {
+                showGeneratedLinkState(res);
+                inviteNotice(res.message, true);
+            },
+            error: function(xhr) {
+                inviteNotice(xhr.responseJSON?.message || 'Could not regenerate the invitation link.');
+            },
+            complete: function() { $('#regenerateLinkBtn').prop('disabled', false); }
+        });
+    });
+
+    // Revoke active link
+    $('#revokeLinkBtn').on('click', function() {
+        if (!activeLinkInvitationId || $(this).prop('disabled')) return;
+        $(this).prop('disabled', true);
+        $.ajax({
+            url: '{{ url("/employees/invitations") }}/' + activeLinkInvitationId + '/revoke',
+            type: 'POST',
+            timeout: 30000,
+            data: { _token: '{{ csrf_token() }}' },
+            success: function(res) {
+                $('#inviteLink').val('');
+                $('#inviteLinkStatus').text(res.status || 'Revoked');
+                $('#inviteLinkExpiry').text('This invitation link has been revoked and can no longer be used.');
+                inviteNotice(res.message, true);
+            },
+            error: function(xhr) {
+                inviteNotice(xhr.responseJSON?.message || 'Could not revoke the invitation link.');
+            },
+            complete: function() { $('#revokeLinkBtn').prop('disabled', false); }
         });
     });
 
@@ -1435,7 +1208,7 @@ $(document).ready(function () {
     deleteModalEl?.addEventListener('shown.bs.modal', () => { if ($('#employeeDeleteForm').is(':visible')) $('#employeeDeleteConfirm').trigger('focus'); });
     $('#employeeDeleteForm').on('submit', function (e) {
         if ($('#employeeDeleteSubmit').prop('disabled')) { e.preventDefault(); return; }
-        $('#employeeDeleteSubmit').prop('disabled', true).html('<i class="fas fa-spinner fa-spin" aria-hidden="true"></i> Deleting…');
+        $('#employeeDeleteSubmit').prop('disabled', true).text('Deleting…');
     });
     $('#employeeDeleteMakeInactive').on('click', function () {
         const context = deleteContext;
@@ -1448,7 +1221,7 @@ $(document).ready(function () {
         bootstrap.Modal.getOrCreateInstance(deleteModalEl).hide();
     });
     $('#employeeInactiveForm').on('submit', function () {
-        $('#employeeInactiveSubmit').prop('disabled', true).html('<i class="fas fa-spinner fa-spin" aria-hidden="true"></i> Saving…');
+        $('#employeeInactiveSubmit').prop('disabled', true).text('Saving…');
     });
 
     // Initialize
@@ -1465,25 +1238,322 @@ $(document).ready(function () {
 });
 </script>
 
+@push('modals')
+{{-- Invite Modal - FUNCTIONALITY UNCHANGED --}}
+<div class="modal fade" id="inviteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-paper-plane me-2"></i>
+                    Invite to {{ session('current_company_name') ?: (auth()->user()?->company?->name ?? config('app.name')) }}
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Nav Tabs -->
+                <ul class="nav nav-tabs" id="inviteTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="invite-email-tab" data-bs-toggle="tab" data-bs-target="#invite-email" type="button" role="tab">
+                            <i class="fas fa-envelope me-2"></i>Invite by Email
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="invite-link-tab" data-bs-toggle="tab" data-bs-target="#invite-link" type="button" role="tab">
+                            <i class="fas fa-link me-2"></i>Invite by Link
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="tab-content" id="inviteTabsContent">
+                    <!-- Invite by Email -->
+                    <div class="tab-pane fade show active" id="invite-email" role="tabpanel">
+                        <div class="alert alert-info bg-light">
+                            <i class="fas fa-info-circle text-primary me-2"></i>
+                            Invited employees receive a single-use onboarding link valid for {{ config('employee_onboarding.expiry_hours', 72) }} hours. Accounts stay pending until reviewed and approved by HR.
+                        </div>
+
+                        <form id="inviteEmailForm">
+                            @csrf
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Email Address <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-at"></i></span>
+                                    <input type="email" name="email" id="inviteEmail" class="form-control" placeholder="e.g. name@example.com" autocomplete="email" required>
+                                </div>
+                            </div>
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">Personal Message <span class="text-muted">(Optional)</span></label>
+                                <textarea name="message" id="inviteMessage" class="form-control" rows="3" placeholder="Add a welcome message..."></textarea>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Invite by Link -->
+                    <div class="tab-pane fade" id="invite-link" role="tabpanel">
+                        <div class="alert alert-light border">
+                            <i class="fas fa-link text-primary me-2"></i>
+                            Generate a single-use onboarding link (valid for {{ config('employee_onboarding.expiry_hours', 72) }} hours). Add a recipient email to lock the link to that email, or leave it blank to require email OTP verification before submission.
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold" for="inviteLinkEmail">Employee Email Address <span class="text-muted">(Optional)</span></label>
+                            <input type="email" class="form-control" id="inviteLinkEmail" placeholder="name@example.com (optional)" autocomplete="email">
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <button type="button" class="btn btn-primary px-4" id="createLinkBtn">
+                                <i class="fas fa-plus-circle me-2"></i>Generate Invitation Link
+                            </button>
+                        </div>
+
+                        <div class="mt-4" id="linkContainer" style="display:none;">
+                            <div class="alert alert-success border-0 bg-success bg-opacity-10 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                <div>
+                                    <i class="fas fa-check-circle text-success me-2"></i>
+                                    <span class="fw-medium">Invitation link ready</span>
+                                    <small class="d-block mt-1" id="inviteLinkExpiry">Single-use link • Expires in {{ config('employee_onboarding.expiry_hours', 72) }} hours</small>
+                                </div>
+                                <span class="badge bg-primary" id="inviteLinkStatus">Pending</span>
+                            </div>
+
+                            <div class="input-group mb-3">
+                                <input type="text" class="form-control border-end-0" id="inviteLink" readonly>
+                                <button class="btn btn-outline-primary" type="button" id="copyLinkBtn" title="Copy Link">
+                                    <i class="fas fa-copy me-1" aria-hidden="true"></i>Copy Link
+                                </button>
+                                <button class="btn btn-outline-success" type="button" id="shareLinkBtn" title="Share via Email">
+                                    <i class="fas fa-share-alt"></i>
+                                </button>
+                            </div>
+
+                            <div class="d-flex justify-content-end gap-2 flex-wrap">
+                                <button type="button" class="btn btn-sm btn-outline-secondary" id="regenerateLinkBtn">
+                                    <i class="fas fa-arrows-rotate me-1"></i>Regenerate Link
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-danger" id="revokeLinkBtn">
+                                    <i class="fas fa-ban me-1"></i>Revoke Link
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" form="inviteEmailForm" id="sendInviteBtn" class="btn btn-primary">
+                    <i class="fas fa-paper-plane me-2"></i>Send Invitation
+                </button>
+            </div>
+            <div class="mt-3 px-3" id="inviteEmailAlert" style="display:none;"></div>
+        </div>
+    </div>
+</div>
+
+{{-- Blocked Delete Modal - FUNCTIONALITY UNCHANGED --}}
+<div class="modal fade" id="blockedDeleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Delete Restricted
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <i class="fas fa-users-slash fa-4x text-warning mb-3"></i>
+                <h5 id="blockedEmployeeName" class="fw-bold mb-2"></h5>
+                <p class="text-muted mb-0" id="blockedEmployeeReason"></p>
+            </div>
+            <div class="modal-footer border-0 justify-content-center">
+                <a href="#" id="blocked-view-subordinates" class="btn btn-outline-primary">
+                    <i class="fas fa-eye me-2"></i>View Team Members
+                </a>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- Delete Employee: locked (needs inactive / no team) or typed confirmation for a permanent delete --}}
+<div class="modal fade emp-lifecycle-modal" id="employeeDeleteModal" tabindex="-1" aria-labelledby="employeeDeleteTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="elm-head">
+                <span class="elm-icon" id="employeeDeleteIcon" aria-hidden="true"><i class="fas fa-trash-can"></i></span>
+                <div class="elm-head-text">
+                    <h5 class="modal-title" id="employeeDeleteTitle">Delete employee</h5>
+                    <p id="employeeDeleteSubtitle">This permanently removes the employee.</p>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="elm-body">
+                <div class="elm-person">
+                    <span class="elm-avatar" id="employeeDeleteInitials" aria-hidden="true">E</span>
+                    <div>
+                        <strong id="employeeDeleteName">Employee</strong>
+                        <small id="employeeDeleteMeta"></small>
+                    </div>
+                    <span class="elm-pill" id="employeeDeleteStatus">Inactive</span>
+                </div>
+
+                <ol class="elm-steps" aria-label="Delete requirements">
+                    <li id="employeeDeleteStepInactive"><span class="elm-step-mark" aria-hidden="true"></span><span>Employee is marked <strong>Inactive</strong></span></li>
+                    <li id="employeeDeleteStepTeam"><span class="elm-step-mark" aria-hidden="true"></span><span>No team members report to this employee</span></li>
+                </ol>
+
+                <div class="elm-locked" id="employeeDeleteLocked">
+                    <p id="employeeDeleteLockedText"></p>
+                </div>
+
+                <form id="employeeDeleteForm" method="POST" action="#" class="elm-confirm">
+                    @csrf
+                    @method('DELETE')
+                    <div class="elm-warning">
+                        <i class="fas fa-triangle-exclamation" aria-hidden="true"></i>
+                        <div>
+                            <strong>This cannot be undone.</strong>
+                            The employee's login, profile and their personal records (attendance, leave and similar history) are removed for good.
+                            To keep history instead, use <em>Archive Employee</em> — it can be restored later.
+                        </div>
+                    </div>
+                    <label for="employeeDeleteConfirm" class="elm-label">Type <code id="employeeDeleteCode"></code> to confirm</label>
+                    <input type="text" id="employeeDeleteConfirm" name="confirm_code" class="elm-input" autocomplete="off" spellcheck="false" required>
+                </form>
+            </div>
+            <div class="elm-foot">
+                <button type="button" class="elm-btn is-ghost" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="elm-btn is-warning" id="employeeDeleteMakeInactive"><i class="fas fa-user-clock" aria-hidden="true"></i> Mark Inactive</button>
+                <button type="submit" form="employeeDeleteForm" class="elm-btn is-danger" id="employeeDeleteSubmit" disabled><i class="fas fa-trash-can" aria-hidden="true"></i> Delete permanently</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- Mark Inactive: step 1 before an employee can be deleted --}}
+<div class="modal fade emp-lifecycle-modal" id="employeeInactiveModal" tabindex="-1" aria-labelledby="employeeInactiveTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <form class="modal-content" id="employeeInactiveForm" method="POST" action="#">
+            @csrf
+            <div class="elm-head">
+                <span class="elm-icon is-warning" aria-hidden="true"><i class="fas fa-user-clock"></i></span>
+                <div class="elm-head-text">
+                    <h5 class="modal-title" id="employeeInactiveTitle">Mark employee inactive</h5>
+                    <p>Inactive employees can then be archived or deleted.</p>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="elm-body">
+                <div class="elm-person">
+                    <span class="elm-avatar" id="employeeInactiveInitials" aria-hidden="true">E</span>
+                    <div>
+                        <strong id="employeeInactiveName">Employee</strong>
+                        <small id="employeeInactiveMeta"></small>
+                    </div>
+                    <span class="elm-pill is-active">Active</span>
+                </div>
+                <label for="employeeInactiveDate" class="elm-label">Exit date</label>
+                <input type="date" id="employeeInactiveDate" name="exit_date" class="elm-input" max="{{ now()->toDateString() }}" value="{{ now()->toDateString() }}" required>
+                <p class="elm-hint">The employee's status changes to Inactive with this exit date. You can reactivate them later by editing their profile.</p>
+            </div>
+            <div class="elm-foot">
+                <button type="button" class="elm-btn is-ghost" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="elm-btn is-warning" id="employeeInactiveSubmit"><i class="fas fa-user-clock" aria-hidden="true"></i> Mark Inactive</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .emp-lifecycle-modal {
+        --elm-surface: #ffffff; --elm-soft: #f3f5fc; --elm-ink: #10142c; --elm-muted: #545d82; --elm-border: rgba(16, 20, 44, .1);
+        --elm-danger: #dc2626; --elm-danger-soft: #fef2f2; --elm-danger-ink: #991b1b; --elm-warn: #d97706; --elm-warn-soft: #fffbeb;
+        --elm-ok: #059669; --elm-ok-soft: #ecfdf5; --elm-primary: #2f6bff;
+    }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body.dark, body.dark-mode) .emp-lifecycle-modal {
+        --elm-surface: #0f1530; --elm-soft: #141b3d; --elm-ink: #eef1fb; --elm-muted: #9aa3c7; --elm-border: rgba(238, 241, 251, .12);
+        --elm-danger: #f87171; --elm-danger-soft: rgba(239, 68, 68, .12); --elm-danger-ink: #fecaca; --elm-warn: #fbbf24; --elm-warn-soft: rgba(245, 158, 11, .12);
+        --elm-ok: #34d399; --elm-ok-soft: rgba(16, 185, 129, .12);
+    }
+    .emp-lifecycle-modal .modal-dialog { max-width: 500px; }
+    .emp-lifecycle-modal .modal-content { border: 1px solid var(--elm-border) !important; border-radius: 20px !important; background: var(--elm-surface) !important; color: var(--elm-ink) !important; box-shadow: 0 24px 60px rgba(15, 23, 42, .25) !important; overflow: hidden; }
+    .emp-lifecycle-modal .elm-head { display: flex; align-items: flex-start; gap: 14px; padding: 20px 22px 12px; }
+    .emp-lifecycle-modal .elm-icon { width: 46px; height: 46px; flex-shrink: 0; border-radius: 14px; display: grid; place-items: center; background: var(--elm-danger-soft); }
+    .emp-lifecycle-modal .elm-icon i { font-size: 19px; color: var(--elm-danger) !important; -webkit-text-fill-color: var(--elm-danger) !important; }
+    .emp-lifecycle-modal .elm-icon.is-locked, .emp-lifecycle-modal .elm-icon.is-warning { background: var(--elm-warn-soft); }
+    .emp-lifecycle-modal .elm-icon.is-locked i, .emp-lifecycle-modal .elm-icon.is-warning i { color: var(--elm-warn) !important; -webkit-text-fill-color: var(--elm-warn) !important; }
+    .emp-lifecycle-modal .elm-head-text { flex: 1; min-width: 0; }
+    .emp-lifecycle-modal .modal-title { margin: 2px 0 0; font-size: 1.08rem; font-weight: 700; color: var(--elm-ink) !important; -webkit-text-fill-color: var(--elm-ink) !important; }
+    .emp-lifecycle-modal .elm-head-text p { margin: 3px 0 0; font-size: .84rem; color: var(--elm-muted) !important; -webkit-text-fill-color: var(--elm-muted) !important; }
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], html.dark, body[data-pms-theme="dark"], body.dark, body.dark-mode) .emp-lifecycle-modal .btn-close { filter: invert(1) grayscale(1) brightness(1.6); }
+    .emp-lifecycle-modal .elm-body { padding: 6px 22px 8px; }
+    .emp-lifecycle-modal .elm-person { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1px solid var(--elm-border); border-radius: 14px; background: var(--elm-soft); }
+    .emp-lifecycle-modal .elm-avatar { width: 40px; height: 40px; flex-shrink: 0; border-radius: 50%; display: grid; place-items: center; background: linear-gradient(135deg, #2f6bff, #8b5cf6); color: #fff !important; -webkit-text-fill-color: #fff !important; font-weight: 700; font-size: .9rem; }
+    .emp-lifecycle-modal .elm-person > div { flex: 1; min-width: 0; }
+    .emp-lifecycle-modal .elm-person strong { display: block; font-size: .95rem; color: var(--elm-ink) !important; -webkit-text-fill-color: var(--elm-ink) !important; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .emp-lifecycle-modal .elm-person small { display: block; font-size: .78rem; color: var(--elm-muted) !important; -webkit-text-fill-color: var(--elm-muted) !important; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .emp-lifecycle-modal .elm-pill { flex-shrink: 0; padding: 3px 10px; border-radius: 999px; font-size: .72rem; font-weight: 700; background: var(--elm-danger-soft); color: var(--elm-danger) !important; -webkit-text-fill-color: var(--elm-danger) !important; }
+    .emp-lifecycle-modal .elm-pill.is-active { background: var(--elm-ok-soft); color: var(--elm-ok) !important; -webkit-text-fill-color: var(--elm-ok) !important; }
+    .emp-lifecycle-modal .elm-steps { list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 8px; }
+    .emp-lifecycle-modal .elm-steps li { display: flex; align-items: center; gap: 10px; font-size: .86rem; color: var(--elm-ink) !important; -webkit-text-fill-color: var(--elm-ink) !important; }
+    .emp-lifecycle-modal .elm-steps li span, .emp-lifecycle-modal .elm-steps li strong { color: inherit !important; -webkit-text-fill-color: currentColor !important; }
+    .emp-lifecycle-modal .elm-step-mark { width: 22px; height: 22px; flex-shrink: 0; border-radius: 50%; display: grid; place-items: center; border: 2px solid var(--elm-border); font-size: 11px; font-weight: 800; }
+    .emp-lifecycle-modal .elm-steps li.is-done .elm-step-mark { border-color: var(--elm-ok); background: var(--elm-ok); }
+    .emp-lifecycle-modal .elm-steps li.is-done .elm-step-mark::after { content: '✓'; color: #fff; -webkit-text-fill-color: #fff; }
+    .emp-lifecycle-modal .elm-steps li.is-todo .elm-step-mark { border-color: var(--elm-warn); }
+    .emp-lifecycle-modal .elm-steps li.is-todo .elm-step-mark::after { content: '!'; color: var(--elm-warn); -webkit-text-fill-color: var(--elm-warn); }
+    .emp-lifecycle-modal .elm-steps li.is-todo { color: var(--elm-warn) !important; -webkit-text-fill-color: var(--elm-warn) !important; font-weight: 600; }
+    .emp-lifecycle-modal .elm-locked p { margin: 14px 0 0; padding: 12px 14px; border-radius: 12px; background: var(--elm-warn-soft); font-size: .86rem; line-height: 1.55; color: var(--elm-ink) !important; -webkit-text-fill-color: var(--elm-ink) !important; }
+    .emp-lifecycle-modal .elm-warning { display: flex; gap: 10px; margin: 14px 0 0; padding: 12px 14px; border-radius: 12px; background: var(--elm-danger-soft); font-size: .84rem; line-height: 1.55; color: var(--elm-danger-ink) !important; -webkit-text-fill-color: var(--elm-danger-ink) !important; }
+    .emp-lifecycle-modal .elm-warning :is(strong, em, div) { color: inherit !important; -webkit-text-fill-color: currentColor !important; }
+    .emp-lifecycle-modal .elm-warning strong { display: block; margin-bottom: 2px; }
+    .emp-lifecycle-modal .elm-warning i { margin-top: 3px; color: var(--elm-danger) !important; -webkit-text-fill-color: var(--elm-danger) !important; }
+    .emp-lifecycle-modal .elm-label { display: block; margin: 16px 0 6px; font-size: .84rem; font-weight: 600; color: var(--elm-ink) !important; -webkit-text-fill-color: var(--elm-ink) !important; }
+    .emp-lifecycle-modal .elm-label code { padding: 1px 7px; border-radius: 6px; background: var(--elm-soft); border: 1px solid var(--elm-border); font-size: .82rem; color: var(--elm-danger) !important; -webkit-text-fill-color: var(--elm-danger) !important; }
+    .emp-lifecycle-modal .elm-input { display: block; width: 100%; height: 44px; padding: 0 14px !important; border: 1px solid var(--elm-border) !important; border-radius: 12px !important; background: var(--elm-surface) !important; color: var(--elm-ink) !important; -webkit-text-fill-color: var(--elm-ink) !important; font: inherit; outline: none; box-shadow: none !important; color-scheme: light dark; }
+    .emp-lifecycle-modal .elm-input:focus { border-color: var(--elm-primary) !important; box-shadow: 0 0 0 4px rgba(47, 107, 255, .18) !important; }
+    .emp-lifecycle-modal .elm-input.is-match { border-color: var(--elm-danger) !important; }
+    .emp-lifecycle-modal .elm-input::placeholder { color: var(--elm-muted) !important; -webkit-text-fill-color: var(--elm-muted) !important; opacity: .6; }
+    .emp-lifecycle-modal .elm-hint { margin: 8px 0 0; font-size: .8rem; line-height: 1.5; color: var(--elm-muted) !important; -webkit-text-fill-color: var(--elm-muted) !important; }
+    .emp-lifecycle-modal .elm-foot { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; padding: 16px 22px 20px; }
+    .emp-lifecycle-modal .elm-btn { display: inline-flex !important; align-items: center; justify-content: center; gap: 7px; height: 42px; padding: 0 18px !important; border-radius: 12px !important; border: 1px solid transparent !important; font: inherit; font-size: .88rem; font-weight: 600; cursor: pointer; width: auto !important; box-shadow: none !important; transition: filter .15s, opacity .15s; }
+    .emp-lifecycle-modal .elm-btn[hidden] { display: none !important; }
+    .emp-lifecycle-modal .elm-btn i { color: inherit !important; -webkit-text-fill-color: currentColor !important; }
+    .emp-lifecycle-modal .elm-btn.is-ghost { background: transparent !important; border-color: var(--elm-border) !important; color: var(--elm-ink) !important; -webkit-text-fill-color: var(--elm-ink) !important; }
+    .emp-lifecycle-modal .elm-btn.is-danger { background: #dc2626 !important; color: #fff !important; -webkit-text-fill-color: #fff !important; }
+    .emp-lifecycle-modal .elm-btn.is-warning { background: #d97706 !important; color: #fff !important; -webkit-text-fill-color: #fff !important; }
+    .emp-lifecycle-modal .elm-btn:hover:not(:disabled) { filter: brightness(1.08); }
+    .emp-lifecycle-modal .elm-btn:disabled { opacity: .45; cursor: not-allowed; }
+    .emp-lifecycle-modal .elm-btn:focus-visible { outline: 3px solid rgba(47, 107, 255, .4); outline-offset: 2px; }
+    .employee-dashboard .dropdown-menu .employee-delete-trigger.is-locked,
+    .employee-dashboard .dropdown-menu .employee-delete-trigger.is-locked i { color: #94a3b8 !important; -webkit-text-fill-color: #94a3b8 !important; }
+    .employee-dashboard .dropdown-menu .employee-delete-trigger.text-danger i { color: #dc2626 !important; -webkit-text-fill-color: #dc2626 !important; }
+    @media (max-width: 575.98px) {
+        .emp-lifecycle-modal .elm-foot { flex-direction: column-reverse; }
+        .emp-lifecycle-modal .elm-btn { width: 100% !important; }
+    }
+</style>
+
 <!-- Quick Password Reset Modal -->
 <div class="modal fade" id="quickResetPasswordModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content rounded-4 border-0 shadow-lg">
             <div class="modal-header border-bottom-0 pb-0">
-                <h5 class="modal-title fw-bold text-dark"><i class="fas fa-key text-warning me-2"></i> Reset Employee Password</h5>
+                <h5 class="modal-title fw-bold"><i class="fas fa-key text-warning me-2"></i> Reset Employee Password</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form id="quickResetPasswordForm" method="POST">
                 @csrf
                 <div class="modal-body py-3">
-                    <p class="small text-muted mb-3">Resetting password for <strong id="quickResetEmployeeName" class="text-dark">Employee</strong>. They will receive an on-screen notification and be automatically logged out after 1 minute.</p>
+                    <p class="small text-muted mb-3">Resetting password for <strong id="quickResetEmployeeName">Employee</strong>. They will receive an on-screen notification and be automatically logged out after 1 minute.</p>
 
                     <div class="mb-3">
-                        <label class="form-label fw-bold text-dark small">New Password</label>
+                        <label class="form-label fw-bold small">New Password</label>
                         <input type="password" name="new_password" class="form-control rounded-3" placeholder="Enter new password (min 8 chars)" required minlength="8">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-bold text-dark small">Confirm New Password</label>
+                        <label class="form-label fw-bold small">Confirm New Password</label>
                         <input type="password" name="new_password_confirmation" class="form-control rounded-3" placeholder="Confirm new password" required minlength="8">
                     </div>
                 </div>
@@ -1497,6 +1567,7 @@ $(document).ready(function () {
         </div>
     </div>
 </div>
+@endpush
 
 <script>
 function openResetPasswordModal(id, name) {

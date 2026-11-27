@@ -2641,7 +2641,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!compId) return;
 
             this.disabled = true;
-            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Activating...';
+            this.textContent = 'Activating...';
 
             fetch("/super-admin/companies/" + compId + "/activate", {
                 method: 'POST',
@@ -2697,7 +2697,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!compId) return;
 
             this.disabled = true;
-            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Extending...';
+            this.textContent = 'Extending...';
 
             fetch("/super-admin/subscriptions/" + compId + "/extend", {
                 method: 'POST',
@@ -2747,7 +2747,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!compId) return;
 
             this.disabled = true;
-            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Reducing...';
+            this.textContent = 'Reducing...';
 
             fetch("/super-admin/subscriptions/" + compId + "/reduce", {
                 method: 'POST',
@@ -2864,8 +2864,6 @@ document.addEventListener('DOMContentLoaded', function() {
     if (refreshSubsBtn) {
         refreshSubsBtn.addEventListener('click', function(e) {
             e.preventDefault();
-            const icon = this.querySelector('i');
-            if (icon) icon.classList.add('fa-spin');
             window.location.reload();
         });
     }
@@ -3041,7 +3039,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const submitBtn = document.getElementById('submitAssignPlanBtn');
             if (submitBtn) {
                 submitBtn.disabled = true;
-                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating Plan...';
+                submitBtn.textContent = 'Updating Plan...';
             }
 
             const formData = new FormData(this);

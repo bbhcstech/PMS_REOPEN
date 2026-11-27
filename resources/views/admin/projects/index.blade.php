@@ -461,7 +461,7 @@
                 var originalBtnHtml = btn ? btn.innerHTML : 'Save';
                 if (btn) {
                     btn.disabled = true;
-                    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Saving...';
+                    btn.textContent = 'Saving...';
                 }
 
                 fetch('/tasks/' + taskId + '/update-status', {
@@ -3326,7 +3326,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const originalBtnHtml = btn.innerHTML;
         btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Saving...';
+        btn.textContent = 'Saving...';
 
         fetch(`{{ url('/tasks') }}/${taskId}/update-status`, {
             method: 'POST',
