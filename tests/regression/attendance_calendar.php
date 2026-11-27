@@ -114,7 +114,7 @@ $individual = $controller->index(\Illuminate\Http\Request::create('/attendance',
 checkCalendar($teamEmployee['calendar']['totals'] === $individual['calendar']['totals'], 'Table totals differ from individual calendar.');
 $template = preg_replace('/^@(extends|section|endsection).*$/m', '', file_get_contents(resource_path('views/admin/attendance/team.blade.php')));
 $html = \Illuminate\Support\Facades\Blade::render($template, $team + ['errors' => new \Illuminate\Support\ViewErrorBag]);
-checkCalendar(str_contains($html, 'employee@local.test') && str_contains($html, 'Session 2') && str_contains($html, '7h 00m') && ! str_contains($html, 'foreign@local.test'), 'Rendered table lost attendance details or leaked data.');
+checkCalendar(str_contains($html, 'employee@local.test') && str_contains($html, 'Session 2') && str_contains($html, '7h 00m') && str_contains($html, 'at-day-trigger') && str_contains($html, 'id="at-day-modal"') && ! str_contains($html, 'foreign@local.test'), 'Rendered table lost attendance details or leaked data.');
 $searched = $controller->index($teamRequest(['search' => 'LOCAL EMPLOYEE']))->getData();
 checkCalendar($searched['teamRows']->total() === 1 && $searched['teamRows'][0]['employee']->id === 3, 'Team search failed.');
 $empty = $controller->index($teamRequest(['search' => 'Foreign']))->getData();

@@ -59,7 +59,7 @@
         <div class="at-panel"><span>Recorded hours</span><strong>{{ $hours($summary['seconds']) }}</strong><small>All clock-in sessions</small></div>
     </section>
     <section class="at-panel at-register">
-        <div class="at-header"><div><h2>{{ $start->format('F Y') }}</h2><p>Scroll across for every date and monthly totals. Select a marked day for session details.</p></div>
+        <div class="at-header"><div><h2>{{ $start->format('F Y') }}</h2><p>Scroll across for every date and monthly totals. Select any day for full attendance details.</p></div>
             <nav class="at-actions" aria-label="Month navigation">
                 <a class="at-button" href="{{ $link($start->copy()->subMonth()) }}" aria-label="Previous month">&larr; Previous</a>
                 <a class="at-button" href="{{ $link($start->copy()->addMonth()) }}" aria-label="Next month">Next &rarr;</a>
@@ -80,20 +80,64 @@
                     @foreach($row['calendar']['days'] as $day)
                         @php [$code, $label] = $statuses[$day['status']] ?? ['?', ucfirst(str_replace('_', ' ', $day['status']))]; @endphp
                         <td class="{{ $day['date']->isToday() ? 'at-today' : '' }}">
-                            @if($day['daily']->isNotEmpty() || $day['holiday'] || $day['leave'])
-                            <details class="at-day"><summary aria-label="{{ $employee->name }}: {{ $day['key'] }}, {{ $label }}, {{ $hours($day['seconds']) }}"><span class="at-status at-{{ $day['status'] }}">{{ $code }}</span>@if($day['wfh'])<small>WFH</small>@endif</summary>
-                                <div class="at-detail"><strong>{{ $day['date']->format('D, j M') }} · {{ $label }}</strong><p>Total hours: {{ $hours($day['seconds']) }}</p>
-                                    @if($day['holiday'])<p>Holiday: {{ $day['holiday']->occassion ?? $day['holiday']->title ?? 'Company holiday' }}</p>@endif
-                                    @if($day['leave'])<p>Leave: {{ $day['leave']->reason ?: 'Approved leave' }}</p>@endif
-                                    @foreach($day['daily'] as $session)<div class="at-session"><strong>Session {{ $loop->iteration }}</strong><p>In: {{ $session->clock_in ?: 'Not recorded' }}<br>Out: {{ $session->clock_out ?: 'Not recorded' }}<br>Hours: {{ $hours($session->total_seconds) }}</p><p>Work arrangement: {{ $session->work_from_type ?: ($session->working_from ?: 'Not recorded') }}</p><p>Clock-in location: {{ $session->clock_in_address ?: 'Not recorded' }}<br>Clock-out location: {{ $session->clock_out_address ?: 'Not recorded' }}</p></div>@endforeach
-                                    <a href="{{ route($attendanceRoute, ['user_id' => $employee->id, 'month' => $month, 'year' => $year]) }}">Open employee calendar</a>
+                            <button type="button" class="at-day-trigger" aria-label="{{ $employee->name }}: {{ $day['date']->format('d M Y') }}, {{ $label }}, {{ $hours($day['seconds']) }}" title="{{ $day['date']->format('D, j M Y') }} · {{ $label }}">
+                                @if($day['wfh'] && $day['daily']->isEmpty() && !$day['holiday'] && !$day['leave'])
+                                    <span class="at-status at-wfh">WFH</span><small class="d-block">{{ $code }}</small>
+                                @else
+                                    <span class="at-status at-{{ $day['status'] }}">{{ $code }}</span>@if($day['wfh'])<small>WFH</small>@endif
+                                @endif
+                            </button>
+                            <template class="at-day-tpl">
+                                <div class="at-dialog-head">
+                                    <div>
+                                        <span class="at-eyebrow">ATTENDANCE DETAILS</span>
+                                        <h3>{{ $day['date']->format('l, j F Y') }}</h3>
+                                        <p>{{ $employee->name }}{{ $employee->employeeDetail?->employee_id ? ' · ' . $employee->employeeDetail->employee_id : '' }}</p>
+                                    </div>
+                                    <span class="at-status at-{{ $day['status'] }}">{{ $label }}</span>
                                 </div>
-                            </details>
-                            @else
-                                @if($day['wfh'])
-                                    <span class="at-status at-wfh" title="{{ $day['key'] }}: Scheduled WFH — {{ $label }}" aria-label="Scheduled WFH, {{ $label }}">WFH</span><small class="d-block">{{ $code }}</small>
-                                @else<span class="at-status at-{{ $day['status'] }}" title="{{ $day['key'] }}: {{ $label }}" aria-label="{{ $label }}">{{ $code }}</span>@endif
-                            @endif
+                                <dl class="at-dialog-meta">
+                                    <dt>Employee</dt><dd>{{ $employee->name }} ({{ $employee->email }})</dd>
+                                    <dt>Role &amp; Level</dt><dd>{{ $employee->companyStaffRole?->name ?? ucfirst($employee->role) }}@if($employee->employeeDetail?->designation) · {{ $employee->employeeDetail->designation->name }} (Level {{ $employee->employeeDetail->designation->level }})@endif</dd>
+                                    <dt>Status</dt><dd>{{ $label }} ({{ $code }})</dd>
+                                    <dt>Total hours</dt><dd>{{ $hours($day['seconds']) }}</dd>
+                                    <dt>Work from home</dt><dd>{{ $day['wfh'] ? ($day['scheduledWfh'] ?? false ? 'Yes (Scheduled WFH)' : 'Yes') : 'No' }}</dd>
+                                    @if($employee->employeeDetail?->joining_date)<dt>Joining date</dt><dd>{{ \Carbon\Carbon::parse($employee->employeeDetail->joining_date)->format('d M Y') }}</dd>@endif
+                                </dl>
+                                @if($day['holiday'])<div class="at-dialog-note"><strong>Holiday:</strong> {{ $day['holiday']->occassion ?? $day['holiday']->title ?? 'Company holiday' }}</div>@endif
+                                @if($day['leave'])<div class="at-dialog-note"><strong>Leave:</strong> {{ ucfirst($day['leave']->type ?? 'Leave') }} · {{ $day['leave']->duration ?? 'Full day' }}{{ $day['leave']->reason ? ' — ' . $day['leave']->reason : '' }}</div>@endif
+                                @forelse($day['daily'] as $session)
+                                    <div class="at-session">
+                                        <strong>Session {{ $loop->iteration }}</strong>
+                                        <dl class="at-dialog-meta">
+                                            <dt>Clock in</dt><dd>{{ $session->clock_in ?: 'Not recorded' }}</dd>
+                                            <dt>Clock out</dt><dd>{{ $session->clock_out ?: 'Active / not recorded' }}</dd>
+                                            <dt>Hours</dt><dd>{{ $hours($session->total_seconds) }}</dd>
+                                            <dt>Arrangement</dt><dd>{{ $session->work_from_type ?: ($session->working_from ?: 'Not recorded') }}</dd>
+                                            <dt>Clock-in location</dt><dd>{{ $session->clock_in_address ?: 'Not recorded' }}</dd>
+                                            <dt>Clock-out location</dt><dd>{{ $session->clock_out_address ?: 'Not recorded' }}</dd>
+                                        </dl>
+                                    </div>
+                                @empty
+                                    <p class="at-dialog-empty">
+                                        @if($day['status'] === 'not_joined')
+                                            Date is before the employee's joining date.
+                                        @elseif(in_array($day['status'], ['weekend', 'scheduled_off'], true))
+                                            Scheduled weekly rest day ({{ $day['date']->format('l') }}).
+                                        @elseif($day['status'] === 'not_marked')
+                                            No attendance marked yet for this date.
+                                        @else
+                                            No clock-in session recorded for this date.
+                                        @endif
+                                    </p>
+                                @endforelse
+                                <div class="at-dialog-actions">
+                                    <a class="at-button" href="{{ route($attendanceRoute, ['user_id' => $employee->id, 'month' => $month, 'year' => $year]) }}">Open employee calendar</a>
+                                    @if(\App\Services\WorkforceAccess::isAdmin(auth()->user()))
+                                        <a class="at-button at-primary" href="{{ route('attendance.create', ['staff_category' => request('staff_category'), 'user_id' => $employee->id, 'date' => $day['key']]) }}">＋ Mark attendance</a>
+                                    @endif
+                                </div>
+                            </template>
                         </td>
                     @endforeach
                     @foreach($totalColumns as $key => $label)<td class="at-total">{{ $totals[$key] }}</td>@endforeach<td class="at-total at-hours">{{ $hours($totals['seconds']) }}</td><td class="at-total">{{ $totals['attendance_rate'] }}%</td>
@@ -105,6 +149,13 @@
         <footer class="at-footer"><p>Showing {{ $teamRows->firstItem() ?? 0 }}–{{ $teamRows->lastItem() ?? 0 }} of {{ $teamRows->total() }} employees. Totals above cover all matching employees.</p>{{ $teamRows->links() }}</footer>
         <p class="at-note">WFH totals include scheduled WFH days. A schedule alone does not count as attendance: recorded present, late and WFH days count fully; half days count as half. Holidays and scheduled rest days are excluded. Short shifts marked Day off remain working days. Future working days remain unmarked.</p>
     </section>
+    <dialog class="at-dialog" id="at-day-modal" aria-labelledby="at-day-modal-title">
+        <div class="at-dialog-bar">
+            <span id="at-day-modal-title" class="visually-hidden">Attendance day details</span>
+            <button type="button" class="at-button at-dialog-close" data-close-day-modal aria-label="Close attendance card">✕</button>
+        </div>
+        <div id="at-day-modal-body"></div>
+    </dialog>
 </div>
 <style>
 .attendance-team-page{--at-bg:#f4f6fb;--at-panel:#fff;--at-text:#17233c;--at-muted:#65738d;--at-border:#dfe6f2;padding:24px;background:var(--at-bg);color:var(--at-text);min-height:85vh}
@@ -114,7 +165,7 @@
 .attendance-team-page .at-filters{align-items:flex-end}.attendance-team-page label{display:grid;gap:8px;font-size:12px;font-weight:650}.attendance-team-page .at-search{flex:1;min-width:220px}.attendance-team-page :is(input,select){border:1px solid var(--at-border);border-radius:10px;background:var(--at-panel);color:var(--at-text)!important;min-height:44px;padding:10px 12px}.attendance-team-page input[type=number]{width:110px}.attendance-team-page .at-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}.attendance-team-page .at-stats .at-panel{display:grid;gap:8px}.attendance-team-page .at-stats strong{font-size:26px;color:#6797f5!important;-webkit-text-fill-color:#6797f5!important}.attendance-team-page .at-stats :is(span,small){font-size:12px}.attendance-team-page .at-legend{display:flex;flex-wrap:wrap;gap:12px;margin:20px 0}.attendance-team-page .at-legend>span{display:flex;align-items:center;gap:6px;font-size:11px}
 .attendance-team-page .at-scroll{overflow:auto;max-height:70vh;border:1px solid var(--at-border);border-radius:12px}.attendance-team-page .at-table{border-collapse:separate;border-spacing:0;width:100%;font-size:12px}.attendance-team-page .at-table :is(th,td){border-bottom:1px solid var(--at-border);border-right:1px solid var(--at-border);padding:12px 8px;text-align:center;min-width:58px;background:var(--at-panel);color:var(--at-text)!important}.attendance-team-page .at-table thead th{position:sticky;top:0;z-index:3;background:var(--at-bg);font-size:11px;white-space:nowrap}.attendance-team-page .at-table small{display:block;font-weight:400;font-size:10px;margin-top:4px}.attendance-team-page .at-table .at-person{position:sticky;left:0;text-align:left;min-width:230px;max-width:270px;z-index:2;box-shadow:4px 0 8px #00000008}.attendance-team-page .at-table thead .at-person{z-index:4}.attendance-team-page .at-person a{color:var(--at-text)!important;text-decoration:none;font-weight:750}.attendance-team-page .at-person small{overflow-wrap:anywhere;color:var(--at-muted)!important;-webkit-text-fill-color:var(--at-muted)!important}.attendance-team-page .at-table tbody tr:hover> :is(td,th){background:var(--at-bg)}.attendance-team-page .at-table .at-today{box-shadow:inset 0 3px #427bfa}.attendance-team-page .at-total{font-weight:700}.attendance-team-page .at-hours{white-space:nowrap}
 .attendance-team-page .at-status{display:inline-flex;align-items:center;justify-content:center;min-width:32px;height:29px;padding:0 5px;border-radius:8px;font-size:10px;font-weight:750;background:#e8edf5;color:#50627e!important;-webkit-text-fill-color:#50627e!important}.attendance-team-page :is(.at-present,.at-wfh){background:#d8f5e8;color:#116247!important;-webkit-text-fill-color:#116247!important}.attendance-team-page .at-late{background:#fff0cc;color:#825000!important;-webkit-text-fill-color:#825000!important}.attendance-team-page .at-absent{background:#ffe1e6;color:#a5263e!important;-webkit-text-fill-color:#a5263e!important}.attendance-team-page :is(.at-half_day,.at-leave){background:#ece3ff;color:#6534a4!important;-webkit-text-fill-color:#6534a4!important}.attendance-team-page .at-holiday{background:#dce9ff;color:#2358a7!important;-webkit-text-fill-color:#2358a7!important}.attendance-team-page .at-unpaid_leave{background:#ffe5f1;color:#972b61!important;-webkit-text-fill-color:#972b61!important}
-.attendance-team-page .at-day summary{cursor:pointer;list-style:none}.attendance-team-page .at-day summary::-webkit-details-marker{display:none}.attendance-team-page .at-day[open]{min-width:260px;text-align:left}.attendance-team-page .at-detail{max-width:310px;min-width:250px;padding:12px;border:1px solid var(--at-border);border-radius:10px;margin-top:10px;overflow-wrap:anywhere}.attendance-team-page .at-detail p{margin:8px 0}.attendance-team-page .at-session{border-top:1px solid var(--at-border);padding-top:10px;margin-top:10px}.attendance-team-page .at-footer{margin-top:18px}.attendance-team-page .at-note{margin-top:14px;font-size:11px}.attendance-team-page .at-empty{padding:40px!important}
+.attendance-team-page .at-day-trigger{border:0;background:transparent;padding:3px;border-radius:10px;cursor:pointer;display:inline-flex;flex-direction:column;align-items:center;gap:3px;transition:transform .12s,box-shadow .12s}.attendance-team-page .at-day-trigger:hover{transform:translateY(-1px);box-shadow:0 0 0 2px rgba(36,91,224,.28)}.attendance-team-page .at-dialog{margin:auto;background:var(--at-panel);color:var(--at-text);border:1px solid var(--at-border);border-radius:20px;padding:24px;max-width:560px;width:calc(100% - 28px);max-height:85vh;overflow:auto;box-shadow:0 24px 60px rgba(15,23,42,.26)}.attendance-team-page .at-dialog::backdrop{background:rgba(2,8,24,.62);backdrop-filter:blur(3px)}.attendance-team-page .at-dialog-bar{display:flex;justify-content:flex-end;margin-bottom:4px}.attendance-team-page .at-dialog-close{min-height:36px;padding:4px 11px}.attendance-team-page .at-dialog-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px}.attendance-team-page .at-dialog-head h3{margin:4px 0;font-size:20px;font-weight:800}.attendance-team-page .at-dialog-meta{display:grid;grid-template-columns:135px 1fr;gap:8px 12px;font-size:13px;margin:0 0 14px}.attendance-team-page .at-dialog-meta dt{color:var(--at-muted);font-weight:650}.attendance-team-page .at-dialog-meta dd{margin:0;overflow-wrap:anywhere;font-weight:600}.attendance-team-page .at-dialog-note{padding:10px 12px;border-radius:12px;border:1px solid var(--at-border);background:var(--at-bg);font-size:13px;margin-bottom:12px}.attendance-team-page .at-dialog-empty{padding:12px;border-radius:12px;border:1px dashed var(--at-border);margin:10px 0 14px}.attendance-team-page .at-dialog-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}.attendance-team-page .at-session{border-top:1px solid var(--at-border);padding-top:12px;margin-top:12px}.attendance-team-page .at-session strong{display:block;margin-bottom:8px}.attendance-team-page .at-footer{margin-top:18px}.attendance-team-page .at-note{margin-top:14px;font-size:11px}.attendance-team-page .at-empty{padding:40px!important}
 .attendance-team-page .at-export-menu{position:relative}.attendance-team-page .at-export-menu summary{list-style:none}.attendance-team-page .at-export-menu summary::-webkit-details-marker{display:none}.attendance-team-page .at-export-dropdown{position:absolute;right:0;top:calc(100% + 8px);z-index:30;width:270px;padding:12px;border-radius:14px;border:1px solid var(--at-border);background:var(--at-panel);box-shadow:0 12px 28px rgba(15,23,42,.14);display:grid;gap:8px}.attendance-team-page .at-export-selection{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:11px;font-weight:700;color:var(--at-muted)}.attendance-team-page .at-clear-selection{border:0;background:transparent;color:#245be0;font-size:11px;font-weight:750;padding:0;cursor:pointer}.attendance-team-page .at-export-option{display:block;padding:9px 11px;border-radius:10px;border:1px solid var(--at-border);color:var(--at-text)!important;-webkit-text-fill-color:var(--at-text)!important;text-decoration:none;font-size:12px;font-weight:650}.attendance-team-page .at-export-option:hover{background:var(--at-bg)}.attendance-team-page .at-export-range{border-top:1px solid var(--at-border);padding-top:10px;margin-top:2px;display:grid;gap:8px}.attendance-team-page .at-export-title{font-size:11px;font-weight:750;color:var(--at-muted)}.attendance-team-page .at-export-range input{width:100%;min-height:38px;padding:6px 10px}.attendance-team-page input[type="checkbox"]{min-height:17px;width:17px;height:17px;padding:0;margin:0;border-radius:5px;accent-color:#245be0;cursor:pointer;flex-shrink:0}.attendance-team-page .at-select-all{display:flex;align-items:center;gap:10px;cursor:pointer;margin:0}.attendance-team-page .at-person-row{display:flex;align-items:flex-start;gap:10px}.attendance-team-page .at-person-row .at-emp-check{margin-top:2px}.attendance-team-page .at-person-info{min-width:0}
 @media(max-width:900px){.attendance-team-page{padding:12px}.attendance-team-page .at-panel{padding:18px}.attendance-team-page .at-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.attendance-team-page .at-table .at-person{min-width:180px;max-width:200px}.attendance-team-page .at-filters .at-search{flex-basis:100%}.attendance-team-page .at-export-dropdown{left:0;right:auto;max-width:calc(100vw - 48px)}}
 
@@ -211,5 +262,26 @@ document.querySelectorAll('#attendance-team-page .at-export-range').forEach(form
         if (endInput.value && endInput.value < startInput.value) endInput.value = startInput.value;
     });
 });
+(() => {
+    const dialog = document.getElementById('at-day-modal');
+    const body = document.getElementById('at-day-modal-body');
+    if (!dialog || !body) return;
+    document.getElementById('attendance-team-page')?.addEventListener('click', event => {
+        const trigger = event.target.closest('.at-day-trigger');
+        if (!trigger) return;
+        const tpl = trigger.parentElement?.querySelector('.at-day-tpl');
+        if (!tpl) return;
+        body.replaceChildren(tpl.content.cloneNode(true));
+        if (typeof dialog.showModal === 'function') dialog.showModal();
+        else dialog.setAttribute('open', 'open');
+    });
+    dialog.querySelector('[data-close-day-modal]')?.addEventListener('click', () => {
+        if (typeof dialog.close === 'function') dialog.close();
+        else dialog.removeAttribute('open');
+    });
+    dialog.addEventListener('click', event => {
+        if (event.target === dialog && typeof dialog.close === 'function') dialog.close();
+    });
+})();
 </script>
 @endpush

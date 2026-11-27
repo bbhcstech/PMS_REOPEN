@@ -4,184 +4,189 @@
 
 @section('content')
 <style>
-    /* ===== PREMIUM CREATE ATTENDANCE STYLES ===== */
+    /* ===== CLEAN CREATE ATTENDANCE UI ===== */
     :root {
-        --primary-blue: #2F6BFF;
-        --primary-hover: #1E4FCC;
-        --primary-teal: #2F6BFF;
-        --primary-accent: #22D3EE;
-        --primary-green: #8B5CF6;
-        --bg-light: #f8fafc;
-        --glass-border: rgba(255, 255, 255, 0.7);
-        --card-shadow: 0px 4px 20px rgba(0, 0, 0, 0.02),
-            0px 8px 40px rgba(0, 0, 0, 0.04),
-            0px 20px 60px rgba(47, 107, 255, 0.06);
-        --card-shadow-hover: 0px 20px 50px rgba(0, 0, 0, 0.08),
-            0px 30px 80px rgba(47, 107, 255, 0.12);
-        --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        --spring-transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        --primary-blue: #2563eb;
+        --primary-hover: #1d4ed8;
+        --primary-teal: #2563eb;
+        --primary-accent: #3b82f6;
+        --primary-green: #10b981;
+        --bg-light: #f5f7fb;
+        --glass-border: #e2e8f0;
+        --card-shadow: 0 2px 10px rgba(15, 23, 42, 0.04);
+        --card-shadow-hover: 0 6px 20px rgba(15, 23, 42, 0.06);
+        --transition-smooth: all 0.2s ease;
+        --spring-transition: all 0.2s ease;
     }
 
     .attendance-create-container {
-        background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 50%, #f1f5f9 100%);
-        min-height: calc(100vh - 100px);
-        padding: 2rem 1.75rem;
+        background: var(--bg-light);
+        min-height: calc(100vh - 90px);
+        padding: 1.5rem 1.75rem 2.5rem;
         position: relative;
-        overflow: hidden;
     }
 
-    /* Ambient Orbs */
     .ambient-orb {
-        position: absolute;
-        border-radius: 50%;
-        filter: blur(130px);
-        opacity: 0.35;
-        pointer-events: none;
-        z-index: 1;
-    }
-
-    .orb-1 {
-        top: -100px;
-        right: -100px;
-        width: 500px;
-        height: 500px;
-        background: radial-gradient(circle, rgba(47, 107, 255, 0.12) 0%, transparent 70%);
-        animation: orbFloat 20s ease-in-out infinite;
-    }
-
-    .orb-2 {
-        bottom: -100px;
-        left: -100px;
-        width: 450px;
-        height: 450px;
-        background: radial-gradient(circle, rgba(34, 211, 238, 0.1) 0%, transparent 70%);
-        animation: orbFloat 25s ease-in-out infinite reverse;
-    }
-
-    .orb-3 {
-        top: 50%;
-        left: 50%;
-        width: 400px;
-        height: 400px;
-        background: radial-gradient(circle, rgba(139, 92, 246, 0.08) 0%, transparent 70%);
-        animation: orbFloat 18s ease-in-out infinite;
-        transform: translate(-50%, -50%);
-    }
-
-    @keyframes orbFloat {
-        0%, 100% { transform: translate(0, 0) scale(1); }
-        33% { transform: translate(40px, -30px) scale(1.05); }
-        66% { transform: translate(-30px, 40px) scale(0.95); }
+        display: none;
     }
 
     .content-wrapper {
         position: relative;
         z-index: 10;
+        max-width: 1180px;
+        margin: 0 auto;
     }
 
     /* ===== HEADER ===== */
     .header-card {
-        background: rgba(255, 255, 255, 0.92);
-        backdrop-filter: blur(20px);
-        border-radius: 28px;
-        padding: 1.75rem 2.25rem;
-        margin-bottom: 2rem;
-        border: 1px solid var(--glass-border);
+        background: #ffffff;
+        border-radius: 16px;
+        padding: 1.25rem 1.75rem;
+        margin-bottom: 1.25rem;
+        border: 1px solid #e2e8f0;
         box-shadow: var(--card-shadow);
         display: flex;
         justify-content: space-between;
         align-items: center;
         flex-wrap: wrap;
         gap: 1rem;
-        animation: slideDown 0.6s ease;
-        transition: var(--spring-transition);
+        transition: var(--transition-smooth);
     }
 
-    .header-card:hover {
-        box-shadow: var(--card-shadow-hover);
-        border-color: rgba(47, 107, 255, 0.2);
+    .header-left {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
     }
 
-    @keyframes slideDown {
-        from { opacity: 0; transform: translateY(-30px); }
-        to { opacity: 1; transform: translateY(0); }
+    .header-icon {
+        width: 46px;
+        height: 46px;
+        border-radius: 12px;
+        background: #eef4ff;
+        border: 1px solid #dbeafe;
+        color: var(--primary-blue);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.15rem;
+        flex-shrink: 0;
     }
 
     .header-title h1 {
-        font-size: 2rem;
-        font-weight: 800;
-        background: linear-gradient(135deg, var(--primary-blue), var(--primary-accent), var(--primary-green));
-        -webkit-background-clip: text;
-        background-clip: text;
-        color: transparent;
-        margin-bottom: 0.25rem;
-        letter-spacing: -0.03em;
+        font-size: 1.4rem;
+        font-weight: 750;
+        color: #0f172a;
+        margin: 0 0 0.2rem;
+        letter-spacing: -0.02em;
     }
 
     .header-title p {
         color: #64748b;
-        font-size: 0.95rem;
+        font-size: 0.84rem;
         font-weight: 500;
         margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
     }
 
     .header-title p i {
-        color: var(--primary-blue);
+        color: #94a3b8;
+        font-size: 0.8rem;
+    }
+
+    .header-year-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        padding: 0.42rem 0.9rem;
+        border-radius: 999px;
+        background: #eff6ff;
+        border: 1px solid #dbeafe;
+        color: #1e40af;
+        font-size: 0.78rem;
+        font-weight: 700;
+    }
+
+    .header-year-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: #2563eb;
     }
 
     /* ===== ALERT ===== */
     .alert-premium {
-        border-radius: 20px;
-        border-left: 6px solid;
-        padding: 1rem 1.5rem;
-        margin-bottom: 1.5rem;
-        backdrop-filter: blur(10px);
+        border-radius: 12px;
+        border: 1px solid #fecaca;
+        border-left: 4px solid #ef4444;
+        padding: 0.9rem 1.25rem;
+        margin-bottom: 1.25rem;
         display: flex;
         align-items: center;
         gap: 0.75rem;
         font-weight: 500;
+        font-size: 0.88rem;
     }
 
     .alert-danger {
-        background: rgba(254, 226, 226, 0.95);
-        border-left-color: #ef4444;
+        background: #fef2f2;
         color: #991b1b;
     }
 
     .alert-premium i {
-        font-size: 1.25rem;
+        font-size: 1.1rem;
     }
 
     /* ===== FORM CARD ===== */
     .form-card {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(20px);
-        border-radius: 28px;
-        overflow: hidden;
-        border: 1px solid var(--glass-border);
+        background: #ffffff;
+        border-radius: 16px;
+        overflow: visible;
+        border: 1px solid #e2e8f0;
         box-shadow: var(--card-shadow);
-        transition: var(--spring-transition);
-    }
-
-    .form-card:hover {
-        box-shadow: var(--card-shadow-hover);
     }
 
     .form-body {
-        padding: 2rem 2.25rem;
+        padding: 1.5rem 1.75rem 1.75rem;
+    }
+
+    .form-section-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding-bottom: 0.9rem;
+        margin-bottom: 1.4rem;
+        border-bottom: 1px solid #eef2f7;
+    }
+
+    .form-section-title {
+        font-size: 0.72rem;
+        font-weight: 750;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #64748b;
+    }
+
+    .form-required-note {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #dc2626;
     }
 
     /* ===== FORM GRID ===== */
     .form-grid {
         display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 1.5rem 2rem;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1.25rem 1.75rem;
     }
 
     .form-group {
         display: flex;
         flex-direction: column;
-        gap: 0.4rem;
+        gap: 0.45rem;
     }
 
     .form-group.full-width {
@@ -193,51 +198,71 @@
     }
 
     .form-label {
-        font-size: 0.75rem;
+        font-size: 0.72rem;
         font-weight: 700;
-        color: #475569;
+        color: #334155;
         text-transform: uppercase;
         letter-spacing: 0.05em;
         display: flex;
         align-items: center;
-        gap: 0.5rem;
+        gap: 0.45rem;
+        margin: 0;
     }
 
     .form-label i {
-        color: var(--primary-blue);
-        font-size: 0.8rem;
+        color: #64748b;
+        font-size: 0.78rem;
     }
 
     .form-label .required-star {
-        color: #ef4444;
-        font-size: 1rem;
+        color: #dc2626;
+        font-size: 0.88rem;
         line-height: 1;
     }
 
     .form-control,
     .form-select {
         width: 100%;
-        padding: 0.65rem 1rem;
-        border: 2px solid #e2e8f0;
-        border-radius: 14px;
-        font-size: 0.9rem;
+        padding: 0.55rem 0.9rem;
+        border: 1px solid #cbd5e1;
+        border-radius: 10px;
+        font-size: 0.875rem;
         font-weight: 500;
         color: #0f172a;
-        background: white;
+        background-color: #ffffff;
         transition: var(--transition-smooth);
         outline: none;
-        min-height: 48px;
+        min-height: 44px;
+        box-shadow: none;
     }
 
     .form-control:focus,
     .form-select:focus {
         border-color: var(--primary-blue);
-        box-shadow: 0 0 0 4px rgba(47, 107, 255, 0.12);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
     }
 
     .form-control::placeholder {
         color: #94a3b8;
         font-weight: 400;
+    }
+
+    .date-input-wrap {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .date-input-wrap i {
+        position: absolute;
+        left: 0.95rem;
+        color: #64748b;
+        font-size: 0.9rem;
+        pointer-events: none;
+    }
+
+    .date-input-wrap .form-control {
+        padding-left: 2.5rem;
     }
 
     .form-control[type="time"] {
@@ -251,175 +276,191 @@
     }
 
     .form-text {
-        font-size: 0.75rem;
-        color: #94a3b8;
-        margin-top: 0.25rem;
-    }
-
-    .form-text i {
-        margin-right: 0.25rem;
+        font-size: 0.74rem;
+        color: #64748b;
+        margin-top: 0.15rem;
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
     }
 
     .text-danger {
-        color: #ef4444 !important;
+        color: #dc2626 !important;
         font-size: 0.75rem;
         font-weight: 600;
-        margin-top: 0.25rem;
+        margin-top: 0.15rem;
     }
 
-    /* ===== RADIO & CHECKBOX GROUPS ===== */
+    /* ===== RADIO & CHECKBOX CARDS ===== */
     .radio-group {
         display: flex;
-        gap: 1rem;
-        align-items: center;
-        padding-top: 0.2rem;
+        gap: 0.75rem;
+        align-items: stretch;
         flex-wrap: wrap;
     }
 
     .radio-option {
+        flex: 1 1 120px;
+        min-height: 44px;
         display: flex;
         align-items: center;
-        gap: 0.4rem;
+        justify-content: flex-start;
+        gap: 0.55rem;
         cursor: pointer;
-        padding: 0.3rem 0.8rem;
-        border-radius: 30px;
-        background: #f1f5f9;
-        border: 2px solid transparent;
+        padding: 0.55rem 0.95rem;
+        border-radius: 10px;
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
         transition: var(--transition-smooth);
+        margin: 0;
     }
 
     .radio-option:hover {
-        background: #e2e8f0;
+        border-color: #94a3b8;
+        background: #f8fafc;
     }
 
     .radio-option input[type="radio"] {
         accent-color: var(--primary-blue);
         width: 16px;
         height: 16px;
+        margin: 0;
         cursor: pointer;
+        flex-shrink: 0;
     }
 
-    .radio-option input[type="radio"]:checked+.radio-label {
-        color: var(--primary-blue);
+    .radio-option input[type="radio"]:checked + .radio-label {
+        color: #1d4ed8;
     }
 
     .radio-option:has(input:checked) {
-        background: #EEF2FF;
+        background: #f0f6ff;
         border-color: var(--primary-blue);
+        box-shadow: inset 0 0 0 1px var(--primary-blue);
     }
 
     .radio-label {
         font-size: 0.85rem;
-        font-weight: 600;
+        font-weight: 650;
         color: #475569;
         transition: var(--transition-smooth);
         cursor: pointer;
     }
 
     .checkbox-option {
+        min-height: 44px;
         display: flex;
         align-items: center;
-        gap: 0.5rem;
+        gap: 0.65rem;
         cursor: pointer;
-        padding: 0.4rem 1rem;
-        border-radius: 12px;
-        background: #f8fafc;
-        border: 2px solid #e2e8f0;
+        padding: 0.55rem 0.95rem;
+        border-radius: 10px;
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
         transition: var(--transition-smooth);
+        margin: 0;
     }
 
     .checkbox-option:hover {
-        background: #f1f5f9;
+        border-color: #94a3b8;
+        background: #f8fafc;
     }
 
     .checkbox-option input[type="checkbox"] {
-        width: 18px;
-        height: 18px;
-        border-radius: 6px;
+        width: 17px;
+        height: 17px;
+        border-radius: 5px;
         accent-color: var(--primary-blue);
         cursor: pointer;
+        margin: 0;
         flex-shrink: 0;
     }
 
     .checkbox-option:has(input:checked) {
         border-color: var(--primary-blue);
-        background: #EEF2FF;
+        background: #f0f6ff;
     }
 
     .checkbox-label {
         font-size: 0.85rem;
         font-weight: 600;
-        color: #475569;
+        color: #334155;
         cursor: pointer;
     }
 
     /* ===== SELECT2 / BOOTSTRAP SELECT OVERRIDES ===== */
+    .bootstrap-select {
+        width: 100% !important;
+    }
+
     .bootstrap-select .dropdown-toggle {
-        border: 2px solid #e2e8f0 !important;
-        border-radius: 14px !important;
-        padding: 0.65rem 1rem !important;
-        font-size: 0.9rem !important;
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 10px !important;
+        padding: 0.55rem 0.9rem !important;
+        font-size: 0.875rem !important;
         font-weight: 500 !important;
-        background: white !important;
-        min-height: 48px !important;
+        background: #ffffff !important;
+        min-height: 44px !important;
         color: #0f172a !important;
+        box-shadow: none !important;
         transition: var(--transition-smooth) !important;
     }
 
-    .bootstrap-select .dropdown-toggle:focus {
+    .bootstrap-select .dropdown-toggle:focus,
+    .bootstrap-select .dropdown-toggle[aria-expanded="true"] {
         border-color: var(--primary-blue) !important;
-        box-shadow: 0 0 0 4px rgba(47, 107, 255, 0.12) !important;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12) !important;
     }
 
     .bootstrap-select .dropdown-menu {
         border: 1px solid #e2e8f0 !important;
-        border-radius: 14px !important;
-        padding: 0.5rem !important;
-        box-shadow: var(--card-shadow) !important;
+        border-radius: 12px !important;
+        padding: 0.45rem !important;
+        box-shadow: 0 12px 28px rgba(15, 23, 42, 0.1) !important;
     }
 
     .bootstrap-select .dropdown-menu .dropdown-item {
-        padding: 0.5rem 1rem !important;
-        border-radius: 10px !important;
-        transition: var(--transition-smooth) !important;
+        padding: 0.48rem 0.85rem !important;
+        border-radius: 8px !important;
+        font-size: 0.85rem !important;
         font-weight: 500 !important;
     }
 
     .bootstrap-select .dropdown-menu .dropdown-item:hover {
-        background: #EEF2FF !important;
-        color: #2F6BFF !important;
+        background: #eff6ff !important;
+        color: #1d4ed8 !important;
     }
 
     .bootstrap-select .dropdown-menu .dropdown-item.active {
         background: var(--primary-blue) !important;
-        color: white !important;
+        color: #ffffff !important;
     }
 
     .bootstrap-select .dropdown-menu .bs-actionsbox {
-        padding: 0.5rem !important;
+        padding: 0.45rem !important;
         border-bottom: 1px solid #e2e8f0 !important;
     }
 
     .bootstrap-select .dropdown-menu .bs-actionsbox .btn {
-        border-radius: 10px !important;
+        border-radius: 8px !important;
         font-weight: 600 !important;
-        font-size: 0.8rem !important;
-        padding: 0.3rem 0.8rem !important;
+        font-size: 0.78rem !important;
+        padding: 0.3rem 0.75rem !important;
     }
 
     /* ===== DATERANGEPICKER OVERRIDES ===== */
     .daterangepicker {
         border: 1px solid #e2e8f0 !important;
-        border-radius: 16px !important;
-        box-shadow: var(--card-shadow) !important;
+        border-radius: 12px !important;
+        box-shadow: 0 14px 32px rgba(15, 23, 42, 0.12) !important;
         font-family: inherit !important;
         z-index: 1060 !important;
     }
 
     .daterangepicker .drp-buttons .btn {
-        border-radius: 10px !important;
+        border-radius: 8px !important;
         font-weight: 600 !important;
-        padding: 0.4rem 1.2rem !important;
+        padding: 0.4rem 1.1rem !important;
     }
 
     .daterangepicker .drp-buttons .btn-primary {
@@ -433,86 +474,78 @@
     }
 
     .daterangepicker td.in-range {
-        background: #EEF2FF !important;
-        color: #2F6BFF !important;
+        background: #eff6ff !important;
+        color: #1d4ed8 !important;
     }
 
     /* ===== ACTION BUTTONS ===== */
     .form-actions {
         display: flex;
-        gap: 1rem;
-        padding-top: 1.5rem;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 0.75rem;
+        padding-top: 1.35rem;
         margin-top: 1.5rem;
-        border-top: 2px solid #e2e8f0;
+        border-top: 1px solid #eef2f7;
         flex-wrap: wrap;
     }
 
     .btn-submit {
         display: inline-flex;
         align-items: center;
-        gap: 0.6rem;
-        padding: 0.8rem 2rem;
-        background: linear-gradient(135deg, #2F6BFF, #1E4FCC);
-        color: white;
-        border: none;
-        border-radius: 40px;
-        font-weight: 700;
-        font-size: 0.95rem;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.68rem 1.4rem;
+        background: var(--primary-blue);
+        color: #ffffff;
+        border: 1px solid var(--primary-blue);
+        border-radius: 10px;
+        font-weight: 650;
+        font-size: 0.875rem;
         cursor: pointer;
-        transition: var(--spring-transition);
-        box-shadow: 0 4px 15px rgba(47, 107, 255, 0.25);
+        transition: var(--transition-smooth);
+        box-shadow: 0 2px 6px rgba(37, 99, 235, 0.22);
         text-decoration: none;
     }
 
     .btn-submit:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(47, 107, 255, 0.35);
-        color: white;
+        background: var(--primary-hover);
+        border-color: var(--primary-hover);
+        color: #ffffff;
     }
 
     .btn-cancel {
         display: inline-flex;
         align-items: center;
-        gap: 0.6rem;
-        padding: 0.8rem 2rem;
-        background: #f1f5f9;
-        color: #475569;
-        border: 2px solid #e2e8f0;
-        border-radius: 40px;
-        font-weight: 700;
-        font-size: 0.95rem;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.68rem 1.3rem;
+        background: #ffffff;
+        color: #334155;
+        border: 1px solid #cbd5e1;
+        border-radius: 10px;
+        font-weight: 650;
+        font-size: 0.875rem;
         cursor: pointer;
         transition: var(--transition-smooth);
         text-decoration: none;
     }
 
     .btn-cancel:hover {
-        background: #e2e8f0;
+        background: #f8fafc;
+        border-color: #94a3b8;
         color: #0f172a;
-        transform: translateY(-2px);
     }
 
     /* ===== RESPONSIVE ===== */
     @media (max-width: 992px) {
         .attendance-create-container {
-            padding: 1.5rem 1.25rem;
-        }
-
-        .header-card {
-            padding: 1.5rem;
-        }
-
-        .header-title h1 {
-            font-size: 1.6rem;
+            padding: 1.25rem;
         }
 
         .form-grid {
             grid-template-columns: 1fr;
             gap: 1rem;
-        }
-
-        .form-body {
-            padding: 1.5rem 1.5rem;
         }
     }
 
@@ -521,217 +554,125 @@
             padding: 1rem;
         }
 
-        .header-card {
-            flex-direction: column;
-            align-items: flex-start;
-        }
-
+        .header-card,
         .form-body {
-            padding: 1.25rem 1rem;
-        }
-
-        .radio-group {
-            gap: 0.5rem;
-        }
-
-        .radio-option {
-            padding: 0.2rem 0.6rem;
-            font-size: 0.8rem;
+            padding: 1.25rem;
         }
 
         .form-actions {
-            flex-direction: column;
+            flex-direction: column-reverse;
+            align-items: stretch;
         }
 
         .btn-submit,
         .btn-cancel {
-            justify-content: center;
             width: 100%;
-        }
-
-        .bootstrap-select .dropdown-toggle {
-            min-height: 42px !important;
-            font-size: 0.85rem !important;
-        }
-
-        .form-control,
-        .form-select {
-            min-height: 42px;
-            font-size: 0.85rem;
-            padding: 0.5rem 0.8rem;
-        }
-    }
-
-    @media (max-width: 480px) {
-        .header-title h1 {
-            font-size: 1.3rem;
-        }
-
-        .header-title p {
-            font-size: 0.8rem;
-        }
-
-        .form-label {
-            font-size: 0.65rem;
-        }
-
-        .radio-label,
-        .checkbox-label {
-            font-size: 0.75rem;
-        }
-
-        .form-control,
-        .form-select {
-            font-size: 0.8rem;
-            min-height: 38px;
-            padding: 0.4rem 0.7rem;
-            border-radius: 12px;
-        }
-
-        .btn-submit,
-        .btn-cancel {
-            font-size: 0.85rem;
-            padding: 0.6rem 1.5rem;
-        }
-
-        .bootstrap-select .dropdown-toggle {
-            min-height: 38px !important;
-            padding: 0.4rem 0.7rem !important;
-            font-size: 0.8rem !important;
         }
     }
 
     /* ===== DARK MODE ===== */
     html[data-pms-theme="dark"] .attendance-create-container {
-        background: linear-gradient(145deg, #070B1A, #0F1530);
+        background: #090f20;
     }
 
     html[data-pms-theme="dark"] .header-card,
     html[data-pms-theme="dark"] .form-card {
-        background: rgba(15, 21, 48, 0.95);
-        border-color: rgba(79, 131, 255, 0.15);
+        background: #111a32;
+        border-color: #2a3856;
+    }
+
+    html[data-pms-theme="dark"] .header-icon {
+        background: rgba(59, 130, 246, 0.16);
+        border-color: rgba(96, 165, 250, 0.32);
+        color: #93c5fd;
     }
 
     html[data-pms-theme="dark"] .header-title h1 {
-        background: linear-gradient(135deg, #60a5fa, #2F6BFF, #8B5CF6);
-        -webkit-background-clip: text;
-        background-clip: text;
+        color: #f1f5f9;
     }
 
-    html[data-pms-theme="dark"] .header-title p {
-        color: #C7D2FE;
-    }
-
-    html[data-pms-theme="dark"] .form-label {
+    html[data-pms-theme="dark"] .header-title p,
+    html[data-pms-theme="dark"] .form-section-title,
+    html[data-pms-theme="dark"] .form-text {
         color: #94a3b8;
     }
 
+    html[data-pms-theme="dark"] .header-year-pill {
+        background: rgba(37, 99, 235, 0.18);
+        border-color: rgba(96, 165, 250, 0.35);
+        color: #bfdbfe;
+    }
+
+    html[data-pms-theme="dark"] .form-section-head,
+    html[data-pms-theme="dark"] .form-actions {
+        border-color: #24314d;
+    }
+
+    html[data-pms-theme="dark"] .form-label {
+        color: #cbd5e1;
+    }
+
     html[data-pms-theme="dark"] .form-control,
-    html[data-pms-theme="dark"] .form-select {
-        background: #141B3D;
-        border-color: rgba(79, 131, 255, 0.2);
-        color: #ffffff;
+    html[data-pms-theme="dark"] .form-select,
+    html[data-pms-theme="dark"] .radio-option,
+    html[data-pms-theme="dark"] .checkbox-option,
+    html[data-pms-theme="dark"] .btn-cancel {
+        background: #16213e;
+        border-color: #2d3d61;
+        color: #f1f5f9;
     }
 
     html[data-pms-theme="dark"] .form-control:focus,
     html[data-pms-theme="dark"] .form-select:focus {
-        border-color: #60A5FA;
-        box-shadow: 0 0 0 4px rgba(79, 131, 255, 0.12);
+        border-color: #60a5fa;
+        box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.16);
     }
 
-    html[data-pms-theme="dark"] .form-control::placeholder {
-        color: #64748b;
-    }
-
-    html[data-pms-theme="dark"] .form-text {
-        color: #64748b;
-    }
-
-    html[data-pms-theme="dark"] .radio-option {
-        background: #141B3D;
-        border-color: rgba(79, 131, 255, 0.15);
-    }
-
-    html[data-pms-theme="dark"] .radio-option:has(input:checked) {
-        background: rgba(47, 107, 255, 0.2);
-        border-color: #60A5FA;
-    }
-
-    html[data-pms-theme="dark"] .radio-label {
-        color: #EEF1FB;
-    }
-
-    html[data-pms-theme="dark"] .checkbox-option {
-        background: #141B3D;
-        border-color: rgba(79, 131, 255, 0.15);
-    }
-
+    html[data-pms-theme="dark"] .radio-option:has(input:checked),
     html[data-pms-theme="dark"] .checkbox-option:has(input:checked) {
-        background: rgba(47, 107, 255, 0.2);
-        border-color: #60A5FA;
+        background: rgba(37, 99, 235, 0.2);
+        border-color: #60a5fa;
     }
 
+    html[data-pms-theme="dark"] .radio-option input[type="radio"]:checked + .radio-label,
+    html[data-pms-theme="dark"] .radio-label,
     html[data-pms-theme="dark"] .checkbox-label {
-        color: #EEF1FB;
-    }
-
-    html[data-pms-theme="dark"] .form-actions {
-        border-color: rgba(79, 131, 255, 0.15);
-    }
-
-    html[data-pms-theme="dark"] .btn-cancel {
-        background: #141B3D;
-        color: #EEF1FB;
-        border-color: rgba(79, 131, 255, 0.2);
-    }
-
-    html[data-pms-theme="dark"] .btn-cancel:hover {
-        background: #0F1530;
-        color: #ffffff;
+        color: #e2e8f0;
     }
 
     html[data-pms-theme="dark"] .bootstrap-select .dropdown-toggle {
-        background: #141B3D !important;
-        border-color: rgba(79, 131, 255, 0.2) !important;
-        color: #ffffff !important;
-    }
-
-    html[data-pms-theme="dark"] .bootstrap-select .dropdown-toggle:focus {
-        border-color: #60A5FA !important;
-        box-shadow: 0 0 0 4px rgba(79, 131, 255, 0.12) !important;
+        background: #16213e !important;
+        border-color: #2d3d61 !important;
+        color: #f1f5f9 !important;
     }
 
     html[data-pms-theme="dark"] .bootstrap-select .dropdown-menu {
-        background: #141B3D !important;
-        border-color: rgba(79, 131, 255, 0.2) !important;
+        background: #16213e !important;
+        border-color: #2d3d61 !important;
     }
 
     html[data-pms-theme="dark"] .bootstrap-select .dropdown-menu .dropdown-item {
-        color: #EEF1FB !important;
+        color: #e2e8f0 !important;
     }
 
     html[data-pms-theme="dark"] .bootstrap-select .dropdown-menu .dropdown-item:hover {
-        background: rgba(47, 107, 255, 0.18) !important;
-        color: #60A5FA !important;
+        background: rgba(59, 130, 246, 0.18) !important;
+        color: #93c5fd !important;
     }
 
     html[data-pms-theme="dark"] .bootstrap-select .dropdown-menu .dropdown-item.active {
-        background: #2F6BFF !important;
+        background: var(--primary-blue) !important;
         color: #ffffff !important;
     }
 
-    html[data-pms-theme="dark"] .bootstrap-select .dropdown-menu .bs-actionsbox {
-        border-color: rgba(79, 131, 255, 0.15) !important;
-    }
-
     html[data-pms-theme="dark"] .daterangepicker {
-        background: #141B3D !important;
-        border-color: rgba(79, 131, 255, 0.2) !important;
+        background: #16213e !important;
+        border-color: #2d3d61 !important;
     }
 
     html[data-pms-theme="dark"] .daterangepicker .calendar-table {
-        background: #141B3D !important;
-        color: #EEF1FB !important;
+        background: #16213e !important;
+        color: #e2e8f0 !important;
     }
 
     html[data-pms-theme="dark"] .daterangepicker td.off {
@@ -739,49 +680,47 @@
     }
 
     html[data-pms-theme="dark"] .daterangepicker td.in-range {
-        background: rgba(47, 107, 255, 0.2) !important;
-        color: #60A5FA !important;
+        background: rgba(59, 130, 246, 0.22) !important;
+        color: #93c5fd !important;
     }
 
     html[data-pms-theme="dark"] .daterangepicker td.active,
     html[data-pms-theme="dark"] .daterangepicker td.active:hover {
-        background: #2F6BFF !important;
+        background: var(--primary-blue) !important;
         color: #ffffff !important;
     }
 
     html[data-pms-theme="dark"] .daterangepicker .drp-buttons {
-        border-color: rgba(79, 131, 255, 0.15) !important;
-    }
-
-    html[data-pms-theme="dark"] .daterangepicker .drp-buttons .btn-primary {
-        background: #2F6BFF !important;
-        border-color: #2F6BFF !important;
+        border-color: #2d3d61 !important;
     }
 
     html[data-pms-theme="dark"] .daterangepicker .drp-buttons .btn-default {
-        background: #141B3D !important;
-        color: #EEF1FB !important;
-        border-color: rgba(79, 131, 255, 0.2) !important;
+        background: #1e293b !important;
+        color: #e2e8f0 !important;
+        border-color: #334155 !important;
     }
 
     html[data-pms-theme="dark"] .form-control[type="time"]::-webkit-calendar-picker-indicator {
-        filter: invert(0.7);
+        filter: invert(0.75);
     }
 </style>
 
 <div class="attendance-create-container" data-live-preserve data-live-records-off>
-    <div class="ambient-orb orb-1"></div>
-    <div class="ambient-orb orb-2"></div>
-    <div class="ambient-orb orb-3"></div>
-
     <div class="content-wrapper">
         <!-- ===== HEADER ===== -->
         <div class="header-card">
-            <div class="header-title">
-                <h1>
-                    <i class="fas fa-user-plus me-2"></i>Add Attendance
-                </h1>
-                <p><i class="fas fa-info-circle me-1"></i>Mark attendance for employees</p>
+            <div class="header-left">
+                <div class="header-icon" aria-hidden="true">
+                    <i class="fas fa-user-plus"></i>
+                </div>
+                <div class="header-title">
+                    <h1>Add Attendance</h1>
+                    <p><i class="fas fa-info-circle"></i> Mark single or batch attendance for employees with custom work location and schedules</p>
+                </div>
+            </div>
+            <div class="header-year-pill">
+                <span class="header-year-dot" aria-hidden="true"></span>
+                <span>Year: {{ $year }}</span>
             </div>
         </div>
 
@@ -796,6 +735,10 @@
         <!-- ===== FORM CARD ===== -->
         <div class="form-card">
             <div class="form-body">
+                <div class="form-section-head">
+                    <span class="form-section-title">Attendance Configuration</span>
+                    <span class="form-required-note">* Required fields</span>
+                </div>
                 <form method="POST" action="{{ route('attendance.store') }}">
                     @csrf
                     <input type="hidden" name="staff_category" value="{{ request('staff_category', 'employee') }}">
@@ -849,9 +792,6 @@
                                     </option>
                                 @endforeach
                             </select>
-                            <label for="attendance_location" class="form-label mt-2">Custom location / address</label>
-                            <input type="text" name="clock_in_address" id="attendance_location" class="form-control" maxlength="1000" value="{{ old('clock_in_address') }}" placeholder="Enter the employee's attendance location">
-                            @error('clock_in_address')<span class="text-danger">{{ $message }}</span>@enderror
                             @error('location_id')
                                 <span class="text-danger">{{ $message }}</span>
                             @enderror
@@ -860,7 +800,7 @@
                         <!-- Mark Attendance By -->
                         <div class="form-group">
                             <label class="form-label">
-                                <i class="fas fa-calendar-check"></i> Mark Attendance By
+                                <i class="fas fa-calendar-check"></i> Mark Attendance By <span class="required-star">*</span>
                             </label>
                             <div class="radio-group">
                                 <label class="radio-option">
@@ -872,6 +812,41 @@
                                     <span class="radio-label">Date Range</span>
                                 </label>
                             </div>
+                        </div>
+
+                        <!-- Custom Location / Address -->
+                        <div class="form-group">
+                            <label for="attendance_location" class="form-label">
+                                <i class="fas fa-location-arrow"></i> Custom Location / Address
+                            </label>
+                            <input type="text" name="clock_in_address" id="attendance_location" class="form-control" maxlength="1000" value="{{ old('clock_in_address') }}" placeholder="Enter the employee's attendance location">
+                            @error('clock_in_address')<span class="text-danger">{{ $message }}</span>@enderror
+                        </div>
+
+                        <!-- Working From -->
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-laptop-house"></i> Working From <span class="required-star">*</span>
+                            </label>
+                            <select name="work_from_type" id="work_from_type" class="form-select" required>
+                                <option value="office">Office</option>
+                                <option value="home">Home</option>
+                                <option value="other">Other</option>
+                            </select>
+                            @error('work_from_type')
+                                <span class="text-danger">{{ $message }}</span>
+                            @enderror
+                        </div>
+
+                        <!-- Other Location -->
+                        <div class="form-group full-width d-none" id="other_location_div">
+                            <label class="form-label">
+                                <i class="fas fa-map-pin"></i> Other Location
+                            </label>
+                            <input type="text" name="working_from" id="other_location" class="form-control" placeholder="Enter location...">
+                            @error('other_location')
+                                <span class="text-danger">{{ $message }}</span>
+                            @enderror
                         </div>
 
                         <!-- Year -->
@@ -914,7 +889,10 @@
                             <label class="form-label">
                                 <i class="fas fa-calendar-week"></i> Date Range <span class="required-star">*</span>
                             </label>
-                            <input type="text" class="form-control" id="date_range" name="date_range" placeholder="MM/DD/YYYY - MM/DD/YYYY" value="{{ old('date_range', request('date') ? \Carbon\Carbon::parse(request('date'))->format('m/d/Y') . ' - ' . \Carbon\Carbon::parse(request('date'))->format('m/d/Y') : '') }}">
+                            <div class="date-input-wrap">
+                                <i class="far fa-calendar"></i>
+                                <input type="text" class="form-control" id="date_range" name="date_range" placeholder="MM/DD/YYYY - MM/DD/YYYY" value="{{ old('date_range', request('date') ? \Carbon\Carbon::parse(request('date'))->format('m/d/Y') . ' - ' . \Carbon\Carbon::parse(request('date'))->format('m/d/Y') : '') }}">
+                            </div>
                             <span class="form-text"><i class="fas fa-info-circle"></i> Select start and end dates</span>
                             @error('date_range')
                                 <span class="text-danger">{{ $message }}</span>
@@ -993,34 +971,8 @@
                             </div>
                         </div>
 
-                        <!-- Working From -->
-                        <div class="form-group">
-                            <label class="form-label">
-                                <i class="fas fa-laptop-house"></i> Working From <span class="required-star">*</span>
-                            </label>
-                            <select name="work_from_type" id="work_from_type" class="form-select" required>
-                                <option value="office">Office</option>
-                                <option value="home">Home</option>
-                                <option value="other">Other</option>
-                            </select>
-                            @error('work_from_type')
-                                <span class="text-danger">{{ $message }}</span>
-                            @enderror
-                        </div>
-
-                        <!-- Other Location -->
-                        <div class="form-group d-none" id="other_location_div">
-                            <label class="form-label">
-                                <i class="fas fa-map-pin"></i> Other Location
-                            </label>
-                            <input type="text" name="working_from" id="other_location" class="form-control" placeholder="Enter location...">
-                            @error('other_location')
-                                <span class="text-danger">{{ $message }}</span>
-                            @enderror
-                        </div>
-
                         <!-- Overwrite Attendance -->
-                        <div class="form-group">
+                        <div class="form-group full-width">
                             <label class="form-label"><i class="fas fa-exchange-alt"></i> Options</label>
                             <label class="checkbox-option">
                                 <input type="checkbox" name="overwrite_attendance" id="overwrite_attendance" class="form-check-input" value="yes">
@@ -1032,12 +984,12 @@
 
                     <!-- ===== ACTION BUTTONS ===== -->
                     <div class="form-actions">
-                        <button type="submit" class="btn-submit">
-                            <i class="fas fa-check-circle"></i> Save Attendance
-                        </button>
                         <a href="{{ route('leaves.index') }}" class="btn-cancel">
-                            <i class="fas fa-times-circle"></i> Cancel
+                            Cancel / Reset
                         </a>
+                        <button type="submit" class="btn-submit">
+                            <i class="fas fa-check"></i> Save Attendance
+                        </button>
                     </div>
 
                 </form>
