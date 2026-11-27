@@ -426,7 +426,15 @@
                             </td>
                             <td>
                                 <div class="role-info">
+                                    @php
+                                        $employeeDeptName = $employee->employeeDetail?->parentDepartment?->dpt_name
+                                            ?? $employee->employeeDetail?->department?->dpt_name;
+                                    @endphp
                                     <span class="role-name" style="color: var(--emp-role-color, #1f2937) !important; -webkit-text-fill-color: var(--emp-role-color, #1f2937) !important;">{{ $employee->employeeDetail?->designation?->name ?? '-' }}</span>
+                                    <span class="reports-to" style="color: var(--emp-reports-color, #64748b) !important; -webkit-text-fill-color: var(--emp-reports-color, #64748b) !important;" title="Department">
+                                        <i class="fas fa-building" style="color: #6366f1 !important; -webkit-text-fill-color: #6366f1 !important;"></i>
+                                        {{ $employeeDeptName ?: 'N/A' }}
+                                    </span>
                                     <span class="reports-to" style="color: var(--emp-reports-color, #64748b) !important; -webkit-text-fill-color: var(--emp-reports-color, #64748b) !important;">
                                         <i class="fa-solid fa-users fas" style="color: #22D3EE !important; -webkit-text-fill-color: #22D3EE !important; font-family: 'Font Awesome 6 Free', 'Font Awesome 5 Free' !important; font-weight: 900 !important; font-style: normal !important; display: inline-block !important;"></i>
                                         {{ $employee->employeeDetail?->reportingTo?->name ?? 'N/A' }}
@@ -536,7 +544,7 @@
                                                     data-employee-name="{{ $employee->name }}"
                                                     data-employee-code="{{ $employee->employeeDetail?->employee_id }}"
                                                     data-employee-role="{{ $employee->employeeDetail?->designation?->name ?? 'No designation' }}"
-                                                    data-employee-department="{{ $employee->employeeDetail?->department?->name ?? 'No department' }}"
+                                                    data-employee-department="{{ $employee->employeeDetail?->department_name ?? 'No department' }}"
                                                     data-employee-team="{{ (int) ($employee->subordinate_count ?? 0) }}"
                                                     data-delete-url="{{ route('employees.delete-permanent', $employee->id) }}"
                                                     data-inactive-url="{{ route('employees.inactive.update', $employee->id) }}">

@@ -65,7 +65,7 @@ class EmployeeController extends Controller
             $selectedCompanyId = (int) $viewer->company_id;
         }
 
-        $query = User::with(['company', 'employeeDetail.designation', 'employeeDetail.department'])
+        $query = User::with(['company', 'employeeDetail.designation', 'employeeDetail.department', 'employeeDetail.parentDepartment'])
             ->whereIn('role', ['employee', 'hr', 'manager'])
             ->whereNull('archived_at');
 

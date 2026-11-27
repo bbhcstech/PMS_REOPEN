@@ -14,8 +14,15 @@ class LetterheadSentLetter extends TenantModel
     protected $fillable = [
         'company_id', 'letterhead_id', 'template_key', 'ref_no', 'letter_date',
         'recipient_name', 'recipient_email', 'subject', 'body',
-        'signatory_name', 'signatory_title', 'pdf_path',
-        'delivery_status', 'delivery_error', 'sent_by',
+        'signatory_name', 'signatory_title',
+        'signature_id', 'signature_snapshot_path', 'signature_alignment',
+        'signature_width_mm', 'signature_applied_by', 'signature_applied_at',
+        'pdf_path', 'delivery_status', 'delivery_error', 'sent_by',
+    ];
+
+    protected $casts = [
+        'signature_width_mm' => 'integer',
+        'signature_applied_at' => 'datetime',
     ];
 
     public function letterhead(): BelongsTo
@@ -32,6 +39,9 @@ class LetterheadSentLetter extends TenantModel
     {
         if (! \Illuminate\Support\Facades\Schema::connection('tenant')->hasTable('letterhead_sent_letters')) {
             (require database_path('migrations/tenant/2026_10_10_160000_create_letterhead_sent_letters_table.php'))->up();
+        }
+        if (! \Illuminate\Support\Facades\Schema::connection('tenant')->hasColumn('letterhead_sent_letters', 'signature_snapshot_path')) {
+            (require database_path('migrations/tenant/2026_11_28_000002_add_signature_snapshot_to_letterhead_sent_letters_table.php'))->up();
         }
     }
 

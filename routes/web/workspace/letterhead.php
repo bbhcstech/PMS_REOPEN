@@ -1,11 +1,23 @@
 <?php
 
 use App\Http\Controllers\Admin\LetterheadController;
+use App\Http\Controllers\Admin\LetterheadSignatureController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/letterhead', [LetterheadController::class, 'index'])->name('letterhead.index');
 Route::get('/letterhead/create', [LetterheadController::class, 'create'])->name('letterhead.create');
 Route::post('/letterhead', [LetterheadController::class, 'store'])->name('letterhead.store');
+Route::post('/letterhead/placement/upload', [LetterheadController::class, 'savePlacementUpload'])->name('letterhead.placement.upload');
+Route::delete('/letterhead/placement/remove', [LetterheadController::class, 'removePlacementUpload'])->name('letterhead.placement.remove');
+
+// Authorized Electronic Signatures
+Route::get('/letterhead/signatures', [LetterheadSignatureController::class, 'index'])->name('letterhead.signatures.index');
+Route::post('/letterhead/signatures', [LetterheadSignatureController::class, 'store'])->name('letterhead.signatures.store');
+Route::put('/letterhead/signatures/{signatureId}', [LetterheadSignatureController::class, 'update'])->name('letterhead.signatures.update');
+Route::post('/letterhead/signatures/{signatureId}/default', [LetterheadSignatureController::class, 'setDefault'])->name('letterhead.signatures.default');
+Route::post('/letterhead/signatures/{signatureId}/toggle-active', [LetterheadSignatureController::class, 'toggleActive'])->name('letterhead.signatures.toggle');
+Route::delete('/letterhead/signatures/{signatureId}', [LetterheadSignatureController::class, 'destroy'])->name('letterhead.signatures.destroy');
+Route::get('/letterhead/signatures/{signatureId}/image', [LetterheadSignatureController::class, 'image'])->name('letterhead.signatures.image');
 Route::post('/letterhead/export-pdf', [LetterheadController::class, 'exportPdf'])->name('letterhead.export-pdf');
 Route::post('/letterhead/export-word', [LetterheadController::class, 'exportWord'])->name('letterhead.export-word');
 Route::get('/letterhead/demo-download', [LetterheadController::class, 'demoDownload'])->name('letterhead.demo-download');

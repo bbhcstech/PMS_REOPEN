@@ -67,6 +67,18 @@ class EmployeeDetail extends TenantModel
         return $this->belongsTo(Department::class, 'department_id');
     }
 
+    public function parentDepartment()
+    {
+        return $this->belongsTo(ParentDepartment::class, 'parent_dpt_id');
+    }
+
+    public function getDepartmentNameAttribute(): ?string
+    {
+        return $this->parentDepartment?->dpt_name
+            ?? $this->department?->dpt_name
+            ?? null;
+    }
+
     public function reportingTo()
     {
         return $this->belongsTo(User::class, 'reporting_to');

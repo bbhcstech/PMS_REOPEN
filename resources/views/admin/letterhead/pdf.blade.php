@@ -59,7 +59,7 @@
             font-family: 'DejaVu Sans', 'DejaVu Sans', sans-serif;
             color: #1e293b;
             font-size: 9.5pt;
-            line-height: 1.6;
+            line-height: 1.42;
             margin: 0;
             padding: 0;
         }
@@ -122,7 +122,7 @@
         .doc-meta-table {
             width: 100%;
             border-collapse: collapse;
-            margin: 0 0 6mm 0;
+            margin: 0 0 4.5mm 0;
         }
         .doc-meta-table td {
             font-size: 8.5pt;
@@ -144,9 +144,9 @@
         .doc-date { text-align: right; }
 
         .recipient-box {
-            margin: 0 0 6mm 0;
+            margin: 0 0 4.5mm 0;
             font-size: 9.5pt;
-            line-height: 1.5;
+            line-height: 1.4;
         }
         .recipient-to {
             color: #64748b;
@@ -163,8 +163,8 @@
         .recipient-line { color: #475569; }
 
         .doc-subject {
-            margin: 0 0 6mm 0;
-            padding: 3mm 4mm;
+            margin: 0 0 4.5mm 0;
+            padding: 2.5mm 4mm;
             border-left: 3px solid {{ $accent }};
             background: #f1f5ff;
             font-size: 10pt;
@@ -174,15 +174,15 @@
         .doc-subject span { color: {{ $accent }}; }
 
         .doc-body p {
-            margin: 0 0 4mm 0;
-            text-align: justify;
+            margin: 0 0 2.6mm 0;
+            text-align: left;
             font-size: 9.5pt;
-            line-height: 1.65;
+            line-height: 1.42;
             color: #334155;
         }
 
         .signature-section {
-            margin-top: 10mm;
+            margin-top: 7mm;
             width: 100%;
             border-collapse: collapse;
             page-break-inside: avoid;
@@ -190,6 +190,9 @@
         .sig-block { width: 60%; vertical-align: bottom; padding: 0; }
         .seal-block { width: 40%; vertical-align: bottom; text-align: right; padding: 0; }
         .sig-closing { color: #475569; font-size: 9pt; margin-bottom: 12mm; }
+        .sig-closing--signed { margin-bottom: 3mm; }
+        .sig-image-wrap { margin: 1mm 0 2mm 0; }
+        .sig-image-wrap img { display: inline-block; height: auto; max-height: 28mm; }
         .sig-line { border-top: 1px solid #94a3b8; width: 60mm; margin-bottom: 2mm; }
         .sig-name { font-size: 10pt; font-weight: bold; color: #0f172a; }
         .sig-title { font-size: 8.5pt; color: #64748b; }
@@ -250,24 +253,46 @@
             <div class="doc-subject"><span>Subject:</span> {{ $doc['subject'] }}</div>
         @endif
 
+        @php
+            $rawBodyText = isset($doc['body']) && $doc['body'] !== ''
+                ? (string) $doc['body']
+                : implode("\n", is_array($paragraphs) ? $paragraphs : []);
+            $bodyBlocks = preg_split('/\r\n\s*\r\n|\r\s*\r|\n\s*\n/', trim($rawBodyText)) ?: [];
+        @endphp
         <div class="doc-body">
-            @if(count($paragraphs) > 0)
-                @foreach($paragraphs as $para)
-                    @php $trimmed = trim($para); @endphp
-                    @if($trimmed !== '')
-                        <p>{{ $trimmed }}</p>
-                    @endif
-                @endforeach
-            @elseif(!empty($doc['body']))
-                <p>{!! nl2br(e($doc['body'])) !!}</p>
-            @endif
+            @foreach($bodyBlocks as $block)
+                @php
+                    $lines = array_values(array_filter(
+                        array_map('trim', preg_split('/\r\n|\r|\n/', $block) ?: []),
+                        fn ($line) => $line !== ''
+                    ));
+                @endphp
+                @if(count($lines) > 0)
+                    <p>{!! implode('<br>', array_map('e', $lines)) !!}</p>
+                @endif
+            @endforeach
         </div>
 
+        @php
+            $sigPath = $doc['signature_image'] ?? null;
+            $sigFile = ($sigPath && is_file($sigPath)) ? $sigPath : null;
+            $rawSigAlign = $doc['signature_alignment'] ?? 'left';
+            $sigAlign = in_array($rawSigAlign, ['left', 'center', 'right'], true)
+                ? $rawSigAlign
+                : 'left';
+            $sigWidthMm = max(15, min(90, (int) ($doc['signature_width_mm'] ?? 40)));
+        @endphp
         <table class="signature-section">
             <tr>
-                <td class="sig-block">
-                    <div class="sig-closing">Sincerely,</div>
-                    <div class="sig-line"></div>
+                <td class="sig-block" style="text-align: {{ $sigAlign }};">
+                    <div class="sig-closing {{ $sigFile ? 'sig-closing--signed' : '' }}">Sincerely,</div>
+                    @if($sigFile)
+                        <div class="sig-image-wrap" style="text-align: {{ $sigAlign }};">
+                            <img src="{{ $imageSrc($sigFile) }}" style="width: {{ $sigWidthMm }}mm; height: auto;" alt="Authorized Signature">
+                        </div>
+                    @else
+                        <div class="sig-line" style="{{ $sigAlign === 'center' ? 'margin-left:auto;margin-right:auto;' : ($sigAlign === 'right' ? 'margin-left:auto;' : '') }}"></div>
+                    @endif
                     <div class="sig-name">{{ $doc['signatory_name'] ?? (auth()->user()?->name ?: 'Authorized Signatory') }}</div>
                     <div class="sig-title">{{ $doc['signatory_title'] ?? 'Authorized Signatory' }}</div>
                     <div class="sig-title">{{ $companyName }}</div>
