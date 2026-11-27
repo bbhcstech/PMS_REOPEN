@@ -1,6 +1,6 @@
 @extends('admin.layout.app')
 
-@section('title', ! empty($ownLeavesView) ? 'My Leave Requests' : ($isAdmin ? (request('staff_category') === 'authority' ? 'Higher-level leaves' : 'Leave Management') : 'My Leaves'))
+@section('title', ! empty($ownLeavesView) ? 'My Leave Requests' : ($isAdmin ? (request('staff_category') === 'authority' ? 'HR Leave' : 'Employee Leave') : 'My Leaves'))
 
 @section('content')
 @php $leaveRoute = ! empty($ownLeavesView) ? 'leaves.mine' : (request('staff_category') === 'authority' ? 'admin.authority-leaves' : 'leaves.index'); @endphp
@@ -11,7 +11,7 @@
         <i class="far fa-calendar-check"></i>
         <span>Dashboard</span>
         <span class="crumb-sep">/</span>
-        <strong class="crumb-current">{{ ! empty($ownLeavesView) ? 'My Leave Requests' : ($isAdmin ? (request('staff_category') === 'authority' ? 'Higher-level leaves' : 'Leave Management') : 'My Leaves') }}</strong>
+        <strong class="crumb-current">{{ ! empty($ownLeavesView) ? 'My Leave Requests' : ($isAdmin ? (request('staff_category') === 'authority' ? 'HR Leave' : 'Employee Leave') : 'My Leaves') }}</strong>
     </div>
 
     <!-- Header Card -->
@@ -19,17 +19,11 @@
         <div class="leave-hero-main">
             <div class="leave-hero-icon"><i class="fas fa-calendar-alt"></i></div>
             <div class="leave-hero-text">
-                <h1>{{ ! empty($ownLeavesView) ? 'My Leave Requests' : ($isAdmin ? 'Leave Management' : 'My Leave Dashboard') }}</h1>
+                <h1>{{ ! empty($ownLeavesView) ? 'My Leave Requests' : ($isAdmin ? (request('staff_category') === 'authority' ? 'HR Leave Management' : 'Employee Leave Management') : 'My Leave Dashboard') }}</h1>
                 <p>{{ ! empty($ownLeavesView) ? 'Your own leave requests to the company admin: status, approver and remaining balance.' : ($isAdmin ? 'Manage policy, balances, approvals, unpaid leaves, and employee leave history.' : 'Apply for leave, track approvals, and monitor your April-March balance.') }}</p>
             </div>
         </div>
         <div class="leave-hero-actions">
-            @if(\App\Services\WorkforceAccess::isAdmin(auth()->user()) && auth()->user()->canViewModule('higher-level-leaves'))
-                <a href="{{ route(request('staff_category') === 'authority' ? 'leaves.index' : 'admin.authority-leaves') }}" class="btn btn-light">
-                    <i class="fas fa-users"></i> {{ request('staff_category') === 'authority' ? 'Employee Leaves' : 'Higher-level Leaves' }}
-                    @if(request('staff_category') !== 'authority' && $authorityPendingCount)<span class="badge bg-primary">{{ $authorityPendingCount }} pending</span>@endif
-                </a>
-            @endif
             <a href="{{ route('leaves.create', ['staff_category' => request('staff_category')]) }}" class="btn btn-primary"><i class="fas fa-plus"></i> Apply Leave</a>
             @if(! $isAdmin)
                 <a href="{{ route('leaves.apology-letters.create') }}" class="btn btn-light"><i class="fas fa-envelope-open-text"></i> Write Apology Letter</a>
@@ -47,10 +41,6 @@
                         <span class="archive-count-badge">{{ $archivedCount }}</span>
                     @endif
                 </a>
-                <form method="POST" action="{{ route('leaves.archive-all', ['staff_category' => request('staff_category')]) }}" class="leave-inline-form" onsubmit="return confirm('Archive all active leave requests? They can be restored later.');">
-                    @csrf
-                    <button type="submit" class="btn btn-light"><i class="fas fa-boxes-packing"></i> Archive All</button>
-                </form>
             @endif
         </div>
     </section>

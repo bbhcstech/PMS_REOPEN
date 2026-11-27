@@ -62,7 +62,7 @@ $check($mine === [5, 21, 22, 24, 26], 'My Leave Requests query returns all of HR
 $controller = app(App\Http\Controllers\LeaveController::class);
 $request = fn ($query = []) => Illuminate\Http\Request::create('/leaves', 'GET', $query + ['date' => '2026-10-01']);
 foreach (['day' => [22, 21], 'week' => [24, 22, 21, 26], 'month' => [5, 24, 22, 21]] as $period => $ids) {
-    $view = $controller->index($request(['period' => $period]));
+    $view = $controller->myLeaves($request(['period' => $period]));
     $report = $view->getData();
     $check($view->name() === 'admin.leaves.personal' && $report['leaves']->pluck('id')->all() === $ids, "HR $period report shows only their overlapping requests");
     $check($report['counts']->sum() === count($ids), "HR $period summary matches its date range");
@@ -73,13 +73,11 @@ foreach (['day' => [22, 21], 'week' => [24, 22, 21, 26], 'month' => [5, 24, 22, 
     $check(str_contains($csv->headers->get('Content-Disposition'), "my-leave-$period-") && substr_count(trim($export), "\n") === count($ids), "HR $period export matches the report");
     $check(str_contains($export, "' =1+1") && !str_contains($export, 'Employee private reason') && !str_contains($export, 'Archived request'), 'CSV escapes spreadsheet formulas and excludes unrelated records');
 }
-foreach (['index', 'myLeaves', 'leaveReport'] as $action) {
+foreach (['myLeaves', 'leaveReport'] as $action) {
     $view = $controller->$action($request(['period' => 'week', 'status' => 'unpaid']));
     $check($view->getData()['leaves']->pluck('id')->all() === [22], "$action uses the personal request and status filters");
 }
-foreach (['employee' => 8, 'user_id' => 6, 'company_id' => 2] as $key => $value) {
-    $check($denied(fn () => $controller->export($request([$key => $value]))), "Forged $key is refused on export");
-}
+$check($denied(fn () => $controller->export($request(['company_id' => 2]))), 'Forged company_id is refused on export');
 $html = Blade::render(preg_replace('/^@(extends|section|endsection).*$/m', '', file_get_contents(resource_path('views/admin/leaves/personal.blade.php'))),
     $report + ['errors' => new \Illuminate\Support\ViewErrorBag]);
 $check(str_contains($html, 'Export CSV') && str_contains($html, 'View details') && !str_contains($html, 'name="user_id"') && !str_contains($html, '/edit'), 'Report renders export and details without employee or update controls');
@@ -104,13 +102,12 @@ $check($hit(5, 'show', 21) === 'allowed', 'HR can open their own pending request
 $check($hit(5, 'show', 22) === 'allowed', 'HR can open their own approved request');
 $check($denied(fn () => $hit(5, 'edit', 21)), 'HR cannot edit their own request (admin manages it)');
 Auth::guard('web')->setUser($hr);
-$check(Leave::find(6) === null, 'HR still cannot load the Manager\'s leave (hidden by the company scope, so the page is not found)');
+$check(Leave::find(6) !== null, 'HR can load non-HR Manager leave for Employee Leaves management');
 Auth::guard('web')->setUser($admin);
 $employeeLeave = Leave::findOrFail(23);
-$check($denied(fn () => $hit(5, 'show', $employeeLeave)), 'HR cannot open an employee request through a direct details URL');
-$check($denied(fn () => $controller->show($employeeLeave)), 'Leave details independently enforce HR ownership');
+$check($hit(5, 'show', $employeeLeave) === 'allowed', 'HR can open an employee request in Employee Leaves');
 foreach (['update', 'updateStatus', 'updatePaidStatus', 'destroy', 'archiveLeave', 'archiveAll', 'bulkAction', 'restore'] as $action) {
-    $check($denied(fn () => $hit(5, $action, 21)), "HR cannot $action leave records");
+    $check($denied(fn () => $hit(5, $action, 21)), "HR cannot $action their own HR leave records");
 }
 $route = app('router')->getRoutes()->match(Illuminate\Http\Request::create('/leaves/export'));
 $check($route->getName() === 'leaves.export', 'The export URL resolves to export before generic leave details');
@@ -118,8 +115,13 @@ $files = new App\Http\Controllers\WorkforceFileController;
 $ownLeave = Leave::findOrFail(22);
 Storage::fake('local')->put($ownLeave->getRawOriginal('attachment'), 'fixture');
 $check($files->attachment($ownLeave)->headers->get('Cache-Control') === 'no-store, private', 'HR can open their own private attachment');
-$check($denied(fn () => $files->attachment($employeeLeave)), 'HR cannot open another employee’s attachment');
-Storage::disk('local')->delete($ownLeave->getRawOriginal('attachment'));
+DB::table('leaves')->where('id', $employeeLeave->id)->update(['attachment' => 'authority-leave/1/emp-23.pdf']);
+$employeeLeave->refresh();
+Storage::disk('local')->put('authority-leave/1/emp-23.pdf', 'fixture-emp');
+$check($files->attachment($employeeLeave)->headers->get('Cache-Control') === 'no-store, private', 'HR can open non-HR employee leave attachment');
+Storage::disk('local')->delete([$ownLeave->getRawOriginal('attachment'), 'authority-leave/1/emp-23.pdf']);
+DB::table('leaves')->where('id', $employeeLeave->id)->update(['attachment' => null]);
+$employeeLeave->refresh();
 
 // The leave page shows Approve / Reject only when LeaveService::canReview() allows it (checked below).
 
@@ -130,11 +132,11 @@ $check($denied(fn () => $service->approve(Leave::findOrFail(21), $hr)), 'HR appr
 Auth::guard('web')->setUser($admin);
 $check($service->canReview(Leave::findOrFail(21), $admin), 'Company admin can review HR\'s request');
 Auth::guard('web')->setUser($hr);
-$check(! $service->canReview($employeeLeave, $hr), 'HR cannot review employee requests');
+$check($service->canReview($employeeLeave, $hr), 'HR can review non-HR employee requests');
 Auth::guard('web')->setUser($admin);
 $managerLeave = Leave::findOrFail(6);
 Auth::guard('web')->setUser($hr);
-$check(! $service->canReview($managerLeave, $hr), 'HR cannot review the Manager\'s request');
+$check($service->canReview($managerLeave, $hr), 'HR can review non-HR Manager requests in Employee Leaves');
 
 echo "Manager personal access\n";
 $check($hit(6, 'myLeaves') === 'allowed', 'Manager can open My Leave Requests');
@@ -211,6 +213,8 @@ foreach ([
     '2026_02_09_130311_create_leave_balances_table.php',
     '2026_06_17_010000_upgrade_leave_management_system.php',
     '2026_06_17_030000_add_paid_unpaid_days_to_leaves_table.php',
+    '2026_06_18_130000_create_leave_apology_letters_table.php',
+    '2026_06_18_140000_add_archived_at_to_leave_apology_letters_table.php',
 ] as $migration) (require database_path('migrations/tenant/'.$migration))->up();
 
 Auth::guard('web')->setUser($hr);
@@ -285,6 +289,55 @@ foreach (['index', 'show', 'personal', 'partials/personal-application'] as $view
     token_get_all(app('blade.compiler')->compileString(file_get_contents(resource_path("views/admin/leaves/{$view}.blade.php"))), TOKEN_PARSE);
 }
 $check(true, 'leave index and show views compile');
+
+Schema::create('app_settings', function ($table) {
+    $table->id();
+    $table->string('key');
+    $table->text('value')->nullable();
+});
+Auth::guard('web')->setUser($hr);
+$empLeaveRequest = Request::create('/leaves', 'GET');
+app()->instance('request', $empLeaveRequest);
+$hrEmpView = $controller->index($empLeaveRequest);
+$hrEmpData = $hrEmpView->getData();
+$check($hrEmpView->name() === 'admin.leaves.index'
+    && ! $hrEmpData['employees']->pluck('id')->contains($hr->id)
+    && $hrEmpData['employees']->pluck('id')->contains(6)
+    && $hrEmpData['employees']->pluck('id')->contains(8), 'HR Employee Leaves lists all company employees except HR');
+$check(! $hrEmpData['leaves']->getCollection()->pluck('user_id')->contains($hr->id)
+    && $hrEmpData['leaves']->getCollection()->pluck('id')->contains(23), 'HR Employee Leaves excludes HR requests and includes employee requests');
+$empLeaveHtml = Blade::render(preg_replace('/^@(extends|section|endsection).*$/m', '', file_get_contents(resource_path('views/admin/leaves/index.blade.php'))),
+    $hrEmpData + ['errors' => new \Illuminate\Support\ViewErrorBag]);
+$check(! str_contains($empLeaveHtml, 'Higher-level Leaves') && ! str_contains($empLeaveHtml, 'Archive All') && str_contains($empLeaveHtml, 'Employee Leave Management') && str_contains($empLeaveHtml, '<strong class="crumb-current">Employee Leave</strong>'), 'Employee Leaves shows Employee Leave breadcrumb/heading and hides Higher-level Leaves and Archive All buttons');
+$check($controller->show($employeeLeave)->name() === 'admin.leaves.show', 'Leave details allow HR to view employee requests');
+
+Auth::guard('web')->setUser($admin);
+$hrLeaveRequest = Request::create('/admin/authority-leaves', 'GET');
+app()->instance('request', $hrLeaveRequest);
+$hrLeaveData = $controller->authorityIndex($hrLeaveRequest)->getData();
+$hrLeaveHtml = Blade::render(preg_replace('/^@(extends|section|endsection).*$/m', '', file_get_contents(resource_path('views/admin/leaves/index.blade.php'))),
+    $hrLeaveData + ['errors' => new \Illuminate\Support\ViewErrorBag]);
+$check($hrLeaveData['employees']->pluck('id')->all() === [5], 'HR Leave employee dropdown only contains HR accounts');
+$check($hrLeaveData['leaves']->getCollection()->pluck('user_id')->unique()->all() === [5], 'HR Leave list only contains HR leaves and excludes manager/employee leaves');
+$check(!str_contains($hrLeaveHtml, '> Employee Leaves') && !str_contains($hrLeaveHtml, 'Archive All') && str_contains($hrLeaveHtml, 'HR Leave Management') && str_contains($hrLeaveHtml, '<strong class="crumb-current">HR Leave</strong>'), 'HR Leave shows HR Leave breadcrumb/heading and hides Employee Leaves and Archive All buttons');
+$check($service->canReview($newLeave->fresh(), $admin) && ! $service->canReview($newLeave->fresh(), $hr) && ! $service->canReview($newLeave->fresh(), User::findOrFail(6)), 'Only company admin can review HR leave');
+try {
+    $service->approve($newLeave->fresh(), User::findOrFail(6));
+    $check(false, 'Non-admin manager could approve HR leave');
+} catch (\Symfony\Component\HttpKernel\Exception\HttpException $e) {
+    $check($e->getStatusCode() === 403, 'Non-admin approval of HR leave is rejected with 403');
+}
+Schema::table('attendances', function ($table) {
+    foreach (['status', 'clock_in_address', 'staff_role_name', 'staff_designation', 'staff_designation_level', 'updated_at', 'created_at'] as $col) {
+        if (! Schema::hasColumn('attendances', $col)) $table->string($col)->nullable();
+    }
+});
+$approvedByAdmin = $service->approve($newLeave->fresh(), $admin, 'Approved by admin');
+$check($approvedByAdmin->status === 'approved' && (int) $approvedByAdmin->approved_by === (int) $admin->id, 'Admin can approve HR leave');
+$approvedByHr = $service->approve($employeeLeave->fresh(), $hr, 'Approved by HR');
+$rejectedByHr = $service->reject($managerLeave->fresh(), $hr, 'Rejected by HR');
+$check($approvedByHr->status === 'approved' && (int) $approvedByHr->approved_by === (int) $hr->id, 'HR can approve non-HR employee leave');
+$check($rejectedByHr->status === 'rejected' && (int) $rejectedByHr->rejected_by === (int) $hr->id, 'HR can reject non-HR manager leave in Employee Leaves');
 
 echo $failures ? "\nFAIL: {$failures} check(s) failed\n" : "\nPASS: HR personal reports, CSV, private details, embedded applications and admin review.\n";
 exit($failures ? 1 : 0);

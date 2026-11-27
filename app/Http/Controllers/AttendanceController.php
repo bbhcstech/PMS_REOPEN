@@ -167,7 +167,7 @@ class AttendanceController extends Controller
         $query = User::with(['employeeDetail.designation', 'companyStaffRole'])->where('company_id', $actor->company_id)
             ->whereRaw('LOWER(COALESCE(role, ?)) <> ?', ['', 'client'])->whereNull('archived_at');
         if ($authorityView) {
-            \App\Services\WorkforceAccess::usersWithHistory($query, 'authority', 'attendances');
+            \App\Services\WorkforceAccess::hrUsers($query);
         } elseif ($canManage) {
             \App\Services\WorkforceAccess::attendanceEmployees($query);
         } else {
@@ -203,7 +203,6 @@ class AttendanceController extends Controller
         }
         $recordsQuery = Attendance::whereIn('user_id', $recordEmployeeIds)
             ->whereNull('archived_at')->whereBetween('date', [$rangeStart->toDateString(), $rangeEnd->toDateString()])->orderBy('id');
-        if ($authorityView) \App\Services\WorkforceAccess::records($recordsQuery, 'authority');
         $records = $recordEmployeeIds->isNotEmpty() ? $recordsQuery->get() : collect();
         $holidayQuery = Holiday::whereBetween('date', [$rangeStart->toDateString(), $rangeEnd->toDateString()]);
         if (Schema::connection('tenant')->hasColumn('holidays', 'archived_at')) $holidayQuery->whereNull('archived_at');
@@ -215,7 +214,6 @@ class AttendanceController extends Controller
         $leaves = collect();
         if ($recordEmployeeIds->isNotEmpty()) {
             $leaveQuery = Leave::whereIn('user_id', $recordEmployeeIds)->where('status', 'approved');
-            if ($authorityView) \App\Services\WorkforceAccess::records($leaveQuery, 'authority');
             if (Schema::connection('tenant')->hasColumn('leaves', 'archived_at')) $leaveQuery->whereNull('archived_at');
             $leaveQuery->where(function ($query) use ($rangeStart, $rangeEnd) {
                 $query->whereBetween('date', [$rangeStart->toDateString(), $rangeEnd->toDateString()]);

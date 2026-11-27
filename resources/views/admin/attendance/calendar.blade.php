@@ -13,7 +13,7 @@
 @endphp
 <div class="attendance-calendar-page" data-live-preserve data-live-records-off>
     <header class="ac-panel ac-heading">
-        <div class="ac-title"><span class="ac-title-icon" aria-hidden="true">📅</span><div><span class="ac-eyebrow">PEOPLE · ATTENDANCE</span><h1>{{ request('staff_category') === 'authority' ? 'Higher-level attendance' : 'Attendance calendar' }}</h1><p>A clear picture of every working day.</p></div></div>
+        <div class="ac-title"><span class="ac-title-icon" aria-hidden="true">📅</span><div><span class="ac-eyebrow">PEOPLE · ATTENDANCE</span><h1>{{ request('staff_category') === 'authority' ? 'HR Attendance' : 'Attendance calendar' }}</h1><p>A clear picture of every working day.</p></div></div>
         <div class="ac-actions">
             <a class="ac-button" href="{{ route($attendanceRoute, ['view' => 'team', 'month' => $month, 'year' => $year]) }}">Table view</a>
             <a class="ac-button ac-primary" href="{{ $navigation($start) }}" aria-current="page">Calendar view</a>

@@ -16,7 +16,14 @@ trait HasWorkforceRecords
             $table = $query->getModel()->getTable();
             $query->whereHas('user', fn ($user) => $user->where('company_id', $companyId ?: 0));
             if (! WorkforceAccess::isAdmin(auth()->user())) {
-                $query->where($table . '.user_id', auth()->id());
+                if ($table === 'leaves' && WorkforceAccess::isHr(auth()->user())) {
+                    $query->where(function ($q) use ($table) {
+                        $q->where($table . '.user_id', auth()->id())
+                            ->orWhereHas('user', fn ($u) => WorkforceAccess::attendanceEmployees($u));
+                    });
+                } else {
+                    $query->where($table . '.user_id', auth()->id());
+                }
             }
             if ($query->getModel()->getConnection()->getSchemaBuilder()->hasColumn($table, 'company_id')) {
                 $query->where(fn ($q) => $q->where($table . '.company_id', $companyId ?: 0)->orWhereNull($table . '.company_id'));
@@ -27,7 +34,11 @@ trait HasWorkforceRecords
             $user = User::findOrFail($record->user_id);
             if (auth()->check()) TenantScope::authorizeCompany($user->company_id);
             if (auth()->check() && ! TenantScope::isPlatformAdmin() && ! WorkforceAccess::isAdmin(auth()->user())) {
-                abort_unless((int) $user->id === (int) auth()->id(), 403);
+                abort_unless(
+                    (int) $user->id === (int) auth()->id()
+                    || ($record->getTable() === 'leaves' && WorkforceAccess::canManageEmployeeLeave(auth()->user(), $user)),
+                    403
+                );
             }
             $schema = $record->getConnection()->getSchemaBuilder();
             if ($schema->hasColumn($record->getTable(), 'company_id')) $record->company_id = $user->company_id;

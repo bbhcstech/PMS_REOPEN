@@ -347,11 +347,11 @@ trait AttendanceReports
 
         $year = is_numeric($yearRaw) ? (int)$yearRaw : (int) now()->year;
 
-        // Pick users list for Attendance section (all non-HR employees by default, or authority when explicitly requested)
+        // Pick users list for Attendance section (HR-only for HR Attendance, or all non-HR employees)
         $isAuthority = $request->input('staff_category') === 'authority';
         $userQuery = User::where('company_id', $user->company_id)->whereNull('archived_at');
         if ($isAuthority) {
-            \App\Services\WorkforceAccess::usersWithHistory($userQuery, 'authority', 'attendances');
+            \App\Services\WorkforceAccess::hrUsers($userQuery);
         } else {
             \App\Services\WorkforceAccess::attendanceEmployees($userQuery);
         }
@@ -369,7 +369,7 @@ trait AttendanceReports
         // - month/year of date (fallback)
         $attendanceQuery = Attendance::query();
         if ($isAuthority) {
-            \App\Services\WorkforceAccess::records($attendanceQuery, 'authority');
+            $attendanceQuery->whereHas('user', fn ($userFilter) => \App\Services\WorkforceAccess::hrUsers($userFilter));
         } else {
             $attendanceQuery->whereHas('user', fn ($userFilter) => \App\Services\WorkforceAccess::attendanceEmployees($userFilter));
         }

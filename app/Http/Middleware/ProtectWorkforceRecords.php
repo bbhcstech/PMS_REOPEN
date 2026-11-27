@@ -30,15 +30,26 @@ class ProtectWorkforceRecords
                     abort_unless(in_array($action, $allowed, true), 403, 'Your leave and attendance records are managed only by the company admin.');
                 }
                 if ($leave && $isHr) {
-                    abort_unless(in_array($action, [
-                        'index', 'myLeaves', 'leaveReport', 'export', 'calendar', 'calendarData',
-                        'create', 'store', 'show', 'apologyLetters', 'showApologyLetter',
-                        'createApologyLetter', 'storeApologyLetter', 'downloadApologySample',
-                    ], true), 403, 'Only the company admin may manage leave records.');
-                    if ($action === 'show') {
-                        $record = $route->parameter('leave');
-                        $owner = $record instanceof \App\Models\Leave ? $record->user_id : \App\Models\Leave::findOrFail($record)->user_id;
-                        abort_unless((int) $owner === (int) $actor->id, 403);
+                    abort_if(in_array($action, ['authorityIndex', 'updatePolicy', 'storeLeaveType', 'resetEmployeeLeaves', 'archiveAll'], true), 403, 'Only the company admin may perform this leave management action.');
+                    $ids = [];
+                    foreach (['leave', 'id'] as $parameter) {
+                        $value = $route->parameter($parameter);
+                        if ($value instanceof \App\Models\Leave) $ids[] = $value->id;
+                        elseif (is_numeric($value)) $ids[] = (int) $value;
+                    }
+                    if ($action === 'updatePaidStatus') $ids[] = $request->integer('leave_id');
+                    if (in_array($action, ['bulkArchive', 'bulkAction', 'bulkDelete'], true)) {
+                        $ids = array_merge($ids, (array) $request->input('ids', []));
+                    }
+                    if ($ids && ! str_contains(strtolower($action), 'apology')) {
+                        foreach (\App\Models\Leave::with('user')->whereIn('id', $ids)->get() as $record) {
+                            $ownReadOnly = in_array($action, ['show', 'downloadApologySample'], true) && (int) $record->user_id === (int) $actor->id;
+                            abort_unless(
+                                $record->user && ($ownReadOnly || WorkforceAccess::canManageEmployeeLeave($actor, $record->user)),
+                                403,
+                                'Only the company admin may manage HR leave records.'
+                            );
+                        }
                     }
                 }
             }
