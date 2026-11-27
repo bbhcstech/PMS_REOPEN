@@ -1196,7 +1196,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const isResolve = btn.classList.contains('resolve-alert-btn');
         const originalHtml = btn.innerHTML;
         btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ' + (isResolve ? 'Resolving...' : 'Saving...');
+        btn.innerHTML = (isResolve ? 'Resolving...' : 'Saving...');
 
         postAlertAction(alertKey, isResolve ? 'resolve' : 'read')
             .then(() => {
@@ -1247,7 +1247,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (refreshAlertsBtn) {
         refreshAlertsBtn.addEventListener('click', function() {
             this.disabled = true;
-            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Refreshing...';
+            this.innerHTML = 'Refreshing...';
             setTimeout(() => {
                 this.disabled = false;
                 this.innerHTML = '<i class="fas fa-sync-alt"></i> Refresh Alerts';
@@ -1362,7 +1362,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!drawerAlertKey || button.disabled) return;
             const originalHtml = button.innerHTML;
             button.disabled = true;
-            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+            button.innerHTML = 'Saving...';
 
             postAlertAction(drawerAlertKey, action)
                 .then(() => {

@@ -1013,7 +1013,7 @@ document.addEventListener('DOMContentLoaded', function() {
   /* ─── 5. REFRESH ─── */
   document.getElementById('refreshBtn')?.addEventListener('click', function() {
     this.disabled = true;
-    this.innerHTML = '<i class="bx bx-loader bx-spin"></i> Refreshing...';
+    this.textContent = 'Refreshing...';
     setTimeout(() => {
       this.disabled = false;
       this.innerHTML = '<i class="bx bx-refresh"></i> Refresh';

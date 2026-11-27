@@ -66,7 +66,7 @@
                 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
                     <span style="font-size: 11px; font-weight: 800; color: var(--slate-muted); text-transform: uppercase; letter-spacing: 0.6px;">IN PROGRESS</span>
                     <div class="dev-kpi-icon-blue" style="width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 19px; flex-shrink: 0;">
-                        <i class="bx bx-loader-alt bx-spin"></i>
+                        <i class="bx bx-loader-alt"></i>
                     </div>
                 </div>
                 <div style="font-size: 32px; font-weight: 900; color: #2563eb; line-height: 1; margin-bottom: 6px;">{{ $kpis['in_progress'] }}</div>

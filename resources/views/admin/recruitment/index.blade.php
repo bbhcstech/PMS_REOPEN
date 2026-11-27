@@ -2126,7 +2126,7 @@ function saveInlineDepartment() {
 
     if (btn) {
         btn.disabled = true;
-        btn.innerHTML = '<i class="bx bx-loader-alt bx-spin me-1"></i> Saving...';
+        btn.textContent = 'Saving...';
     }
 
     fetch('{{ route("departments.store") }}', {

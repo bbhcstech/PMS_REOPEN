@@ -943,7 +943,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const month = document.getElementById('simMonth').value;
 
             btnRunSim.disabled = true;
-            btnRunSim.innerHTML = '<i class="bx bx-loader-alt bx-spin me-1"></i>Running Simulation...';
+            btnRunSim.textContent = 'Running Simulation...';
 
             fetch("{{ route('payroll.policies.simulate') }}", {
                 method: 'POST',

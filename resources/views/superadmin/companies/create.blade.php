@@ -1859,7 +1859,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
       submitBtn.disabled = true;
       submitBtn.style.opacity = '0.85';
-      submitBtn.innerHTML = '<i class="bx bx-loader-alt bx-spin" style="font-size: 20px;"></i> Provisioning Database &amp; Running Migrations...';
+      submitBtn.textContent = 'Provisioning Database & Running Migrations...';
     });
   }
 });

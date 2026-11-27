@@ -1039,10 +1039,8 @@
         {{-- 3. CHAT TIMELINE FEED --}}
         <div class="chat-timeline" id="chatTimeline">
             {{-- Loaded dynamically via JavaScript --}}
-            <div class="text-center py-5" id="loadingSpinner">
-                <div class="spinner-border text-success" role="status">
-                    <span class="visually-hidden">Loading Community Messages...</span>
-                </div>
+            <div class="text-center py-5 text-muted" id="loadingSpinner">
+                Loading Community Messages...
             </div>
         </div>
 

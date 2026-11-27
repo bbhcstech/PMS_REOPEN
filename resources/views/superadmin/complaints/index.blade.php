@@ -1039,9 +1039,6 @@
 
     <div class="drawer-body" id="drawerContentBody">
       <div style="text-align: center; padding: 60px 0;">
-        <div class="spinner-border text-primary" role="status">
-          <span class="visually-hidden">Loading ticket details...</span>
-        </div>
         <div style="margin-top: 12px; font-size: 13px; color: var(--cmp-text-muted); font-weight: 600;">Fetching live database record...</div>
       </div>
     </div>
@@ -1094,7 +1091,6 @@ function openComplaintDrawer(id) {
   overlay.classList.add('active');
   content.innerHTML = `
     <div style="text-align: center; padding: 60px 0;">
-      <i class="bx bx-loader-alt bx-spin" style="font-size: 36px; color: #2F6BFF;"></i>
       <div style="margin-top: 12px; font-size: 13px; color: var(--cmp-text-muted); font-weight: 600;">Loading complaint details...</div>
     </div>
   `;

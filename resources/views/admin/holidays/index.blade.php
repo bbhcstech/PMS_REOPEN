@@ -2206,7 +2206,7 @@
 
             const btn = $(this);
             const originalText = btn.html();
-            btn.html('<i class="fas fa-spinner fa-spin me-1"></i> Applying...');
+            btn.text('Applying...');
             btn.prop('disabled', true);
 
             $.post('{{ route("holiday.bulkAction") }}', {

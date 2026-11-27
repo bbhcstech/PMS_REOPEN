@@ -1744,11 +1744,87 @@
     }
 
     /* ===== INVITE & RESTRICTED MODALS ===== */
+    #inviteModal,
+    #blockedDeleteModal,
+    #employeeDeleteModal,
+    #employeeInactiveModal,
+    #quickResetPasswordModal {
+        z-index: 10055 !important;
+    }
+
+    #inviteModal .modal-dialog,
+    #blockedDeleteModal .modal-dialog,
+    #employeeDeleteModal .modal-dialog,
+    #employeeInactiveModal .modal-dialog,
+    #quickResetPasswordModal .modal-dialog {
+        z-index: 10056 !important;
+    }
+
     #inviteModal .modal-content {
         background: var(--emp-surface) !important;
         border: 1px solid var(--emp-border) !important;
         border-radius: 16px !important;
+        color: var(--emp-text) !important;
         box-shadow: 0 24px 60px rgba(15, 23, 42, 0.22) !important;
+    }
+
+    #inviteModal .modal-header {
+        border-bottom: 1px solid var(--emp-border) !important;
+        padding: 1.25rem 1.5rem !important;
+    }
+
+    #inviteModal .modal-title {
+        color: var(--emp-text) !important;
+        font-weight: 700 !important;
+    }
+
+    #inviteModal .modal-body {
+        padding: 1.25rem 1.5rem !important;
+    }
+
+    #inviteModal .modal-footer {
+        border-top: 1px solid var(--emp-border) !important;
+        padding: 1rem 1.5rem !important;
+    }
+
+    #inviteModal .tab-content {
+        background: transparent !important;
+        border: 0 !important;
+        box-shadow: none !important;
+        padding: 1rem 0 0 !important;
+    }
+
+    #inviteModal .alert-info.bg-light,
+    #inviteModal .alert-light {
+        background: var(--emp-surface-subtle) !important;
+        border: 1px solid var(--emp-border) !important;
+        color: var(--emp-text-body) !important;
+        margin-bottom: 1rem !important;
+    }
+
+    #inviteModal .form-label {
+        color: var(--emp-text) !important;
+    }
+
+    #inviteModal .form-label .text-muted {
+        color: var(--emp-text-muted) !important;
+    }
+
+    #inviteModal .input-group-text {
+        background: var(--emp-surface-subtle) !important;
+        border-color: var(--emp-border) !important;
+        color: var(--emp-text-muted) !important;
+    }
+
+    #inviteModal .form-control {
+        background: var(--emp-surface) !important;
+        border-color: var(--emp-border) !important;
+        color: var(--emp-text) !important;
+    }
+
+    #inviteModal .form-control::placeholder {
+        color: var(--emp-text-muted) !important;
+        opacity: 0.75 !important;
     }
 
     #inviteModal .input-group {
@@ -1772,6 +1848,31 @@
     #inviteModal .btn-primary * {
         color: #ffffff !important;
         -webkit-text-fill-color: #ffffff !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body[data-pms-theme="dark"], body.dark-mode) #inviteModal .modal-content {
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55) !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body[data-pms-theme="dark"], body.dark-mode) #inviteModal .btn-close,
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body[data-pms-theme="dark"], body.dark-mode) #quickResetPasswordModal .btn-close {
+        filter: invert(1) grayscale(1) brightness(1.6);
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body[data-pms-theme="dark"], body.dark-mode) #inviteModal .nav-tabs {
+        background: var(--emp-surface-subtle) !important;
+        border-color: var(--emp-border) !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body[data-pms-theme="dark"], body.dark-mode) #inviteModal .nav-tabs .nav-link:not(.active) {
+        color: var(--emp-text-muted) !important;
+        -webkit-text-fill-color: var(--emp-text-muted) !important;
+    }
+
+    :is(html[data-pms-theme="dark"], html[data-bs-theme="dark"], html[data-theme="dark"], body[data-pms-theme="dark"], body.dark-mode) #inviteModal .nav-tabs .nav-link.active {
+        background: var(--emp-primary-soft) !important;
+        color: #93c5fd !important;
+        -webkit-text-fill-color: #93c5fd !important;
     }
 
     /* ===== DARK MODE POLISH ===== */

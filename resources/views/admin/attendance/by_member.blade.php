@@ -2132,7 +2132,6 @@
             </div>
             <div class="modal-body p-0" id="memberAttendanceModalBody">
                 <div class="text-center py-5 bg-white">
-                    <div class="spinner-border text-primary" role="status"></div>
                     <p class="mt-3 mb-0 text-muted">Loading attendance details...</p>
                 </div>
             </div>
@@ -2355,7 +2354,6 @@ document.addEventListener('DOMContentLoaded', function () {
     function showMemberModalLoading(message) {
         $('#memberAttendanceModalBody').html(
             '<div class="text-center py-5 bg-white">' +
-                '<div class="spinner-border text-primary" role="status"></div>' +
                 '<p class="mt-3 mb-0 text-muted">' + message + '</p>' +
             '</div>'
         );
@@ -2416,7 +2414,7 @@ document.addEventListener('DOMContentLoaded', function () {
             var totalCellHtml = escapeMemberHtml(record.total);
             if (record.is_open && record.clock_in && record.clock_in !== '-') {
                 totalCellHtml = '<span class="live-member-work-timer fw-bold text-success" data-clock-in="' + escapeMemberHtml(record.clock_in_raw || '') + '" data-date="' + escapeMemberHtml(record.date || '') + '" data-seconds="' + escapeMemberHtml(record.total_seconds || 0) + '">' + escapeMemberHtml(record.total) + '</span>' +
-                    ' <span class="badge bg-success-subtle text-success small ms-1"><i class="fas fa-spinner fa-spin me-1"></i>Working</span>';
+                    ' <span class="badge bg-success-subtle text-success small ms-1">Working</span>';
             }
 
             return '<tr>' +
@@ -2515,7 +2513,7 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        archiveButton.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i><span>Archiving</span>');
+        archiveButton.prop('disabled', true).html('<span>Archiving</span>');
 
         $.ajax({
             url: "{{ route('attendance.month.archive') }}",
@@ -2613,7 +2611,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const submitButton = $(form).find('[type="submit"]').first();
         const originalHtml = submitButton.html();
 
-        submitButton.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Saving...');
+        submitButton.prop('disabled', true).text('Saving...');
 
         $.ajax({
             url: form.action,

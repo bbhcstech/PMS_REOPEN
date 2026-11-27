@@ -1299,7 +1299,7 @@
                 <!-- Execution Progress Console -->
                 <div id="backupExecutionConsole" style="display: none; margin-bottom: 20px; background: #0f172a; color: #38bdf8; padding: 14px; border-radius: 10px; font-family: monospace; font-size: 12px;">
                     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; border-bottom: 1px solid #1e293b; padding-bottom: 6px; font-weight: 700; color: #ffffff;">
-                        <span><i class="fas fa-spinner fa-spin"></i> EXECUTING BACKUP PROCESS</span>
+                        <span>EXECUTING BACKUP PROCESS</span>
                         <span id="backupProgressPct">0%</span>
                     </div>
                     <div id="backupConsoleLogs" style="display: flex; flex-direction: column; gap: 4px;">
@@ -1354,7 +1354,7 @@
             <!-- RESTORE PROGRESS CONSOLE -->
             <div id="restoreExecutionConsole" style="display: none; margin-bottom: 20px; background: #0f172a; color: #f87171; padding: 14px; border-radius: 10px; font-family: monospace; font-size: 12px;">
                 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; border-bottom: 1px solid #1e293b; padding-bottom: 6px; font-weight: 700; color: #ffffff;">
-                    <span><i class="fas fa-spinner fa-spin"></i> RESTORING DATABASE DATA</span>
+                    <span>RESTORING DATABASE DATA</span>
                 </div>
                 <div id="restoreConsoleLogs" style="display: flex; flex-direction: column; gap: 4px;">
                     <div>⟳ Disabling foreign key constraints...</div>
@@ -1578,7 +1578,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             triggerBulkBackupBtn.disabled = true;
-            triggerBulkBackupBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Backing up...';
+            triggerBulkBackupBtn.textContent = 'Backing up...';
 
             fetch("{{ Route::has('super-admin.backups.bulk-create') ? route('super-admin.backups.bulk-create') : (Route::has('superadmin.backups.bulk-create') ? route('superadmin.backups.bulk-create') : url('/super-admin/backups/bulk-create')) }}", {
                 method: 'POST',
@@ -1754,7 +1754,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (consoleBox) consoleBox.style.display = 'block';
         if (confirmBtn) {
             confirmBtn.disabled = true;
-            confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Executing...';
+            confirmBtn.textContent = 'Executing...';
         }
 
         if (consoleLogs) {
@@ -1852,7 +1852,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (consoleBox) consoleBox.style.display = 'block';
             confirmRestoreBtn.disabled = true;
-            confirmRestoreBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Restoring...';
+            confirmRestoreBtn.textContent = 'Restoring...';
 
             if (consoleLogs) {
                 consoleLogs.innerHTML = `

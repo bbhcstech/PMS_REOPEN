@@ -221,10 +221,7 @@
                         <div class="modal-body" id="timelineDetails">
                             <!-- Timeline will be loaded here via AJAX -->
                             <div class="text-center py-5">
-                                <div class="spinner-border text-primary" role="status">
-                                    <span class="visually-hidden">Loading...</span>
-                                </div>
-                                <p class="mt-3">Loading timeline details...</p>
+                                <p class="mt-3 text-muted">Loading timeline details...</p>
                             </div>
                         </div>
                     </div>
@@ -909,10 +906,7 @@ function viewDayTimeline(date) {
     // Show loading in timeline modal
     document.getElementById('timelineDetails').innerHTML = `
         <div class="text-center py-5">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Loading...</span>
-            </div>
-            <p class="mt-3">Loading timeline details...</p>
+            <p class="mt-3 text-muted">Loading timeline details...</p>
         </div>
     `;
 
@@ -1085,7 +1079,7 @@ function viewDayDetails(date) {
 function showLoading(show) {
     const searchBtn = document.getElementById('searchEmployeeBtn');
     if (show) {
-        searchBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Searching...';
+        searchBtn.innerHTML = 'Searching...';
         searchBtn.disabled = true;
     } else {
         searchBtn.innerHTML = '<i class="fas fa-search me-1"></i> Search';

@@ -2141,7 +2141,7 @@ window.saveEmployeeTask = function(submitBtn, taskId) {
         var originalHtml = submitBtn ? submitBtn.innerHTML : 'Save';
         if (submitBtn) {
             submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Saving...';
+            submitBtn.textContent = 'Saving...';
         }
 
         var tokenMeta = document.querySelector('meta[name="csrf-token"]');
@@ -2962,27 +2962,24 @@ window.saveEmployeeTask = function(submitBtn, taskId) {
         updateClockWidgets();
         setInterval(updateClockWidgets, 1000);
 
+        const loadedDateKey = window.PMSTime.dateKey(window.PMSTime.now());
+
         const scheduleMidnightRefresh = () => {
-            const now = window.PMSTime.now();
-            setTimeout(() => window.location.reload(), Math.max(1000, window.PMSTime.untilMidnight()));
+            const remaining = Number(window.PMSTime.untilMidnight());
+            const waitMs = Number.isFinite(remaining) && remaining >= 5000 ? remaining : 60000;
+            setTimeout(() => {
+                if (window.PMSTime.dateKey(window.PMSTime.now()) !== loadedDateKey) {
+                    window.location.reload();
+                } else {
+                    scheduleMidnightRefresh();
+                }
+            }, waitMs);
         };
 
         scheduleMidnightRefresh();
 
-        const loadedDateKey = new Intl.DateTimeFormat('en-CA', {
-            timeZone: employeeTimeZone,
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit'
-        }).format(window.PMSTime.now());
-
         setInterval(() => {
-            const currentDateKey = new Intl.DateTimeFormat('en-CA', {
-                timeZone: employeeTimeZone,
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit'
-            }).format(window.PMSTime.now());
+            const currentDateKey = window.PMSTime.dateKey(window.PMSTime.now());
 
             if (currentDateKey !== loadedDateKey) {
                 window.location.reload();
@@ -3226,7 +3223,7 @@ window.saveEmployeeTask = function(submitBtn, taskId) {
 
             const originalHtml = submitBtn.innerHTML;
             submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Saving...';
+            submitBtn.textContent = 'Saving...';
 
             const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') 
                            || form.querySelector('input[name="_token"]')?.value 

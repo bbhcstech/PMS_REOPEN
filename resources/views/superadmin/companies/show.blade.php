@@ -2125,7 +2125,7 @@ document.addEventListener('DOMContentLoaded', function() {
         planChangeForm.addEventListener('submit', function() {
             if (confirmPlanBtn) {
                 confirmPlanBtn.disabled = true;
-                confirmPlanBtn.innerHTML = '<i class="bx bx-loader-alt bx-spin"></i> Updating Plan...';
+                confirmPlanBtn.textContent = 'Updating Plan...';
             }
         });
     }

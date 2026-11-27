@@ -99,7 +99,7 @@ class EmployeeInviteController extends Controller
         $this->useCompanyDatabase($company->db_name);
 
         $user = User::query()->withoutGlobalScopes()->where('company_id', $company->id)->find($userId);
-        if (! $user || ! hash_equals(self::fingerprint($user), (string) $request->query('v', ''))) {
+        if (! $user || ! $user->login_allowed || $user->archived_at || ! hash_equals(self::fingerprint($user), (string) $request->query('v', ''))) {
             return [$company, null];
         }
 
