@@ -918,7 +918,7 @@
                             <!-- Cost / Value (Fetched from Deals / Budget) -->
                             <td>
                                 <div class="fw-bold text-dark fs-6 cost-badge">
-                                    ${{ number_format($project->calculated_cost, 2) }}
+                                    {{ $project->currency_symbol ?? '$' }}{{ number_format($project->calculated_cost, 2) }}
                                 </div>
                                 @if($project->cost_source === 'deal')
                                     <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2" style="font-size: 0.68rem;" title="Fetched automatically from Deals section">
@@ -1132,7 +1132,7 @@
                             <!-- Cost / Deal Value (Fetched from Deals Section) -->
                             <td>
                                 <div class="fw-bold text-dark fs-6 cost-badge">
-                                    ${{ number_format($project->calculated_cost, 2) }}
+                                    {{ $project->currency_symbol ?? '$' }}{{ number_format($project->calculated_cost, 2) }}
                                 </div>
                                 @if($project->cost_source === 'deal')
                                     <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2" style="font-size: 0.68rem;" title="Fetched automatically from Deals section">

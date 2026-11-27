@@ -436,19 +436,23 @@
                                 </div>
                             </td>
                             <td>
-                                @if($employee->employeeDetail?->status === 'Active')
-                                    <span class="status-badge status-active">
-                                        <span class="status-dot"></span>
-                                        <span class="status-text">Active</span>
-                                    </span>
-                                @elseif($employee->employeeDetail?->status === 'Inactive')
-                                    <span class="status-badge status-inactive">
-                                        <span class="status-dot"></span>
-                                        <span class="status-text">Inactive</span>
-                                    </span>
-                                @else
-                                    <span class="status-badge status-unknown"><span class="status-text">N/A</span></span>
-                                @endif
+                                @php
+                                    $rowStatus = $employee->employeeDetail?->status;
+                                    $isStatusActive = $rowStatus === 'Active';
+                                    $isStatusInactive = $rowStatus === 'Inactive';
+                                    $nextStatus = $isStatusActive ? 'Inactive' : 'Active';
+                                @endphp
+                                <button
+                                    type="button"
+                                    class="status-badge {{ $isStatusActive ? 'status-active' : ($isStatusInactive ? 'status-inactive' : 'status-unknown') }} js-employee-status-toggle"
+                                    data-employee-id="{{ $employee->id }}"
+                                    data-status="{{ $isStatusActive ? 'Active' : ($isStatusInactive ? 'Inactive' : 'N/A') }}"
+                                    title="Click to switch status to {{ $nextStatus }}"
+                                    aria-label="Switch {{ $employee->name }} status to {{ $nextStatus }}"
+                                >
+                                    <span class="status-dot"></span>
+                                    <span class="status-text">{{ $isStatusActive ? 'Active' : ($isStatusInactive ? 'Inactive' : 'N/A') }}</span>
+                                </button>
                             </td>
                             <td>
                                 <div class="dropdown">
@@ -472,15 +476,18 @@
                                             </button>
                                         </li>
                                         <li><hr class="dropdown-divider"></li>
+                                        @if(isset($employee->subordinate_count) && $employee->subordinate_count > 0)
                                         <li>
-                                            @if(isset($employee->subordinate_count) && $employee->subordinate_count > 0)
-                                                <button class="dropdown-item text-warning blocked-delete-btn" type="button"
-                                                    data-employee-name="{{ $employee->name }}"
-                                                    data-subordinate-count="{{ $employee->subordinate_count }}"
-                                                    data-employee-id="{{ $employee->id }}">
-                                                    <i class="fas fa-ban me-2"></i> Archive Restricted
-                                                </button>
-                                            @elseif($employee->employeeDetail?->status !== 'Inactive')
+                                            <button class="dropdown-item text-warning blocked-delete-btn" type="button"
+                                                data-employee-name="{{ $employee->name }}"
+                                                data-subordinate-count="{{ $employee->subordinate_count }}"
+                                                data-employee-id="{{ $employee->id }}">
+                                                <i class="fas fa-ban me-2"></i> Archive Restricted
+                                            </button>
+                                        </li>
+                                        @else
+                                        <li class="js-employee-archive-item" data-destroy-url="{{ route('employees.destroy', $employee->id) }}">
+                                            @if($employee->employeeDetail?->status !== 'Inactive')
                                                 <button class="dropdown-item text-muted" type="button" disabled>
                                                     <i class="fas fa-lock me-2"></i> Archive only inactive
                                                 </button>
@@ -495,6 +502,7 @@
                                                 </form>
                                             @endif
                                         </li>
+                                        @endif
                                         @php
                                             $isInactiveEmployee = strcasecmp((string) ($employee->employeeDetail?->status ?? ''), 'Inactive') === 0;
                                             $deleteState = match (true) {
@@ -843,6 +851,91 @@ $(document).ready(function () {
         const ws = XLSX.utils.aoa_to_sheet(data);
         XLSX.utils.book_append_sheet(wb, ws, "All Employees");
         XLSX.writeFile(wb, `all_employees_${new Date().toISOString().split('T')[0]}.xlsx`);
+    });
+
+    // Inline Status toggle (Active <-> Inactive)
+    $(document).on('click', '.js-employee-status-toggle', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const $btn = $(this);
+        if ($btn.prop('disabled')) return;
+
+        const employeeId = $btn.attr('data-employee-id');
+        const currentStatus = $btn.attr('data-status');
+        const nextStatus = currentStatus === 'Active' ? 'Inactive' : 'Active';
+        const followingStatus = nextStatus === 'Active' ? 'Inactive' : 'Active';
+
+        $btn.prop('disabled', true);
+
+        $.ajax({
+            url: '{{ route("employees.bulkUpdateStatus") }}',
+            type: 'POST',
+            data: {
+                _token: '{{ csrf_token() }}',
+                employee_ids: [employeeId],
+                status: nextStatus,
+                auto_exit_date: 1
+            },
+            success: function() {
+                $btn
+                    .removeClass('status-active status-inactive status-unknown')
+                    .addClass(nextStatus === 'Active' ? 'status-active' : 'status-inactive')
+                    .attr('data-status', nextStatus)
+                    .attr('title', `Click to switch status to ${followingStatus}`)
+                    .find('.status-text').text(nextStatus);
+
+                const $row = $btn.closest('tr');
+                const $rowCheckbox = $row.find('.employee-checkbox');
+                if ($rowCheckbox.length) {
+                    $rowCheckbox.attr('data-status', nextStatus).data('status', nextStatus);
+                    updateSelectedEmployees();
+                }
+
+                const archiveSlot = $row.find('.js-employee-archive-item')[0];
+                if (archiveSlot) {
+                    if (nextStatus === 'Inactive') {
+                        const form = document.createElement('form');
+                        form.action = archiveSlot.getAttribute('data-destroy-url') || '#';
+                        form.method = 'POST';
+                        form.onsubmit = function() {
+                            return confirm('Archive this inactive employee? The data will move to Archived Employees and can be restored.');
+                        };
+                        const csrf = document.createElement('input');
+                        csrf.type = 'hidden';
+                        csrf.name = '_token';
+                        csrf.value = '{{ csrf_token() }}';
+                        const methodInput = document.createElement('input');
+                        methodInput.type = 'hidden';
+                        methodInput.name = '_method';
+                        methodInput.value = 'DELETE';
+                        const submitBtn = document.createElement('button');
+                        submitBtn.type = 'submit';
+                        submitBtn.className = 'dropdown-item text-danger';
+                        const archiveIcon = document.createElement('i');
+                        archiveIcon.className = 'fas fa-box-archive me-2';
+                        submitBtn.append(archiveIcon, document.createTextNode(' Archive Employee'));
+                        form.append(csrf, methodInput, submitBtn);
+                        archiveSlot.replaceChildren(form);
+                    } else {
+                        const lockedBtn = document.createElement('button');
+                        lockedBtn.type = 'button';
+                        lockedBtn.className = 'dropdown-item text-muted';
+                        lockedBtn.disabled = true;
+                        const lockIcon = document.createElement('i');
+                        lockIcon.className = 'fas fa-lock me-2';
+                        lockedBtn.append(lockIcon, document.createTextNode(' Archive only inactive'));
+                        archiveSlot.replaceChildren(lockedBtn);
+                    }
+                }
+            },
+            error: function(xhr) {
+                alert(xhr?.responseJSON?.message || 'Unable to update employee status.');
+            },
+            complete: function() {
+                $btn.prop('disabled', false);
+            }
+        });
     });
 
     // Bulk archive inactive employees

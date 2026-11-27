@@ -355,8 +355,8 @@
                 </div>
 
                 <div class="col-md-6">
-                    <label>Added By</label>
-                    <select name="added_by" class="form-control">
+                    <label for="added_by">Added By</label>
+                    <select name="added_by" id="added_by" class="form-control">
                         <option value="">Select</option>
                         @foreach($users as $user)
                             <option value="{{ $user->id }}" {{ old('added_by', $client->added_by) == $user->id ? 'selected' : '' }}>{{ $user->name }}</option>
@@ -1228,6 +1228,20 @@ $(document).ready(function () {
         templateSelection: formatOption,
         placeholder: "Select Language",
         allowClear: true
+    });
+
+    // Added By dropdown (search by name)
+    $('#added_by').select2({
+        theme: "bootstrap-5",
+        placeholder: "Select",
+        width: '100%',
+        minimumResultsForSearch: 0
+    }).on('select2:open', function() {
+        const searchField = document.querySelector('.select2-container--open .select2-search__field');
+        if (searchField) {
+            searchField.setAttribute('placeholder', 'Search by name...');
+            searchField.focus();
+        }
     });
 
     function generateCompliantPassword(len = 12) {
