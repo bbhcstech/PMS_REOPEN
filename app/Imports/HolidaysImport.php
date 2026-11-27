@@ -24,11 +24,22 @@ class HolidaysImport implements ToCollection, WithHeadingRow
             $date = $this->parseDate($row['date'] ?? null);
             $occasion = trim((string) ($row['occassion'] ?? $row['occasion'] ?? $row['title'] ?? ''));
             $type = trim((string) ($row['type'] ?? 'holiday')) ?: 'holiday';
+            $rawDayType = strtolower(str_replace(['-', ' '], '_', trim((string) ($row['day_type'] ?? 'full_day'))));
+            $dayType = in_array($rawDayType, ['half_day', 'half'], true) ? 'half_day' : 'full_day';
+            $requestedSpecial = in_array(strtolower(trim((string) ($row['is_special'] ?? 'no'))), ['yes', 'y', '1', 'true'], true);
             $override = in_array(strtolower(trim((string) ($row['override_existing'] ?? 'yes'))), ['yes', 'y', '1', 'true'], true);
 
             if (! $date || $occasion === '') {
                 $this->skipped++;
                 $this->errors[] = "Row {$line}: date and occassion are required.";
+                continue;
+            }
+
+            $existing = Holiday::whereNull('archived_at')->whereDate('date', $date)->first();
+
+            if ($existing && ! $override) {
+                $this->skipped++;
+                $this->errors[] = "Row {$line}: {$date} already exists and override_existing is not yes.";
                 continue;
             }
 
@@ -38,19 +49,13 @@ class HolidaysImport implements ToCollection, WithHeadingRow
                 'date' => $date,
                 'occassion' => $occasion,
                 'type' => in_array($type, ['holiday', 'weekly_holiday'], true) ? $type : 'holiday',
+                'day_type' => $dayType,
+                'is_special' => ($override && $existing) ? true : $requestedSpecial,
                 'recurring_day' => null,
                 'department_id_json' => $this->listToJson($row['department_ids'] ?? null),
                 'designation_id_json' => $this->listToJson($row['designation_ids'] ?? null),
                 'employment_type_json' => $this->listToJson($row['employment_types'] ?? null),
             ];
-
-            $existing = Holiday::whereNull('archived_at')->whereDate('date', $date)->first();
-
-            if ($existing && ! $override) {
-                $this->skipped++;
-                $this->errors[] = "Row {$line}: {$date} already exists and override_existing is not yes.";
-                continue;
-            }
 
             if ($existing) {
                 unset($payload['group_id']);

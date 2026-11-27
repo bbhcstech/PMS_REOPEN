@@ -10,7 +10,7 @@
             'date' => \Carbon\Carbon::parse($holiday->date)->format('d M Y'),
             'day' => \Carbon\Carbon::parse($holiday->date)->format('l'),
             'title' => $holiday->occassion ?: $holiday->title,
-            'type' => $holiday->type === 'weekly_holiday' ? 'Weekly' : 'Special',
+            'type' => $holiday->resolvedTypeLabel(),
         ];
     })->values();
 @endphp
@@ -116,11 +116,11 @@
 
             <!-- FullCalendar Container Card -->
             <div class="address-card-elevated p-4 p-md-4">
-                <div id="calendar" data-pms-export="off"></div>
+                <div id="calendar" data-pms-export="off" data-pms-loading="off"></div>
             </div>
 
             <!-- Holiday Details Interactive Drawer/Panel -->
-            <div class="holiday-details-panel d-none mt-4 p-4 address-card-elevated" id="holidayDetailsCard" style="border-left: 5px solid #2F6BFF !important;">
+            <div class="holiday-details-panel d-none mt-4 p-4 address-card-elevated" id="holidayDetailsCard" data-live-preserve style="border-left: 5px solid #2F6BFF !important;">
                 <div id="holidayDetailsContent"></div>
             </div>
         </div>
@@ -300,21 +300,38 @@
     }
 
     .btn-save-address {
-        border-radius: 40px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.65rem 1.4rem;
+        min-height: 42px;
+        line-height: 1.2;
+        border-radius: 999px;
         font-weight: 700;
         font-size: 0.9rem;
         background: linear-gradient(145deg, #4F83FF, #2F6BFF);
-        color: white !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        text-decoration: none;
         border: none;
         box-shadow: 0 6px 20px -4px rgba(47, 107, 255, 0.35);
         transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
         cursor: pointer;
     }
 
+    .btn-save-address i,
+    .btn-save-address svg,
+    .btn-save-address * {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
     .btn-save-address:hover {
         transform: translateY(-2px) scale(1.02);
         box-shadow: 0 10px 28px -4px rgba(47, 107, 255, 0.45);
-        color: white !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
     }
 
     /* ===== STATS GRID ===== */
@@ -616,6 +633,12 @@
         background: #e0f2fe;
         color: #0284c7;
         border-color: rgba(2, 132, 199, 0.2);
+    }
+
+    .holiday-pill.special {
+        background: #fef3c7;
+        color: #b45309;
+        border-color: rgba(217, 119, 6, 0.25);
     }
 
     .input-group-custom {
@@ -1109,17 +1132,21 @@
             },
             eventClick: function(info) {
                 info.jsEvent.preventDefault();
-                const type = info.event.extendedProps.type === 'weekly_holiday' ? 'Weekly Holiday' : 'Special Holiday';
+                const ext = info.event.extendedProps;
+                const typeLabel = ext.type_label || (ext.type === 'weekly_holiday' ? 'Weekly Holiday' : (ext.is_special ? 'Special Holiday' : 'Regular Holiday'));
+                const typeClass = ext.type_key === 'weekly' || ext.type === 'weekly_holiday' ? 'weekly' : (ext.is_special ? 'special' : '');
+                const editUrl = ext.edit_url || info.event.url;
                 const details = `
                     <div class="holiday-detail-title">${escapeHtml(info.event.title)}</div>
-                    <p class="mb-2 text-secondary"><strong>Date:</strong> ${escapeHtml(info.event.extendedProps.date_label)}</p>
-                    <p class="mb-3 text-secondary"><strong>Why holiday is set:</strong> ${escapeHtml(info.event.extendedProps.description || info.event.title)}</p>
-                    <span class="holiday-pill ${info.event.extendedProps.type === 'weekly_holiday' ? 'weekly' : ''}">${type}</span>
-                    ${isAdmin && info.event.url ? `<div class="mt-3"><a href="${info.event.url}" class="btn-save-address text-decoration-none py-2 px-3.5 d-inline-flex align-items-center gap-1.5"><i class="fas fa-edit me-1"></i>Edit Holiday</a></div>` : ''}
+                    <p class="mb-2 text-secondary"><strong>Date:</strong> ${escapeHtml(ext.date_label)}</p>
+                    <p class="mb-3 text-secondary"><strong>Why holiday is set:</strong> ${escapeHtml(ext.description || info.event.title)}</p>
+                    <span class="holiday-pill ${typeClass}">${escapeHtml(typeLabel)}</span>
+                    ${isAdmin && editUrl ? `<div class="mt-3 pt-1"><a href="${escapeHtml(editUrl)}" class="btn-save-address"><i class="fas fa-edit" aria-hidden="true"></i><span>Edit Holiday</span></a></div>` : ''}
                 `;
+                const detailsCard = document.getElementById('holidayDetailsCard');
                 document.getElementById('holidayDetailsContent').innerHTML = details;
-                document.getElementById('holidayDetailsCard').classList.remove('d-none');
-                document.getElementById('holidayDetailsCard').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                detailsCard.classList.remove('d-none');
+                requestAnimationFrame(() => detailsCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' }));
             }
         });
 

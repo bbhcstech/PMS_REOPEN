@@ -239,7 +239,7 @@
             <div class="upload-header">
                 <div>
                     <h6>Bulk Upload by Excel</h6>
-                    <p>Use the sample file columns: date, occassion, type, department_ids, designation_ids, employment_types, override_existing</p>
+                    <p>Use the sample file columns: date, occassion, type, day_type, is_special, override_existing</p>
                 </div>
                 <i class="fas fa-file-excel"></i>
             </div>
@@ -326,9 +326,14 @@
                                     <small class="text-muted">{{ $date->format('F') }} organization holiday</small>
                                 </td>
                                 <td>
-                                    <span class="type-badge {{ $holiday->type === 'weekly_holiday' ? 'weekly' : 'special' }}">
-                                        {{ $holiday->type === 'weekly_holiday' ? 'Weekly Holiday' : 'Special Holiday' }}
+                                    <span class="type-badge {{ $holiday->resolvedTypeKey() }}">
+                                        {{ $holiday->resolvedTypeLabel() }}
                                     </span>
+                                    @if(($holiday->day_type ?? 'full_day') === 'half_day')
+                                        <span class="type-badge weekly ms-1">Half Day</span>
+                                    @else
+                                        <span class="type-badge regular ms-1">Full Day</span>
+                                    @endif
                                 </td>
                                 @if($isAdmin)
                                     <td class="text-end">
@@ -397,7 +402,7 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-bold">Occasion Name</label>
-                        <input type="text" class="form-control" name="occassion" placeholder="Weekend, Public Holiday, etc.">
+                        <input type="text" class="form-control" name="occassion" maxlength="1500" placeholder="Weekend, Public Holiday, etc.">
                     </div>
                     <label class="holiday-check">
                         <input type="checkbox" name="override_existing" value="1" checked>
@@ -1348,6 +1353,11 @@
     }
 
     .type-badge.special {
+        background: #fef3c7;
+        color: #b45309;
+    }
+
+    .type-badge.regular {
         background: #dbeafe;
         color: #1d4ed8;
     }
@@ -2001,6 +2011,11 @@
     }
 
     html[data-pms-theme="dark"] .type-badge.special {
+        background: rgba(245, 158, 11, 0.16);
+        color: #fbbf24;
+    }
+
+    html[data-pms-theme="dark"] .type-badge.regular {
         background: #1a2638;
         color: #60a5fa;
     }
@@ -2235,7 +2250,7 @@
                         'date' => \Carbon\Carbon::parse($holiday->date)->format('d M Y'),
                         'day' => \Carbon\Carbon::parse($holiday->date)->format('l'),
                         'title' => $holiday->occassion ?: $holiday->title,
-                        'type' => $holiday->type === 'weekly_holiday' ? 'Weekly' : 'Special',
+                        'type' => $holiday->resolvedTypeLabel(),
                     ];
                 })->values();
             @endphp

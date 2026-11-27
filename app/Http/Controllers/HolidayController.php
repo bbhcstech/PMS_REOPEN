@@ -47,9 +47,8 @@ class HolidayController extends Controller
                 ->with('error', 'You are not authorized to add holidays.');
         }
 
-        $department = Department::get();
-        $designations = Designation::get();
-        return view('admin.holidays.create', compact('department', 'designations'));
+        $this->ensureHolidayDayTypeColumnExists();
+        return view('admin.holidays.create');
     }
 
     public function store(Request $request)
@@ -60,18 +59,36 @@ class HolidayController extends Controller
                 ->with('error', 'You are not authorized to add holidays.');
         }
 
+        $this->ensureHolidayDayTypeColumnExists();
+
         $request->validate([
             'date.*'                => 'required|date',
-            'occassion.*'           => 'required|string|max:255',
+            'occassion.*'           => 'required|string|max:1500',
+            'day_type.*'            => 'nullable|in:full_day,half_day',
+            'is_special'            => 'nullable|boolean',
             'department_id_json'    => 'nullable|array',
             'designation_id_json'   => 'nullable|array',
             'employment_type_json'  => 'nullable|array',
+        ], [
+            'date.*.required'      => 'Please select a valid holiday date.',
+            'date.*.date'          => 'Please enter a valid holiday date.',
+            'occassion.*.required' => 'Please enter the holiday occasion.',
+            'occassion.*.max'      => 'The occasion field must not exceed 1500 characters.',
+            'day_type.*.in'        => 'Duration must be either Full Day or Half Day.',
         ]);
 
         $groupId = (string) Str::uuid();
         $override = $request->boolean('override_holidays');
+        $requestedSpecial = $request->boolean('is_special');
 
         foreach ($request->date as $index => $holidayDate) {
+            $dayType = $request->day_type[$index] ?? 'full_day';
+            $existing = $override
+                ? Holiday::whereNull('archived_at')->whereDate('date', $holidayDate)->first()
+                : null;
+            // Overriding an existing holiday automatically converts it into a special holiday.
+            $isSpecial = ($override && $existing) ? true : $requestedSpecial;
+
             $holidayData = [
                 'date'                 => $holidayDate,
                 'title'                => $request->occassion[$index],
@@ -81,12 +98,13 @@ class HolidayController extends Controller
                 'employment_type_json' => $request->employment_type_json ? json_encode($request->employment_type_json) : null,
                 'group_id'             => $groupId,
                 'type'                 => 'holiday',
+                'day_type'             => in_array($dayType, ['full_day', 'half_day'], true) ? $dayType : 'full_day',
+                'is_special'           => $isSpecial,
                 'recurring_day'        => null
             ];
 
-            if ($override) {
-                $existing = Holiday::whereNull('archived_at')->whereDate('date', $holidayDate)->first();
-                $existing ? $existing->update($holidayData) : Holiday::create($holidayData);
+            if ($existing) {
+                $existing->update($holidayData);
             } else {
                 Holiday::create($holidayData);
             }
@@ -136,14 +154,13 @@ class HolidayController extends Controller
                 'extendedProps' => [
                     'description' => $holiday->occassion,
                     'type' => $holiday->type,
+                    'is_special' => ! empty($holiday->is_special),
+                    'type_label' => $holiday->resolvedTypeLabel(),
+                    'type_key' => $holiday->resolvedTypeKey(),
                     'date_label' => Carbon::parse($holiday->date)->format('l, d M Y'),
+                    'edit_url' => $isAdmin ? route('holidays.edit', $holiday->id) : null,
                 ]
             ];
-
-            // Only admin gets edit URL
-            if ($isAdmin) {
-                $event['url'] = route('holidays.edit', $holiday->id);
-            }
 
             $events[] = $event;
         }
@@ -165,9 +182,8 @@ class HolidayController extends Controller
                 ->with('error', 'You are not authorized to edit holidays.');
         }
 
-        $department = Department::get();
-        $designations = Designation::get();
-        return view('admin.holidays.edit', compact('holiday', 'department', 'designations'));
+        $this->ensureHolidayDayTypeColumnExists();
+        return view('admin.holidays.edit', compact('holiday'));
     }
 
     public function update(Request $request, Holiday $holiday)
@@ -178,19 +194,31 @@ class HolidayController extends Controller
                 ->with('error', 'You are not authorized to update holidays.');
         }
 
+        $this->ensureHolidayDayTypeColumnExists();
+
         $request->validate([
             'date.*'                => 'required|date',
-            'occassion.*'           => 'required|string|max:255',
+            'occassion.*'           => 'required|string|max:1500',
+            'day_type.*'            => 'nullable|in:full_day,half_day',
+            'is_special'            => 'nullable|boolean',
             'department_id_json'    => 'nullable|array',
             'designation_id_json'   => 'nullable|array',
             'employment_type_json'  => 'nullable|array',
+        ], [
+            'date.*.required'      => 'Please select a valid holiday date.',
+            'date.*.date'          => 'Please enter a valid holiday date.',
+            'occassion.*.required' => 'Please enter the holiday occasion.',
+            'occassion.*.max'      => 'The occasion field must not exceed 1500 characters.',
+            'day_type.*.in'        => 'Duration must be either Full Day or Half Day.',
         ]);
 
         $groupId = $holiday->group_id ?? (string) Str::uuid();
         $existingHolidays = Holiday::where('group_id', $groupId)->get();
         $updatedIds = [];
+        $isSpecial = $request->boolean('is_special');
 
         foreach ($request->date as $index => $holidayDate) {
+            $dayType = $request->day_type[$index] ?? ($existingHolidays[$index]->day_type ?? 'full_day');
             $holidayData = [
                 'date'                 => $holidayDate,
                 'title'                => $request->occassion[$index],
@@ -200,6 +228,8 @@ class HolidayController extends Controller
                 'employment_type_json' => $request->employment_type_json ? json_encode($request->employment_type_json) : null,
                 'group_id'             => $groupId,
                 'type'                 => 'holiday',
+                'day_type'             => in_array($dayType, ['full_day', 'half_day'], true) ? $dayType : 'full_day',
+                'is_special'           => $isSpecial,
                 'recurring_day'        => null
             ];
 
@@ -267,13 +297,18 @@ class HolidayController extends Controller
                 ->with('error', 'You are not authorized to mark holidays.');
         }
 
+        $this->ensureHolidayDayTypeColumnExists();
+
         $request->validate([
             'office_holiday_days' => 'nullable|array',
-            'occassion'           => 'nullable|string|max:255',
+            'occassion'           => 'nullable|string|max:1500',
+            'day_type'            => 'nullable|in:full_day,half_day',
             'date'                => 'nullable|date',
             'year'                => 'nullable|integer|min:2000|max:2100',
             'override_existing'   => 'nullable',
         ]);
+
+        $dayType = in_array($request->day_type, ['full_day', 'half_day'], true) ? $request->day_type : 'full_day';
 
         // Handle recurring weekly holidays
         if ($request->filled('office_holiday_days')) {
@@ -300,7 +335,8 @@ class HolidayController extends Controller
                         'department_id_json'  => null,
                         'designation_id_json' => null,
                         'employment_type_json'=> null,
-                        'type'                => 'weekly_holiday'
+                        'type'                => 'weekly_holiday',
+                        'day_type'            => $dayType,
                     ];
 
                     if ($override) {
@@ -329,7 +365,8 @@ class HolidayController extends Controller
                 'department_id_json'  => null,
                 'designation_id_json' => null,
                 'employment_type_json'=> null,
-                'type'                => 'holiday'
+                'type'                => 'holiday',
+                'day_type'            => $dayType,
             ]);
         }
 
@@ -418,6 +455,7 @@ class HolidayController extends Controller
     public function importExcel(Request $request)
     {
         $this->ensureAdmin();
+        $this->ensureHolidayDayTypeColumnExists();
 
         $request->validate([
             'holiday_file' => ['required', 'file', 'mimes:xlsx,xls,csv', 'max:5120'],
@@ -501,7 +539,7 @@ class HolidayController extends Controller
             return '#28a745'; // Green for weekly holidays
         }
 
-        return '#0d6efd'; // Blue for regular holidays
+        return ! empty($holiday->is_special) ? '#f59e0b' : '#0d6efd';
     }
 
     private function buildStats($holidays, int $year): array
@@ -509,7 +547,7 @@ class HolidayController extends Controller
         return [
             'year' => $year,
             'total' => $holidays->count(),
-            'special' => $holidays->where('type', '!=', 'weekly_holiday')->count(),
+            'special' => $holidays->where('type', '!=', 'weekly_holiday')->filter(fn ($holiday) => ! empty($holiday->is_special))->count(),
             'weekly' => $holidays->where('type', 'weekly_holiday')->count(),
             'months' => $holidays->groupBy(fn ($holiday) => Carbon::parse($holiday->date)->format('m'))->count(),
         ];
@@ -518,6 +556,48 @@ class HolidayController extends Controller
     private function ensureAdmin(): void
     {
         abort_if(auth()->user()->role !== 'admin', 403);
+    }
+
+    private function ensureHolidayDayTypeColumnExists(): void
+    {
+        try {
+            $conn = (new Holiday())->getConnectionName() ?: config('database.default');
+            $schema = \Illuminate\Support\Facades\Schema::connection($conn);
+            if ($schema->hasTable('holidays')) {
+                $columnsAdded = false;
+                if (! $schema->hasColumn('holidays', 'day_type')) {
+                    $schema->table('holidays', function (\Illuminate\Database\Schema\Blueprint $table) {
+                        $table->string('day_type', 20)->default('full_day');
+                    });
+                    $columnsAdded = true;
+                }
+                if (! $schema->hasColumn('holidays', 'is_special')) {
+                    $schema->table('holidays', function (\Illuminate\Database\Schema\Blueprint $table) {
+                        $table->boolean('is_special')->default(false);
+                    });
+                    $columnsAdded = true;
+                }
+                if ($columnsAdded) {
+                    Holiday::clearTableColumnsCache();
+                }
+
+                $widenTitle = $schema->hasColumn('holidays', 'title')
+                    && in_array($schema->getColumnType('holidays', 'title'), ['string', 'varchar'], true);
+                $widenOccasion = $schema->hasColumn('holidays', 'occassion')
+                    && in_array($schema->getColumnType('holidays', 'occassion'), ['string', 'varchar'], true);
+
+                if ($widenTitle || $widenOccasion) {
+                    $schema->table('holidays', function (\Illuminate\Database\Schema\Blueprint $table) use ($widenTitle, $widenOccasion) {
+                        if ($widenTitle) {
+                            $table->text('title')->change();
+                        }
+                        if ($widenOccasion) {
+                            $table->text('occassion')->nullable()->change();
+                        }
+                    });
+                }
+            }
+        } catch (\Throwable $e) {}
     }
 
     private function readImageText(string $path): ?string

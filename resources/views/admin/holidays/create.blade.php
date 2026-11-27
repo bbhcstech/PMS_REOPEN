@@ -55,9 +55,8 @@
                     <span>date</span>
                     <span>occassion</span>
                     <span>type</span>
-                    <span>department_ids</span>
-                    <span>designation_ids</span>
-                    <span>employment_types</span>
+                    <span>day_type</span>
+                    <span>is_special</span>
                     <span>override_existing</span>
                 </div>
             </div>
@@ -86,10 +85,10 @@
             <div class="form-header">
                 <div>
                     <h5 class="mb-0">Holiday Details</h5>
-                    <p>The same department, designation, and employment filters apply to all rows below.</p>
+                    <p>Select Full Day or Half Day for each holiday row below.</p>
                 </div>
                 <label class="override-check">
-                    <input type="checkbox" name="override_holidays" value="1">
+                    <input type="checkbox" name="override_holidays" id="overrideHolidaysCheckbox" value="1" {{ old('override_holidays') ? 'checked' : '' }}>
                     <span>Override existing date</span>
                 </label>
             </div>
@@ -102,8 +101,19 @@
                         <input type="date" name="date[]" class="form-control" required>
                     </div>
                     <div class="holiday-field">
-                        <label class="form-label">Occasion <span class="text-danger">*</span></label>
-                        <input type="text" name="occassion[]" class="form-control" placeholder="e.g., Durga Puja Holiday" required>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <label class="form-label">Occasion <span class="text-danger">*</span></label>
+                            <small class="occasion-counter text-muted" style="font-size: 0.72rem; font-weight: 600;">0 / 1500</small>
+                        </div>
+                        <input type="text" name="occassion[]" class="form-control occasion-input" maxlength="1500" placeholder="e.g., Durga Puja Holiday" required>
+                        <div class="invalid-feedback">Please enter an occasion (maximum 1500 characters).</div>
+                    </div>
+                    <div class="holiday-field">
+                        <label class="form-label">Duration <span class="text-danger">*</span></label>
+                        <select name="day_type[]" class="form-control" required>
+                            <option value="full_day" selected>Full Day</option>
+                            <option value="half_day">Half Day</option>
+                        </select>
                     </div>
                     <button type="button" class="btn btn-outline-danger remove-item d-none" aria-label="Remove holiday">
                         <i class="fas fa-times"></i>
@@ -115,37 +125,10 @@
                 <i class="fas fa-plus-circle"></i> Add More Holiday
             </button>
 
-            <!-- Filters -->
-            <div class="filters-section">
-                <div class="row g-3 mt-2">
-                    <div class="col-lg-6">
-                        <label class="form-label">Department</label>
-                        <select class="form-control multiple-users" multiple name="department_id_json[]" id="selectdepartment" data-live-search="true" data-size="8">
-                            @foreach ($department as $team)
-                                <option value="{{ $team->id }}">{{ $team->dpt_name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="col-lg-6">
-                        <label class="form-label">Designation</label>
-                        <select class="form-control multiple-users" multiple name="designation_id_json[]" id="selectdesignation" data-live-search="true" data-size="8">
-                            @foreach ($designations as $designation)
-                                <option value="{{ $designation->id }}">{{ $designation->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="col-lg-6">
-                        <label class="form-label">Employment Type</label>
-                        <select class="form-control select2" name="employment_type_json[]" multiple>
-                            <option value="full_time">Full Time</option>
-                            <option value="part_time">Part Time</option>
-                            <option value="on_contract">On Contract</option>
-                            <option value="internship">Internship</option>
-                            <option value="trainee">Trainee</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
+            @include('admin.holidays.partials.special-holiday-field', [
+                'selectedSpecial' => (string) old('is_special', '0'),
+                'showOverrideHint' => true,
+            ])
 
             <!-- Form Actions -->
             <div class="form-actions">
@@ -593,7 +576,7 @@
 
     .holiday-item {
         display: grid;
-        grid-template-columns: minmax(180px, 260px) 1fr auto;
+        grid-template-columns: minmax(170px, 230px) 1fr minmax(140px, 180px) auto;
         gap: 12px;
         align-items: end;
         padding: 16px 18px;
@@ -1279,6 +1262,14 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    const overrideCheckbox = document.getElementById('overrideHolidaysCheckbox');
+    const overrideHint = document.getElementById('specialHolidayOverrideHint');
+    if (overrideCheckbox && overrideHint) {
+        const syncOverrideHint = () => overrideHint.classList.toggle('d-none', !overrideCheckbox.checked);
+        overrideCheckbox.addEventListener('change', syncOverrideHint);
+        syncOverrideHint();
+    }
+
     addBtn.addEventListener('click', function () {
         const item = document.createElement('div');
         item.className = 'holiday-item';
@@ -1289,8 +1280,19 @@ document.addEventListener('DOMContentLoaded', function () {
                 <input type="date" name="date[]" class="form-control" required>
             </div>
             <div class="holiday-field">
-                <label class="form-label">Occasion <span class="text-danger">*</span></label>
-                <input type="text" name="occassion[]" class="form-control" placeholder="Occasion" required>
+                <div class="d-flex justify-content-between align-items-center">
+                    <label class="form-label">Occasion <span class="text-danger">*</span></label>
+                    <small class="occasion-counter text-muted" style="font-size: 0.72rem; font-weight: 600;">0 / 1500</small>
+                </div>
+                <input type="text" name="occassion[]" class="form-control occasion-input" maxlength="1500" placeholder="Occasion" required>
+                <div class="invalid-feedback">Please enter an occasion (maximum 1500 characters).</div>
+            </div>
+            <div class="holiday-field">
+                <label class="form-label">Duration <span class="text-danger">*</span></label>
+                <select name="day_type[]" class="form-control" required>
+                    <option value="full_day" selected>Full Day</option>
+                    <option value="half_day">Half Day</option>
+                </select>
             </div>
             <button type="button" class="btn btn-outline-danger remove-item" aria-label="Remove holiday">
                 <i class="fas fa-times"></i>
@@ -1309,6 +1311,61 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
+    function syncOccasionField(input) {
+        const len = input.value.length;
+        const trimmedLen = input.value.trim().length;
+        const counter = input.closest('.holiday-field')?.querySelector('.occasion-counter');
+        if (counter) {
+            counter.textContent = `${len} / 1500`;
+            counter.classList.toggle('text-danger', len > 1500);
+            counter.classList.toggle('text-muted', len <= 1500);
+        }
+        if (len > 1500) {
+            input.setCustomValidity('Occasion must not exceed 1500 characters.');
+            input.classList.add('is-invalid');
+        } else if (trimmedLen === 0 && input.dataset.touched === '1') {
+            input.setCustomValidity('Please enter the holiday occasion.');
+            input.classList.add('is-invalid');
+        } else {
+            input.setCustomValidity('');
+            input.classList.remove('is-invalid');
+        }
+    }
+
+    holidayItems.addEventListener('input', function (event) {
+        if (event.target.matches('input[name="occassion[]"]')) {
+            event.target.dataset.touched = '1';
+            syncOccasionField(event.target);
+        }
+    });
+
+    const holidayForm = document.getElementById('save-holiday-data-form');
+    if (holidayForm) {
+        holidayForm.addEventListener('submit', function (event) {
+            let hasError = false;
+            holidayForm.querySelectorAll('input[name="occassion[]"]').forEach(function (input) {
+                input.dataset.touched = '1';
+                const trimmed = input.value.trim();
+                if (trimmed.length === 0) {
+                    input.setCustomValidity('Please enter the holiday occasion.');
+                    input.classList.add('is-invalid');
+                    hasError = true;
+                } else if (input.value.length > 1500) {
+                    input.setCustomValidity('Occasion must not exceed 1500 characters.');
+                    input.classList.add('is-invalid');
+                    hasError = true;
+                } else {
+                    input.setCustomValidity('');
+                    input.classList.remove('is-invalid');
+                }
+            });
+            if (hasError) {
+                event.preventDefault();
+                holidayForm.reportValidity();
+            }
+        });
+    }
+
     // Add fade out animation
     const style = document.createElement('style');
     style.textContent = `
@@ -1318,27 +1375,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     `;
     document.head.appendChild(style);
-
-    // Initialize Select2
-    if (typeof $ !== 'undefined' && $.fn.select2) {
-        $('.select2').select2({
-            width: '100%',
-            placeholder: 'Select employment types',
-            allowClear: true
-        });
-    }
-
-    // Initialize Bootstrap Select
-    if (typeof $ !== 'undefined' && $.fn.selectpicker) {
-        $('#selectdesignation, #selectdepartment').selectpicker({
-            actionsBox: true,
-            selectAllText: 'Select All',
-            deselectAllText: 'Deselect All',
-            selectedTextFormat: 'count > 4',
-            liveSearch: true,
-            size: 8
-        });
-    }
 });
 </script>
 @endpush

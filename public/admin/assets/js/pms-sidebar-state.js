@@ -67,15 +67,21 @@
     function restoreScroll() {
         if (!inner) return;
         var saved = parseInt(storage.get(SCROLL_KEY) || '', 10);
-        if (!isNaN(saved)) inner.scrollTop = saved;
-        // The current page's link must still be visible.
         var active = menu.querySelector('.menu-item.active:not(.open) > .menu-link');
+        var nextScrollTop = !isNaN(saved) ? saved : null;
         if (active) {
+            var currentTop = nextScrollTop !== null ? nextScrollTop : inner.scrollTop;
+            var delta = nextScrollTop !== null ? (nextScrollTop - inner.scrollTop) : 0;
             var box = inner.getBoundingClientRect();
             var link = active.getBoundingClientRect();
-            if (link.top < box.top || link.bottom > box.bottom) {
-                inner.scrollTop += link.top - box.top - (box.height / 2) + (link.height / 2);
+            var linkTop = link.top - delta;
+            var linkBottom = link.bottom - delta;
+            if (linkTop < box.top || linkBottom > box.bottom) {
+                nextScrollTop = currentTop + (linkTop - box.top) - (box.height / 2) + (link.height / 2);
             }
+        }
+        if (nextScrollTop !== null && nextScrollTop !== inner.scrollTop) {
+            inner.scrollTop = nextScrollTop;
         }
         if (window.Helpers && window.Helpers.menuPsScroll) window.Helpers.menuPsScroll.update();
     }

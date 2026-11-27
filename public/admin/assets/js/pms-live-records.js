@@ -22,7 +22,7 @@
         if (document.hidden || checkingSession || sessionEnded || !script?.dataset.sessionUrl) return;
         checkingSession = true;
         try {
-            const response = await fetch(script.dataset.sessionUrl, { headers: { Accept: 'application/json' }, cache: 'no-store', signal: AbortSignal.timeout(10000) });
+            const response = await fetch(script.dataset.sessionUrl, { headers: { Accept: 'application/json' }, cache: 'no-store', signal: AbortSignal.timeout(10000), pmsBackground: true });
             if (response.headers.get('X-Company-Deleted') === '1') window.PmsCompanySessionEnded();
             else if (response.status === 401 || response.status === 419) {
                 sessionEnded = true;
@@ -136,7 +136,7 @@
         busy = true;
         const url = location.href;
         try {
-            const response = await fetch(url, { headers: { Accept: 'text/html', 'X-PMS-Live-Records': '1' }, cache: 'no-store', signal: AbortSignal.timeout(20000) });
+            const response = await fetch(url, { headers: { Accept: 'text/html', 'X-PMS-Live-Records': '1' }, cache: 'no-store', signal: AbortSignal.timeout(20000), pmsBackground: true });
             if (response.headers.get('X-Company-Deleted') === '1') { window.PmsCompanySessionEnded(); stopped = true; return; }
             if (response.redirected || [401, 403, 419].includes(response.status)) { stopped = true; return; }
             if (!response.ok) throw new Error('Record refresh unavailable');

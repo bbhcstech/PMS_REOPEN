@@ -12,7 +12,7 @@
                     'date' => \Carbon\Carbon::parse($holiday->date)->format('d M Y'),
                     'day' => \Carbon\Carbon::parse($holiday->date)->format('l'),
                     'title' => $holiday->occassion ?: $holiday->title,
-                    'type' => $holiday->type === 'weekly_holiday' ? 'Weekly' : 'Special',
+                    'type' => $holiday->resolvedTypeLabel(),
                 ];
             })->values();
         @endphp
@@ -121,7 +121,7 @@
                                         data-date="{{ $date->format('d M Y') }}"
                                         data-day="{{ $date->format('l') }}"
                                         data-title="{{ $holiday->occassion ?: $holiday->title }}"
-                                        data-type="{{ $holiday->type === 'weekly_holiday' ? 'Weekly' : 'Special' }}"
+                                        data-type="{{ $holiday->resolvedTypeLabel() }}"
                                     >
                                 </td>
                                 <td data-order="{{ $date->format('Y-m-d') }}"><strong>{{ $date->format('d M Y') }}</strong></td>
@@ -130,7 +130,10 @@
                                     <div class="employee-reason">{{ $holiday->occassion ?: $holiday->title }}</div>
                                     <small class="text-muted">{{ $date->format('F Y') }}</small>
                                 </td>
-                                <td><span class="employee-badge {{ $holiday->type === 'weekly_holiday' ? 'weekly' : 'special' }}">{{ $holiday->type === 'weekly_holiday' ? 'Weekly Holiday' : 'Special Holiday' }}</span></td>
+                                <td>
+                                    <span class="employee-badge {{ $holiday->resolvedTypeKey() }}">{{ $holiday->resolvedTypeLabel() }}</span>
+                                    <span class="employee-badge {{ ($holiday->day_type ?? 'full_day') === 'half_day' ? 'weekly' : 'regular' }} ms-1">{{ ($holiday->day_type ?? 'full_day') === 'half_day' ? 'Half Day' : 'Full Day' }}</span>
+                                </td>
                             </tr>
                         @empty
                             <tr><td colspan="5" class="text-center py-5 text-muted">No holidays found for this period.</td></tr>
@@ -167,7 +170,7 @@
     .employee-day { display: inline-flex; padding: 7px 10px; border-radius: 999px; background: #eef2ff; color: #3730a3; font-weight: 800; }
     .employee-reason { font-weight: 900; }
     .employee-badge { display: inline-flex; padding: 7px 10px; border-radius: 999px; font-weight: 900; font-size: .8rem; }
-    .employee-badge.weekly { background: #E0E7FF; color: #2F6BFF; } .employee-badge.special { background: #dbeafe; color: #1d4ed8; }
+    .employee-badge.weekly { background: #E0E7FF; color: #2F6BFF; } .employee-badge.special { background: #fef3c7; color: #b45309; } .employee-badge.regular { background: #dbeafe; color: #1d4ed8; }
     /* Hide visible DataTables export toolbar because Export dropdown is in header */
     .employee-holiday-page .dataTables_wrapper .dt-buttons { display: none !important; }
     @keyframes holidayRise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }

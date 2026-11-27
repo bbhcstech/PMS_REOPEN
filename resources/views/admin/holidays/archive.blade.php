@@ -94,7 +94,7 @@
                                     <div class="archive-reason">{{ $holiday->occassion ?: $holiday->title }}</div>
                                     <small>{{ $date->format('F Y') }}</small>
                                 </td>
-                                <td><span class="archive-type {{ $holiday->type === 'weekly_holiday' ? 'weekly' : 'special' }}">{{ $holiday->type === 'weekly_holiday' ? 'Weekly Holiday' : 'Special Holiday' }}</span></td>
+                                <td><span class="archive-type {{ $holiday->resolvedTypeKey() }}">{{ $holiday->resolvedTypeLabel() }}</span></td>
                                 <td>{{ $holiday->archived_at ? $holiday->archived_at->format('d M Y h:i A') : 'Unknown' }}</td>
                                 <td class="text-center">
                                     <form action="{{ route('holidays.restore', $holiday->id) }}" method="POST" onsubmit="return confirm('Restore this holiday to the active list?');">
@@ -153,7 +153,7 @@
     .archive-table tbody tr:hover { background: #EEF2FF; }
     .archive-day, .archive-type { display: inline-flex; padding: 7px 10px; border-radius: 999px; font-weight: 900; font-size: .82rem; }
     .archive-day { background: #eef2ff; color: #3730a3; }
-    .archive-type.weekly { background: #E0E7FF; color: #2F6BFF; } .archive-type.special { background: #dbeafe; color: #1d4ed8; }
+    .archive-type.weekly { background: #E0E7FF; color: #2F6BFF; } .archive-type.special { background: #fef3c7; color: #b45309; } .archive-type.regular { background: #dbeafe; color: #1d4ed8; }
     .archive-reason { font-weight: 900; } .archive-reason + small { color: #667085; font-weight: 650; }
     .archive-restore-btn { background: #EEF2FF; color: #2F6BFF; border: 1px solid #C7D2FE; }
     .archive-empty { text-align: center; padding: 50px 20px; color: #667085; } .archive-empty i { font-size: 4rem; color: #C7D2FE; margin-bottom: 14px; }

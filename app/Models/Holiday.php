@@ -19,6 +19,8 @@ class Holiday extends TenantModel
         'date',
         'occassion',
         'type', // Optional: could be 'holiday' or 'weekend'
+        'day_type', // 'full_day' or 'half_day'
+        'is_special', // boolean: Special Holiday flag
         'recurring_day',
         'department_id_json',
         'designation_id_json',
@@ -32,8 +34,27 @@ class Holiday extends TenantModel
 
     protected $casts = [
         'date' => 'date',
+        'is_special' => 'boolean',
         'archived_at' => 'datetime',
     ];
+
+    public function resolvedTypeKey(): string
+    {
+        if ($this->type === 'weekly_holiday') {
+            return 'weekly';
+        }
+
+        return ! empty($this->is_special) ? 'special' : 'regular';
+    }
+
+    public function resolvedTypeLabel(): string
+    {
+        return match ($this->resolvedTypeKey()) {
+            'weekly' => 'Weekly Holiday',
+            'special' => 'Special Holiday',
+            default => 'Regular Holiday',
+        };
+    }
 
     protected static array $tableColumnsCache = [];
 

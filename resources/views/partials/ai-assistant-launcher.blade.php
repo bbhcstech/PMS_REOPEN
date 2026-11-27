@@ -59,12 +59,11 @@
             var pending = false;
             function covered() {
                 var wasTucked = launcher.classList.contains('is-tucked');
-                launcher.classList.remove('is-tucked');
                 var rect = launcher.getBoundingClientRect();
-                if (wasTucked) launcher.classList.add('is-tucked');
                 if (!rect.width || !rect.height) return false;
+                var yOffset = wasTucked ? -10 : 0;
                 var x = rect.left + rect.width / 2;
-                var y = rect.top + rect.height / 2;
+                var y = rect.top + yOffset + rect.height / 2;
                 var radius = rect.width / 2 - 4;
                 var points = [[x, y], [x - radius, y], [x + radius, y], [x, y - radius], [x, y + radius]];
                 for (var i = 0; i < points.length; i++) {
@@ -79,7 +78,10 @@
             }
             function update() {
                 pending = false;
-                launcher.classList.toggle('is-tucked', covered());
+                var next = covered();
+                if (launcher.classList.contains('is-tucked') !== next) {
+                    launcher.classList.toggle('is-tucked', next);
+                }
             }
             function schedule() {
                 if (pending) return;

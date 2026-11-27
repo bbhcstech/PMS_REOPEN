@@ -12,7 +12,8 @@
         scheduled = false;
         if (!phone.matches) return;
         var header = document.querySelector('#layout-navbar,.top-header,.dev-topbar');
-        if (header) document.documentElement.style.setProperty('--pms-mobile-header-bottom', Math.ceil(header.getBoundingClientRect().bottom) + 'px');
+        var headerBottom = header ? Math.ceil(header.getBoundingClientRect().bottom) + 'px' : null;
+        var gridsToStack = [];
         document.querySelectorAll('div,section,form,main').forEach(function (grid) {
             if (grid.closest(skipGrid) || grid.closest('#layout-menu,.sidebar,.dev-sidebar')) return;
             if (grid.hasAttribute('data-pms-mobile-grid')) return;
@@ -25,9 +26,11 @@
             var hasCards = Boolean(grid.querySelector('.card,.stat-card,.metric-card,.dev-card,.analytics-card,.chart-card-wrapper,.kpi-card,h2,h3,h4,h5,h6'));
             var tracksWidth = widths.reduce(function (total, width) { return total + width; }, 0) + (parseFloat(style.columnGap) || 0) * (columns.length - 1);
             if ((hasFields || hasCards) && (Math.min.apply(null, widths) < 180 || tracksWidth > grid.clientWidth + 2)) {
-                grid.setAttribute('data-pms-mobile-grid', 'stack');
+                gridsToStack.push(grid);
             }
         });
+        var elementsToWrap = [];
+        var elementsToFluid = [];
         document.querySelectorAll('div,section,form').forEach(function (element) {
             if (element.closest(skipGrid + ',#layout-navbar,.top-header,.dev-topbar,#layout-menu,.sidebar,.dev-sidebar,.kanban-board,.kanban-container,.kanban-wrapper,.board-columns')) return;
             if (!element.getClientRects().length) return;
@@ -35,27 +38,31 @@
             if (style.position === 'fixed' || style.position === 'absolute') return;
             if (style.display === 'flex' && style.flexDirection === 'row' && style.flexWrap === 'nowrap'
                 && element.scrollWidth > element.clientWidth + 2 && !element.matches('.input-group,.input-group-custom,.phone-combo-group,.stat-icon,[class*="avatar"],[class*="logo"]')) {
-                element.setAttribute('data-pms-mobile-flex', 'wrap');
+                elementsToWrap.push(element);
             }
             var parent = element.parentElement;
             if (parent && !element.matches('[class*="avatar"],[class*="logo"],.stat-icon,.header-icon,.header-icon-badge')
                 && element.getBoundingClientRect().width > parent.clientWidth + 2) {
-                element.setAttribute('data-pms-mobile-fluid', '');
+                elementsToFluid.push(element);
             }
         });
-        document.querySelectorAll('.kanban-board,.kanban-container,.kanban-wrapper,.kanban-row,.board-columns,.board-container').forEach(function (host) {
-            host.setAttribute('data-pms-mobile-scroll','board');
-        });
-        document.querySelectorAll('.nav-tabs-container,.doc-nav-pills,.section-tabs,.tabs-bar,.tab-nav-container').forEach(function (host) {
-            host.setAttribute('data-pms-mobile-scroll','tabs');
-        });
+        var scrollBoards = Array.from(document.querySelectorAll('.kanban-board,.kanban-container,.kanban-wrapper,.kanban-row,.board-columns,.board-container'));
+        var scrollTabs = Array.from(document.querySelectorAll('.nav-tabs-container,.doc-nav-pills,.section-tabs,.tabs-bar,.tab-nav-container'));
+        var scrollTables = [];
         document.querySelectorAll('table').forEach(function (table) {
             if (table.closest('.fc,.gantt,.calendar-table,.daterangepicker')) return;
             var host = table.closest('.table-responsive,.table-wrapper,.pms-table-scroll-host,.matrix-scroll,.card-table-wrap') || table.parentElement;
             if (host && !host.matches('body,main,.content-wrapper,.main,.content,.dev-body-content,td,th')) {
-                host.setAttribute('data-pms-mobile-scroll', 'table');
+                scrollTables.push(host);
             }
         });
+        if (headerBottom !== null) document.documentElement.style.setProperty('--pms-mobile-header-bottom', headerBottom);
+        gridsToStack.forEach(function (grid) { grid.setAttribute('data-pms-mobile-grid', 'stack'); });
+        elementsToWrap.forEach(function (element) { element.setAttribute('data-pms-mobile-flex', 'wrap'); });
+        elementsToFluid.forEach(function (element) { element.setAttribute('data-pms-mobile-fluid', ''); });
+        scrollBoards.forEach(function (host) { host.setAttribute('data-pms-mobile-scroll', 'board'); });
+        scrollTabs.forEach(function (host) { host.setAttribute('data-pms-mobile-scroll', 'tabs'); });
+        scrollTables.forEach(function (host) { host.setAttribute('data-pms-mobile-scroll', 'table'); });
     }
 
     function schedule() {

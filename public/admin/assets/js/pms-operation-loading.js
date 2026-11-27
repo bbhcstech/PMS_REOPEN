@@ -142,7 +142,10 @@
     if (window.fetch) {
         var nativeFetch = window.fetch;
         window.fetch = function () {
-            var source = context, finish = begin(source, true), args = arguments;
+            var init = arguments[1];
+            var source = (init && init.pmsBackground) ? null : context;
+            var finish = source ? begin(source, true) : function () {};
+            var args = arguments;
             var result;
             try { result = nativeFetch.apply(this, args); } catch (error) { finish(); throw error; }
             return result.then(function (response) {

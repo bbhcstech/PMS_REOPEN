@@ -17,7 +17,7 @@
             </div>
             <div>
                 <h1>Edit Holiday</h1>
-                <p>Update holiday details, filters, and occassion information</p>
+                <p>Update holiday dates, occasion details, and Full Day / Half Day duration</p>
             </div>
         </div>
         <div class="btn-group">
@@ -61,7 +61,7 @@
 
     <!-- Form Card -->
     <div class="form-card">
-        <form method="POST" action="{{ route('holidays.update', $holiday->id) }}" class="form-content">
+        <form method="POST" action="{{ route('holidays.update', $holiday->id) }}" id="edit-holiday-data-form" class="form-content">
             @csrf
             @method('PUT')
 
@@ -75,20 +75,38 @@
 
                 <div id="holidayItems">
                     @foreach ($holiday->group->holidays as $h)
+                        @php
+                            $occasionVal = old('occassion.' . $loop->index, $h->occassion ?: $h->title);
+                            $dayTypeVal = old('day_type.' . $loop->index, $h->day_type ?? 'full_day');
+                            $dateVal = old('date.' . $loop->index, $h->date ? \Carbon\Carbon::parse($h->date)->format('Y-m-d') : '');
+                        @endphp
                         <div class="holiday-item">
                             <input type="hidden" name="holiday_id[]" value="{{ $h->id }}">
 
                             <div class="holiday-field">
                                 <label class="form-label">Date <span class="text-danger">*</span></label>
                                 <input type="date" name="date[]" class="form-control"
-                                       value="{{ old('date.' . $loop->index, $h->date) }}" required>
+                                       value="{{ $dateVal }}" required>
                             </div>
 
                             <div class="holiday-field">
-                                <label class="form-label">Occasion <span class="text-danger">*</span></label>
-                                <input type="text" name="occassion[]" class="form-control"
-                                       value="{{ old('occassion.' . $loop->index, $h->title) }}"
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <label class="form-label">Occasion <span class="text-danger">*</span></label>
+                                    <small class="occasion-counter text-muted" style="font-size: 0.72rem; font-weight: 600;">{{ mb_strlen((string) $occasionVal) }} / 1500</small>
+                                </div>
+                                <input type="text" name="occassion[]" class="form-control occasion-input"
+                                       maxlength="1500"
+                                       value="{{ $occasionVal }}"
                                        placeholder="e.g., Republic Day" required>
+                                <div class="invalid-feedback">Please enter an occasion (maximum 1500 characters).</div>
+                            </div>
+
+                            <div class="holiday-field">
+                                <label class="form-label">Duration <span class="text-danger">*</span></label>
+                                <select name="day_type[]" class="form-control" required>
+                                    <option value="full_day" {{ $dayTypeVal === 'full_day' ? 'selected' : '' }}>Full Day</option>
+                                    <option value="half_day" {{ $dayTypeVal === 'half_day' ? 'selected' : '' }}>Half Day</option>
+                                </select>
                             </div>
 
                             <button type="button" class="btn btn-outline-danger remove-item {{ $loop->first ? 'd-none' : '' }}"
@@ -102,57 +120,11 @@
                 <button type="button" id="add-holiday-item" class="btn btn-outline-primary add-btn">
                     <i class="fas fa-plus-circle"></i> Add More Holiday
                 </button>
-            </div>
 
-            <!-- Filters Section -->
-            <div class="form-section">
-                <div class="section-header">
-                    <i class="fas fa-filter"></i>
-                    <h6>Department, Designation & Employment Filters</h6>
-                    <span class="section-badge">Filters apply to all holidays above</span>
-                </div>
-
-                <div class="filters-grid">
-                    <div class="filter-group">
-                        <label class="form-label">Department</label>
-                        <select class="form-control multiple-users" multiple name="department_id_json[]"
-                                id="selectdepartment" data-live-search="true" data-size="8">
-                            @foreach ($department as $team)
-                                <option value="{{ $team->id }}"
-                                    {{ in_array($team->id, old('department_id_json', json_decode($holiday->department_id_json, true) ?? [])) ? 'selected' : '' }}>
-                                    {{ $team->dpt_name }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <div class="filter-group">
-                        <label class="form-label">Designation</label>
-                        <select class="form-control multiple-users" multiple name="designation_id_json[]"
-                                id="selectdesignation" data-live-search="true" data-size="8">
-                            @foreach ($designations as $designation)
-                                <option value="{{ $designation->id }}"
-                                    {{ in_array($designation->id, old('designation_id_json', json_decode($holiday->designation_id_json, true) ?? [])) ? 'selected' : '' }}>
-                                    {{ $designation->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <div class="filter-group">
-                        <label class="form-label">Employment Type</label>
-                        <select class="form-control select2" name="employment_type_json[]" multiple>
-                            @php
-                                $selectedEmployment = old('employment_type_json', json_decode($holiday->employment_type_json, true) ?? []);
-                            @endphp
-                            <option value="full_time" {{ in_array('full_time', $selectedEmployment) ? 'selected' : '' }}>Full Time</option>
-                            <option value="part_time" {{ in_array('part_time', $selectedEmployment) ? 'selected' : '' }}>Part Time</option>
-                            <option value="on_contract" {{ in_array('on_contract', $selectedEmployment) ? 'selected' : '' }}>On Contract</option>
-                            <option value="internship" {{ in_array('internship', $selectedEmployment) ? 'selected' : '' }}>Internship</option>
-                            <option value="trainee" {{ in_array('trainee', $selectedEmployment) ? 'selected' : '' }}>Trainee</option>
-                        </select>
-                    </div>
-                </div>
+                @include('admin.holidays.partials.special-holiday-field', [
+                    'selectedSpecial' => (string) old('is_special', $holiday->is_special ? '1' : '0'),
+                    'showOverrideHint' => false,
+                ])
             </div>
 
             <!-- Form Actions -->
@@ -498,7 +470,7 @@
 
     .holiday-item {
         display: grid;
-        grid-template-columns: minmax(180px, 260px) 1fr auto;
+        grid-template-columns: minmax(170px, 230px) 1fr minmax(140px, 180px) auto;
         gap: 12px;
         align-items: end;
         padding: 16px 18px;
@@ -1131,14 +1103,81 @@
                         <input type="date" name="date[]" class="form-control" required>
                     </div>
                     <div class="holiday-field">
-                        <label class="form-label">Occasion <span class="text-danger">*</span></label>
-                        <input type="text" name="occassion[]" class="form-control" placeholder="e.g., Republic Day" required>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <label class="form-label">Occasion <span class="text-danger">*</span></label>
+                            <small class="occasion-counter text-muted" style="font-size: 0.72rem; font-weight: 600;">0 / 1500</small>
+                        </div>
+                        <input type="text" name="occassion[]" class="form-control occasion-input" maxlength="1500" placeholder="e.g., Republic Day" required>
+                        <div class="invalid-feedback">Please enter an occasion (maximum 1500 characters).</div>
+                    </div>
+                    <div class="holiday-field">
+                        <label class="form-label">Duration <span class="text-danger">*</span></label>
+                        <select name="day_type[]" class="form-control" required>
+                            <option value="full_day" selected>Full Day</option>
+                            <option value="half_day">Half Day</option>
+                        </select>
                     </div>
                     <button type="button" class="btn btn-outline-danger remove-item" aria-label="Remove holiday">
                         <i class="fas fa-times"></i>
                     </button>
                 `;
                 holidayItems.appendChild(item);
+            });
+        }
+
+        function syncOccasionField(input) {
+            const len = input.value.length;
+            const trimmedLen = input.value.trim().length;
+            const counter = input.closest('.holiday-field')?.querySelector('.occasion-counter');
+            if (counter) {
+                counter.textContent = `${len} / 1500`;
+                counter.classList.toggle('text-danger', len > 1500);
+                counter.classList.toggle('text-muted', len <= 1500);
+            }
+            if (len > 1500) {
+                input.setCustomValidity('Occasion must not exceed 1500 characters.');
+                input.classList.add('is-invalid');
+            } else if (trimmedLen === 0 && input.dataset.touched === '1') {
+                input.setCustomValidity('Please enter the holiday occasion.');
+                input.classList.add('is-invalid');
+            } else {
+                input.setCustomValidity('');
+                input.classList.remove('is-invalid');
+            }
+        }
+
+        if (holidayItems) {
+            holidayItems.addEventListener('input', function (event) {
+                if (event.target.matches('input[name="occassion[]"]')) {
+                    event.target.dataset.touched = '1';
+                    syncOccasionField(event.target);
+                }
+            });
+        }
+
+        const editForm = document.getElementById('edit-holiday-data-form');
+        if (editForm) {
+            editForm.addEventListener('submit', function (event) {
+                let hasError = false;
+                editForm.querySelectorAll('input[name="occassion[]"]').forEach(function (input) {
+                    input.dataset.touched = '1';
+                    if (input.value.trim().length === 0) {
+                        input.setCustomValidity('Please enter the holiday occasion.');
+                        input.classList.add('is-invalid');
+                        hasError = true;
+                    } else if (input.value.length > 1500) {
+                        input.setCustomValidity('Occasion must not exceed 1500 characters.');
+                        input.classList.add('is-invalid');
+                        hasError = true;
+                    } else {
+                        input.setCustomValidity('');
+                        input.classList.remove('is-invalid');
+                    }
+                });
+                if (hasError) {
+                    event.preventDefault();
+                    editForm.reportValidity();
+                }
             });
         }
 
@@ -1164,27 +1203,6 @@
             }
         `;
         document.head.appendChild(style);
-
-        // Initialize Select2
-        if (typeof $ !== 'undefined' && $.fn.select2) {
-            $('.select2').select2({
-                width: '100%',
-                placeholder: 'Select employment types',
-                allowClear: true
-            });
-        }
-
-        // Initialize Bootstrap Select
-        if (typeof $ !== 'undefined' && $.fn.selectpicker) {
-            $('#selectdesignation, #selectdepartment').selectpicker({
-                actionsBox: true,
-                selectAllText: 'Select All',
-                deselectAllText: 'Deselect All',
-                selectedTextFormat: 'count > 4',
-                liveSearch: true,
-                size: 8
-            });
-        }
     });
 </script>
 @endpush

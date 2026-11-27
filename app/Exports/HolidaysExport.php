@@ -35,10 +35,8 @@ class HolidaysExport implements FromCollection, WithHeadings, WithMapping, WithS
             'Day',
             'Occasion',
             'Type',
+            'Duration',
             'Recurring Day',
-            'Department IDs',
-            'Designation IDs',
-            'Employment Types',
         ];
     }
 
@@ -50,11 +48,9 @@ class HolidaysExport implements FromCollection, WithHeadings, WithMapping, WithS
             $date->format('Y-m-d'),
             $date->format('l'),
             $holiday->occassion ?: $holiday->title,
-            $holiday->type,
+            $holiday->resolvedTypeLabel(),
+            ($holiday->day_type ?? 'full_day') === 'half_day' ? 'Half Day' : 'Full Day',
             $holiday->recurring_day,
-            $this->jsonList($holiday->department_id_json),
-            $this->jsonList($holiday->designation_id_json),
-            $this->jsonList($holiday->employment_type_json),
         ];
     }
 
@@ -65,10 +61,8 @@ class HolidaysExport implements FromCollection, WithHeadings, WithMapping, WithS
         $sheet->getColumnDimension('B')->setWidth(14);
         $sheet->getColumnDimension('C')->setWidth(34);
         $sheet->getColumnDimension('D')->setWidth(18);
-        $sheet->getColumnDimension('E')->setWidth(18);
-        $sheet->getColumnDimension('F')->setWidth(22);
-        $sheet->getColumnDimension('G')->setWidth(22);
-        $sheet->getColumnDimension('H')->setWidth(28);
+        $sheet->getColumnDimension('E')->setWidth(16);
+        $sheet->getColumnDimension('F')->setWidth(18);
 
         return [];
     }
