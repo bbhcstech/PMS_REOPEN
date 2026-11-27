@@ -19,7 +19,7 @@ $items = [
     ['departments', 'Department', 'hr', null],
     ['department-parent', 'Parent Department', 'departments', 'parent-departments.index', true],
     ['department-sub', 'Sub Department', 'departments', 'departments.index', true],
-    ['higher-level-attendance', 'Higher-level attendance', 'hr', 'admin.authority-attendance', true, 'attendance'],
+    ['higher-level-attendance', 'HR Attendance', 'hr', 'admin.authority-attendance', true, 'attendance'],
     ['higher-level-leaves', 'Higher-level leaves', 'hr', 'admin.authority-leaves', true, 'leaves'],
     ['attendance', 'Attendance', 'hr', 'attendance.index'],
     ['leaves', 'My Leaves', 'hr', 'leaves.index'],

@@ -22,29 +22,29 @@ class LeaveService
     private function authorizeReviewer(Leave $leave, ?User $actor): void
     {
         abort_unless($leave->user && WorkforceAccess::canManageLeaves($actor)
-            && WorkforceAccess::canAccessRecord($actor, $leave->user, $leave->staff_category), 403, 'You cannot review this leave request.');
+            && WorkforceAccess::canManageEmployeeLeave($actor, $leave->user), 403, 'You cannot review this leave request.');
     }
     private function authorizeAuthorityReview(Leave $leave, ?User $actor): void
     {
         $owner = $leave->user;
         if ($owner && $this->adminOnlyReview($leave)) {
-            abort_unless(WorkforceAccess::isAdmin($actor), 403, 'Only the company admin may review higher-level staff leave.');
+            abort_unless(WorkforceAccess::isAdmin($actor), 403, 'Only the company admin may review HR leave.');
             abort_unless((int) $actor->company_id === (int) $owner->company_id, 403);
         }
     }
 
-    /** Leave only the company admin reviews: higher-level staff (HR, managers, custom roles). */
+    /** Leave only the company admin reviews: HR staff leave requests. */
     private function adminOnlyReview(Leave $leave): bool
     {
         $owner = $leave->user;
-        return $owner && (WorkforceAccess::isAuthority($owner) || $leave->staff_category === 'authority');
+        return $owner && WorkforceAccess::isHr($owner);
     }
 
     /** Whether the actor may approve / reject / change this leave (same rules as the review actions). */
     public function canReview(Leave $leave, ?User $actor): bool
     {
         if (! $leave->user || ! WorkforceAccess::canManageLeaves($actor)
-            || ! WorkforceAccess::canAccessRecord($actor, $leave->user, $leave->staff_category)) {
+            || ! WorkforceAccess::canManageEmployeeLeave($actor, $leave->user)) {
             return false;
         }
         if ($this->adminOnlyReview($leave)) {
@@ -298,10 +298,10 @@ class LeaveService
             $balance = $this->ensureBalance($employee, $start);
             $status = $data['status'] ?? 'pending';
 
-            if (WorkforceAccess::isAuthority($employee) && ! WorkforceAccess::isAdmin($actor)) {
+            if ((WorkforceAccess::isHr($employee) || WorkforceAccess::isAuthority($employee)) && ! WorkforceAccess::isAdmin($actor)) {
                 $status = 'pending';
             }
-            if ($status === 'pending' && ! WorkforceAccess::isAuthority($employee) && $this->shouldAutoApprove($type, $start, $data, $policy)) {
+            if ($status === 'pending' && ! WorkforceAccess::isHr($employee) && ! WorkforceAccess::isAuthority($employee) && $this->shouldAutoApprove($type, $start, $data, $policy)) {
                 $status = 'approved';
             }
 

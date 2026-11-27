@@ -10,7 +10,7 @@
 @endphp
 <div id="attendance-team-page" class="attendance-team-page" data-live-preserve data-live-records-off>
     <header class="at-panel at-header">
-        <div><span class="at-eyebrow">PEOPLE / ATTENDANCE</span><h1>{{ request('staff_category') === 'authority' ? 'Higher-level attendance' : 'Employee attendance' }}</h1><p>Every employee, every day — one monthly overview.</p></div>
+        <div><span class="at-eyebrow">PEOPLE / ATTENDANCE</span><h1>{{ request('staff_category') === 'authority' ? 'HR Attendance' : 'Employee attendance' }}</h1><p>Every employee, every day — one monthly overview.</p></div>
         <div class="at-actions">
             <a class="at-button at-primary" href="{{ route($attendanceRoute, ['view' => 'team', 'month' => $month, 'year' => $year, 'search' => request('search')]) }}" aria-current="page">Table view</a>
             <a class="at-button" href="{{ route($attendanceRoute, ['month' => $month, 'year' => $year]) }}">Calendar view</a>

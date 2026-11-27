@@ -26,7 +26,7 @@ class WorkforceFileController extends Controller
         $actor = WorkforceAccess::authorizeActor();
         \App\Services\TenantScope::authorizeCompany($leave->user?->company_id);
         $canView = WorkforceAccess::isHr($actor)
-            ? (int) $leave->user_id === (int) $actor->id
+            ? ((int) $leave->user_id === (int) $actor->id || ($leave->user && WorkforceAccess::canManageEmployeeLeave($actor, $leave->user)))
             : $leave->user && WorkforceAccess::canAccessRecord($actor, $leave->user, $leave->staff_category);
         abort_unless($canView, 403);
         return $this->file($leave->getRawOriginal('attachment'), 'authority-leave', (int) $actor->company_id);

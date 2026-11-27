@@ -58,6 +58,11 @@ trait AttendanceRecords
         ]);
 
         $attendanceEmployee = User::find($data['user_id']);
+        abort_if(
+            $attendanceEmployee && \App\Services\WorkforceAccess::isHr($attendanceEmployee) && ! \App\Services\WorkforceAccess::isAdmin($user),
+            403,
+            'Only your company admin may override HR attendance.'
+        );
         $attendancePayload = [
             'status' => $data['status'],
             'clock_in' => $data['clock_in'] ? Carbon::createFromFormat('H:i', $data['clock_in'])->format('H:i:s') : null,
@@ -94,7 +99,7 @@ trait AttendanceRecords
             ->whereNull('archived_at')
             ->orderBy('name');
         if ($request->input('staff_category') === 'authority') {
-            \App\Services\WorkforceAccess::users($usersQuery, 'authority');
+            \App\Services\WorkforceAccess::hrUsers($usersQuery);
         } else {
             \App\Services\WorkforceAccess::attendanceEmployees($usersQuery);
         }
@@ -127,9 +132,13 @@ trait AttendanceRecords
         if (!is_array($userIds)) $userIds = [$userIds];
         $request->merge(['user_id' => $userIds]);
 
-        abort_if(\App\Services\WorkforceAccess::isHr($user)
-            && collect($userIds)->contains(fn ($id) => (int) $id === (int) $user->id),
-            403, 'Only your company admin may add or overwrite your attendance. Use dashboard clock-in and clock-out for your daily attendance.');
+        $targetUsers = User::whereIn('id', $userIds)->get();
+        abort_if(
+            ! \App\Services\WorkforceAccess::isAdmin($user)
+            && $targetUsers->contains(fn ($target) => \App\Services\WorkforceAccess::isHr($target)),
+            403,
+            'Only your company admin may add or overwrite HR attendance. Use dashboard clock-in and clock-out for daily attendance.'
+        );
 
         $canManageAll = $this->canManageAttendance($user) || $this->isAdminUser($user);
         $isSelf = count($userIds) === 1 && (int) reset($userIds) === (int) $user->id;
@@ -624,7 +633,7 @@ trait AttendanceRecords
         $query = Attendance::with('user.employeeDetail.designation')
             ->whereNotNull('archived_at');
         if ($request->input('staff_category') === 'authority') {
-            \App\Services\WorkforceAccess::records($query, 'authority');
+            $query->whereHas('user', fn ($userQuery) => \App\Services\WorkforceAccess::hrUsers($userQuery));
         } else {
             $query->whereHas('user', fn ($userQuery) => \App\Services\WorkforceAccess::attendanceEmployees($userQuery));
         }

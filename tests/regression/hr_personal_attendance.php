@@ -155,8 +155,20 @@ checkCalendar($record->fresh()->clock_in === '09:00:00', 'Rejected HR edit chang
 Auth::guard('web')->setUser(User::findOrFail(1));
 $admin = $controller->authorityIndex(Request::create('/admin/authority-attendance', 'GET', ['user_id' => 40, 'month' => 10, 'year' => 2026]))->getData();
 checkCalendar($admin['selectedEmployee']->id === 40 && $admin['canManage'], 'Admin lost access to HR attendance');
+checkCalendar($admin['employees']->pluck('id')->sort()->values()->all() === [33, 40], 'HR Attendance must fetch only HR accounts and exclude all other employees.');
 DB::table('users')->insert(['id' => 41, 'company_id' => 1, 'name' => 'Manager', 'email' => 'manager@local.test', 'role' => 'manager']);
 DB::table('attendances')->insert(['user_id' => 41, 'date' => '2026-10-01', 'status' => 'present', 'clock_in' => '09:00:00', 'clock_out' => '17:00:00']);
+Auth::guard('web')->setUser(User::findOrFail(1));
+$hrTeam = $controller->authorityIndex(Request::create('/admin/authority-attendance', 'GET', ['view' => 'team', 'month' => 10, 'year' => 2026]))->getData();
+checkCalendar($hrTeam['teamRows']->pluck('employee.id')->sort()->values()->all() === [33, 40], 'HR Attendance team view leaked non-HR employees.');
+DB::table('users')->insert(['id' => 42, 'company_id' => 1, 'name' => 'HR Two', 'email' => 'hr2@local.test', 'role' => 'hr']);
+Auth::guard('web')->setUser(User::findOrFail(40));
+try {
+    $controller->store(Request::create('/attendance/store', 'POST', ['user_id' => [42], 'overwrite_attendance' => 'yes']));
+    throw new RuntimeException('HR could override another HR attendance.');
+} catch (\Symfony\Component\HttpKernel\Exception\HttpException $e) {
+    checkCalendar($e->getStatusCode() === 403, 'HR override of another HR returned wrong status.');
+}
 Auth::guard('web')->setUser(User::findOrFail(41));
 try {
     $guarded('/hr/attendance', 'GET', [], true);

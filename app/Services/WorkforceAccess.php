@@ -14,7 +14,26 @@ class WorkforceAccess
 
     public static function canManageLeaves(?User $user): bool
     {
-        return static::isAdmin($user);
+        return static::isAdmin($user) || static::isHr($user);
+    }
+
+    /**
+     * Whether the actor can view or manage a leave request in Employee Leaves
+     * (Admins can access all company leaves; HR can access all non-HR, non-admin employees).
+     */
+    public static function canManageEmployeeLeave(?User $actor, User $owner): bool
+    {
+        if (! $actor || (int) $actor->company_id !== (int) $owner->company_id) {
+            return false;
+        }
+        if (static::isAdmin($actor)) {
+            return true;
+        }
+        if (! static::isHr($actor)) {
+            return false;
+        }
+
+        return ! static::isHr($owner) && ! static::isAdmin($owner);
     }
 
     public static function canAccessRecord(?User $actor, User $owner, ?string $category = null): bool
@@ -67,6 +86,14 @@ class WorkforceAccess
         }
 
         return $query->whereRaw("LOWER(COALESCE(role, '')) NOT IN (?, ?, ?)", ['admin', 'administrator', 'superadmin']);
+    }
+
+    /**
+     * Scope a user query to active HR accounts for the HR Attendance section.
+     */
+    public static function hrUsers(Builder $query): Builder
+    {
+        return $query->whereRaw("LOWER(COALESCE(role, '')) = ?", ['hr']);
     }
 
     public static function authorizeActor(): User

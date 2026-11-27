@@ -293,7 +293,7 @@
                 </li>
                 @endif
                 @if($canSeeModule('leaves'))
-                <li class="menu-item {{ request()->routeIs('leaves.mine') || ($isHrSidebarUser && request()->routeIs('leaves.index', 'leaves.show', 'leaves.report', 'admin.leave.report')) ? 'active' : '' }}">
+                <li class="menu-item {{ request()->routeIs('leaves.mine') || ($isHrSidebarUser && request()->routeIs('leaves.report', 'admin.leave.report')) ? 'active' : '' }}">
                     <a href="{{ route('leaves.mine') }}" class="menu-link" @if($isHrSidebarUser) data-sidebar-key="leaves" @endif>
                         <i class="menu-icon tf-icons bx bx-user-check"></i><div>My Leave Requests</div>
                     </a>
@@ -303,6 +303,14 @@
 
             @if($isHrSidebarUser)
                 {{-- HR Role: Show all HR features directly as top-level sidebar items without outer HR dropdown wrapper --}}
+                @if($canSeeModule('leaves'))
+                    <li class="menu-item {{ (request()->routeIs('leaves.index') || request()->routeIs('leaves.show') || request()->routeIs('leaves.calendar') || request()->routeIs('leaves.archive') || request()->routeIs('leaves.apology-letters.*')) ? 'active' : '' }}">
+                        <a href="{{ route('leaves.index') }}" class="menu-link" data-sidebar-key="leaves">
+                            <i class="menu-icon tf-icons bx bx-calendar-x"></i>
+                            <div class="text-truncate">Employee Leaves</div>
+                        </a>
+                    </li>
+                @endif
                 @if($canSeeModule('employees'))
                     <li class="menu-item {{ request()->routeIs('employees.*') ? 'active' : '' }}">
                         <a href="{{ route('employees.index') }}" class="menu-link" data-sidebar-key="employees">
@@ -470,7 +478,7 @@
                         @if(\App\Services\WorkforceAccess::isAdmin(auth()->user()))
                         @if($canSeeModule('attendance') && (!\App\Services\WorkforceAccess::isAuthority(auth()->user()) || \App\Services\WorkforceAccess::canManageLeaves(auth()->user())))
                         @if($canSeeModule('higher-level-attendance'))
-                        <li class="menu-item {{ request()->routeIs('admin.authority-attendance') ? 'active' : '' }}"><a href="{{ route('admin.authority-attendance', ['view' => 'team']) }}" class="menu-link"><div class="text-truncate">Higher-Level Staff Attendance</div></a></li>
+                        <li class="menu-item {{ request()->routeIs('admin.authority-attendance') ? 'active' : '' }}"><a href="{{ route('admin.authority-attendance', ['view' => 'team']) }}" class="menu-link"><div class="text-truncate">HR Attendance</div></a></li>
                         @endif
                         @endif
                         @if($canSeeModule('leaves'))
@@ -498,7 +506,7 @@
                     </a>
                     </li>
 @endif
-                    @if($canSeeModule('leaves-apply'))
+                    @if($canSeeModule('leaves-apply') && !\App\Services\WorkforceAccess::isAdmin(auth()->user()))
                     <li class="menu-item {{ request()->routeIs('leaves.create') ? 'active' : '' }}">
                     <a href="{{ route('leaves.create') }}" class="menu-link" data-sidebar-key="leaves-apply">
                         <div class="text-truncate">Apply Leave</div>
