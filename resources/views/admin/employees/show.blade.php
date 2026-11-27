@@ -1027,7 +1027,7 @@
                             </div>
                             <div class="info-item">
                                 <div class="info-label"><i class="fas fa-building"></i> Department</div>
-                                <div class="info-value">{{ $detail?->department?->dpt_name ?? 'N/A' }}</div>
+                                <div class="info-value">{{ $detail?->department_name ?? 'N/A' }}</div>
                             </div>
                             <div class="info-item">
                                 <div class="info-label"><i class="fas fa-user-tag"></i> Designation</div>

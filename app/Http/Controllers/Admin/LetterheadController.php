@@ -8,7 +8,9 @@ use App\Models\Company;
 use App\Models\Department;
 use App\Models\Leave;
 use App\Models\Letterhead;
+use App\Models\ParentDepartment;
 use App\Models\Project;
+use App\Models\User;
 use App\Services\DocxGeneratorService;
 use App\Services\LetterTemplateService;
 use App\Services\PdfLetterheadService;
@@ -17,6 +19,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -129,12 +132,15 @@ class LetterheadController extends Controller
             ? $user->designation 
             : ($user?->employeeDetail?->designation?->name ?: 'Senior Software Engineer');
 
+        $userDept = $user?->employeeDetail?->department_name ?: 'Engineering';
         $sampleText = LetterTemplateService::render($currentTemplate['content'], [
             '[Company Name]' => $company?->name ?: 'Company Name',
             '[Employee Name]' => $user?->name ?: 'Alexander Wright',
             '[Employee ID]' => 'EMP-' . date('Y') . '-' . str_pad($user?->id ?? '0842', 4, '0', STR_PAD_LEFT),
             '[Employee Email]' => $user?->email ?: 'employee@example.com',
             '[Designation]' => $userDesignation,
+            '[Department]' => $userDept,
+            '[Department / Team]' => $userDept,
             '[HR Email]' => $company?->email ?: 'hr@example.com',
             '[HR Phone]' => $company?->phone ?: '',
             '[Office Address]' => $company?->address ?: 'Company Address',
@@ -152,8 +158,43 @@ class LetterheadController extends Controller
             ? Company::orderBy('name')->get()
             : Company::whereKey(\App\Services\TenantScope::companyId() ?: 0)->get();
         $branches = BusinessAddress::orderBy('branch_name')->get();
+        $parentDepartments = ParentDepartment::orderBy('dpt_name')->get();
         $departments = Department::orderBy('dpt_name')->get();
+        $departmentOptions = $parentDepartments
+            ->map(fn ($pd) => ['key' => 'parent:' . $pd->id, 'name' => $pd->dpt_name])
+            ->concat($departments->map(fn ($d) => ['key' => 'sub:' . $d->id, 'name' => $d->dpt_name]))
+            ->unique(fn ($opt) => mb_strtolower(trim($opt['name'])))
+            ->values();
         $projects = Project::orderBy('name')->get();
+
+        $activeCompanyId = \App\Services\TenantScope::companyId() ?: $company?->id;
+        $employeesQuery = User::with(['employeeDetail.designation', 'employeeDetail.department', 'employeeDetail.parentDepartment'])
+            ->whereIn('role', ['employee', 'hr', 'manager'])
+            ->whereNull('archived_at');
+
+        if ($activeCompanyId) {
+            $employeesQuery->where('company_id', $activeCompanyId);
+        }
+
+        if (Schema::hasColumn('employee_details', 'status')) {
+            $employeesQuery->whereHas('employeeDetail', fn ($detail) => $detail->whereIn('status', ['Active', 'active']));
+        } elseif (Schema::hasColumn('users', 'is_active')) {
+            $employeesQuery->where('is_active', true);
+        } elseif (Schema::hasColumn('users', 'status')) {
+            $employeesQuery->whereIn('status', ['active', 'Active', 1]);
+        }
+
+        $employees = $employeesQuery->orderBy('name')->get();
+
+        \App\Models\LetterheadSignature::ensureTable();
+        $savedSignatures = $user
+            ? \App\Models\LetterheadSignature::query()
+                ->visibleTo($user, $activeCompanyId)
+                ->orderByDesc('is_default')
+                ->orderByDesc('is_active')
+                ->latest('id')
+                ->get()
+            : collect();
 
         return view('admin.letterhead.create', compact(
             'categories',
@@ -168,7 +209,10 @@ class LetterheadController extends Controller
             'companies',
             'branches',
             'departments',
-            'projects'
+            'departmentOptions',
+            'projects',
+            'employees',
+            'savedSignatures'
         ));
     }
 
@@ -306,6 +350,91 @@ class LetterheadController extends Controller
 
         return redirect()->route('letterhead.index')
             ->with('success', 'Letter Head "' . $letterhead->name . '" created and configured successfully.');
+    }
+
+    /**
+     * Persist an uploaded header or footer image/PDF on the default letterhead so it survives page refreshes.
+     */
+    public function savePlacementUpload(Request $request): JsonResponse
+    {
+        $request->validate([
+            'slot' => 'required|in:header,footer',
+        ]);
+
+        $slot = $request->input('slot');
+        $field = $slot === 'header' ? 'header_image' : 'footer_image';
+        $size = $slot === 'header'
+            ? \App\Services\LetterheadImage::HEADER
+            : \App\Services\LetterheadImage::FOOTER;
+
+        $request->validate([
+            $field => array_merge(['required'], array_slice(\App\Services\LetterheadImage::uploadRules($size), 1)),
+        ]);
+
+        $this->ensureInitialSeedExists();
+        $letterhead = Letterhead::where('is_default', true)->first() ?: Letterhead::first();
+        if (! $letterhead) {
+            return response()->json(['success' => false, 'message' => 'No default letterhead record found.'], 404);
+        }
+
+        $oldPath = $letterhead->{$field};
+        if ($oldPath && str_starts_with($oldPath, 'uploads/letterheads/')) {
+            $this->removeFile($oldPath);
+        }
+
+        $file = $request->file($field);
+        $originalName = $file->getClientOriginalName();
+        $savedPath = $this->handleFileUpload($file, $slot === 'header' ? 'headers' : 'footers');
+
+        $letterhead->update([
+            $field => $savedPath,
+            'updated_by' => auth()->id(),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'slot' => $slot,
+            'path' => $savedPath,
+            'url' => asset($savedPath),
+            'filename' => $originalName,
+            'is_pdf' => strtolower($file->getClientOriginalExtension()) === 'pdf',
+        ]);
+    }
+
+    /**
+     * Remove a persisted custom header or footer image/PDF and revert to the default preset.
+     */
+    public function removePlacementUpload(Request $request): JsonResponse
+    {
+        $request->validate([
+            'slot' => 'required|in:header,footer',
+        ]);
+
+        $slot = $request->input('slot');
+        $field = $slot === 'header' ? 'header_image' : 'footer_image';
+
+        $letterhead = Letterhead::where('is_default', true)->first() ?: Letterhead::first();
+        if ($letterhead) {
+            $oldPath = $letterhead->{$field};
+            if ($oldPath && str_starts_with($oldPath, 'uploads/letterheads/')) {
+                $this->removeFile($oldPath);
+            }
+
+            $letterhead->update([
+                $field => null,
+                'updated_by' => auth()->id(),
+            ]);
+        }
+
+        $defaultAsset = $slot === 'header'
+            ? 'assets/letterhead/presets/bengal_header.svg'
+            : 'assets/letterhead/presets/bengal_footer.svg';
+
+        return response()->json([
+            'success' => true,
+            'slot' => $slot,
+            'default_url' => asset($defaultAsset),
+        ]);
     }
 
     /**
@@ -722,6 +851,8 @@ class LetterheadController extends Controller
             $footerImagePath = null;
         }
 
+        $resolvedSignature = $this->resolveRequestSignature($request, $temporaryFiles);
+
         // Prepare letter document structure
         $letter = [
             'ref_no' => $request->input('ref_no') ?: ('REF/' . date('Y') . '/' . strtoupper(Str::random(6))),
@@ -733,6 +864,9 @@ class LetterheadController extends Controller
             'body_paragraphs' => preg_split('/\r\n|\r|\n/', $request->input('body')),
             'signatory_name' => $request->input('signatory_name') ?: (auth()->user()?->name ?: 'Arthur Pendelton'),
             'signatory_title' => $request->input('signatory_title') ?: 'Authorized Signatory',
+            'signature_image' => $resolvedSignature['signature_image'],
+            'signature_alignment' => $resolvedSignature['signature_alignment'],
+            'signature_width_mm' => $resolvedSignature['signature_width_mm'],
             'layout_mode' => $layoutMode,
             'header_image' => $headerImagePath,
             'footer_image' => $footerImagePath,
@@ -742,7 +876,20 @@ class LetterheadController extends Controller
         $fileName = 'Letter_' . Str::slug(substr($letter['subject'], 0, 30)) . '_' . date('Ymd') . '.pdf';
 
         try {
-            return PdfLetterheadService::generate($letter, $letterhead, $fileName);
+            $response = PdfLetterheadService::generate($letter, $letterhead, $fileName);
+            if ($resolvedSignature['signature_image']) {
+                \App\Services\LetterheadSignatureService::recordAudit('letterhead_signature_applied', [
+                    'format' => 'pdf',
+                    'ref_no' => $letter['ref_no'],
+                    'company_id' => $letterhead?->company_id ?: auth()->user()?->company_id,
+                    'signature_id' => $resolvedSignature['signature_id'],
+                    'signatory_name' => $letter['signatory_name'],
+                    'signatory_title' => $letter['signatory_title'],
+                    'applied_by' => auth()->id(),
+                    'applied_at' => now()->toIso8601String(),
+                ], $resolvedSignature['signature_id']);
+            }
+            return $response;
         } finally {
             foreach ($temporaryFiles as $temporaryFile) {
                 @unlink($temporaryFile);
@@ -773,6 +920,9 @@ class LetterheadController extends Controller
             $letterhead = Letterhead::where('is_default', true)->first() ?: Letterhead::first();
         }
 
+        $temporaryFiles = [];
+        $resolvedSignature = $this->resolveRequestSignature($request, $temporaryFiles);
+
         $letterData = [
             'company_name' => $letterhead?->company_name ?: 'BENGAL IT HUB PRIVATE LIMITED',
             'cin_number' => $letterhead?->cin_number ?: 'CIN : U62090WB2026PTC287230',
@@ -788,13 +938,35 @@ class LetterheadController extends Controller
             'body' => $request->input('body'),
             'signatory_name' => $request->input('signatory_name') ?: (auth()->user()?->name ?: 'Arthur Pendelton'),
             'signatory_title' => $request->input('signatory_title') ?: 'Authorized Signatory',
+            'signature_image' => $resolvedSignature['signature_image'],
+            'signature_alignment' => $resolvedSignature['signature_alignment'],
+            'signature_width_mm' => $resolvedSignature['signature_width_mm'],
             'header_image' => $request->file('header_image') ?? $letterhead?->header_image,
             'footer_image' => $request->file('footer_image') ?? $letterhead?->footer_image,
         ];
 
         $fileName = 'Letter_' . Str::slug(substr($letterData['subject'], 0, 30)) . '_' . date('Ymd') . '.docx';
 
-        return DocxGeneratorService::download($letterData, $fileName);
+        try {
+            $response = DocxGeneratorService::download($letterData, $fileName);
+            if ($resolvedSignature['signature_image']) {
+                \App\Services\LetterheadSignatureService::recordAudit('letterhead_signature_applied', [
+                    'format' => 'docx',
+                    'ref_no' => $letterData['ref_no'],
+                    'company_id' => $letterhead?->company_id ?: auth()->user()?->company_id,
+                    'signature_id' => $resolvedSignature['signature_id'],
+                    'signatory_name' => $letterData['signatory_name'],
+                    'signatory_title' => $letterData['signatory_title'],
+                    'applied_by' => auth()->id(),
+                    'applied_at' => now()->toIso8601String(),
+                ], $resolvedSignature['signature_id']);
+            }
+            return $response;
+        } finally {
+            foreach ($temporaryFiles as $temporaryFile) {
+                @unlink($temporaryFile);
+            }
+        }
     }
 
     /**
@@ -886,6 +1058,19 @@ class LetterheadController extends Controller
             $letterheadId = (Letterhead::where('is_default', true)->first() ?: Letterhead::first())?->id;
         }
 
+        $tmpSigFiles = [];
+        $resolvedSignature = $this->resolveRequestSignature($request, $tmpSigFiles);
+        $snapshotPath = null;
+        if ($resolvedSignature['signature_image']) {
+            $snapshotPath = \App\Services\LetterheadSignatureService::createSnapshotFromAbsolute(
+                $resolvedSignature['signature_image'],
+                $user?->company_id
+            );
+        }
+        foreach ($tmpSigFiles as $tmpFile) {
+            @unlink($tmpFile);
+        }
+
         $letter = \App\Models\LetterheadSentLetter::create([
             'company_id' => $user?->company_id,
             'letterhead_id' => $letterheadId,
@@ -898,10 +1083,29 @@ class LetterheadController extends Controller
             'body' => $request->input('body'),
             'signatory_name' => $request->input('signatory_name') ?: $user?->name,
             'signatory_title' => $request->input('signatory_title'),
+            'signature_id' => $resolvedSignature['signature_id'],
+            'signature_snapshot_path' => $snapshotPath,
+            'signature_alignment' => $resolvedSignature['signature_image'] ? $resolvedSignature['signature_alignment'] : null,
+            'signature_width_mm' => $resolvedSignature['signature_image'] ? $resolvedSignature['signature_width_mm'] : null,
+            'signature_applied_by' => $resolvedSignature['signature_image'] ? $user?->id : null,
+            'signature_applied_at' => $resolvedSignature['signature_image'] ? now() : null,
             'pdf_path' => $pdfPath,
             'delivery_status' => 'saved',
             'sent_by' => $user?->id,
         ]);
+
+        if ($resolvedSignature['signature_image']) {
+            \App\Services\LetterheadSignatureService::recordAudit('letterhead_document_generated', [
+                'document_id' => $letter->id,
+                'ref_no' => $letter->ref_no,
+                'company_id' => $letter->company_id,
+                'signature_id' => $letter->signature_id,
+                'signatory_name' => $letter->signatory_name,
+                'signatory_title' => $letter->signatory_title,
+                'applied_by' => $user?->id,
+                'applied_at' => optional($letter->signature_applied_at)->toIso8601String(),
+            ], $letter->id);
+        }
 
         if (! $recipientEmail) {
             return redirect()->route('letterhead.index')
@@ -1089,6 +1293,91 @@ class LetterheadController extends Controller
         $file->move($destinationPath, $fileName);
 
         return 'uploads/letterheads/' . $subfolder . '/' . $fileName;
+    }
+
+    /**
+     * Validate and resolve the authorized electronic signature for PDF/DOCX/Send operations.
+     *
+     * @return array{signature_id: ?int, signature_image: ?string, signature_alignment: string, signature_width_mm: int}
+     */
+    private function resolveRequestSignature(Request $request, array &$temporaryFiles): array
+    {
+        $align = in_array($request->input('signature_alignment'), ['left', 'center', 'right'], true)
+            ? $request->input('signature_alignment')
+            : 'left';
+        $widthMm = max(
+            \App\Services\LetterheadSignatureService::MIN_WIDTH_MM,
+            min(\App\Services\LetterheadSignatureService::MAX_WIDTH_MM, (int) $request->input('signature_width_mm', \App\Services\LetterheadSignatureService::DEFAULT_WIDTH_MM))
+        );
+
+        if (! $request->boolean('signature_enabled')) {
+            return [
+                'signature_id' => null,
+                'signature_image' => null,
+                'signature_alignment' => $align,
+                'signature_width_mm' => $widthMm,
+            ];
+        }
+
+        $mode = (string) $request->input('signature_mode', 'saved');
+
+        if ($mode === 'saved' && $request->filled('signature_id')) {
+            \App\Models\LetterheadSignature::ensureTable();
+            $sig = \App\Models\LetterheadSignature::findOrFail((int) $request->input('signature_id'));
+            $actor = auth()->user();
+            if ($actor) {
+                \App\Services\LetterheadSignatureService::authorizeSignature($actor, $sig, false);
+            }
+            if (! $sig->is_active) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'signature_id' => 'The selected signature is inactive. Activate it or choose another signature.',
+                ]);
+            }
+            $abs = \App\Services\LetterheadSignatureService::absolutePath($sig->image_path);
+            if (! $abs) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'signature_id' => 'The selected signature image file could not be found.',
+                ]);
+            }
+
+            return [
+                'signature_id' => $sig->id,
+                'signature_image' => $abs,
+                'signature_alignment' => $align,
+                'signature_width_mm' => $widthMm,
+            ];
+        }
+
+        if ($mode === 'draw' && $request->filled('signature_data')) {
+            $tmp = \App\Services\LetterheadSignatureService::createTemporaryFromDataUrl((string) $request->input('signature_data'));
+            $temporaryFiles[] = $tmp;
+
+            return [
+                'signature_id' => null,
+                'signature_image' => $tmp,
+                'signature_alignment' => $align,
+                'signature_width_mm' => $widthMm,
+            ];
+        }
+
+        if ($mode === 'upload' && $request->hasFile('signature_file')) {
+            $tmp = \App\Services\LetterheadSignatureService::createTemporaryFromUpload($request->file('signature_file'));
+            $temporaryFiles[] = $tmp;
+
+            return [
+                'signature_id' => null,
+                'signature_image' => $tmp,
+                'signature_alignment' => $align,
+                'signature_width_mm' => $widthMm,
+            ];
+        }
+
+        return [
+            'signature_id' => null,
+            'signature_image' => null,
+            'signature_alignment' => $align,
+            'signature_width_mm' => $widthMm,
+        ];
     }
 
     private function removeFile(?string $relativePath): void

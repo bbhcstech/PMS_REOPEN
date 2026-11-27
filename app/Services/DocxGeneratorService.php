@@ -33,7 +33,7 @@ class DocxGeneratorService
         // Add standard OpenXML package structures, including repeating page furniture.
         $zip->addFromString('[Content_Types].xml', self::getContentTypesXml());
         $zip->addFromString('_rels/.rels', self::getRelsXml());
-        $zip->addFromString('word/_rels/document.xml.rels', self::getDocumentRelsXml());
+        $zip->addFromString('word/_rels/document.xml.rels', self::getDocumentRelsXml(isset($parts['word/media/signature.png'])));
         $zip->addFromString('word/styles.xml', self::getStylesXml());
         $zip->addFromString('word/fontTable.xml', self::getFontTableXml());
         $zip->addFromString('word/settings.xml', self::getSettingsXml());
@@ -165,19 +165,30 @@ class DocxGeneratorService
         }
 
         // 6. SIGNATORY SEAL & SIGNATURE BLOCK
-        $bodyXml .= '<w:p><w:pPr><w:spacing w:before="360" w:after="80"/></w:pPr>';
+        $rawSigAlign = $data['signature_alignment'] ?? 'left';
+        $sigAlign = in_array($rawSigAlign, ['left', 'center', 'right'], true)
+            ? $rawSigAlign
+            : 'left';
+
+        $bodyXml .= '<w:p><w:pPr><w:jc w:val="' . $sigAlign . '"/><w:spacing w:before="360" w:after="80"/></w:pPr>';
         $bodyXml .= '<w:r><w:rPr><w:rFonts w:ascii="Calibri"/><w:b/><w:sz w:val="22"/><w:color w:val="0F172A"/></w:rPr><w:t>For ' . $companyName . ',</w:t></w:r>';
         $bodyXml .= '</w:p>';
 
-        $bodyXml .= '<w:p><w:pPr><w:spacing w:before="400" w:after="40"/></w:pPr>';
-        $bodyXml .= '<w:r><w:rPr><w:rFonts w:ascii="Calibri"/><w:sz w:val="20"/><w:color w:val="94A3B8"/></w:rPr><w:t>____________________________________</w:t></w:r>';
-        $bodyXml .= '</w:p>';
+        if (! empty($data['signature_image'])) {
+            $bodyXml .= '<w:p><w:pPr><w:jc w:val="' . $sigAlign . '"/><w:spacing w:before="120" w:after="60"/></w:pPr>';
+            $bodyXml .= '<w:r><w:t>__DOCX_SIGNATURE_IMAGE__</w:t></w:r>';
+            $bodyXml .= '</w:p>';
+        } else {
+            $bodyXml .= '<w:p><w:pPr><w:jc w:val="' . $sigAlign . '"/><w:spacing w:before="400" w:after="40"/></w:pPr>';
+            $bodyXml .= '<w:r><w:rPr><w:rFonts w:ascii="Calibri"/><w:sz w:val="20"/><w:color w:val="94A3B8"/></w:rPr><w:t>____________________________________</w:t></w:r>';
+            $bodyXml .= '</w:p>';
+        }
 
-        $bodyXml .= '<w:p><w:pPr><w:spacing w:after="40"/></w:pPr>';
+        $bodyXml .= '<w:p><w:pPr><w:jc w:val="' . $sigAlign . '"/><w:spacing w:after="40"/></w:pPr>';
         $bodyXml .= '<w:r><w:rPr><w:rFonts w:ascii="Calibri"/><w:b/><w:sz w:val="22"/><w:color w:val="0F172A"/></w:rPr><w:t>' . $signatoryName . '</w:t></w:r>';
         $bodyXml .= '</w:p>';
 
-        $bodyXml .= '<w:p><w:pPr><w:spacing w:after="300"/></w:pPr>';
+        $bodyXml .= '<w:p><w:pPr><w:jc w:val="' . $sigAlign . '"/><w:spacing w:after="300"/></w:pPr>';
         $bodyXml .= '<w:r><w:rPr><w:rFonts w:ascii="Calibri"/><w:sz w:val="20"/><w:color w:val="64748B"/></w:rPr><w:t>' . $signatoryTitle . '</w:t></w:r>';
         $bodyXml .= '</w:p>';
 
@@ -259,11 +270,60 @@ class DocxGeneratorService
         $margins->setAttribute('w:bottom', isset($parts['word/media/footer.png']) ? '2300' : '1900');
         $margins->setAttribute('w:header', isset($parts['word/media/header.png']) ? '100' : '500');
         $margins->setAttribute('w:footer', isset($parts['word/media/footer.png']) ? '300' : '500');
+
+        // Embed authorized signature image into the body if provided.
+        $sigAsset = $data['signature_image'] ?? null;
+        $sigPath = $sigAsset instanceof \Illuminate\Http\UploadedFile ? $sigAsset->getRealPath() : ($sigAsset && is_file((string) $sigAsset) ? (string) $sigAsset : null);
+        if ($sigPath) {
+            $sigImg = @imagecreatefromstring((string) file_get_contents($sigPath));
+            if ($sigImg) {
+                $imgW = max(1, imagesx($sigImg));
+                $imgH = max(1, imagesy($sigImg));
+                ob_start();
+                imagealphablending($sigImg, false);
+                imagesavealpha($sigImg, true);
+                imagepng($sigImg);
+                $parts['word/media/signature.png'] = ob_get_clean();
+                imagedestroy($sigImg);
+
+                $widthMm = max(15, min(90, (int) ($data['signature_width_mm'] ?? 40)));
+                $cx = (int) round($widthMm * 36000);
+                $cy = (int) round($cx * $imgH / $imgW);
+                $rawSigAlign = $data['signature_alignment'] ?? 'left';
+                $sigAlign = in_array($rawSigAlign, ['left', 'center', 'right'], true)
+                    ? $rawSigAlign
+                    : 'left';
+
+                $drawingXml = '<w:p xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'
+                    . '<w:pPr><w:keepNext/><w:jc w:val="' . $sigAlign . '"/><w:spacing w:before="120" w:after="60"/></w:pPr>'
+                    . '<w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0">'
+                    . '<wp:extent cx="' . $cx . '" cy="' . $cy . '"/>'
+                    . '<wp:docPr id="3" name="Authorized Signature"/>'
+                    . '<a:graphic><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">'
+                    . '<pic:pic><pic:nvPicPr><pic:cNvPr id="3" name="signature.png"/><pic:cNvPicPr/></pic:nvPicPr>'
+                    . '<pic:blipFill><a:blip r:embed="rIdSignature"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill>'
+                    . '<pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="' . $cx . '" cy="' . $cy . '"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr>'
+                    . '</pic:pic></a:graphicData></a:graphic>'
+                    . '</wp:inline></w:drawing></w:r></w:p>';
+
+                foreach ($xpath->query('/w:document/w:body/w:p') as $pNode) {
+                    if (str_contains($pNode->textContent, '__DOCX_SIGNATURE_IMAGE__')) {
+                        $frag = $document->createDocumentFragment();
+                        $frag->appendXML($drawingXml);
+                        $pNode->parentNode->replaceChild($frag, $pNode);
+                        break;
+                    }
+                }
+            }
+        }
+
         // Keep each short signature paragraph with the following line.
         $remaining = $xpath->query('/w:document/w:body/w:p');
         for ($i = max(0, $remaining->length - 4); $i < $remaining->length - 1; $i++) {
             $properties = $xpath->query('w:pPr', $remaining->item($i))->item(0);
-            $properties->appendChild($document->createElement('w:keepNext'));
+            if ($properties) {
+                $properties->appendChild($document->createElement('w:keepNext'));
+            }
         }
         $parts['word/document.xml'] = $document->saveXML();
         return $parts;
@@ -299,7 +359,7 @@ class DocxGeneratorService
             '</Relationships>';
     }
 
-    private static function getDocumentRelsXml(): string
+    private static function getDocumentRelsXml(bool $hasSignature = false): string
     {
         return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' .
             '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' .
@@ -308,6 +368,7 @@ class DocxGeneratorService
             '<Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/fontTable" Target="fontTable.xml"/>' .
             '<Relationship Id="rIdHeader" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/header" Target="header1.xml"/>' .
             '<Relationship Id="rIdFooter" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer" Target="footer1.xml"/>' .
+            ($hasSignature ? '<Relationship Id="rIdSignature" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/signature.png"/>' : '') .
             '</Relationships>';
     }
 
