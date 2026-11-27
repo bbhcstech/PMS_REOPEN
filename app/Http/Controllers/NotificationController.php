@@ -348,13 +348,105 @@ class NotificationController extends Controller
      */
     public function delete($id)
     {
-        $notification = auth()->user()->notifications()->where('id', $id)->first();
+        $deleted = 0;
+        $company = app(\App\Services\CompanyContext::class)->current();
+        $companyId = $company?->id ?? auth()->user()?->company_id;
 
-        if ($notification) {
-            $notification->delete();
+        if ($companyId && $this->canSeeCompanyAlerts() && ctype_digit((string) $id)
+            && class_exists(\App\Models\Central\CentralNotification::class)) {
+            try {
+                $deleted = \App\Models\Central\CentralNotification::on('central')
+                    ->where('company_id', $companyId)
+                    ->whereIn('target_audience', ['company_admin', 'all'])
+                    ->where('id', (int) $id)
+                    ->delete();
+            } catch (\Throwable $e) {
+                $deleted = 0;
+            }
         }
 
-        return response()->json(['status' => 'ok']);
+        if ($deleted === 0) {
+            $deleted = auth()->user()->notifications()->where('id', $id)->delete();
+        }
+
+        if (request()->expectsJson() || request()->ajax()) {
+            return response()->json([
+                'status' => 'ok',
+                'deleted' => $deleted,
+                'unread_count' => auth()->user()->unreadNotifications()->count(),
+                'message' => 'Notification deleted.',
+            ]);
+        }
+
+        return back()->with('success', $deleted > 0 ? 'Notification deleted.' : 'Notification not found.');
+    }
+
+    /**
+     * Delete multiple selected notifications in batch queries.
+     */
+    public function deleteSelected(Request $request)
+    {
+        $validated = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['required', 'string', 'max:100'],
+        ]);
+
+        $centralIds = [];
+        $userIds = [];
+
+        foreach (array_unique($validated['ids']) as $rawId) {
+            if (str_starts_with($rawId, 'central:')) {
+                $id = substr($rawId, 8);
+                if (ctype_digit($id)) {
+                    $centralIds[] = (int) $id;
+                }
+            } elseif (str_starts_with($rawId, 'user:')) {
+                $id = substr($rawId, 5);
+                if ($id !== '') {
+                    $userIds[] = $id;
+                }
+            } elseif (ctype_digit($rawId)) {
+                $centralIds[] = (int) $rawId;
+            } else {
+                $userIds[] = $rawId;
+            }
+        }
+
+        $deletedCount = 0;
+        $company = app(\App\Services\CompanyContext::class)->current();
+        $companyId = $company?->id ?? auth()->user()?->company_id;
+
+        if (! empty($centralIds) && $companyId && $this->canSeeCompanyAlerts()
+            && class_exists(\App\Models\Central\CentralNotification::class)) {
+            try {
+                $deletedCount += \App\Models\Central\CentralNotification::on('central')
+                    ->where('company_id', $companyId)
+                    ->whereIn('target_audience', ['company_admin', 'all'])
+                    ->whereIn('id', $centralIds)
+                    ->delete();
+            } catch (\Throwable $e) {}
+        }
+
+        if (! empty($userIds)) {
+            $deletedCount += auth()->user()->notifications()
+                ->whereIn('id', $userIds)
+                ->delete();
+        }
+
+        $message = $deletedCount === 1
+            ? '1 notification deleted.'
+            : "{$deletedCount} notifications deleted.";
+
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'status' => 'ok',
+                'deleted' => $deletedCount,
+                'unread_count' => auth()->user()->unreadNotifications()->count(),
+                'message' => $message,
+            ]);
+        }
+
+        return back()->with('success', $message);
     }
 
     private function notificationBelongsToSection(DatabaseNotification $notification, string $section): bool

@@ -41,6 +41,8 @@
   </div>
   <!-- / Layout wrapper -->
 
+  @stack('modals')
+
     {{-- <div class="buy-now">
       <a
         href="https://themeselection.com/item/sneat-dashboard-pro-bootstrap/"

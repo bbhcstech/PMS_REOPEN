@@ -111,7 +111,7 @@ foreach (array_keys(config('workspace_modules')) as $slug) {
 }
 $check('every registry feature is on by default for an active company', true);
 
-foreach (['dashboard', 'company-assistant', 'upper-level-employees', 'crm-deals'] as $slug) {
+foreach (['dashboard', 'company-assistant', 'events', 'crm-deals'] as $slug) {
     $clearOverrides();
     $setOverride($companyA, $slug, false);
     $check("disable $slug for Alpha -> Alpha off", ! $fresh($companyA)->hasFeature($slug));
@@ -169,7 +169,7 @@ $clearOverrides();
 $context->company = $fresh($companyA);
 $check('admin sees Company Assistant when enabled', $admin->moduleToggleAllows('company-assistant'));
 $check('admin sees Deals when enabled', $admin->moduleToggleAllows('crm-deals'));
-foreach (['dashboard' => 'canViewModule', 'company-assistant' => 'moduleToggleAllows', 'upper-level-employees' => 'canViewModule', 'crm-deals' => 'moduleToggleAllows'] as $slug => $method) {
+foreach (['dashboard' => 'canViewModule', 'company-assistant' => 'moduleToggleAllows', 'events' => 'canViewModule', 'crm-deals' => 'moduleToggleAllows'] as $slug => $method) {
     $clearOverrides();
     $setOverride($companyA, $slug, false);
     $context->company = $fresh($companyA);
@@ -201,10 +201,10 @@ $check('admin blocked from admin.deals.store when Deals disabled', ! $call('admi
 $check('admin blocked from admin.deals.index when Deals disabled', ! $call('admin.deals.index', $admin));
 $check('hr blocked from admin.deals.index when Deals disabled', ! $call('admin.deals.index', $hr));
 $setOverride($companyA, 'company-assistant', false);
-$setOverride($companyA, 'upper-level-employees', false);
+$setOverride($companyA, 'events', false);
 $context->company = $fresh($companyA);
 $check('admin blocked from company.ai.ask when Company Assistant disabled', ! $call('company.ai.ask', $admin, 'POST'));
-$check('admin blocked from admin.upper-level-employees.index when disabled', ! $call('admin.upper-level-employees.index', $admin));
+$check('admin blocked from events.index when Events disabled', ! $call('events.index', $admin));
 $check('admin still reaches leads.contacts.index (sibling of Deals)', $call('leads.contacts.index', $admin));
 $setOverride($companyA, 'dashboard', false);
 $context->company = $fresh($companyA);

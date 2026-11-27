@@ -6,6 +6,7 @@ use App\Http\Controllers\Concerns\Employee\EmployeeInvitations;
 use App\Http\Controllers\Concerns\Employee\EmployeeLifecycle;
 use App\Http\Controllers\Concerns\Employee\EmployeeOnboarding;
 use App\Http\Controllers\Concerns\Employee\EmployeeOrganizationFields;
+use App\Http\Controllers\Concerns\Employee\EmployeeOrgTree;
 use App\Http\Controllers\Concerns\Employee\EmployeeProfileUpdates;
 use App\Models\Company;
 use App\Models\Designation;
@@ -22,6 +23,7 @@ class EmployeeController extends Controller
     use EmployeeLifecycle;
     use EmployeeInvitations;
     use EmployeeOrganizationFields;
+    use EmployeeOrgTree;
 
     /**
      * Simple role guard for employee-management methods.
@@ -173,8 +175,22 @@ class EmployeeController extends Controller
                 return true;
             });
 
+        $pendingOnboardingCount = 0;
+        try {
+            $appTable = (new \App\Models\EmployeeOnboardingApplication)->getTable();
+            $appConn = (new \App\Models\EmployeeOnboardingApplication)->getConnectionName() ?: 'tenant';
+            if (Schema::connection($appConn)->hasTable($appTable)) {
+                $pendingOnboardingCount = \App\Models\EmployeeOnboardingApplication::where('status', \App\Models\EmployeeOnboardingApplication::STATUS_PENDING_REVIEW)
+                    ->when($selectedCompanyId, fn ($q) => $q->where('company_id', $selectedCompanyId))
+                    ->count();
+            }
+        } catch (\Throwable $e) {
+            $pendingOnboardingCount = 0;
+        }
+
         return view('admin.employees.index', [
             'employees' => $employees,
+            'pendingOnboardingCount' => $pendingOnboardingCount,
             'companyEmployeeTotal' => $selectedCompanyId ? app(\App\Services\CompanyEmployeeDirectory::class)->count($selectedCompanyId) : $employees->count(),
             'companies' => $companies,
             'companyStats' => $companyStats,
@@ -211,14 +227,9 @@ class EmployeeController extends Controller
     {
         $actorRole = auth()->user()?->normalizedRole();
         if (! in_array($actorRole, ['admin', 'administrator', 'superadmin'], true)) {
-            abort_if($target && ($target->role !== 'employee' || $target->company_staff_role_id), 403, 'Only a company admin can manage upper level employee accounts.');
+            abort_if($target && ($target->role !== 'employee' || $target->company_staff_role_id), 403, 'Only a company admin can manage HR, manager and company-role accounts.');
             $requestedRole = $request->input('user_role', $request->input('role', 'employee'));
             abort_unless($requestedRole === 'employee', 403, 'Only a company admin can assign privileged roles.');
-        }
-        // Role identity and permissions for these accounts are managed together
-        // through the admin-only section, not a generic employee form.
-        if ($target?->company_staff_role_id) {
-            abort(403, 'Manage this account in Add Upper Level Employee.');
         }
     }
 }

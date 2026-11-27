@@ -791,7 +791,7 @@ function submitDrawerForm(e, form) {
 
   if (submitBtn) {
     submitBtn.disabled = true;
-    submitBtn.innerHTML = `<i class="bx bx-loader-alt bx-spin"></i> Processing...`;
+    submitBtn.textContent = 'Processing...';
   }
   
   fetch(form.action, {

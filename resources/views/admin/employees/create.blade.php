@@ -2354,6 +2354,9 @@ $(document).ready(function() {
                 customClass: { popup: 'employee-pending-success' }
             });
         }, { once: true });
+        if (modalElement.contains(document.activeElement)) {
+            document.activeElement.blur();
+        }
         bootstrap.Modal.getOrCreateInstance(modalElement).hide();
     }
 

@@ -415,9 +415,7 @@
                             </label>
                             <div class="position-relative">
                                 <input name="postal_code" id="postal_code" type="text" class="form-control form-control-custom pe-5" placeholder="e.g. 700001 or 110001" value="{{ old('postal_code') }}" autocomplete="off">
-                                <div id="pincode_spinner" class="position-absolute end-0 top-50 translate-middle-y me-3" style="display: none; pointer-events: none;">
-                                    <i class="fas fa-spinner fa-spin text-primary"></i>
-                                </div>
+                                <div id="pincode_spinner" class="position-absolute end-0 top-50 translate-middle-y me-3 d-none" style="pointer-events: none;"></div>
                             </div>
                             <div id="pincode_feedback_pill" class="mt-1" style="display: none;"></div>
                         </div>
@@ -1580,7 +1578,7 @@ function performPincodeLookup(pincode) {
     }
 
     $('#pincode_spinner').show();
-    $('#pincode_feedback_pill').html('<span class="text-primary small"><i class="fas fa-spinner fa-spin me-1"></i> Checking location...</span>').show();
+    $('#pincode_feedback_pill').html('<span class="text-primary small">Checking location...</span>').show();
 
     const lookupUrl = "{{ Route::has('clients.lookup-pincode') ? route('clients.lookup-pincode') : url('/clients/lookup-pincode') }}";
     
@@ -2819,7 +2817,7 @@ $(document).ready(function () {
 
         // Show loading state on both submit buttons
         $('#finalSubmitBtn, #addLaterSubmitBtn').prop('disabled', true);
-        submitBtn.html('<i class="fas fa-spinner fa-spin me-2"></i> Submitting...');
+        submitBtn.text('Submitting...');
 
         // Submit form directly to server
         document.getElementById('clientWizardForm').submit();

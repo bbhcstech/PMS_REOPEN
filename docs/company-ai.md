@@ -1,6 +1,6 @@
 # Company assistant
 
-Add `GROQ_API_KEY=your-key` to `.env`. Optional: `GROQ_MODEL=llama-3.3-70b-versatile`.
+Set `GROQ_API_KEY` in the deployment’s `.env` to enable general AI questions. The default model is `openai/gpt-oss-120b`, with `openai/gpt-oss-20b` available as a fallback.
 If configuration is cached, run `php artisan config:clear` after changing these values.
 Never put the API key in browser JavaScript. No additional packages or database migrations are required.
 
@@ -10,7 +10,9 @@ This is live retrieval, not model fine-tuning. Every question reads current auth
 
 Relevant snippets and the question are sent to Groq; its account terms and data handling apply. The provider is instructed to refuse unrelated questions and unsupported facts. Answers without valid company source IDs are rejected. Model output is untrusted plain text, never executed or inserted as HTML. As with any language model, source validation does not prove that every sentence is accurate; users can inspect source records in the UI. The agent cannot change company records.
 
-Requests require a valid active company login, matching session company and physical tenant DB. Client-provided company/agent IDs and message histories are rejected. Rate limiting allows 15 requests per minute per authenticated user. API errors return a generic unavailable message without exposing provider responses or secrets.
+Requests require a valid active company login, matching session company and physical tenant DB. Client-provided company/agent IDs and message histories are rejected. Rate limiting allows 15 requests per minute per authenticated user. Starter questions are answered directly from authorized workspace facts even if Groq is unavailable. Broader questions use Groq and report credential, billing, model-access, rate-limit, and temporary failures without exposing provider responses or secrets.
+
+Run `php artisan assistant:check` on the affected server to test its effective configuration using synthetic data. `invalid_key` means Groq rejected that server’s credential. `model_access` means the configured models are unavailable to the server. After correcting settings, refresh the configuration cache and rerun the check.
 
 Run `php tests/regression/company_ai.php` for offline checks using isolated SQLite fixtures and fake HTTP responses. Production Groq connectivity requires the real API key.
 

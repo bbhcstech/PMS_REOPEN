@@ -226,7 +226,6 @@
             </div>
             <div class="modal-body-custom" id="editAttendanceBody">
                 <div class="loading-state">
-                    <div class="spinner-border text-primary" role="status"></div>
                     <p>Loading attendance form...</p>
                 </div>
             </div>
@@ -854,12 +853,6 @@
     .loading-state {
         text-align: center;
         padding: 2rem 0;
-    }
-
-    .loading-state .spinner-border {
-        width: 2.5rem;
-        height: 2.5rem;
-        color: var(--primary-teal);
     }
 
     .loading-state p {
@@ -1805,7 +1798,6 @@
                         </div>
                         <div class="modal-body-custom" id="editAttendanceBody">
                             <div class="loading-state">
-                                <div class="spinner-border text-primary" role="status"></div>
                                 <p>Loading attendance form...</p>
                             </div>
                         </div>

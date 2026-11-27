@@ -216,7 +216,6 @@
 
                         <!-- Loading Overlay -->
                         <div id="chartLoading" class="chart-loading d-none">
-                            <div class="spinner"></div>
                             <span>Loading chart...</span>
                         </div>
                     </div>
@@ -971,19 +970,6 @@
         gap: 12px;
         border-radius: 20px;
         z-index: 200;
-    }
-
-    .spinner {
-        width: 40px;
-        height: 40px;
-        border: 3px solid #e7f5ee;
-        border-top-color: #2F6BFF;
-        border-radius: 50%;
-        animation: spin 0.8s linear infinite;
-    }
-
-    @keyframes spin {
-        to { transform: rotate(360deg); }
     }
 
     /* Card Footer */
@@ -1956,7 +1942,7 @@ document.addEventListener('DOMContentLoaded', function() {
     saveBtn?.addEventListener('click', function() {
         const originalHtml = saveBtn.innerHTML;
         saveBtn.disabled = true;
-        saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
+        saveBtn.innerHTML = 'Saving...';
         document.getElementById('chartLoading')?.classList.remove('d-none');
 
         const hierarchy = [];
@@ -2275,7 +2261,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const exportBtn = document.getElementById('exportChartBtn');
         const origContent = exportBtn ? exportBtn.innerHTML : '';
         if (exportBtn) {
-            exportBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Exporting...';
+            exportBtn.innerHTML = 'Exporting...';
         }
 
         try {
@@ -2318,7 +2304,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const printBtn = document.getElementById('printChartBtn');
         const origContent = printBtn ? printBtn.innerHTML : '';
         if (printBtn) {
-            printBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Preparing Print...';
+            printBtn.innerHTML = 'Preparing Print...';
         }
 
         try {

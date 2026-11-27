@@ -109,13 +109,13 @@ class WorkScheduleController extends Controller
                 "Company Operating Days Schedule Updated",
                 "Admin has set the official company normal operating working days to: {$daysStr}.",
                 route('admin.settings.work-schedule'),
-                ['working_days' => $request->working_days]
+                ['working_days' => $request->working_days, 'type' => 'setting_update', 'setting_module' => 'work-schedule']
             );
         } catch (\Throwable $e) {
             \Log::error('Work schedule update notification error: ' . $e->getMessage());
         }
 
-        return back()->with('success', 'Company operating working days and shift settings updated successfully! Notification sent to all staff.');
+        return back()->with('success', 'Company operating working days and shift settings updated successfully!');
     }
 
     public function addSpecialDay(Request $request)

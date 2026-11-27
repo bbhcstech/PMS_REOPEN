@@ -95,6 +95,15 @@ class EnsureModuleAccess
         return $next($request);
     }
 
+    /** Read-only GET routes a module declares as "view" (config/workspace_modules.php: view_routes). */
+    private static function isViewLevelRoute(string $routeName): bool
+    {
+        foreach (config('workspace_modules', []) as $module) {
+            if (in_array($routeName, $module['view_routes'] ?? [], true)) return true;
+        }
+        return false;
+    }
+
     /** The action a request performs on its module (view/create/edit/delete/approve/export/assign). */
     public static function permissionForRequest(Request $request, string $routeName, string $permission = 'view'): string
     {
@@ -112,6 +121,9 @@ class EnsureModuleAccess
                 $request->isMethod('PUT'), $request->isMethod('PATCH'), str_contains($action, 'update'), str_contains($action, 'toggle') => 'edit',
                 default => 'create',
             };
+        }
+        if ($permission === 'view' && $request->isMethodSafe() && self::isViewLevelRoute($routeName)) {
+            return 'view';
         }
         if ($permission === 'view' && preg_match('/\.(create|edit|export|download)(?:-|\.|$)/', $routeName, $match)) {
             $permission = $match[1] === 'download' ? 'export' : $match[1];

@@ -86,6 +86,16 @@
                                 </div>
             
                                 <div class="row mb-3">
+                                    <div class="col-md-4">
+                                        <label class="form-label small fw-bold" for="subtaskStatus{{ $subtask->id }}">Status</label>
+                                        <select name="status" id="subtaskStatus{{ $subtask->id }}" class="form-select">
+                                            <option value="incomplete" @selected(strtolower((string) $subtask->status) !== 'complete')>Incomplete</option>
+                                            <option value="complete" @selected(strtolower((string) $subtask->status) === 'complete')>Complete</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
                                     <div class="col-md-10">
                                         <textarea name="description" class="form-control" rows="2">{{ $subtask->description }}</textarea>
                                     </div>
@@ -216,8 +226,9 @@
                     <td>{{ $index + 1 }}</td>
                     <td>{{ $subtask->title }}</td>
                     <td>
-                        <span class="badge bg-{{ $badgeColors[$subtask->status] ?? 'secondary' }}">
-                            {{ $subtask->status }}
+                        @php $subtaskDone = strtolower((string) $subtask->status) === 'complete'; @endphp
+                        <span class="badge bg-{{ $subtaskDone ? 'success' : 'warning' }}">
+                            {{ $subtaskDone ? 'Complete' : 'Incomplete' }}
                         </span>
                     </td>
                     <td>{{ \Carbon\Carbon::parse($subtask->start_date)->format('d-m-Y') ?? '--' }}</td>

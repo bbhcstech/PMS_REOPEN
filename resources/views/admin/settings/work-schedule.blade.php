@@ -1763,7 +1763,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const mode = checkedRadio.value;
             const originalBtnHtml = this.innerHTML;
             this.disabled = true;
-            this.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Saving...';
+            this.textContent = 'Saving...';
 
             fetch('{{ route("admin.settings.work-schedule.employee-mode.update") }}', {
                 method: 'POST',

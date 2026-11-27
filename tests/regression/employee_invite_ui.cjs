@@ -3,7 +3,12 @@ const vm = require('node:vm');
 const assert = require('node:assert/strict');
 const path = require('node:path');
 const view = fs.readFileSync(path.join(__dirname, '../../resources/views/admin/employees/index.blade.php'), 'utf8');
-const script = view.slice(view.indexOf('    // Keep Bootstrap\'s modal'), view.indexOf('    // Share link'));
+const footer = fs.readFileSync(path.join(__dirname, '../../resources/views/admin/layout/footer.blade.php'), 'utf8');
+assert.ok(footer.includes("@stack('modals')"), 'Footer must render @stack(\'modals\') outside #employeeDirectoryPage stacking context');
+assert.ok(view.includes("@push('modals')") && view.includes('id="inviteModal"'), 'Invite modal must be pushed to @stack(\'modals\')');
+assert.ok(view.includes('id="addNewEmployeeBtn"'), 'Add New Employee button must exist in hero actions');
+
+const script = view.slice(view.indexOf('    function inviteNotice('), view.indexOf('    // Share link'));
 const nodes = new Map();
 function node(id) {
   if (!nodes.has(id)) nodes.set(id, {id, value: '', visible: true, disabled: false, classes: new Set(), handlers: {}, attrs: {}, reportValidity: () => true});
@@ -13,7 +18,8 @@ const requests = [];
 function $(selector) {
   const entries = typeof selector === 'string' ? selector.split(',').map(id => node(id.trim().slice(1))) : [selector];
   const first = entries[0];
-  const wrapper = {0: first,
+  return {
+    0: first,
     on(event, handler) { entries.forEach(item => item.handlers[event] = handler); return this; },
     attr(key, value) { entries.forEach(item => item.attrs[key] = value); return this; },
     prop(key, value) { if (value === undefined) return first[key]; entries.forEach(item => item[key] = value); return this; },
@@ -23,18 +29,15 @@ function $(selector) {
     toggle(value) { first.visible = value; return this; }, select() { first.selected = true; return this; },
     addClass(value) { first.classes.add(value); return this; }, removeClass(value) { first.classes.delete(value); return this; },
   };
-  return wrapper;
 }
 $.ajax = options => requests.push(options);
-let modalRelocated = false;
 let copied;
 node('inviteEmailForm').reset = () => node('inviteEmail').value = '';
 vm.runInNewContext(script, {
-  $, document: { getElementById: node, body: { appendChild(item) { modalRelocated = item.id === 'inviteModal'; } } },
+  $, document: { getElementById: node },
   navigator: {clipboard: {async writeText(value) {copied = value;}}}, window: {isSecureContext: true},
 });
 function trigger(id, event) { return node(id).handlers[event].call(node(id), {preventDefault() {}}); }
-assert.ok(modalRelocated, 'Invite modal must escape the transformed card and backdrop stacking context');
 node('inviteEmail').value = 'new@example.test';
 node('inviteMessage').value = 'Welcome';
 trigger('inviteEmailForm', 'submit');
@@ -57,14 +60,24 @@ assert.equal(node('sendInviteBtn').visible, false, 'Email submit must not remain
 node('inviteLinkEmail').value = 'link@example.test';
 trigger('createLinkBtn', 'click');
 assert.equal(node('createLinkBtn').disabled, true);
-requests[2].success({url: 'https://example.test/signed-invite', message: 'Link ready'});
+requests[2].success({url: 'https://example.test/onboarding/tok1', invitation_id: 42, status: 'Pending', expires_at: '29 Nov 2026', message: 'Link ready'});
 requests[2].complete();
 assert.equal(node('linkContainer').visible, true);
-assert.equal(node('inviteLink').value, 'https://example.test/signed-invite');
+assert.equal(node('inviteLink').value, 'https://example.test/onboarding/tok1');
+assert.equal(node('inviteLinkStatus').text, 'Pending');
+trigger('regenerateLinkBtn', 'click');
+requests[3].success({url: 'https://example.test/onboarding/tok2', invitation_id: 42, status: 'Pending', expires_at: '29 Nov 2026', message: 'Regenerated'});
+requests[3].complete();
+assert.equal(node('inviteLink').value, 'https://example.test/onboarding/tok2');
+trigger('revokeLinkBtn', 'click');
+requests[4].success({status: 'Revoked', message: 'Revoked'});
+requests[4].complete();
+assert.equal(node('inviteLinkStatus').text, 'Revoked');
 (async () => {
+  node('inviteLink').value = 'https://example.test/onboarding/tok2';
   await trigger('copyLinkBtn', 'click');
-  assert.equal(copied, 'https://example.test/signed-invite');
+  assert.equal(copied, 'https://example.test/onboarding/tok2');
   trigger('invite-email-tab', 'shown.bs.tab');
   assert.equal(node('sendInviteBtn').visible, true);
-  console.log('PASS: real invitation UI handlers, validation errors, duplicate-submit prevention, loading recovery, link tab, copy and modal relocation.');
+  console.log('PASS: real invitation UI handlers, modal portal, regenerate/revoke, duplicate-submit guard, copy and tab toggles.');
 })().catch(error => {console.error(error); process.exitCode = 1;});

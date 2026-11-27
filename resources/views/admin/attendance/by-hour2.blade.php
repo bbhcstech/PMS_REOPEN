@@ -209,10 +209,8 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div id="attendanceDetailsBody" class="modal-body">
-                <div class="text-center py-4">
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
+                <div class="text-center py-4 text-muted">
+                    Loading...
                 </div>
             </div>
             <div class="modal-footer">
@@ -870,7 +868,7 @@ $(document).ready(function () {
         var modal = new bootstrap.Modal(document.getElementById('attendanceDetailsModal'));
         modal.show();
 
-        $('#attendanceDetailsBody').html('<div class="text-center py-4"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>');
+        $('#attendanceDetailsBody').html('<div class="text-center py-4 text-muted">Loading...</div>');
 
         $.ajax({
             url: url,
@@ -896,7 +894,7 @@ $(document).ready(function () {
         var modal = new bootstrap.Modal(document.getElementById('attendanceDetailsModal'));
         modal.show();
 
-        $('#attendanceDetailsBody').html('<div class="text-center py-4"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>');
+        $('#attendanceDetailsBody').html('<div class="text-center py-4 text-muted">Loading...</div>');
 
         $.ajax({
             url: url,

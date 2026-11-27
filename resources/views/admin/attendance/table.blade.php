@@ -789,7 +789,7 @@ $(document).ready(function () {
                 '<button type="button" class="btn-close" data-attendance-modal-close aria-label="Close"></button>' +
                 '</div>' +
                 '<div id="attendanceDetailsBody" class="modal-body attendance-details-modal-body">' +
-                '<div class="text-center py-4"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>' +
+                '<div class="text-center py-4 text-muted">Loading...</div>' +
                 '</div>' +
                 '<div class="modal-footer">' +
                 '<button type="button" class="btn btn-secondary" data-attendance-modal-close>Close</button>' +
@@ -827,9 +827,6 @@ $(document).ready(function () {
     function showAttendanceLoading(message) {
         $('#attendanceDetailsBody').html(
             '<div class="text-center py-5 attendance-loading-box">' +
-                '<div class="spinner-border text-primary" role="status">' +
-                    '<span class="visually-hidden">Loading...</span>' +
-                '</div>' +
                 '<p class="mt-3 mb-0 text-muted">' + message + '</p>' +
             '</div>'
         );
@@ -923,7 +920,7 @@ $(document).ready(function () {
             var totalCellHtml = escapeAttendanceHtml(record.total);
             if (record.is_open && record.clock_in && record.clock_in !== '-') {
                 totalCellHtml = '<span class="live-month-work-timer fw-bold text-success" data-clock-in="' + escapeAttendanceHtml(record.clock_in_raw || '') + '" data-date="' + escapeAttendanceHtml(record.date || '') + '" data-seconds="' + escapeAttendanceHtml(record.total_seconds || 0) + '">' + escapeAttendanceHtml(record.total) + '</span>' +
-                    ' <span class="badge bg-success-subtle text-success small ms-1"><i class="fas fa-spinner fa-spin me-1"></i>Working</span>';
+                    ' <span class="badge bg-success-subtle text-success small ms-1">Working</span>';
             }
 
             return '<tr>' +
@@ -1026,7 +1023,7 @@ $(document).ready(function () {
             return;
         }
 
-        archiveButton.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i><span>Archiving</span>');
+        archiveButton.prop('disabled', true).html('<span>Archiving</span>');
 
         $.ajax({
             url: "{{ route('attendance.month.archive') }}",
@@ -1089,7 +1086,7 @@ $(document).ready(function () {
         var submitButton = $(form).find('[type="submit"]').first();
         var originalHtml = submitButton.html();
 
-        submitButton.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Saving...');
+        submitButton.prop('disabled', true).text('Saving...');
 
         $.ajax({
             url: form.action,

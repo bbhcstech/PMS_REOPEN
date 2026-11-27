@@ -657,14 +657,16 @@ public function updateStatus(Request $request, Task $task)
 
     // ❗ Rule: If marking a parent task as 'Completed', check all sub-tasks
     if ($request->status === 'Completed') {
-        $pendingSubTasks = $task->subTasks()->where(function ($q) {
-            $q->where('is_completed', false)->orWhereNull('is_completed');
-        })->exists();
+        // Sub-task completion lives in sub_tasks.status ("incomplete" / "complete"); there is no is_completed column.
+        $pendingSubTasks = $task->subTasks()
+            ->whereRaw("LOWER(COALESCE(status, '')) NOT IN ('complete', 'completed', 'done')")
+            ->count();
 
         if ($pendingSubTasks) {
             return response()->json([
                 'success' => false,
-                'message' => 'Cannot mark task as Completed while sub-tasks are pending.',
+                'message' => 'Cannot mark this task as Completed while ' . $pendingSubTasks . ' sub-task' . ($pendingSubTasks === 1 ? ' is' : 's are')
+                    . ' still pending. Mark ' . ($pendingSubTasks === 1 ? 'it' : 'them') . ' complete in the Sub Tasks tab first.',
             ], 422);
         }
     }

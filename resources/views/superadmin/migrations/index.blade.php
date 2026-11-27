@@ -1416,7 +1416,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const refreshStatusBtn = document.getElementById('refreshStatusBtn');
     if (refreshStatusBtn) {
         refreshStatusBtn.addEventListener('click', function() {
-            this.innerHTML = '<i class="fas fa-rotate fa-spin"></i> Refreshing...';
+            this.textContent = 'Refreshing...';
             setTimeout(() => {
                 window.location.reload();
             }, 600);
